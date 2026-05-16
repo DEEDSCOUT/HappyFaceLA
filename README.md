@@ -2,6 +2,8 @@
 
 Production-ready Sprint 1 implementation for a static-first local service website:
 
+For full project roadmap, current status, deployment gates, and handoff instructions, see [PROJECT_ROADMAP.md](PROJECT_ROADMAP.md).
+
 - Canonical domain: <https://happyfacesla.com>
 - Redirect domain: <https://happyfacela.com>
 - Phone: 818-619-5506
