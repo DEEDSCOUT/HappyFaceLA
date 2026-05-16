@@ -328,6 +328,75 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-16 - Cloudflare Pages preview validation
+
+What changed:
+
+- Ran manual preview validation on <https://happyfacesla.pages.dev>.
+- Inspected homepage, navigation, mobile sticky CTA visibility, contact quote form rendering, service page, pricing page, gallery page, and contact page.
+- Verified required core preview routes return HTTP 200.
+- Ran /api/lead preview validation matrix for GET, PUT, valid payload, invalid required fields, honeypot, malformed JSON, and unsupported content type.
+
+Files changed:
+
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```bash
+# Route matrix
+powershell -Command "Invoke-WebRequest route checks against https://happyfacesla.pages.dev"
+
+# /api/lead preview matrix
+node -e "fetch() matrix for GET/PUT/valid/invalid/honeypot/malformed/content-type"
+```
+
+Validation result:
+
+- Preview homepage and navigation render correctly.
+- Contact quote form renders all required fields and submit button.
+- Sticky mobile CTA links (Call, Text, Get Quote) are present on preview pages.
+- Required core routes all returned 200:
+  - /
+  - /face-painting-los-angeles/
+  - /balloon-twisting-los-angeles/
+  - /glitter-tattoos-los-angeles/
+  - /face-gems-face-jewelry-los-angeles/
+  - /kids-birthday-party-entertainment-los-angeles/
+  - /corporate-event-face-painting-los-angeles/
+  - /school-festival-face-painting-los-angeles/
+  - /pricing/
+  - /gallery/
+  - /faq/
+  - /contact/
+  - /service-areas/
+- /api/lead preview results:
+  - GET -> 405 Method not allowed
+  - PUT -> 405 Method not allowed
+  - valid POST -> 500 {"ok":false,"error":"Lead capture backend is not configured"}
+  - invalid required fields -> 400 with safe field-level errors
+  - honeypot payload -> 200 with {"ok":true,"leadId":"..."}
+  - malformed JSON -> 400 Invalid JSON payload
+  - wrong content type -> 415 Unsupported media type
+- The valid POST 500 is expected when deployment uses production branch behavior and `CRM_WEBHOOK_URL` is not configured; this is not treated as a code bug at this stage.
+
+Remaining blockers:
+
+- Configure Cloudflare Pages production environment variables.
+- Configure real `CRM_WEBHOOK_URL` or approved lead destination.
+- Attach and verify custom production domains in Pages.
+- Configure and verify zone-level hostname redirect rules.
+- Retest /api/lead valid POST after env vars are configured and main is redeployed.
+- Verify real lead delivery reaches destination (non-stub) on preview/production checks.
+
+Next required action:
+
+- Configure Cloudflare Pages env vars (`CRM_WEBHOOK_URL` minimally), redeploy main, then retest valid /api/lead expecting 200 with `{ ok: true, leadId }`.
+
+Production status changed:
+
+- No. Production remains not complete.
+
 ### 2026-05-16 - Canonical roadmap tracker added
 
 What changed:
