@@ -1,0 +1,62 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import PageIntro from "../components/sections/PageIntro.astro";
+import PackageCard from "../components/content/PackageCard.astro";
+import QuoteForm from "../components/conversion/QuoteForm.astro";
+import { packages } from "../data/packages";
+import { serviceJsonLd, faqJsonLd } from "../utils/schema";
+
+const canonicalPath = "/pricing/";
+const pricingFaqs = [
+  {
+    question: "Do you publish exact pricing online?",
+    answer:
+      "Final pricing is based on event date, location, guest count, service mix, and artist count. Exact rates are TBD_BY_OWNER."
+  },
+  {
+    question: "What affects event pricing?",
+    answer:
+      "Date demand, travel, duration, add-ons, and staffing all affect final quote totals."
+  }
+];
+---
+
+<BaseLayout
+  title="Pricing for Face Painting & Party Entertainment in Los Angeles | Happy Faces LA"
+  description="Pricing depends on event date, location, guest count, and services requested. Request availability and pricing from Happy Faces LA."
+  canonicalPath={canonicalPath}
+  jsonLd={[
+    serviceJsonLd("Party Entertainment Pricing", `https://happyfacesla.com${canonicalPath}`),
+    faqJsonLd(pricingFaqs)
+  ]}
+>
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Pricing", href: canonicalPath }]} />
+  <PageIntro title="Pricing & Packages" description="Pricing depends on event date, location, number of guests, services requested, and artist count. Submit your event details for an accurate quote." />
+
+  <section class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-10">
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="text-2xl font-bold text-slate-900">What affects price</h2>
+      <ul class="mt-4 space-y-2 text-sm text-slate-700">
+        <li>Event date and time demand</li>
+        <li>City and travel distance</li>
+        <li>Guest count and service speed requirements</li>
+        <li>Add-ons, extra artists, and overtime</li>
+      </ul>
+    </section>
+
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {packages.map((pkg) => <PackageCard {...pkg} />)}
+    </div>
+
+    <QuoteForm />
+  </section>
+
+  <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: "pricing_view", source_page: window.location.pathname });
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "pricing_view", { source_page: window.location.pathname });
+    }
+  </script>
+</BaseLayout>

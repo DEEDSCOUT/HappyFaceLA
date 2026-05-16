@@ -1,0 +1,11 @@
+# Cloudflare Pages redirect rules.
+#
+# Note: Cloudflare Pages _redirects only supports relative source paths and
+# status codes 200, 301, 302, 303, 307, 308. Host-based redirects
+# (happyfacela.com -> happyfacesla.com, www -> apex) MUST be configured as
+# Cloudflare dashboard Redirect Rules at the zone level. See README section
+# "Canonical Redirect Rules" for the dashboard rule list.
+#
+# This file is intentionally left without rules. Add path-level redirects here
+# when needed (e.g. legacy URL -> new URL after content moves).
+

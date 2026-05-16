@@ -1,0 +1,28 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import PageIntro from "../components/sections/PageIntro.astro";
+import EventTypePageSections from "../components/sections/EventTypePageSections.astro";
+import { localBusinessJsonLd, serviceJsonLd, breadcrumbJsonLd } from "../utils/schema";
+
+const canonicalPath = "/corporate-event-face-painting-los-angeles/";
+const eventType = "Corporate Event Face Painting";
+---
+
+<BaseLayout
+  title="Corporate Event Face Painting in Los Angeles | Happy Faces LA"
+  description="Book Happy Faces LA for corporate family events in Los Angeles with face painting, balloons, glitter tattoos, and face gems."
+  canonicalPath={canonicalPath}
+  jsonLd={[
+    localBusinessJsonLd(),
+    serviceJsonLd(eventType, `https://happyfacesla.com${canonicalPath}`),
+    breadcrumbJsonLd([
+      { name: "Home", url: "https://happyfacesla.com/" },
+      { name: eventType, url: `https://happyfacesla.com${canonicalPath}` }
+    ])
+  ]}
+>
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Corporate Events", href: canonicalPath }]} />
+  <PageIntro title="Corporate Event Face Painting in Los Angeles" description="Event-ready entertainment for company picnics, grand openings, and family-friendly corporate activations." />
+  <EventTypePageSections eventType={eventType} />
+</BaseLayout>

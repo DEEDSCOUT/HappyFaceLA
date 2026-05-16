@@ -1,0 +1,40 @@
+---
+interface Props {
+  title: string;
+  subtitle: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+  trustLine?: string;
+}
+
+const {
+  title,
+  subtitle,
+  primaryCtaLabel = "Get Availability & Pricing",
+  primaryCtaHref = "/contact/",
+  secondaryCtaLabel = "Call/Text 818-619-5506",
+  secondaryCtaHref = "tel:+18186195506",
+  trustLine = "Face painting • Balloon twisting • Glitter tattoos • Face gems"
+} = Astro.props;
+---
+
+<section class="relative overflow-hidden bg-gradient-to-br from-amber-50 via-white to-cyan-50">
+  <div class="absolute -left-16 top-8 h-52 w-52 rounded-full bg-orange-200/50 blur-2xl"></div>
+  <div class="absolute -right-16 bottom-0 h-64 w-64 rounded-full bg-cyan-200/50 blur-2xl"></div>
+
+  <div class="relative mx-auto w-full max-w-6xl px-4 py-16 md:py-24">
+    <h1 class="max-w-4xl text-4xl font-extrabold leading-tight text-slate-900 md:text-6xl">{title}</h1>
+    <p class="mt-5 max-w-3xl text-lg text-slate-700">{subtitle}</p>
+    <div class="mt-8 flex flex-wrap gap-3">
+      <a class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600" href={primaryCtaHref}>
+        {primaryCtaLabel}
+      </a>
+      <a class="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900" href={secondaryCtaHref} data-track-event="phone_click">
+        {secondaryCtaLabel}
+      </a>
+    </div>
+    <p class="mt-5 text-sm text-slate-600">{trustLine}</p>
+  </div>
+</section>

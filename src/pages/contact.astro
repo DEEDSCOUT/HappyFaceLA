@@ -1,0 +1,21 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import PageIntro from "../components/sections/PageIntro.astro";
+import QuoteForm from "../components/conversion/QuoteForm.astro";
+
+const canonicalPath = "/contact/";
+---
+
+<BaseLayout
+  title="Contact & Quote Request | Happy Faces LA"
+  description="Request availability and pricing from Happy Faces LA for Los Angeles face painting, balloons, glitter tattoos, and face gems."
+  canonicalPath={canonicalPath}
+>
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Contact", href: canonicalPath }]} />
+  <PageIntro title="Get Availability & Pricing" description="Tell us about your event and we will follow up with availability and package options." />
+
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <QuoteForm />
+  </section>
+</BaseLayout>

@@ -1,0 +1,21 @@
+---
+import type { FaqItem } from "../../data/faqs";
+
+interface Props {
+  items: FaqItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<section>
+  <h2 class="text-2xl font-bold text-slate-900">Frequently asked questions</h2>
+  <div class="mt-4 space-y-3">
+    {items.map((item) => (
+      <details class="rounded-xl border border-slate-200 bg-white p-4">
+        <summary class="cursor-pointer font-semibold text-slate-900">{item.question}</summary>
+        <p class="mt-2 text-sm leading-relaxed text-slate-700">{item.answer}</p>
+      </details>
+    ))}
+  </div>
+</section>

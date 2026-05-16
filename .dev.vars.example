@@ -1,0 +1,14 @@
+# Local Wrangler secret overrides for Pages Functions development.
+# Copy this template as .dev.vars and fill in real values.
+# .dev.vars is gitignored — never commit real secrets.
+# These values are injected as env vars into Pages Functions during: npm run pages:dev
+
+OWNER_NOTIFICATION_EMAIL=local-test@example.com
+CRM_WEBHOOK_URL=
+CRM_WEBHOOK_SECRET=
+META_PIXEL_ID=
+META_ACCESS_TOKEN=
+META_TEST_EVENT_CODE=
+GA4_MEASUREMENT_ID=
+GOOGLE_ADS_CONVERSION_ID=
+GOOGLE_ADS_LEAD_CONVERSION_LABEL=

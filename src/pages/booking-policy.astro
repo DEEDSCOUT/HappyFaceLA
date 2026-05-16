@@ -1,0 +1,27 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+
+const canonicalPath = "/booking-policy/";
+---
+
+<BaseLayout
+  title="Booking Policy | Happy Faces LA"
+  description="Booking, deposit, cancellation, travel, and event policy details for Happy Faces LA."
+  canonicalPath={canonicalPath}
+>
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Booking Policy", href: canonicalPath }]} />
+  <section class="mx-auto w-full max-w-4xl px-4 py-10">
+    <h1 class="text-4xl font-extrabold text-slate-900">Booking Policy</h1>
+    <div class="mt-6 space-y-4 text-sm leading-relaxed text-slate-700">
+      <p>Booking and operational policy values are pending owner approval.</p>
+      <p>Deposit amount: TBD_BY_OWNER</p>
+      <p>Cancellation policy: TBD_BY_OWNER</p>
+      <p>Rescheduling policy: TBD_BY_OWNER</p>
+      <p>Travel fee and service radius: TBD_BY_OWNER</p>
+      <p>Overtime rates and late-start policy: TBD_BY_OWNER</p>
+      <p>Weather and outdoor event policy: TBD_BY_OWNER</p>
+      <p>Parking and setup requirements: TBD_BY_OWNER</p>
+    </div>
+  </section>
+</BaseLayout>

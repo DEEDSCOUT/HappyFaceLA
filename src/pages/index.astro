@@ -1,11 +1,88 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import ServiceCard from "../components/content/ServiceCard.astro";
+import PackageCard from "../components/content/PackageCard.astro";
+import GalleryGrid from "../components/content/GalleryGrid.astro";
+import TestimonialCard from "../components/content/TestimonialCard.astro";
+import FAQAccordion from "../components/content/FAQAccordion.astro";
+import ServiceAreaLinks from "../components/sections/ServiceAreaLinks.astro";
+import TrustSection from "../components/sections/TrustSection.astro";
+import CTASection from "../components/sections/CTASection.astro";
+import { services } from "../data/services";
+import { packages } from "../data/packages";
+import { commonFaqs } from "../data/faqs";
+import { organizationJsonLd, localBusinessJsonLd, websiteJsonLd } from "../utils/schema";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const gallery = [
+	{
+		src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
+		alt: "Happy Faces LA gallery placeholder for owner replacement"
+	},
+	{
+		src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
+		alt: "Birthday party entertainment placeholder image in Los Angeles"
+	},
+	{
+		src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
+		alt: "Face painting and balloons placeholder image in Los Angeles"
+	}
+];
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout
+	title="Face Painting, Balloon Twisting & Glitter Tattoos in Los Angeles | Happy Faces LA"
+	description="Book Happy Faces LA for professional face painting, balloon twisting, glitter tattoos, and face gems in Los Angeles. Call/text 818-619-5506 for availability and pricing."
+	canonicalPath="/"
+	jsonLd={[organizationJsonLd(), localBusinessJsonLd(), websiteJsonLd()]}
+>
+	<Hero
+		title="Face Painting, Balloon Twisting & Glitter Tattoos in Los Angeles"
+		subtitle="Professional kids party and event entertainment by Happy Faces LA, serving birthdays, school events, corporate family events, festivals, and private celebrations across Los Angeles."
+	/>
+
+	<section class="mx-auto w-full max-w-6xl px-4 py-10">
+		<h2 class="text-2xl font-bold text-slate-900">Core services</h2>
+		<div class="mt-4 grid gap-4 md:grid-cols-2">
+			{services.map((service) => (
+				<ServiceCard title={service.name} description={service.description} href={`/${service.slug}/`} />
+			))}
+		</div>
+	</section>
+
+	<section class="mx-auto w-full max-w-6xl px-4 py-10">
+		<h2 class="text-2xl font-bold text-slate-900">Package preview</h2>
+		<div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+			{packages.slice(0, 3).map((pkg) => <PackageCard {...pkg} />)}
+		</div>
+	</section>
+
+	<section class="mx-auto w-full max-w-6xl px-4 py-10">
+		<GalleryGrid title="Visual gallery" images={gallery} />
+	</section>
+
+	<section class="mx-auto w-full max-w-6xl px-4 py-10">
+		<h2 class="text-2xl font-bold text-slate-900">What clients say</h2>
+		<div class="mt-4 grid gap-4 md:grid-cols-3">
+			<TestimonialCard quote="TBD_BY_OWNER" name="Testimonial Placeholder" context="Replace with verified first-party testimonial" />
+			<TestimonialCard quote="TBD_BY_OWNER" name="Testimonial Placeholder" context="Replace with verified first-party testimonial" />
+			<TestimonialCard quote="TBD_BY_OWNER" name="Testimonial Placeholder" context="Replace with verified first-party testimonial" />
+		</div>
+	</section>
+
+	<section class="mx-auto w-full max-w-6xl px-4 py-10">
+		<ServiceAreaLinks />
+	</section>
+
+	<section class="mx-auto w-full max-w-6xl px-4 py-10">
+		<TrustSection />
+	</section>
+
+	<section class="mx-auto w-full max-w-6xl px-4 py-10">
+		<FAQAccordion items={commonFaqs} />
+	</section>
+
+	<section class="mx-auto w-full max-w-6xl px-4 pb-10">
+		<CTASection />
+	</section>
+</BaseLayout>

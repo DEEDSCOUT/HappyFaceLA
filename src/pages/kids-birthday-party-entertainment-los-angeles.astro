@@ -1,0 +1,28 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import PageIntro from "../components/sections/PageIntro.astro";
+import EventTypePageSections from "../components/sections/EventTypePageSections.astro";
+import { localBusinessJsonLd, serviceJsonLd, breadcrumbJsonLd } from "../utils/schema";
+
+const canonicalPath = "/kids-birthday-party-entertainment-los-angeles/";
+const eventType = "Kids Birthday Party Entertainment";
+---
+
+<BaseLayout
+  title="Kids Birthday Party Entertainment in Los Angeles | Happy Faces LA"
+  description="Happy Faces LA provides face painting, balloon twisting, glitter tattoos, and face gems for kids birthday parties in Los Angeles."
+  canonicalPath={canonicalPath}
+  jsonLd={[
+    localBusinessJsonLd(),
+    serviceJsonLd(eventType, `https://happyfacesla.com${canonicalPath}`),
+    breadcrumbJsonLd([
+      { name: "Home", url: "https://happyfacesla.com/" },
+      { name: eventType, url: `https://happyfacesla.com${canonicalPath}` }
+    ])
+  ]}
+>
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Birthday Entertainment", href: canonicalPath }]} />
+  <PageIntro title="Kids Birthday Party Entertainment in Los Angeles" description="Colorful, professional party entertainment with face painting, balloons, glitter tattoos, and face gems for memorable birthday celebrations." />
+  <EventTypePageSections eventType={eventType} />
+</BaseLayout>

@@ -1,0 +1,25 @@
+---
+import { business } from "../../data/business";
+---
+
+<div class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white p-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] md:hidden">
+  <div class="mx-auto grid max-w-6xl grid-cols-3 gap-2">
+    <a
+      class="rounded-lg bg-slate-900 px-3 py-2 text-center text-sm font-semibold text-white"
+      href={`tel:${business.phone}`}
+      data-track-event="phone_click"
+    >
+      Call
+    </a>
+    <a
+      class="rounded-lg bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white"
+      href={`sms:${business.phone}`}
+      data-track-event="sms_click"
+    >
+      Text
+    </a>
+    <a class="rounded-lg bg-orange-500 px-3 py-2 text-center text-sm font-semibold text-white" href="/contact/">
+      Get Quote
+    </a>
+  </div>
+</div>

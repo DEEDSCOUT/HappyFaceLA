@@ -1,0 +1,54 @@
+---
+import { business } from "../../data/business";
+import { services } from "../../data/services";
+import { priorityLocations } from "../../data/locations";
+---
+
+<footer class="mt-16 border-t border-orange-200 bg-slate-950 text-slate-100">
+  <div class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 md:grid-cols-3">
+    <section>
+      <h2 class="text-lg font-semibold">{business.name}</h2>
+      <p class="mt-3 text-sm text-slate-300">
+        Professional face painting, balloon twisting, glitter tattoos, and face gems for Los Angeles events.
+      </p>
+      <a class="mt-4 inline-block text-sm font-semibold text-orange-300 hover:text-orange-200" href={`tel:${business.phone}`}>
+        {business.displayPhone}
+      </a>
+      <a
+        class="mt-3 block text-sm font-semibold text-cyan-300 hover:text-cyan-200"
+        href={business.instagramUrl}
+        target="_blank"
+        rel="noreferrer"
+        data-track-event="instagram_click"
+      >
+        Follow on Instagram
+      </a>
+    </section>
+
+    <section>
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Services</h2>
+      <ul class="mt-3 space-y-2 text-sm">
+        {services.map((service) => (
+          <li><a class="hover:text-orange-300" href={`/${service.slug}/`}>{service.name}</a></li>
+        ))}
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Priority Areas</h2>
+      <ul class="mt-3 space-y-2 text-sm">
+        {priorityLocations.slice(0, 6).map((location) => (
+          <li><a class="hover:text-orange-300" href={`/service-areas/${location.slug}/`}>{location.city}</a></li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <div class="border-t border-slate-800 py-4 text-center text-xs text-slate-400">
+    <p>
+      Copyright {new Date().getFullYear()} {business.name}. All rights reserved. |
+      <a class="ml-1 hover:text-orange-300" href="/privacy-policy/">Privacy Policy</a> |
+      <a class="ml-1 hover:text-orange-300" href="/booking-policy/">Booking Policy</a>
+    </p>
+  </div>
+</footer>

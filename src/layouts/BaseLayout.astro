@@ -1,0 +1,107 @@
+---
+import Header from "../components/layout/Header.astro";
+import Footer from "../components/layout/Footer.astro";
+import MobileStickyCtas from "../components/layout/MobileStickyCtas.astro";
+import SeoHead from "../components/seo/SeoHead.astro";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  jsonLd?: Array<Record<string, unknown>>;
+}
+
+const { title, description, canonicalPath, jsonLd = [] } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <SeoHead title={title} description={description} canonicalPath={canonicalPath} jsonLd={jsonLd} />
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <Header />
+    <main class="pb-24 md:pb-0">
+      <slot />
+    </main>
+    <Footer />
+    <MobileStickyCtas />
+
+    <script is:inline>
+      const ATTR_KEYS = [
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "gclid",
+        "fbclid",
+        "msclkid"
+      ];
+
+      function readAttrStore() {
+        try {
+          const session = JSON.parse(sessionStorage.getItem("hfla_attribution") || "{}");
+          const local = JSON.parse(localStorage.getItem("hfla_attribution") || "{}");
+          return { ...local, ...session };
+        } catch {
+          return {};
+        }
+      }
+
+      function writeAttrStore(value) {
+        try {
+          const payload = JSON.stringify(value);
+          sessionStorage.setItem("hfla_attribution", payload);
+          localStorage.setItem("hfla_attribution", payload);
+        } catch {
+          // Ignore storage access issues.
+        }
+      }
+
+      function captureAttributionFromUrl() {
+        const url = new URL(window.location.href);
+        const current = readAttrStore();
+        const next = { ...current };
+
+        ATTR_KEYS.forEach((key) => {
+          const value = (url.searchParams.get(key) || "").trim();
+          if (value) {
+            next[key] = value;
+          }
+        });
+
+        writeAttrStore(next);
+      }
+
+      function trackEvent(eventName, params = {}) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: eventName, ...params });
+        if (typeof window.gtag === "function") {
+          window.gtag("event", eventName, params);
+        }
+      }
+
+      captureAttributionFromUrl();
+
+      document.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+          return;
+        }
+        const el = target.closest("[data-track-event]");
+        if (!el) {
+          return;
+        }
+        const eventName = el.getAttribute("data-track-event");
+        if (!eventName) {
+          return;
+        }
+        trackEvent(eventName, {
+          source_page: window.location.pathname
+        });
+      });
+    </script>
+  </body>
+</html>

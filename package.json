@@ -1,5 +1,5 @@
 {
-  "name": "happyfacela",
+  "name": "happyfacesla",
   "type": "module",
   "version": "0.0.1",
   "engines": {
@@ -7,11 +7,19 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "pages:dev": "npm run build && wrangler pages dev dist --compatibility-date=2024-09-23",
     "build": "astro build",
+    "qa:postbuild": "node scripts/qa-postbuild.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^6.3.3"
+    "@astrojs/sitemap": "^3.7.2",
+    "@tailwindcss/vite": "^4.3.0",
+    "astro": "^6.3.3",
+    "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.92.0"
   }
 }

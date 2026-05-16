@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import PageIntro from "../components/sections/PageIntro.astro";
+import GalleryGrid from "../components/content/GalleryGrid.astro";
+
+const canonicalPath = "/gallery/";
+const images = new Array(9).fill(null).map((_, i) => ({
+  src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
+  alt: `Happy Faces LA gallery placeholder ${i + 1} for owner replacement`
+}));
+---
+
+<BaseLayout
+  title="Gallery | Happy Faces LA"
+  description="Browse face painting, balloon twisting, glitter tattoo, and face gem event photos from Happy Faces LA in Los Angeles."
+  canonicalPath={canonicalPath}
+>
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Gallery", href: canonicalPath }]} />
+  <PageIntro title="Gallery" description="Authentic owner-provided photos should replace these marked placeholders before final production." />
+
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <GalleryGrid title="Face Painting, Balloons, Glitter Tattoos, and Face Gems" images={images} />
+  </section>
+
+  <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: "gallery_view", source_page: window.location.pathname });
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "gallery_view", { source_page: window.location.pathname });
+    }
+  </script>
+</BaseLayout>

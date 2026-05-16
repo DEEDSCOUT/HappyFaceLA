@@ -1,0 +1,10 @@
+name = "happyfacesla"
+compatibility_date = "2024-09-23"
+
+# Pages Functions are under functions/ — wrangler detects them automatically.
+# This file is used for local development with: npm run pages:dev
+# Do not commit real secret values here. Use .dev.vars for local secrets.
+
+[vars]
+# Placeholder override for local dev. Real secrets go in .dev.vars (gitignored).
+CF_PAGES_BRANCH = "local"

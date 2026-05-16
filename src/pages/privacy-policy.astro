@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+
+const canonicalPath = "/privacy-policy/";
+---
+
+<BaseLayout
+  title="Privacy Policy | Happy Faces LA"
+  description="Privacy policy for Happy Faces LA website forms, analytics, and communications."
+  canonicalPath={canonicalPath}
+>
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Privacy Policy", href: canonicalPath }]} />
+  <section class="mx-auto w-full max-w-4xl px-4 py-10">
+    <h1 class="text-4xl font-extrabold text-slate-900">Privacy Policy</h1>
+    <p class="mt-4 text-sm text-slate-700">Effective date: TBD_BY_OWNER</p>
+    <div class="mt-6 space-y-4 text-sm leading-relaxed text-slate-700">
+      <p>Happy Faces LA collects information submitted through quote forms, including contact information and event details, to respond to requests and manage bookings.</p>
+      <p>We use analytics and marketing tools that may include Google Analytics, Google Ads tags, Meta Pixel, and related attribution parameters for campaign measurement.</p>
+      <p>Lead details may be stored in a CRM for follow-up via phone, SMS, and email when consent is provided.</p>
+      <p>Parent or guardian permission is required before publishing identifiable child photos. Requests for removal can be submitted by contacting Happy Faces LA.</p>
+      <p>Policy owner details, mailing contact, and legal entity fields are currently marked as TBD_BY_OWNER and should be completed before production legal review.</p>
+    </div>
+  </section>
+</BaseLayout>

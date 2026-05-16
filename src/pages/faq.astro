@@ -1,0 +1,24 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import PageIntro from "../components/sections/PageIntro.astro";
+import FAQAccordion from "../components/content/FAQAccordion.astro";
+import { commonFaqs } from "../data/faqs";
+import { faqJsonLd } from "../utils/schema";
+
+const canonicalPath = "/faq/";
+---
+
+<BaseLayout
+  title="FAQ | Happy Faces LA"
+  description="Answers about face painting, balloon twisting, glitter tattoos, and event booking with Happy Faces LA in Los Angeles."
+  canonicalPath={canonicalPath}
+  jsonLd={[faqJsonLd(commonFaqs)]}
+>
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "FAQ", href: canonicalPath }]} />
+  <PageIntro title="Frequently Asked Questions" description="Quick answers for parents, schools, and corporate event planners." />
+
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <FAQAccordion items={commonFaqs} />
+  </section>
+</BaseLayout>

@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import PageIntro from "../components/sections/PageIntro.astro";
+import TestimonialCard from "../components/content/TestimonialCard.astro";
+
+const canonicalPath = "/reviews/";
+---
+
+<BaseLayout
+  title="Reviews | Happy Faces LA"
+  description="Read verified customer feedback for Happy Faces LA. Review links and public profiles are TBD_BY_OWNER until provided."
+  canonicalPath={canonicalPath}
+>
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Reviews", href: canonicalPath }]} />
+  <PageIntro title="Reviews" description="This page is ready for real review embeds and verified first-party testimonials only." />
+
+  <section class="mx-auto grid w-full max-w-6xl gap-4 px-4 py-10 md:grid-cols-2 lg:grid-cols-3">
+    <TestimonialCard quote="TBD_BY_OWNER" name="Verified Customer Placeholder" context="Replace with real review text" />
+    <TestimonialCard quote="TBD_BY_OWNER" name="Verified Customer Placeholder" context="Replace with real review text" />
+    <TestimonialCard quote="TBD_BY_OWNER" name="Verified Customer Placeholder" context="Replace with real review text" />
+  </section>
+</BaseLayout>

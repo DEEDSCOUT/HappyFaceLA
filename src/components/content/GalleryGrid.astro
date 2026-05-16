@@ -1,0 +1,24 @@
+---
+interface ImageItem {
+  src: string;
+  alt: string;
+}
+
+interface Props {
+  title?: string;
+  images: ImageItem[];
+}
+
+const { title = "Event gallery", images } = Astro.props;
+---
+
+<section>
+  <h2 class="text-2xl font-bold text-slate-900">{title}</h2>
+  <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {images.map((image) => (
+      <figure class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <img loading="lazy" decoding="async" src={image.src} alt={image.alt} class="aspect-[4/3] w-full object-cover" />
+      </figure>
+    ))}
+  </div>
+</section>

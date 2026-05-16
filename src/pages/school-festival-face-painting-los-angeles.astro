@@ -1,0 +1,28 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import PageIntro from "../components/sections/PageIntro.astro";
+import EventTypePageSections from "../components/sections/EventTypePageSections.astro";
+import { localBusinessJsonLd, serviceJsonLd, breadcrumbJsonLd } from "../utils/schema";
+
+const canonicalPath = "/school-festival-face-painting-los-angeles/";
+const eventType = "School and Festival Face Painting";
+---
+
+<BaseLayout
+  title="School & Festival Face Painting in Los Angeles | Happy Faces LA"
+  description="Happy Faces LA provides school and festival face painting in Los Angeles with high-throughput setups and family-friendly entertainment."
+  canonicalPath={canonicalPath}
+  jsonLd={[
+    localBusinessJsonLd(),
+    serviceJsonLd(eventType, `https://happyfacesla.com${canonicalPath}`),
+    breadcrumbJsonLd([
+      { name: "Home", url: "https://happyfacesla.com/" },
+      { name: eventType, url: `https://happyfacesla.com${canonicalPath}` }
+    ])
+  ]}
+>
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "School & Festival", href: canonicalPath }]} />
+  <PageIntro title="School & Festival Face Painting in Los Angeles" description="Professional entertainment for carnivals, fundraisers, camps, and festivals with flexible artist staffing." />
+  <EventTypePageSections eventType={eventType} />
+</BaseLayout>
