@@ -8,16 +8,17 @@ export const business = {
     displayPhone: "818-619-5506",
     instagramHandle: "happyfacesla",
     instagramUrl: "https://www.instagram.com/happyfacesla",
-    businessAddress: "TBD_BY_OWNER",
-    serviceAreaOnly: "TBD_BY_OWNER",
-    insuranceCoiStatus: "TBD_BY_OWNER",
-    serviceRadius: "TBD_BY_OWNER",
+    businessAddress: "",
+    serviceAreaOnly: "Yes — service-area-only. No public address.",
+    insuranceCoiStatus: "Body Art Insurance",
+    serviceRadius: "Los Angeles County, Orange County, and Ventura County",
     services: [
         "Face Painting",
         "Balloon Twisting",
         "Glitter Tattoos",
         "Face Gems",
-        "Face Jewelry"
+        "Face Jewelry",
+        "Temporary Tattoos"
     ],
     areaServed: [
         "Los Angeles",
