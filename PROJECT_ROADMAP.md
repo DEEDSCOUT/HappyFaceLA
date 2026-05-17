@@ -328,6 +328,80 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-16 - Post-redeploy preview /api/lead validation
+
+What changed:
+
+- Retested preview endpoint after Cloudflare Pages redeploy with production environment variables configured.
+- Executed full /api/lead matrix against <https://happyfacesla.pages.dev/api/lead>.
+
+Files changed:
+
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```bash
+node -e "fetch() matrix for GET/PUT/valid/invalid/honeypot/malformed/content-type against https://happyfacesla.pages.dev/api/lead"
+```
+
+Cloudflare env vars configured:
+
+- yes (per owner/deployment report)
+
+Redeploy result:
+
+- Cloudflare Pages redeploy succeeded.
+- Build passed.
+- Functions directory found/uploaded.
+- Worker compiled successfully.
+- Assets published.
+- Site deployed successfully.
+
+/api/lead result:
+
+- GET -> 405 Method not allowed
+- PUT -> 405 Method not allowed
+- valid POST -> 200 {"ok":true,"leadId":"c82b453c-2136-4a7b-89e5-151208a4d9d1"}
+- invalid required fields -> 400 with safe field-level errors
+- honeypot -> 200 silent trap with leadId
+- malformed JSON -> 400 Invalid JSON payload
+- unsupported content type -> 415 Unsupported media type
+
+Make delivery result:
+
+- pending owner confirmation (external system)
+
+Google Sheet result:
+
+- pending owner confirmation (external system)
+
+Gmail result:
+
+- pending owner confirmation (external system)
+
+Validation result:
+
+- Preview endpoint behavior matches expected post-env configuration matrix.
+- Valid lead submissions no longer return 500 on preview.
+
+Remaining blockers:
+
+- Confirm Make scenario is ON at test time.
+- Confirm tested valid lead reached Make scenario history.
+- Confirm Google Sheet row was created with real values.
+- Confirm Gmail notification was sent with real values.
+- Complete custom domain attachment and redirect verification on production domain.
+- Retest /api/lead on production custom domain once domain binding/redirect checks are complete.
+
+Next required action:
+
+- Verify delivery in Make, Google Sheets, and Gmail for leadId `c82b453c-2136-4a7b-89e5-151208a4d9d1`, then run production-domain /api/lead test.
+
+Production status changed:
+
+- no
+
 ### 2026-05-16 - Cloudflare Pages preview validation
 
 What changed:
