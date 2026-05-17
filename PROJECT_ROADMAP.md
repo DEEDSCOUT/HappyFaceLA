@@ -320,6 +320,68 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-17 - Diagnose and fix silent stub-mode delivery gap
+
+What changed:
+
+- Identified root cause of silent production delivery failure: `CF_PAGES_BRANCH` is a build-time
+  variable that is NOT available in Cloudflare Pages Functions runtime `env` bindings. Because of
+  this, `isProduction` was always `false`, and when `CRM_WEBHOOK_URL` was missing or cleared, the
+  function entered stub mode silently returning `{ ok: true, leadId }` without calling Make.
+- Removed the `isProduction` / `CF_PAGES_BRANCH` guard. Endpoint now always returns 500 if
+  `CRM_WEBHOOK_URL` is not configured as a runtime binding.
+- Added three diagnostic logs (no secrets exposed):
+  - `[lead] CRM webhook host:` — confirms which host is being called (no token in URL)
+  - `[lead] CRM webhook response status:` — confirms Make accepted or rejected the call
+  - `[lead] CRM webhook response body prefix:` — first 200 chars of Make response
+  - `[lead] STUB MODE` error log if `CRM_WEBHOOK_URL` is not set
+- Fresh production proof POST confirmed: endpoint returned 200 with leadId but owner found no
+  delivery in Make/Sheets/Gmail, confirming stub mode was active.
+
+Files changed:
+
+- functions/api/lead.ts
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```powershell
+node -e "fetch live-production-proof POST against https://happyfacesla.com/api/lead"
+git add functions/api/lead.ts; git commit -m "fix: remove CF_PAGES_BRANCH stub-mode gate; add CRM webhook diagnostic logging"; git push
+```
+
+Validation result:
+
+- Stub mode root cause confirmed via code analysis.
+- Fix committed and pushed: 070bc67
+- Cloudflare Pages redeploy required before proof POST 2 can be run.
+
+Remaining blockers (owner action required before proof POST 2):
+
+1. **Cloudflare Pages dashboard**: Verify `CRM_WEBHOOK_URL` is set as a production environment
+   variable (Settings > Environment Variables). If it was cleared or is missing, re-enter the
+   current active Make webhook URL and save.
+2. **Cloudflare Pages dashboard**: Trigger a manual redeploy of the latest commit (070bc67) so
+   the fixed function is live.
+3. **Make dashboard**: Confirm the active 3-step scenario (Webhook → Google Sheets → Gmail) is
+   turned ON and set to "Immediately" (not Run once).
+4. After redeploy: run proof POST 2 and check Cloudflare Pages > Functions log for the three
+   `[lead]` diagnostic lines.
+
+Next required action:
+
+- Owner completes steps 1–3 above and confirms redeploy is live.
+- Then run proof POST 2 (first_name: Live, last_name: ProductionProof2, email:
+  live-production-proof-2@example.com, message: LIVE PRODUCTION DELIVERY PROOF 2).
+- Check Cloudflare Pages real-time log for `[lead] CRM webhook host:` and
+  `[lead] CRM webhook response status:` lines.
+- After confirmed delivery, rotate Make webhook URL one final time, update `CRM_WEBHOOK_URL`,
+  redeploy, and run one clean final proof.
+
+Production status changed:
+
+- no — fix deployed but redeploy and delivery confirmation still pending
+
 ### 2026-05-16 - Redirect rules validated on custom domains
 
 What changed:
