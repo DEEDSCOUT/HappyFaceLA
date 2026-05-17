@@ -328,6 +328,54 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-16 - Fresh production webhook retest and delivery confirmation
+
+What changed:
+
+- Retested full preview /api/lead matrix after Cloudflare Pages redeploy with fresh private production `CRM_WEBHOOK_URL`.
+- Confirmed expected endpoint behavior for valid/invalid/honeypot/malformed/content-type/method checks.
+- Confirmed production webhook path is active (private URL configured in Cloudflare, not the previously exposed test webhook).
+- Confirmed external delivery chain for live website lead flow: Make history, Google Sheets row, and Gmail notification.
+
+Files changed:
+
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```bash
+node -e "fetch() matrix for GET/PUT/valid/invalid/honeypot/malformed/content-type against https://happyfacesla.pages.dev/api/lead"
+```
+
+Validation result:
+
+- /api/lead results on preview:
+  - GET -> 405 Method not allowed
+  - PUT -> 405 Method not allowed
+  - valid POST -> 200 {"ok":true,"leadId":"4522d31a-e43a-4bac-b35f-9c1f71cedcaa"}
+  - invalid required fields -> 400 with safe field-level errors
+  - honeypot -> 200 silent trap with leadId
+  - malformed JSON -> 400 Invalid JSON payload
+  - unsupported content type -> 415 Unsupported media type
+- Production webhook path confirmed: yes.
+- Make delivery confirmed: yes.
+- Google Sheets delivery confirmed: yes.
+- Gmail delivery confirmed: yes.
+
+Remaining blockers:
+
+- custom domains
+- redirects
+- production-domain /api/lead validation
+
+Next required action:
+
+- Complete custom domain attachment and redirect checks, then run /api/lead matrix on production domain.
+
+Production status changed:
+
+- no
+
 ### 2026-05-16 - Make pipeline delivery confirmed (test webhook)
 
 What changed:
