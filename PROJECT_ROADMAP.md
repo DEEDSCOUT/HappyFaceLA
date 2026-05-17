@@ -328,6 +328,50 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-16 - Make pipeline delivery confirmed (test webhook)
+
+What changed:
+
+- Owner confirmed end-to-end Make pipeline delivery using test webhook payloads.
+- Confirmed flow: Webhook -> Google Sheets -> Gmail.
+- Confirmed mapped values arrive in Make history, Google Sheets row, and Gmail notification.
+- Marked exposed test webhook as non-production and scheduled rotation to a fresh private production webhook URL.
+
+Files changed:
+
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```powershell
+Invoke-RestMethod -Uri $webhookUrl -Method POST -ContentType "application/json" -Body $body
+```
+
+Validation result:
+
+- Make delivery path is validated for test pipeline.
+- Google Sheets receives real mapped values.
+- Gmail sends real mapped values.
+- Production webhook value must be replaced with a fresh private URL before final go-live.
+
+Remaining blockers:
+
+- Owner to provide fresh private production Make webhook URL.
+- Update Cloudflare `CRM_WEBHOOK_URL` to fresh private value.
+- Redeploy Cloudflare Pages after variable update.
+- Confirm Make scenario is ON.
+- Rerun full preview /api/lead matrix after redeploy.
+- Confirm new valid lead appears in Make history, Google Sheets, and Gmail using production webhook.
+- Complete production custom-domain, redirects, and production-domain /api/lead checks.
+
+Next required action:
+
+- Wait for owner confirmation that fresh production webhook is configured and deployment redeployed, then rerun preview /api/lead validation immediately.
+
+Production status changed:
+
+- no
+
 ### 2026-05-16 - Post-redeploy preview /api/lead validation
 
 What changed:
