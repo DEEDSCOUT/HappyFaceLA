@@ -73,13 +73,19 @@ Production launch gate checklist:
 - required environment variables configured: complete
 - /api/lead works on preview URL: complete
 - /api/lead works on production domain: complete
-- real lead delivery is configured and verified, not local/dev stub mode: pending owner confirmation for leadId `f22c48cf-d47f-4023-b238-d8133a2f2831`
+- real lead delivery is configured and verified, not local/dev stub mode: **confirmed** — leadId `e550d0a1-50ff-4215-9cb9-9f30c1825295` found in Make, Google Sheets, and Gmail
+- CRM webhook URL rotated after exposure: **pending** — must rotate, update `CRM_WEBHOOK_URL`, redeploy, and run one final clean proof
 
-Do not mark the site production-live until the full production launch gate passes.
+Do not mark the site production-live until the webhook rotation gate passes.
 
 ## Current Blockers
 
-- Verify leadId `f22c48cf-d47f-4023-b238-d8133a2f2831` appears in Make history, Google Sheets, and Gmail.
+- **Security gate (required before final launch):** Make webhook URL was exposed in screenshots during testing. Owner must:
+  1. Create a new Make webhook URL for the active scenario.
+  2. Update `CRM_WEBHOOK_URL` in Cloudflare Pages → Settings → Environment Variables → Production.
+  3. Trigger a Cloudflare Pages redeploy.
+  4. Run one final clean proof POST and confirm leadId appears in Make, Google Sheets, and Gmail.
+  5. Confirm the old exposed webhook URL has been deactivated in Make.
 - Replace or intentionally defer customer-facing TBD_BY_OWNER placeholders before final launch.
 
 ## Owner Inputs Needed
@@ -319,6 +325,45 @@ Known warnings:
 - qa:postbuild reports TBD_BY_OWNER in built HTML pages. This is expected until owner content is provided or placeholders are intentionally approved for launch.
 
 ## Change Log / Session Log
+
+### 2026-05-17 - Production delivery confirmed; webhook rotation pending
+
+What changed:
+
+- Owner confirmed production delivery for leadId `e550d0a1-50ff-4215-9cb9-9f30c1825295`.
+- Make: FOUND. Google Sheets: FOUND. Gmail: FOUND.
+- Root cause of earlier NOT FOUND: lead was sitting in Make's unprocessed webhook queue.
+  After owner selected "Process old data," the scenario ran and all three systems completed.
+  This means the stub-mode fix (commit 070bc67) was not the blocking issue for this proof;
+  `CRM_WEBHOOK_URL` was correctly configured. The fix is still correct hardening and stays.
+- Production launch gate is now fully validated except for the webhook rotation security gate.
+
+Files changed:
+
+- PROJECT_ROADMAP.md
+
+Validation result:
+
+- leadId `e550d0a1-50ff-4215-9cb9-9f30c1825295` confirmed in Make history, Google Sheets, and Gmail.
+- email: live-production-proof@example.com
+- message: LIVE PRODUCTION DELIVERY PROOF
+- source_page: https://happyfacesla.com/contact/?utm_source=test
+
+Remaining blockers:
+
+- Rotate exposed Make webhook URL (appeared in screenshots).
+- Update `CRM_WEBHOOK_URL` in Cloudflare Pages production env vars.
+- Redeploy Cloudflare Pages.
+- Run one final clean proof POST and confirm delivery in Make/Sheets/Gmail.
+- Deactivate old exposed webhook URL in Make.
+
+Next required action:
+
+- Owner rotates webhook and updates `CRM_WEBHOOK_URL`. Agent runs final clean proof after redeploy.
+
+Production status changed:
+
+- yes — delivery chain fully confirmed end-to-end; webhook rotation is the sole remaining gate
 
 ### 2026-05-17 - Diagnose and fix silent stub-mode delivery gap
 
