@@ -321,6 +321,54 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-17 - Add full booking policy content
+
+What changed:
+
+- Replaced all remaining TBD_BY_OWNER entries in `src/pages/booking-policy.astro` with
+  owner-confirmed conversion-first policy language.
+- Sections added: Cancellation & Rescheduling, Travel & Service Area, Overtime, Weather & Outdoor
+  Events, Parking & Setup.
+- booking-policy/index.html is no longer in the TBD_BY_OWNER QA warning list.
+
+Files changed:
+
+- src/pages/booking-policy.astro
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```powershell
+npm run build        # PASS — 24 pages, 0 errors
+npm run qa:postbuild # PASS — booking-policy removed from TBD_BY_OWNER warning list
+git add src/pages/booking-policy.astro; git commit; git push
+```
+
+Validation result:
+
+- Build: PASS
+- QA: PASS — booking-policy no longer flagged
+
+Remaining TBD_BY_OWNER placeholders in built HTML:
+
+| File | Placeholder |
+| --- | --- |
+| dist/privacy-policy/index.html | Effective date, legal entity name, mailing contact |
+| dist/index.html | Testimonials (3 placeholders) |
+| dist/reviews/index.html | Testimonials (3 placeholders), review meta description |
+| dist/face-painting-los-angeles/index.html | Products and hygiene process |
+| dist/balloon-twisting-los-angeles/index.html | Products and hygiene process |
+| dist/glitter-tattoos-los-angeles/index.html | Products and hygiene process |
+| dist/face-gems-face-jewelry-los-angeles/index.html | Products and hygiene process |
+
+Next required action:
+
+- Owner to provide remaining confirmed facts (legal name, product/hygiene details, verified testimonials, privacy policy effective date).
+
+Production status changed:
+
+- no change to infrastructure
+
 ### 2026-05-17 - Replace confirmed TBD_BY_OWNER placeholders with owner facts
 
 What changed:
