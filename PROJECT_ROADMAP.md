@@ -63,31 +63,23 @@ Current status:
 - Preview URL: <https://happyfacesla.pages.dev>
 - happyfacesla.com: active/protected in Cloudflare.
 - happyfacela.com: active/protected in Cloudflare.
-- Production deployment: not complete.
+- Production deployment: functionally live on canonical domain; final external delivery confirmation pending.
 
-Production is not complete until all of these are verified:
+Production launch gate checklist:
 
-- custom domains attached in Cloudflare Pages
-- HTTPS active on production custom domains
-- redirects pass with 301 status
-- required environment variables configured
-- /api/lead works on preview URL
-- /api/lead works on production domain
-- real lead delivery is configured and verified, not local/dev stub mode
+- custom domains attached in Cloudflare Pages: complete
+- HTTPS active on production custom domains: complete
+- redirects pass with 301 status: complete
+- required environment variables configured: complete
+- /api/lead works on preview URL: complete
+- /api/lead works on production domain: complete
+- real lead delivery is configured and verified, not local/dev stub mode: pending owner confirmation for leadId `f22c48cf-d47f-4023-b238-d8133a2f2831`
 
 Do not mark the site production-live until the full production launch gate passes.
 
 ## Current Blockers
 
-- Confirm whether Cloudflare Pages environment variables are configured.
-- Configure real CRM_WEBHOOK_URL or another approved lead destination.
-- Bind happyfacesla.com to Cloudflare Pages and verify HTTPS.
-- Bind happyfacela.com to Cloudflare Pages or configure zone-level redirect to canonical.
-- Configure Cloudflare dashboard Redirect Rules for hostname canonicalization.
-- Test preview URL homepage and core pages.
-- Test /api/lead on Cloudflare preview URL.
-- Test /api/lead on production domain after custom domain binding.
-- Verify real lead delivery reaches CRM, owner notification inbox, or approved temporary destination.
+- Verify leadId `f22c48cf-d47f-4023-b238-d8133a2f2831` appears in Make history, Google Sheets, and Gmail.
 - Replace or intentionally defer customer-facing TBD_BY_OWNER placeholders before final launch.
 
 ## Owner Inputs Needed
@@ -327,6 +319,61 @@ Known warnings:
 - qa:postbuild reports TBD_BY_OWNER in built HTML pages. This is expected until owner content is provided or placeholders are intentionally approved for launch.
 
 ## Change Log / Session Log
+
+### 2026-05-16 - Redirect rules validated on custom domains
+
+What changed:
+
+- Validated all three hostname redirects after Cloudflare Redirect Rules update.
+- Confirmed canonical target preserves path and query string.
+- Rechecked canonical apex homepage status and production `/api/lead` behavior.
+
+Files changed:
+
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```powershell
+curl.exe -s -o NUL -w "url=%{url_effective} code=%{http_code} redirect=%{redirect_url}" "https://www.happyfacesla.com/contact/?utm_source=test"
+curl.exe -s -L -o NUL -w "final=%{url_effective} code=%{http_code}" "https://www.happyfacesla.com/contact/?utm_source=test"
+curl.exe -s -o NUL -w "url=%{url_effective} code=%{http_code} redirect=%{redirect_url}" "https://happyfacela.com/contact/?utm_source=test"
+curl.exe -s -L -o NUL -w "final=%{url_effective} code=%{http_code}" "https://happyfacela.com/contact/?utm_source=test"
+curl.exe -s -o NUL -w "url=%{url_effective} code=%{http_code} redirect=%{redirect_url}" "https://www.happyfacela.com/contact/?utm_source=test"
+curl.exe -s -L -o NUL -w "final=%{url_effective} code=%{http_code}" "https://www.happyfacela.com/contact/?utm_source=test"
+curl.exe -s -o NUL -w "apex=%{url_effective} code=%{http_code}" "https://happyfacesla.com"
+node -e "fetch() 7-case matrix against https://happyfacesla.com/api/lead"
+```
+
+Validation result:
+
+- <https://www.happyfacesla.com/contact/?utm_source=test> -> 301 -> <https://happyfacesla.com/contact/?utm_source=test> -> 200
+- <https://happyfacela.com/contact/?utm_source=test> -> 301 -> <https://happyfacesla.com/contact/?utm_source=test> -> 200
+- <https://www.happyfacela.com/contact/?utm_source=test> -> 301 -> <https://happyfacesla.com/contact/?utm_source=test> -> 200
+- <https://happyfacesla.com> -> 200
+- `/api/lead` on <https://happyfacesla.com/api/lead> recheck:
+  - GET -> 405
+  - PUT -> 405
+  - valid POST -> 200 {"ok":true,"leadId":"19de014b-2b26-4f4f-bea4-a69ae2b7b844"}
+  - invalid required fields -> 400
+  - honeypot -> 200
+  - malformed JSON -> 400
+  - unsupported content type -> 415
+- Previously validated leadId `f22c48cf-d47f-4023-b238-d8133a2f2831` still requires owner-visible system confirmation in Make/Sheets/Gmail.
+
+Remaining blockers:
+
+- Owner to confirm leadId `f22c48cf-d47f-4023-b238-d8133a2f2831` appears in Make, Google Sheets, and Gmail.
+- Replace or intentionally defer customer-facing TBD_BY_OWNER placeholders before final launch.
+
+Next required action:
+
+- Owner confirms external system receipt for leadId `f22c48cf-d47f-4023-b238-d8133a2f2831`.
+- After confirmation, mark production launch gate complete.
+
+Production status changed:
+
+- yes - canonical redirects now verified with 301 and production `/api/lead` remains healthy
 
 ### 2026-05-16 - Production custom domain validation and /api/lead matrix
 
