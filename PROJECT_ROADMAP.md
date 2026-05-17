@@ -321,6 +321,48 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-17 - Add privacy policy effective date, legal entity, and contact info
+
+What changed:
+
+- Replaced `Effective date: TBD_BY_OWNER` with `Effective date: May 17, 2026`.
+- Replaced placeholder paragraph about policy owner/mailing/legal entity with owner-confirmed text:
+  business name "Happy Faces LA", service-area-only note, phone 818-619-5506, and link to contact form.
+- No physical address published. No LLC/corporation name invented.
+
+Files changed:
+
+- src/pages/privacy-policy.astro
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```powershell
+npm run build        # PASS — 24 pages, 0 errors
+npm run qa:postbuild # PASS — privacy-policy removed from TBD_BY_OWNER warning list
+git add ...; git commit; git push
+```
+
+Validation result:
+
+- Build: PASS
+- QA: PASS — TBD_BY_OWNER warnings reduced from 3 to 2 pages
+
+Remaining TBD_BY_OWNER placeholders in built HTML:
+
+| File | Placeholder |
+| --- | --- |
+| dist/index.html | Testimonials (3 placeholders) |
+| dist/reviews/index.html | Testimonials (3 placeholders), review meta description |
+
+Next required action:
+
+- Owner to provide verified testimonials (name, quote, event context) and a confirmed review meta description for the reviews page.
+
+Production status changed:
+
+- no change to infrastructure
+
 ### 2026-05-17 - Add product and hygiene safety language to service pages
 
 What changed:
