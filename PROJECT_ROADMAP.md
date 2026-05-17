@@ -63,7 +63,7 @@ Current status:
 - Preview URL: <https://happyfacesla.pages.dev>
 - happyfacesla.com: active/protected in Cloudflare.
 - happyfacela.com: active/protected in Cloudflare.
-- Production deployment: functionally live on canonical domain; final external delivery confirmation pending.
+- Production deployment: **LIVE** — all launch gates passed as of 2026-05-17.
 
 Production launch gate checklist:
 
@@ -74,19 +74,14 @@ Production launch gate checklist:
 - /api/lead works on preview URL: complete
 - /api/lead works on production domain: complete
 - real lead delivery is configured and verified, not local/dev stub mode: **confirmed** — leadId `e550d0a1-50ff-4215-9cb9-9f30c1825295` found in Make, Google Sheets, and Gmail
-- CRM webhook URL rotated after exposure: **pending** — must rotate, update `CRM_WEBHOOK_URL`, redeploy, and run one final clean proof
+- CRM webhook URL rotated after exposure: **complete** — active scenario is "Happy Faces LA Lead Capture Production Rotated"; final proof leadId `1f4c63ea-0afc-41ce-8e61-b2d3781b3aed` confirmed in Make, Google Sheets, and Gmail; old exposed webhook URLs disabled/deleted
 
-Do not mark the site production-live until the webhook rotation gate passes.
+**Production launch gate: COMPLETE as of 2026-05-17.**
 
 ## Current Blockers
 
-- **Security gate (required before final launch):** Make webhook URL was exposed in screenshots during testing. Owner must:
-  1. Create a new Make webhook URL for the active scenario.
-  2. Update `CRM_WEBHOOK_URL` in Cloudflare Pages → Settings → Environment Variables → Production.
-  3. Trigger a Cloudflare Pages redeploy.
-  4. Run one final clean proof POST and confirm leadId appears in Make, Google Sheets, and Gmail.
-  5. Confirm the old exposed webhook URL has been deactivated in Make.
-- Replace or intentionally defer customer-facing TBD_BY_OWNER placeholders before final launch.
+- Replace or intentionally defer customer-facing TBD_BY_OWNER placeholders before final marketing launch.
+- All deployment and delivery gates are complete. No infrastructure blockers remain.
 
 ## Owner Inputs Needed
 
@@ -325,6 +320,46 @@ Known warnings:
 - qa:postbuild reports TBD_BY_OWNER in built HTML pages. This is expected until owner content is provided or placeholders are intentionally approved for launch.
 
 ## Change Log / Session Log
+
+### 2026-05-17 - Final rotated webhook proof confirmed; production launch gate COMPLETE
+
+What changed:
+
+- Final clean proof POST fired against https://happyfacesla.com/api/lead with rotated webhook.
+- Owner confirmed delivery in all three systems.
+- Old exposed Make webhook URLs disabled/deleted by owner.
+- Active Make scenario renamed: "Happy Faces LA Lead Capture Production Rotated".
+- All production launch gates now complete. Site is live.
+
+Files changed:
+
+- PROJECT_ROADMAP.md
+
+Validation result:
+
+- leadId `1f4c63ea-0afc-41ce-8e61-b2d3781b3aed` confirmed in Make, Google Sheets, and Gmail.
+- email: final-rotated-webhook-proof@example.com
+- phone: 818-555-0197
+- message: FINAL ROTATED WEBHOOK PROOF
+- HTTP status: 200
+- Hardening fix (070bc67) confirmed live in deployed build 77f4184.
+- Old exposed webhook URLs: disabled/deleted.
+
+Remaining work (content/marketing, not infrastructure):
+
+- Replace TBD_BY_OWNER placeholders with real owner content before marketing launch.
+- Add real gallery photos/videos.
+- Add verified reviews and testimonials.
+- Configure GA4, Google Ads, Meta pixel when ad campaigns begin.
+- Add more city/neighborhood service-area pages as business grows.
+
+Next required action:
+
+- None for infrastructure. Owner proceeds with content and marketing.
+
+Production status changed:
+
+- **yes — PRODUCTION LIVE as of 2026-05-17**
 
 ### 2026-05-17 - Production delivery confirmed; webhook rotation pending
 
