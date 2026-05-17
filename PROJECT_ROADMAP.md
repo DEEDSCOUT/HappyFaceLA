@@ -328,6 +328,66 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-16 - Production custom domain validation and /api/lead matrix
+
+What changed:
+
+- Validated production custom domains happyfacesla.com and www.happyfacesla.com.
+- Ran full 7-case /api/lead matrix against https://happyfacesla.com/api/lead.
+- Confirmed Make/Sheets/Gmail pipeline live on production domain (valid POST lead sent).
+- Note: `consent_to_contact: true` is required in production payloads; updated test matrix to include it.
+
+Files changed:
+
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```powershell
+curl -sI https://happyfacesla.com | Select-String -Pattern "HTTP/|location:"
+curl -sI https://www.happyfacesla.com | Select-String -Pattern "HTTP/|location:"
+node -e "fetch() 7-case matrix against https://happyfacesla.com/api/lead"
+```
+
+Validation result:
+
+- https://happyfacesla.com: HTTP/1.1 200 OK (no redirect, serves site directly)
+- https://www.happyfacesla.com: HTTP/1.1 200 OK (no redirect, serves site directly — www currently independent, NOT redirecting to apex)
+- /api/lead results on https://happyfacesla.com/api/lead:
+  - GET -> 405 {"ok":false,"error":"Method not allowed"}
+  - PUT -> 405 {"ok":false,"error":"Method not allowed"}
+  - valid POST -> 200 {"ok":true,"leadId":"f22c48cf-d47f-4023-b238-d8133a2f2831"}
+  - missing required fields -> 400 with safe field-level errors
+  - honeypot -> 200 silent trap with leadId
+  - malformed JSON -> 400 {"ok":false,"error":"Invalid JSON payload"}
+  - wrong content-type -> 415 {"ok":false,"error":"Unsupported media type"}
+- Production domain /api/lead: 7/7 PASS
+- Make/Sheets/Gmail delivery: pending owner confirmation of lead f22c48cf arriving
+
+Redirect status (action required):
+
+- www.happyfacesla.com currently returns 200 independently (no redirect to apex)
+- Cloudflare dashboard Redirect Rules must be configured to enforce canonical:
+  - www.happyfacesla.com -> https://happyfacesla.com/ (301)
+  - happyfacela.com -> https://happyfacesla.com/ (301)
+  - www.happyfacela.com -> https://happyfacesla.com/ (301)
+
+Remaining blockers:
+
+- Configure Cloudflare dashboard Redirect Rules for www.happyfacesla.com, happyfacela.com, www.happyfacela.com -> https://happyfacesla.com/ (301)
+- Verify happyfacela.com and www.happyfacela.com currently resolve/redirect correctly
+- Owner to confirm lead f22c48cf appears in Make/Sheets/Gmail
+
+Next required action:
+
+- Configure Cloudflare Redirect Rules for the three source hostnames above.
+- Verify each returns 301 to https://happyfacesla.com/.
+- Update roadmap after redirect verification.
+
+Production status changed:
+
+- no — site is live and /api/lead is working on production domain; canonical redirect rules still required before final go-live
+
 ### 2026-05-16 - Fresh production webhook retest and delivery confirmation
 
 What changed:
