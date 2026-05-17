@@ -321,6 +321,88 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-17 - Replace confirmed TBD_BY_OWNER placeholders with owner facts
+
+What changed:
+
+- Updated `src/data/business.ts`: serviceAreaOnly, insuranceCoiStatus, serviceRadius, businessAddress,
+  and added Temporary Tattoos to the services list.
+- Updated `src/data/packages.ts`: replaced `TBD_BY_OWNER` startingPrice on Mini/Signature/Premium
+  packages with "Request a quote"; replaced all `TBD_BY_OWNER` duration and guestCapacity with
+  "Varies by event".
+- Updated `src/pages/pricing.astro`: replaced TBD_BY_OWNER in FAQ answer; added "Bookings start
+  at $150" callout above the package cards grid.
+- Updated `src/pages/booking-policy.astro`: replaced deposit and rescheduling TBD_BY_OWNER entries
+  with confirmed owner policy; removed "pending owner approval" intro paragraph.
+- Updated `src/components/sections/ServicePageSections.astro`: replaced insurance and travel radius
+  TBD_BY_OWNER items with confirmed facts.
+- Updated `src/components/sections/LocationPageSections.astro`: replaced TBD_BY_OWNER in travel FAQ
+  answer and travel notes section.
+
+Files changed:
+
+- src/data/business.ts
+- src/data/packages.ts
+- src/pages/pricing.astro
+- src/pages/booking-policy.astro
+- src/components/sections/ServicePageSections.astro
+- src/components/sections/LocationPageSections.astro
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```powershell
+npm run build   # passed, 24 pages built
+npm run qa:postbuild   # passed with expected remaining TBD_BY_OWNER warnings
+git add ...; git commit -m "content: replace confirmed TBD_BY_OWNER placeholders with owner-provided facts"; git push
+```
+
+Validation result:
+
+- Build: PASS — 24 pages, 0 errors
+- QA: PASS with expected warnings
+
+Confirmed facts applied:
+
+- Business model: service-area-only (no public address)
+- Service areas: Los Angeles County, Orange County, Ventura County
+- Insurance: Body Art Insurance
+- Services list: added Temporary Tattoos
+- Deposit: $50, applied to final balance, due on event day before services begin
+- Rescheduling: deposit transferable once with advance notice, subject to artist availability
+- Pricing: bookings start at $150; package cards use quote-based model; no fixed per-package prices published
+- Legal name: still TBD_BY_OWNER (not provided)
+
+Remaining TBD_BY_OWNER placeholders in built HTML (owner still needs to provide):
+
+| File | Placeholder |
+| --- | --- |
+| dist/booking-policy/index.html | Cancellation policy, travel fee, overtime, weather, parking |
+| dist/privacy-policy/index.html | Effective date, legal entity / mailing contact |
+| dist/index.html | Testimonial placeholders (3) |
+| dist/reviews/index.html | Testimonial placeholders (3), review meta description |
+| dist/face-painting-los-angeles/index.html | Products and hygiene process (ServicePageSections) |
+| dist/balloon-twisting-los-angeles/index.html | Products and hygiene process (ServicePageSections) |
+| dist/glitter-tattoos-los-angeles/index.html | Products and hygiene process (ServicePageSections) |
+| dist/face-gems-face-jewelry-los-angeles/index.html | Products and hygiene process (ServicePageSections) |
+
+Not replaced (correct — not yet provided by owner):
+
+- legalName in business.ts
+- Cancellation / overtime / weather / parking policies
+- Product brands and hygiene process details
+- Verified testimonials and review links
+- Privacy policy effective date and legal entity details
+
+Next required action:
+
+- Owner to provide remaining confirmed facts listed above.
+- All deployment and lead capture infrastructure remains fully operational.
+
+Production status changed:
+
+- no change to infrastructure — content improvement only
+
 ### 2026-05-17 - Final rotated webhook proof confirmed; production launch gate COMPLETE
 
 What changed:
