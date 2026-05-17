@@ -189,15 +189,21 @@ export const onRequest = async (context: any): Promise<Response> => {
 
     const webhookUrl = normalizeString(env.CRM_WEBHOOK_URL);
     const webhookSecret = normalizeString(env.CRM_WEBHOOK_SECRET);
-    const isProduction = normalizeString(env.CF_PAGES_BRANCH) === "main";
+    // NOTE: CF_PAGES_BRANCH is a build-time variable and is NOT available in Pages Functions
+    // runtime env bindings. Do not rely on it for production guards — always require
+    // CRM_WEBHOOK_URL to be explicitly set as a runtime binding.
 
     if (!webhookUrl) {
-        if (isProduction) {
-            return json({ ok: false, error: "Lead capture backend is not configured" }, 500);
-        }
+        console.error("[lead] STUB MODE — CRM_WEBHOOK_URL is not configured. Lead NOT forwarded to CRM.");
+        return json({ ok: false, error: "Lead capture backend is not configured" }, 500);
+    }
 
-        console.log("[lead] Stub mode active: CRM_WEBHOOK_URL missing in non-production environment");
-        return json({ ok: true, leadId });
+    // Diagnostic: log host only, never the full URL (which contains the webhook token).
+    try {
+        console.log("[lead] CRM webhook host:", new URL(webhookUrl).host);
+    } catch {
+        console.error("[lead] CRM_WEBHOOK_URL is not a valid URL");
+        return json({ ok: false, error: "Lead capture backend is misconfigured" }, 500);
     }
 
     try {
@@ -217,13 +223,19 @@ export const onRequest = async (context: any): Promise<Response> => {
             body
         });
 
+        // Diagnostic: log response status and body prefix (no secrets in response).
+        const crmBody = await crmResponse.text();
+        console.log("[lead] CRM webhook response status:", crmResponse.status);
+        console.log("[lead] CRM webhook response body prefix:", crmBody.slice(0, 200));
+
         if (!crmResponse.ok) {
-            console.error("[lead] CRM webhook error", crmResponse.status);
+            console.error("[lead] CRM webhook returned non-2xx:", crmResponse.status);
             return json({ ok: false, error: "Failed to route lead" }, 502);
         }
 
         return json({ ok: true, leadId });
-    } catch {
+    } catch (err) {
+        console.error("[lead] CRM webhook fetch threw:", String(err));
         return json({ ok: false, error: "Unexpected lead processing error" }, 500);
     }
 };
