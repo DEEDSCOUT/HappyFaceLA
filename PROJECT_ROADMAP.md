@@ -321,6 +321,56 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-17 - Replace testimonial placeholders with honest social-proof copy
+
+What changed:
+
+- Homepage (`src/pages/index.astro`): Replaced "What clients say" section containing 3 TBD_BY_OWNER
+  TestimonialCard components with a trust-focused prose section. Removed unused TestimonialCard import.
+- Reviews (`src/pages/reviews.astro`): Replaced meta description placeholder, PageIntro description,
+  and 3 TBD_BY_OWNER TestimonialCard components with honest copy about verified reviews being collected.
+  Removed unused TestimonialCard import.
+- No fake customer names, quotes, ratings, review counts, or aggregateRating schema added.
+
+Files changed:
+
+- src/pages/index.astro
+- src/pages/reviews.astro
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```powershell
+npm run build        # PASS — 24 pages, 0 errors
+npm run qa:postbuild # PASS — OK No TBD_BY_OWNER strings found in built HTML pages.
+git add ...; git commit; git push
+```
+
+Validation result:
+
+- Build: PASS
+- QA: PASS — **Zero TBD_BY_OWNER warnings across all 24 built HTML pages.**
+
+Remaining TBD_BY_OWNER placeholders in built HTML:
+
+- **None.** All customer-facing placeholders have been replaced with confirmed owner content.
+
+Remaining TBD_BY_OWNER in source only (non-customer-facing / not in built HTML):
+
+| File | Placeholder | Notes |
+| --- | --- | --- |
+| src/data/business.ts | legalName: "TBD_BY_OWNER" | Not rendered in any built HTML page |
+| src/pages/api/lead.ts | stub message string | Stub-only; never returned in production |
+
+Next required action:
+
+- Owner to provide verified testimonials when available (names, quotes, event context) for future replacement of the social-proof sections.
+- legalName in business.ts can be updated when legal entity is confirmed.
+
+Production status changed:
+
+- no change to infrastructure
+
 ### 2026-05-17 - Add privacy policy effective date, legal entity, and contact info
 
 What changed:
