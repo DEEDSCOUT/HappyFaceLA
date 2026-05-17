@@ -321,6 +321,49 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-17 - Add product and hygiene safety language to service pages
+
+What changed:
+
+- Replaced `Products and hygiene process: TBD_BY_OWNER` in `src/components/sections/ServicePageSections.astro`
+  with three owner-approved safety/hygiene bullet points covering: cosmetic-grade materials, no craft
+  glitter/glue, hygiene practices, single-use applicators, and sensitive-skin guidance.
+- No specific brand names or medical claims added.
+
+Files changed:
+
+- src/components/sections/ServicePageSections.astro
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```powershell
+npm run build        # PASS — 24 pages, 0 errors
+npm run qa:postbuild # PASS — all 4 service pages removed from TBD_BY_OWNER warning list
+git add ...; git commit; git push
+```
+
+Validation result:
+
+- Build: PASS
+- QA: PASS — TBD_BY_OWNER warnings reduced from 7 to 3 pages
+
+Remaining TBD_BY_OWNER placeholders in built HTML:
+
+| File | Placeholder |
+| --- | --- |
+| dist/privacy-policy/index.html | Effective date, legal entity name, mailing contact |
+| dist/index.html | Testimonials (3 placeholders) |
+| dist/reviews/index.html | Testimonials (3 placeholders), review meta description |
+
+Next required action:
+
+- Owner to provide legal entity name, privacy policy effective date, mailing contact, and verified testimonials.
+
+Production status changed:
+
+- no change to infrastructure
+
 ### 2026-05-17 - Add full booking policy content
 
 What changed:
