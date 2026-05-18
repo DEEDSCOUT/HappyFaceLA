@@ -321,6 +321,58 @@ Known warnings:
 
 ## Change Log / Session Log
 
+### 2026-05-18 - Add GA4 and Microsoft Clarity analytics; configure generate_lead key event
+
+What changed:
+
+- Added Google Analytics 4 (`G-7NH6RY78TK`) globally to `src/layouts/BaseLayout.astro`:
+  external `<script async src="https://www.googletagmanager.com/gtag/js?id=G-7NH6RY78TK">` +
+  inline `gtag("config", "G-7NH6RY78TK")` block. Covers all 24 pages.
+- Added Microsoft Clarity (`wsw4v74jpw`) globally to `src/layouts/BaseLayout.astro`:
+  inline IIFE snippet that loads `https://www.clarity.ms/tag/wsw4v74jpw`. Covers all 24 pages.
+- `generate_lead` GA4 key event marked complete: event fires on successful quote form submission
+  (existing tracking hook in `src/utils/tracking.ts` + `src/components/conversion/QuoteForm.astro`).
+  Configured as a key event in the GA4 property dashboard.
+
+Files changed:
+
+- src/layouts/BaseLayout.astro
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+```powershell
+npm run build        # PASS — 24 pages, 0 errors
+npm run qa:postbuild # PASS — zero TBD_BY_OWNER strings in built HTML
+git add src/layouts/BaseLayout.astro; git commit -m "analytics: add GA4 tracking"; git push
+# commit: 37fe003
+```
+
+Validation result:
+
+- Build: PASS
+- QA: PASS — zero TBD_BY_OWNER strings across all 24 built HTML pages
+- Production curl verify: GA4 (`G-7NH6RY78TK`) and Clarity (`wsw4v74jpw`) confirmed live on
+  https://happyfacesla.com/
+
+Analytics status:
+
+| Provider | Status | ID / Tag |
+| --- | --- | --- |
+| Google Analytics 4 | ✅ Live | G-7NH6RY78TK |
+| Microsoft Clarity | ✅ Live | wsw4v74jpw |
+| GA4 `generate_lead` key event | ✅ Complete | fires on successful /api/lead submission |
+
+Next required action:
+
+- Visit https://happyfacesla.com/ in browser to send first tracked session to both providers.
+- Click "Proceed" in Microsoft Clarity setup screen to complete onboarding.
+- Verify `generate_lead` event appears in GA4 Realtime > Events after submitting a test quote.
+
+Production status changed:
+
+- Analytics tracking now active on all 24 pages.
+
 ### 2026-05-17 - Replace testimonial placeholders with honest social-proof copy
 
 What changed:
