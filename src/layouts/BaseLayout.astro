@@ -19,6 +19,14 @@ const { title, description, canonicalPath, jsonLd = [] } = Astro.props;
 <html lang="en">
   <head>
     <SeoHead title={title} description={description} canonicalPath={canonicalPath} jsonLd={jsonLd} />
+    <!-- Google Analytics 4 tracking for Happy Faces LA -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7NH6RY78TK"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { window.dataLayer.push(arguments); }
+      gtag("js", new Date());
+      gtag("config", "G-7NH6RY78TK");
+    </script>
     <!-- Microsoft Clarity tracking for Happy Faces LA -->
     <script is:inline>
       (function (c, l, a, r, i, t, y) {
