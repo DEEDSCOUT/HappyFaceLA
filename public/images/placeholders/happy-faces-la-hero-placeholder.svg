@@ -1,7 +1,7 @@
-<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1200" height="630" fill="#FFF7ED"/>
-  <circle cx="200" cy="120" r="140" fill="#FDBA74" fill-opacity="0.45"/>
-  <circle cx="1020" cy="500" r="170" fill="#67E8F9" fill-opacity="0.35"/>
-  <text x="600" y="300" fill="#0F172A" font-size="62" font-family="Verdana, sans-serif" font-weight="700" text-anchor="middle">Happy Faces LA</text>
-  <text x="600" y="370" fill="#334155" font-size="34" font-family="Verdana, sans-serif" text-anchor="middle">Face Painting • Balloons • Glitter Tattoos</text>
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" fill="#FFF7ED"/>
+  <circle cx="200" cy="160" r="200" fill="#FDBA74" fill-opacity="0.45"/>
+  <circle cx="1020" cy="720" r="240" fill="#67E8F9" fill-opacity="0.35"/>
+  <text x="600" y="430" fill="#0F172A" font-size="62" font-family="Verdana, sans-serif" font-weight="700" text-anchor="middle">Happy Faces LA</text>
+  <text x="600" y="500" fill="#334155" font-size="34" font-family="Verdana, sans-serif" text-anchor="middle">Face Painting • Balloons • Glitter Tattoos</text>
 </svg>
