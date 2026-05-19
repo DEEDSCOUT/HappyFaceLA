@@ -9,49 +9,64 @@ export type PackageItem = {
 
 export const packages: PackageItem[] = [
     {
-        name: "Mini Party Package",
-        bestFor: "Small birthdays",
-        features: ["1 artist", "Face painting OR balloon twisting"],
-        duration: "Varies by event",
+        name: "Birthday Party Package",
+        bestFor: "Kids birthday parties",
+        features: [
+            "Face painting or balloon twisting",
+            "1 artist, dedicated to your event",
+            "Kid-friendly designs, fast line management",
+        ],
+        duration: "Varies by guest count",
         guestCapacity: "Varies by event",
-        startingPrice: "Request a quote"
+        startingPrice: "Bookings start at $150",
     },
     {
-        name: "Signature Party Package",
-        bestFor: "Birthdays and family parties",
+        name: "Face Painting + Balloons Package",
+        bestFor: "Birthdays, family parties, and school events",
         features: [
-            "Face painting + balloon twisting",
-            "or face painting + glitter tattoos"
+            "Face painting + balloon twisting combined",
+            "Two-activity setup for longer guest engagement",
+            "Great for parties of all sizes",
+        ],
+        duration: "Varies by guest count",
+        guestCapacity: "Varies by event",
+        startingPrice: "Request a quote",
+    },
+    {
+        name: "Glitter + Gems Add-On",
+        bestFor: "Themed events, older kids, and photo moments",
+        features: [
+            "Cosmetic-grade glitter tattoos",
+            "Body-safe face gems and face jewelry",
+            "Can be combined with any other service",
+        ],
+        duration: "Varies by guest count",
+        guestCapacity: "Varies by event",
+        startingPrice: "Request a quote",
+    },
+    {
+        name: "School / Festival Booth",
+        bestFor: "School carnivals, fundraisers, festivals, and camps",
+        features: [
+            "High guest throughput setup",
+            "Multiple artists available",
+            "Mix of services available at one booth",
         ],
         duration: "Varies by event",
         guestCapacity: "Varies by event",
-        startingPrice: "Request a quote"
+        startingPrice: "Quote required",
     },
     {
-        name: "Premium Wow Package",
-        bestFor: "Larger private events",
+        name: "Corporate Family Event Booth",
+        bestFor: "Company picnics, city events, and malls",
         features: [
-            "Face painting + balloon twisting + glitter tattoos + face gems",
-            "1-2 artists depending on guest count"
+            "Custom setup and professional invoice",
+            "COI available (confirmed at booking)",
+            "Full-service entertainment station",
         ],
         duration: "Varies by event",
         guestCapacity: "Varies by event",
-        startingPrice: "Request a quote"
+        startingPrice: "Quote required",
     },
-    {
-        name: "School/Festival Package",
-        bestFor: "Carnivals, fundraisers, festivals, camps",
-        features: ["Higher guest throughput", "Multiple artists optional"],
-        duration: "Varies by event",
-        guestCapacity: "Varies by event",
-        startingPrice: "Quote required"
-    },
-    {
-        name: "Corporate Family Event Package",
-        bestFor: "Company picnics, malls, city events",
-        features: ["Custom setup and invoice", "Optional COI if available"],
-        duration: "Varies by event",
-        guestCapacity: "Varies by event",
-        startingPrice: "Quote required"
-    }
 ];
+

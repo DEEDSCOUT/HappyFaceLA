@@ -1,0 +1,101 @@
+---
+import type { GalleryItem, GalleryCategory } from "../../data/gallery";
+
+interface Props {
+  items: GalleryItem[];
+  categories: GalleryCategory[];
+}
+
+const { items, categories } = Astro.props;
+
+// Only show items with confirmed permission
+const visible = items.filter((item) => item.permissionConfirmed);
+
+// Unique id for scoping JS
+const uid = "fg-" + Math.random().toString(36).slice(2, 8);
+---
+
+<section>
+  <!-- Category filter buttons -->
+  <div class="flex flex-wrap gap-2" id={`${uid}-filters`} role="group" aria-label="Filter gallery by category">
+    <button
+      class="filter-btn rounded-full border border-slate-300 bg-white px-4 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 data-[active]:bg-slate-900 data-[active]:text-white data-[active]:border-slate-900"
+      data-category="all"
+      data-active
+    >
+      All
+    </button>
+    {categories.map((cat) => (
+      <button
+        class="filter-btn rounded-full border border-slate-300 bg-white px-4 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 data-[active]:bg-slate-900 data-[active]:text-white data-[active]:border-slate-900"
+        data-category={cat}
+      >
+        {cat}
+      </button>
+    ))}
+  </div>
+
+  <!-- Gallery grid -->
+  <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" id={`${uid}-grid`}>
+    {visible.map((item) => (
+      <figure
+        class="gallery-item overflow-hidden rounded-2xl border border-slate-200 bg-white"
+        data-category={item.category}
+      >
+        <img
+          loading="lazy"
+          decoding="async"
+          src={item.src}
+          alt={item.alt}
+          class="aspect-[4/3] w-full object-cover"
+          width="600"
+          height="450"
+        />
+        {item.eventType && (
+          <figcaption class="px-3 py-2 text-xs text-slate-500">
+            {item.category}{item.location ? ` · ${item.location}` : ""}
+          </figcaption>
+        )}
+      </figure>
+    ))}
+  </div>
+
+  {visible.length === 0 && (
+    <p class="mt-6 text-sm text-slate-500">
+      Real gallery photos are coming soon. Owner-provided photos will replace these placeholders.
+    </p>
+  )}
+</section>
+
+<script is:inline define:vars={{ uid }}>
+  (function () {
+    var filters = document.getElementById(uid + "-filters");
+    var grid = document.getElementById(uid + "-grid");
+    if (!filters || !grid) return;
+
+    var btns = filters.querySelectorAll(".filter-btn");
+    var cards = grid.querySelectorAll(".gallery-item");
+
+    btns.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var selected = btn.getAttribute("data-category");
+
+        // Update active state
+        btns.forEach(function (b) {
+          b.removeAttribute("data-active");
+        });
+        btn.setAttribute("data-active", "");
+
+        // Filter cards
+        cards.forEach(function (card) {
+          var cat = card.getAttribute("data-category");
+          if (selected === "all" || cat === selected) {
+            card.style.display = "";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      });
+    });
+  })();
+</script>

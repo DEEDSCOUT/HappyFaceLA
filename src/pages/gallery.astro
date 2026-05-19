@@ -2,13 +2,10 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
 import PageIntro from "../components/sections/PageIntro.astro";
-import GalleryGrid from "../components/content/GalleryGrid.astro";
+import FilteredGallery from "../components/content/FilteredGallery.astro";
+import { galleryItems, galleryCategories } from "../data/gallery";
 
 const canonicalPath = "/gallery/";
-const images = new Array(9).fill(null).map((_, i) => ({
-  src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
-  alt: `Happy Faces LA gallery placeholder ${i + 1} for owner replacement`
-}));
 ---
 
 <BaseLayout
@@ -17,10 +14,10 @@ const images = new Array(9).fill(null).map((_, i) => ({
   canonicalPath={canonicalPath}
 >
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Gallery", href: canonicalPath }]} />
-  <PageIntro title="Gallery" description="Authentic owner-provided photos should replace these marked placeholders before final production." />
+  <PageIntro title="Gallery" description="Face painting, balloon twisting, glitter tattoos, and face gems at parties and events across Los Angeles, Orange County, and Ventura County." />
 
   <section class="mx-auto w-full max-w-6xl px-4 py-10">
-    <GalleryGrid title="Face Painting, Balloons, Glitter Tattoos, and Face Gems" images={images} />
+    <FilteredGallery items={galleryItems} categories={galleryCategories} />
   </section>
 
   <script is:inline>

@@ -5,6 +5,9 @@ export type ServiceItem = {
     title: string;
     description: string;
     intro: string;
+    whatItIncludes: string[];
+    bestFor: string[];
+    addOns: string[];
 };
 
 export const services: ServiceItem[] = [
@@ -16,7 +19,20 @@ export const services: ServiceItem[] = [
         description:
             "Professional face painting for birthdays, school events, festivals, and private celebrations across Los Angeles.",
         intro:
-            "Happy Faces LA provides colorful, event-ready face painting with kid-friendly designs and fast line management for busy events."
+            "Happy Faces LA provides colorful, event-ready face painting with kid-friendly designs and fast line management for busy events.",
+        whatItIncludes: [
+            "Custom designs for each child",
+            "Kid-friendly theme options",
+            "Fast line management for busy parties",
+            "Cosmetic-grade face paints and clean supplies",
+        ],
+        bestFor: [
+            "Kids birthday parties",
+            "School carnivals and festivals",
+            "Corporate family events",
+            "Private celebrations",
+        ],
+        addOns: ["Balloon twisting", "Glitter tattoos", "Face gems / face jewelry"],
     },
     {
         slug: "balloon-twisting-los-angeles",
@@ -26,7 +42,20 @@ export const services: ServiceItem[] = [
         description:
             "Book balloon twisting for kids parties, school events, and family-friendly corporate events in Los Angeles.",
         intro:
-            "Our balloon twisting service adds movement and excitement to events with crowd-friendly designs and quick interactions."
+            "Our balloon twisting service adds movement and excitement to events with crowd-friendly designs and quick interactions.",
+        whatItIncludes: [
+            "Custom balloon animals and themed designs",
+            "Interactive experience for kids",
+            "Fast turnaround for event lines",
+            "Kid-safe latex balloons",
+        ],
+        bestFor: [
+            "Birthday parties",
+            "School events",
+            "Family-friendly festivals",
+            "Corporate family days",
+        ],
+        addOns: ["Face painting", "Glitter tattoos", "Face gems"],
     },
     {
         slug: "glitter-tattoos-los-angeles",
@@ -36,7 +65,20 @@ export const services: ServiceItem[] = [
         description:
             "Glitter tattoos for birthdays, school carnivals, and festivals with clean setup and event-ready service.",
         intro:
-            "Glitter tattoos are a fast, photo-friendly add-on for events where guests want fun designs and short wait times."
+            "Glitter tattoos are a fast, photo-friendly add-on for events where guests want fun designs and short wait times.",
+        whatItIncludes: [
+            "Cosmetic-grade glitter in a range of designs",
+            "Lasts 1–3 days on skin",
+            "Safe for most skin types",
+            "Fast application, great for large groups",
+        ],
+        bestFor: [
+            "School carnivals and festival booths",
+            "Birthday party add-ons",
+            "Events with older kids and teens",
+            "High-throughput party lines",
+        ],
+        addOns: ["Face painting", "Face gems", "Balloon twisting"],
     },
     {
         slug: "face-gems-face-jewelry-los-angeles",
@@ -46,6 +88,19 @@ export const services: ServiceItem[] = [
         description:
             "Face gems and face jewelry add-on service for kids parties, themed celebrations, and high-impact photo moments.",
         intro:
-            "Face gems and face jewelry can be booked as a standalone station or combined with painting, balloons, and glitter tattoos."
+            "Face gems and face jewelry can be booked as a standalone station or combined with painting, balloons, and glitter tattoos.",
+        whatItIncludes: [
+            "Body-safe gems and face jewelry pieces",
+            "Crystal-like accent designs",
+            "Safe adhesive with easy removal",
+            "Photo-ready results for any theme",
+        ],
+        bestFor: [
+            "Themed birthday parties",
+            "Princess, fairy, and fantasy events",
+            "High-impact photo moments",
+            "Older kids and teens",
+        ],
+        addOns: ["Glitter tattoos", "Face painting", "Balloon twisting"],
     }
 ];
