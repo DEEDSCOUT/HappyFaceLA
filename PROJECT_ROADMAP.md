@@ -18,19 +18,82 @@ After every completed task, update this file with:
 
 ## Latest Session Log
 
-Last updated: 2026-05-18
+Last updated: 2026-05-18 (Real Asset Ingestion + Content Trust Sprint)
 
 - Production site live at <https://happyfacesla.com> — all launch gates passed.
 - GA4 (`G-7NH6RY78TK`) live on all 24 pages.
 - Microsoft Clarity (`wsw4v74jpw`) live on all 24 pages.
-- Google Ads campaign "Kids Party Face Painting" (Performance Max, $20/day) launched.
+- Google Ads campaign "Kids Party Face Painting" (Performance Max, $20/day) running.
 - `generate_lead` GA4 key event is the sole primary conversion for the campaign.
 - Lead delivery verified end-to-end (Make → Google Sheets → Gmail).
 - Google Business Profile appeal submitted; in wait state — do not create duplicate GBP.
-- Content Trust Sprint code infrastructure implemented (gallery system, testimonial system, service proof sections, trust block, package framing).
-- Waiting on owner to provide real photos and testimonials to populate the new systems.
-- No code or infrastructure blockers remain.
-- Current priority: owner to deliver Content Trust Sprint assets (photos + testimonials).
+- **Real asset ingestion complete**: 20 images processed and deployed (commit `045b3b4`).
+- **Content Trust Sprint fully implemented**: hero images, service card images, gallery system, service page photo banners all live with real photos.
+- **Placeholder images removed from public view**: FilteredGallery now hides SVG placeholders; only real confirmed WebP images shown.
+- Glitter tattoos, event atmosphere, and setup gallery categories still empty (video-only or no uploads yet).
+- Testimonials section empty — no testimonials uploaded yet.
+
+### 2026-05-18 Session: Real Asset Ingestion + Content Trust Sprint Implementation
+
+**Assets inspected in OneDrive (`Happy Faces LA/` folder):**
+
+| Folder | Static images | Videos |
+|---|---|---|
+| 01_Hero | 0 | 0 |
+| 02_Face_Painting | 16 .jpeg | 0 |
+| 03_Balloon_Twisting | 4 .jpeg | 3 .mov |
+| 04_Glitter_Tattoos | 0 | 4 .mov |
+| 05_Face_Gems | 4 .jpeg | 0 |
+| 06_Event_Atmosphere | 0 | 1 .MOV |
+| 07_Setup_and_Kit | 0 | 0 |
+| 08_Testimonials_Proof | 0 | 0 |
+| 09_GBP | 0 | 0 |
+
+**Image selection:**
+- 12 face painting images selected (16 available; 3 deferred: copyright — Disney Stitch, SpongeBob/Nickelodeon, Cruella de Vil; 1 rejected: Instagram UI overlay)
+- 4 balloon twisting images selected (all 4 available)
+- 4 face gems images selected (all 4 available)
+- 8 videos deferred: `ffmpeg` not installed; need for `.mp4` conversion + poster extraction
+
+**Processing (scripts/process-assets.py, Pillow 12.1.1):**
+- Gallery images: max 1400px wide, quality 85, WebP method=6, EXIF-stripped
+- Hero images: max 1800px wide, quality 88, WebP method=6
+- Service card images: max 900px wide, quality 85, WebP method=6
+- Total output: 20 WebP files across `public/images/{gallery,hero,services}/`
+
+**Files changed:**
+
+| File | Change |
+|---|---|
+| `scripts/process-assets.py` | NEW — batch image processing script |
+| `public/images/gallery/face-painting/` | NEW — 12 WebP files |
+| `public/images/gallery/balloon-twisting/` | NEW — 4 WebP files |
+| `public/images/gallery/face-gems/` | NEW — 4 WebP files |
+| `public/images/hero/` | NEW — 3 WebP files |
+| `public/images/services/` | NEW — 3 WebP files |
+| `src/data/gallery.ts` | Updated — 20 real entries + retained placeholders for missing categories |
+| `src/components/sections/Hero.astro` | Updated — heroImage/heroImageAlt props, two-column desktop layout |
+| `src/components/content/ServiceCard.astro` | Updated — image/imageAlt props with aspect-[3/2] cover |
+| `src/data/services.ts` | Updated — image/imageAlt fields for 3 services |
+| `src/pages/index.astro` | Updated — real hero + service card images passed |
+| `src/components/sections/ServicePageSections.astro` | Updated — real gallery filtered per service; service hero image banner |
+| `src/components/content/FilteredGallery.astro` | Updated — SVG placeholders hidden from public view; updated empty-state copy |
+
+**QA:** `npm run build` → 24 pages, 0 errors. `npm run qa:postbuild` → all checks passed, no TBD strings.
+
+**Commit:** `045b3b4` — pushed to `main`, deploying to Cloudflare Pages.
+
+**Remaining missing assets (owner action required):**
+- Glitter tattoos static photos (zero uploaded; only videos which require `ffmpeg`)
+- Event atmosphere static photos (zero uploaded; only video)
+- Setup/kit photos (zero uploaded)
+- Hero dedicated photos (currently using face painting photos as hero)
+- Testimonials (08_Testimonials_Proof still empty)
+- GBP photos (09_GBP still empty)
+
+**Deferred work:**
+- Video sprint: install `ffmpeg` (e.g. `choco install ffmpeg`), then convert 8 `.mov` files to `.mp4` + extract poster frames → unlocks glitter tattoo gallery images, event atmosphere, video lightbox
+- Testimonials: owner to provide or import from Google/Yelp reviews
 
 ## Project Facts
 
