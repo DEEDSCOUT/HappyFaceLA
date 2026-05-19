@@ -27,8 +27,10 @@ Last updated: 2026-05-18
 - `generate_lead` GA4 key event is the sole primary conversion for the campaign.
 - Lead delivery verified end-to-end (Make → Google Sheets → Gmail).
 - Google Business Profile appeal submitted; in wait state — do not create duplicate GBP.
+- Content Trust Sprint code infrastructure implemented (gallery system, testimonial system, service proof sections, trust block, package framing).
+- Waiting on owner to provide real photos and testimonials to populate the new systems.
 - No code or infrastructure blockers remain.
-- Current non-code priority: **Content Trust Sprint** — owner to provide real photos and testimonials.
+- Current priority: owner to deliver Content Trust Sprint assets (photos + testimonials).
 
 ## Project Facts
 
@@ -104,20 +106,33 @@ Unknown owner-specific facts must remain marked as TBD_BY_OWNER. Do not invent p
 
 ## Content Trust Sprint — Required Assets
 
-Next non-code priority after Google Ads stabilization and GBP appeal waiting period.
-Once assets are provided, the engineering task is: replace SVG placeholders, populate real gallery, and wire testimonial sections.
+**Code infrastructure: COMPLETE (commit d4f285e).**
+Waiting on owner to provide real photos and testimonials to populate the systems.
 
-### Minimum Viable Target
+Competitor benchmark (internal): Strong marketplace proof via high review count, verified bookings,
+many photos/videos, and clear service range.
+Happy Faces LA strategic response: real photo proof, real testimonials, premium service positioning,
+owned lead funnel, quote-based conversion flow.
 
-| Asset type | Minimum | Strong target |
-| --- | --- | --- |
-| Website / service images | 10 | 10 |
-| Gallery photos | 18 | 36 |
-| Customer testimonials | 6 | 12 |
+### Current Asset Status
 
-### Images Needed
+| Asset | Code system | Real assets received | Target |
+| --- | --- | --- | --- |
+| Gallery data file | ✅ `src/data/gallery.ts` | 0 real (22 placeholders) | Min 18, strong 50 |
+| Testimonials data file | ✅ `src/data/testimonials.ts` | 0 real | Min 6, strong 12 |
+| FilteredGallery component | ✅ Built with category filters | — | — |
+| TestimonialsSection component | ✅ Built | — | — |
+| Service proof sections | ✅ "What it includes / Best for / Add-ons" on all 4 service pages | — | — |
+| Trust block | ✅ 7-point "Why parents book" block | — | — |
+| Hero image | Path ready | 0 received | 1 real photo |
+| Service images | Path ready | 0 received | 4 real photos |
+| Event atmosphere images | Path ready | 0 received | 2 real photos |
+| Setup / kit images | Path ready | 0 received | 2 real photos |
+| Videos | Not yet built | 0 received | 5 short clips (optional) |
 
-Minimum set (10 images):
+### Images Still Needed
+
+Minimum set (10 images — to replace placeholders):
 
 - 1 hero image
 - 1 face painting image
@@ -134,7 +149,7 @@ Strong set (10 images):
 - 1 setup / professional kit image
 - 1 parent trust image (parent watching, child happy)
 
-### Gallery Photos Needed
+### Gallery Photos Still Needed
 
 | Category | Minimum | Strong target |
 | --- | --- | --- |
@@ -145,30 +160,45 @@ Strong set (10 images):
 | Setup / event atmosphere | — | 2 |
 | **Total** | **18** | **36** |
 
-### Testimonials Needed
+### Testimonials Still Needed
 
 Each testimonial must include: customer first name, city/area, event type, short quote, optional date/month.
-
-Minimum set (6 testimonials):
+**Must have explicit written/verbal customer permission before publishing.**
 
 - 3 birthday party testimonials
 - 1 school / carnival / festival testimonial
 - 1 corporate / family event testimonial
 - 1 repeat / general customer testimonial
 
-Strong set: 12 testimonials with the same category distribution, doubled.
+Strong set: 12 testimonials with same distribution, doubled.
 
 **Do not add fake or invented testimonials. All testimonials must be real and verifiable.**
+
+### How to Add Real Photos (when ready)
+
+1. Copy photos from `C:\Users\shawn\OneDrive\Shawn\Happy Faces LA\[folder]` to `public/images/gallery/[category]/`
+2. Update the matching entry's `src` field in `src/data/gallery.ts`
+3. Set `permissionConfirmed: true` if the photo contains identifiable people with consent
+4. Run `npm run build && npm run qa:postbuild`
+5. Commit and push — Cloudflare Pages will deploy automatically
+
+### How to Add Real Testimonials (when ready)
+
+1. Add entry to `src/data/testimonials.ts` with all required fields
+2. Set `permissionConfirmed: true` (requires explicit customer consent)
+3. Run `npm run build && npm run qa:postbuild`
+4. Commit and push
 
 ## Developer Next Actions
 
 1. **Google Ads — hands off for 24–72h.** Do not edit the campaign, ad groups, assets, or budget unless ads are disapproved or there are zero impressions after 48h. Let Performance Max learn.
 2. **Monitor ads.** Check impressions, clicks, spend, conversions, and asset strength daily after the first 48h.
 3. **GBP appeal — wait.** Do not create a duplicate Google Business Profile or edit the existing profile while the appeal is pending.
-4. **Content Trust Sprint — when owner provides assets:**
-   - Replace SVG placeholder images with real photos.
-   - Populate the gallery page with real gallery photos.
-   - Add testimonial sections to homepage and reviews page with verified customer quotes.
+4. **Content Trust Sprint assets — owner action required:**
+   - Owner drops real photos into `C:\Users\shawn\OneDrive\Shawn\Happy Faces LA\[subfolder]`.
+   - Developer copies to `public/images/gallery/[category]/` and updates `src` in `gallery.ts`.
+   - Owner provides verified customer testimonials → developer adds to `testimonials.ts`.
+   - Run `npm run build && npm run qa:postbuild` after each batch.
    - See "Content Trust Sprint — Required Assets" section for full breakdown.
 5. **Legal entity name** — update `legalName` in `src/data/business.ts` only after the legal entity is confirmed by the owner.
 6. **Google review link** — add to reviews page and contact page once GBP is verified and active.
@@ -374,6 +404,135 @@ Known warnings:
 - qa:postbuild reports TBD_BY_OWNER in built HTML pages. This is expected until owner content is provided or placeholders are intentionally approved for launch.
 
 ## Change Log / Session Log
+
+### 2026-05-18 - Competitive Content Trust Sprint implementation
+
+What changed:
+
+Competitor benchmark note (internal): Competitor has strong marketplace proof via high review count,
+verified bookings, many photos/videos, and clear service range. Happy Faces LA strategic response:
+real photo proof infrastructure, real testimonial system, premium service positioning, owned lead
+funnel, and quote-based conversion flow.
+
+**New data files:**
+
+- `src/data/gallery.ts` — Typed gallery data system. 22 placeholder entries (8 face painting,
+  4 balloon twisting, 3 glitter tattoos, 3 face gems, 2 event atmosphere, 2 setup/kit).
+  Fields: `src`, `alt`, `category`, `service`, `eventType`, `location`, `featured`,
+  `permissionConfirmed`. All entries use placeholder SVG until real photos are provided.
+  Image path convention and SEO filenames documented in comments.
+- `src/data/testimonials.ts` — Typed testimonial system with `firstName`, `cityOrArea`,
+  `eventType`, `quote`, `dateLabel`, `source`, `permissionConfirmed`. Empty array pending
+  owner-provided verified customer quotes.
+
+**New components:**
+
+- `src/components/content/FilteredGallery.astro` — Gallery grid with vanilla JS category
+  filter buttons (All / Face Painting / Balloon Twisting / Glitter Tattoos / Face Gems /
+  Event Atmosphere / Setup). Only shows items with `permissionConfirmed: true`.
+- `src/components/sections/TestimonialsSection.astro` — Testimonial section that renders
+  real cards when testimonials exist, or honest "coming soon" message when array is empty.
+  Supports `eventType` filter and `limit` props.
+
+**Updated components:**
+
+- `src/components/content/TestimonialCard.astro` — Rebuilt to accept `TestimonialItem` type.
+  Renders firstName, cityOrArea, eventType, quote, and optional dateLabel.
+- `src/components/sections/TrustSection.astro` — Replaced 4-bullet generic block with full
+  "Why parents book Happy Faces LA" section: 7 checkmark points covering materials,
+  kid-friendly designs, four-service booking, three-county area, $150 starting price,
+  Body Art Insurance, and fast quote response.
+- `src/components/sections/ServicePageSections.astro` — Added three-column service proof
+  section per service: "What it includes", "Best for", and "Add-ons available" — driven
+  by data from `ServiceItem`.
+
+**Updated data:**
+
+- `src/data/services.ts` — Added `whatItIncludes: string[]`, `bestFor: string[]`, and
+  `addOns: string[]` fields to `ServiceItem` type and all four service entries.
+- `src/data/packages.ts` — Renamed packages to competitive framing:
+  Birthday Party Package / Face Painting + Balloons Package / Glitter + Gems Add-On /
+  School / Festival Booth / Corporate Family Event Booth.
+
+**Updated pages:**
+
+- `src/pages/gallery.astro` — Replaced 9 generic placeholders with `FilteredGallery`
+  component wired to `galleryItems` and `galleryCategories` from `gallery.ts`.
+- `src/pages/index.astro` — Gallery now pulls featured items from `gallery.ts`.
+  Old trust prose section replaced with `TestimonialsSection` component.
+- `src/pages/reviews.astro` — Replaced static prose block with `TestimonialsSection`
+  component. Honest "collecting reviews" note retained below.
+
+Files changed:
+
+- src/data/gallery.ts (new)
+- src/data/testimonials.ts (new)
+- src/components/content/FilteredGallery.astro (new)
+- src/components/sections/TestimonialsSection.astro (new)
+- src/components/content/TestimonialCard.astro (updated)
+- src/components/sections/TrustSection.astro (updated)
+- src/components/sections/ServicePageSections.astro (updated)
+- src/data/services.ts (updated)
+- src/data/packages.ts (updated)
+- src/pages/gallery.astro (updated)
+- src/pages/index.astro (updated)
+- src/pages/reviews.astro (updated)
+- PROJECT_ROADMAP.md (updated)
+
+Commands run:
+
+```powershell
+npm run build        # PASS — 24 pages, 0 errors
+npm run qa:postbuild # PASS — zero TBD_BY_OWNER strings in built HTML
+git add ...; git commit -m "content: implement competitive trust sprint gallery testimonials and real service proof"; git push
+# commit: d4f285e
+```
+
+Validation result:
+
+- Build: PASS — 24 pages, 0 errors
+- QA: PASS — zero TBD_BY_OWNER strings
+- GA4/Clarity scripts: untouched
+- `generate_lead` event: untouched
+- Lead form `/api/lead`: untouched
+
+Content Trust Sprint asset status (as of 2026-05-18):
+
+| Asset type | Implemented | Real assets received | Still needed |
+| --- | --- | --- | --- |
+| Hero image | Infrastructure ready | 0 of 1 | 1 real hero photo |
+| Service images | Infrastructure ready | 0 of 4 | 4 service photos |
+| Event atmosphere images | Infrastructure ready | 0 of 2 | 2 event photos |
+| Setup / kit images | Infrastructure ready | 0 of 2 | 2 setup photos |
+| Gallery photos total | 22 placeholder entries | 0 real | Min 18 real, strong 50 |
+| Testimonials | System built, 0 entries | 0 of 6 min | Min 6 real with permission |
+| Videos | Not yet implemented | 0 | 5 short vertical clips (optional) |
+
+Asset source folder: `C:\Users\shawn\OneDrive\Shawn\Happy Faces LA`
+Expected subfolders: `01_Hero`, `02_Face_Painting`, `03_Balloon_Twisting`, `04_Glitter_Tattoos`,
+`05_Face_Gems`, `06_Event_Atmosphere`, `07_Setup_Kit`, `08_Testimonials_Proof`,
+`09_Google_Business_Profile_Real_Photos`
+
+Remaining blockers:
+
+- Owner must provide real photos in the asset source folder.
+- Owner must provide verified customer testimonials (firstName, cityOrArea, eventType, quote,
+  permissionConfirmed: true) for entry into `src/data/testimonials.ts`.
+- Placeholder SVG must NOT be submitted to Google Business Profile as proof photos.
+
+Next required action:
+
+- Owner drops real photos into OneDrive asset subfolders.
+- Developer copies to `public/images/gallery/[category]/` and updates `src` fields in `gallery.ts`.
+- Developer updates `src/data/testimonials.ts` with real testimonials.
+- Run `npm run build && npm run qa:postbuild` after each batch of real photos added.
+
+Production status changed:
+
+- Gallery now has 22 categorized, filterable entries (placeholders until real photos arrive).
+- Service pages now show "What it includes / Best for / Add-ons" proof sections.
+- Trust block updated to 7-point "Why parents book" competitive framing.
+- Package names updated to match competitive service framing.
 
 ### 2026-05-18 - Add GA4 and Microsoft Clarity analytics; configure generate_lead key event
 
