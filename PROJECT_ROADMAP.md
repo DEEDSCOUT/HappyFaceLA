@@ -18,20 +18,64 @@ After every completed task, update this file with:
 
 ## Latest Session Log
 
-Last updated: 2026-05-18 (Real Asset Ingestion + Content Trust Sprint)
+Last updated: 2026-05-19 (Trust Sprint Media Gaps — Video Frame Extraction)
 
 - Production site live at <https://happyfacesla.com> — all launch gates passed.
-- GA4 (`G-7NH6RY78TK`) live on all 24 pages.
-- Microsoft Clarity (`wsw4v74jpw`) live on all 24 pages.
+- GA4 (`G-7NH6RY78TK`) live on all 24 pages. Confirmed untouched.
+- Microsoft Clarity (`wsw4v74jpw`) live on all 24 pages. Confirmed untouched.
 - Google Ads campaign "Kids Party Face Painting" (Performance Max, $20/day) running.
-- `generate_lead` GA4 key event is the sole primary conversion for the campaign.
-- Lead delivery verified end-to-end (Make → Google Sheets → Gmail).
-- Google Business Profile appeal submitted; in wait state — do not create duplicate GBP.
-- **Real asset ingestion complete**: 20 images processed and deployed (commit `045b3b4`).
-- **Content Trust Sprint fully implemented**: hero images, service card images, gallery system, service page photo banners all live with real photos.
-- **Placeholder images removed from public view**: FilteredGallery now hides SVG placeholders; only real confirmed WebP images shown.
-- Glitter tattoos, event atmosphere, and setup gallery categories still empty (video-only or no uploads yet).
-- Testimonials section empty — no testimonials uploaded yet.
+- `generate_lead` GA4 key event confirmed in build output — untouched.
+- Google Business Profile appeal in wait state — do not create duplicate GBP.
+- **All available gallery categories now have real images**: face painting (12), balloon twisting (4), face gems (4), glitter tattoos (4), event atmosphere (1).
+- **Setup/kit gallery**: still empty — folder does not exist in OneDrive. Owner must upload.
+- **Testimonials**: still empty — 08_Testimonials_Proof folder is empty. Owner must provide.
+- **ffmpeg installed** (`winget Gyan.FFmpeg 8.1.1`) — available for future video work.
+
+### 2026-05-19 Session: Remaining Trust Sprint Media Gaps
+
+**Assets inspected:**
+
+| Folder | Content |
+|---|---|
+| `04_Glitter_Tattoos` | 4 × `.mov` videos (no static photos) |
+| `06_Event_Atmosphere` | 1 × `.MOV` video (no static photos) |
+| `07_Setup_and_Kit` | NOT FOUND in OneDrive |
+| `08_Testimonials_Proof` | Empty |
+
+**Frame extraction (scripts/extract-video-frames.py):**
+- ffmpeg installed via `winget install Gyan.FFmpeg` (8.1.1)
+- Method: extract N candidate frames per video, score sharpness via Laplacian variance, save highest-scoring frame as WebP
+- Glitter tattoo outputs (gallery/):
+  - `…-01.webp` — 984×1000, 85 KB (IMG_4558 @13.0s, score 1097)
+  - `…-02.webp` — 776×796, 49 KB (IMG_4559 @1.0s, score 643)
+  - `…-03.webp` — 778×776, 34 KB (IMG_4562 @11.0s, score 1386)
+  - `…-04.webp` — 1080×1096, 140 KB (IMG_4563 @1.5s, score 1255)
+- Event atmosphere output (gallery/):
+  - `…-01.webp` — 720×1280, 73 KB (482ad…MOV @8.0s, score 2689)
+- Glitter tattoo service card (services/):
+  - `happy-faces-la-glitter-tattoo-service.webp` — 900×913, 112 KB
+
+**Files changed:**
+
+| File | Change |
+|---|---|
+| `scripts/extract-video-frames.py` | NEW — sharpness-scored frame extraction |
+| `public/images/gallery/glitter-tattoos/` | NEW — 4 WebP stills |
+| `public/images/gallery/event-atmosphere/` | NEW — 1 WebP still |
+| `public/images/services/happy-faces-la-glitter-tattoo-service.webp` | NEW |
+| `src/data/gallery.ts` | Replaced 3 GT placeholders + 2 EA placeholders with real entries |
+| `src/data/services.ts` | Added image/imageAlt to Glitter Tattoos service |
+
+**QA:** `npm run build` → 24 pages, 0 errors. `npm run qa:postbuild` → all checks passed.
+
+**Commit:** `27717e3` — pushed to `main`.
+
+**Remaining missing assets (owner action required):**
+- Setup/kit photos — `07_Setup_and_Kit` does not exist in OneDrive (owner must create and upload)
+- Testimonials — `08_Testimonials_Proof` still empty (owner must provide written customer quotes with permission)
+- GBP photos — `09_GBP` still empty
+- Higher-res glitter tattoo photos — 3 of 4 frames are below 900px wide (source videos were recorded small); owner should upload static photos if available
+- Event atmosphere static photos — only 1 portrait-orientation frame available; more/wider shots needed
 
 ### 2026-05-18 Session: Real Asset Ingestion + Content Trust Sprint Implementation
 
