@@ -202,10 +202,20 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
 
-  // ── Glitter Tattoos — placeholders (videos available, static photos needed) ─
+  // ── Glitter Tattoos — 4 stills extracted from owner video uploads 2026-05-19 ─
   {
-    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
-    alt: "Happy Faces LA glitter tattoos at a kids birthday party in Los Angeles",
+    src: "/images/gallery/glitter-tattoos/happy-faces-la-glitter-tattoo-kids-party-los-angeles-01.webp",
+    alt: "Glitter tattoo application by Happy Faces LA at a kids birthday party in Los Angeles",
+    category: "Glitter Tattoos",
+    service: "Glitter Tattoos",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: true,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/glitter-tattoos/happy-faces-la-glitter-tattoo-kids-party-los-angeles-02.webp",
+    alt: "Cosmetic-grade glitter tattoo design by Happy Faces LA at a party in Los Angeles",
     category: "Glitter Tattoos",
     service: "Glitter Tattoos",
     eventType: "Birthday Party",
@@ -214,21 +224,21 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
   {
-    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
-    alt: "Cosmetic-grade glitter tattoos by Happy Faces LA at a school carnival in Los Angeles",
+    src: "/images/gallery/glitter-tattoos/happy-faces-la-glitter-tattoo-kids-party-los-angeles-03.webp",
+    alt: "Kids glitter tattoo at a Los Angeles birthday party by Happy Faces LA",
     category: "Glitter Tattoos",
     service: "Glitter Tattoos",
-    eventType: "School Carnival",
+    eventType: "Birthday Party",
     location: "Los Angeles",
     featured: false,
     permissionConfirmed: true,
   },
   {
-    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
-    alt: "Glitter tattoos for kids at a festival in Los Angeles by Happy Faces LA",
+    src: "/images/gallery/glitter-tattoos/happy-faces-la-glitter-tattoo-kids-party-los-angeles-04.webp",
+    alt: "Glitter tattoo art at a kids party in Los Angeles by Happy Faces LA",
     category: "Glitter Tattoos",
     service: "Glitter Tattoos",
-    eventType: "Festival",
+    eventType: "Birthday Party",
     location: "Los Angeles",
     featured: false,
     permissionConfirmed: true,
@@ -276,23 +286,13 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
 
-  // ── Event Atmosphere — placeholders (video available, static photos needed) ─
+  // ── Event Atmosphere — 1 still extracted from owner video upload 2026-05-19 ──
   {
-    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
-    alt: "Happy Faces LA entertainment setup at a birthday party in Los Angeles",
+    src: "/images/gallery/event-atmosphere/happy-faces-la-event-atmosphere-party-los-angeles-01.webp",
+    alt: "Live party entertainment by Happy Faces LA — face painting and activities at a birthday in Los Angeles",
     category: "Event Atmosphere",
     service: "Event Entertainment",
     eventType: "Birthday Party",
-    location: "Los Angeles",
-    featured: false,
-    permissionConfirmed: true,
-  },
-  {
-    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
-    alt: "Kids enjoying Happy Faces LA entertainment at a school carnival in Los Angeles",
-    category: "Event Atmosphere",
-    service: "Event Entertainment",
-    eventType: "School Carnival",
     location: "Los Angeles",
     featured: false,
     permissionConfirmed: true,

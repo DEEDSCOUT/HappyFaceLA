@@ -86,6 +86,8 @@ export const services: ServiceItem[] = [
             "High-throughput party lines",
         ],
         addOns: ["Face painting", "Face gems", "Balloon twisting"],
+        image: "/images/services/happy-faces-la-glitter-tattoo-service.webp",
+        imageAlt: "Glitter tattoo application by Happy Faces LA at a kids birthday party in Los Angeles",
     },
     {
         slug: "face-gems-face-jewelry-los-angeles",
