@@ -8,6 +8,9 @@ export type ServiceItem = {
     whatItIncludes: string[];
     bestFor: string[];
     addOns: string[];
+    /** Optional service card/page image */
+    image?: string;
+    imageAlt?: string;
 };
 
 export const services: ServiceItem[] = [
@@ -33,6 +36,8 @@ export const services: ServiceItem[] = [
             "Private celebrations",
         ],
         addOns: ["Balloon twisting", "Glitter tattoos", "Face gems / face jewelry"],
+        image: "/images/services/happy-faces-la-face-painting-service.webp",
+        imageAlt: "Happy Faces LA face painting at a birthday party in Los Angeles",
     },
     {
         slug: "balloon-twisting-los-angeles",
@@ -56,6 +61,8 @@ export const services: ServiceItem[] = [
             "Corporate family days",
         ],
         addOns: ["Face painting", "Glitter tattoos", "Face gems"],
+        image: "/images/services/happy-faces-la-balloon-twisting-service.webp",
+        imageAlt: "Happy Faces LA artist at a birthday party with balloon flowers",
     },
     {
         slug: "glitter-tattoos-los-angeles",
@@ -102,5 +109,7 @@ export const services: ServiceItem[] = [
             "Older kids and teens",
         ],
         addOns: ["Glitter tattoos", "Face painting", "Balloon twisting"],
+        image: "/images/services/happy-faces-la-face-gems-service.webp",
+        imageAlt: "Face gems and crystal jewelry applied by Happy Faces LA at a birthday party",
     }
 ];

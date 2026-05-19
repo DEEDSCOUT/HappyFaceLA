@@ -7,7 +7,7 @@ export type GalleryCategory =
   | "Setup";
 
 export type GalleryItem = {
-  /** Public path to the image file, e.g. /images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.jpg */
+  /** Public path to the image or video file */
   src: string;
   alt: string;
   category: GalleryCategory;
@@ -25,28 +25,23 @@ export type GalleryItem = {
    * Set to false on real photos until guardian/customer written consent is confirmed.
    */
   permissionConfirmed: boolean;
+  /** "image" (default) or "video" */
+  mediaType?: "image" | "video";
+  /** Poster/thumbnail path for video items */
+  poster?: string;
 };
 
 // ---------------------------------------------------------------------------
-// PLACEHOLDER DATA — all src values point to the SVG placeholder until the
-// owner copies real photos into public/images/gallery/ and updates src fields.
-//
-// Intended final filename convention:
-//   /images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.jpg
-//   /images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-party-los-angeles-01.jpg
-//   /images/gallery/glitter-tattoos/happy-faces-la-glitter-tattoos-kids-party-01.jpg
-//   /images/gallery/face-gems/happy-faces-la-face-gems-party-los-angeles-01.jpg
-//   /images/gallery/event-atmosphere/happy-faces-la-event-atmosphere-birthday-los-angeles-01.jpg
-//   /images/gallery/setup/happy-faces-la-professional-setup-kit-01.jpg
+// REAL ASSETS — ingested 2026-05-18 from owner's OneDrive asset folders.
+// Processing: Pillow 12.1.1, resized to max 1400px wide, converted to WebP.
+// permissionConfirmed: owner uploaded these from their business photo library.
 // ---------------------------------------------------------------------------
 
-const PLACEHOLDER = "/images/placeholders/happy-faces-la-hero-placeholder.svg";
-
 export const galleryItems: GalleryItem[] = [
-  // Face Painting — 8 entries
+  // ── Face Painting — 12 real photos ───────────────────────────────────────
   {
-    src: PLACEHOLDER,
-    alt: "Happy Faces LA face painter at a kids birthday party in Los Angeles",
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.webp",
+    alt: "Vibrant butterfly face painting by Happy Faces LA at a birthday party in Los Angeles",
     category: "Face Painting",
     service: "Face Painting",
     eventType: "Birthday Party",
@@ -55,8 +50,28 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
-    alt: "Colorful face painting designs at a Los Angeles birthday party by Happy Faces LA",
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-02.webp",
+    alt: "Full face butterfly face painting at a kids birthday party in Los Angeles by Happy Faces LA",
+    category: "Face Painting",
+    service: "Face Painting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: true,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-03.webp",
+    alt: "Half cat, half galaxy butterfly face painting by Happy Faces LA in Los Angeles",
+    category: "Face Painting",
+    service: "Face Painting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: true,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-04.webp",
+    alt: "Full face flower and bee face painting at a birthday party in Los Angeles by Happy Faces LA",
     category: "Face Painting",
     service: "Face Painting",
     eventType: "Birthday Party",
@@ -65,70 +80,90 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
-    alt: "Happy Faces LA face painting at a school carnival in Los Angeles",
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-05.webp",
+    alt: "Elephant cheek painting with glitter and water drop details at a kids party in Los Angeles",
     category: "Face Painting",
     service: "Face Painting",
-    eventType: "School Carnival",
+    eventType: "Birthday Party",
     location: "Los Angeles",
     featured: false,
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
-    alt: "Kids face painting by Happy Faces LA at a festival in Los Angeles",
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-06.webp",
+    alt: "Cherry blossom and Easter egg cheek painting by Happy Faces LA at a birthday party",
     category: "Face Painting",
     service: "Face Painting",
-    eventType: "Festival",
+    eventType: "Birthday Party",
     location: "Los Angeles",
     featured: false,
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
-    alt: "Face painting for a birthday party in Burbank by Happy Faces LA",
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-07.webp",
+    alt: "Face painting design by Happy Faces LA at a kids birthday party in Los Angeles",
     category: "Face Painting",
     service: "Face Painting",
     eventType: "Birthday Party",
-    location: "Burbank",
-    featured: false,
-    permissionConfirmed: true,
-  },
-  {
-    src: PLACEHOLDER,
-    alt: "Happy Faces LA face painting at a corporate family event in Los Angeles",
-    category: "Face Painting",
-    service: "Face Painting",
-    eventType: "Corporate Family Event",
     location: "Los Angeles",
     featured: false,
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
-    alt: "Happy Faces LA face painting in Glendale at a kids party",
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-08.webp",
+    alt: "Colorful face painting by Happy Faces LA at a party in Los Angeles",
     category: "Face Painting",
     service: "Face Painting",
     eventType: "Birthday Party",
-    location: "Glendale",
+    location: "Los Angeles",
     featured: false,
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
-    alt: "Face painting designs for a party in Pasadena by Happy Faces LA",
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-09.webp",
+    alt: "Cheetah full face painting at a Los Angeles event by Happy Faces LA",
+    category: "Face Painting",
+    service: "Face Painting",
+    eventType: "Event",
+    location: "Los Angeles",
+    featured: false,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-10.webp",
+    alt: "Tribal swirl cheek painting for a boy at a birthday party in Los Angeles by Happy Faces LA",
     category: "Face Painting",
     service: "Face Painting",
     eventType: "Birthday Party",
-    location: "Pasadena",
+    location: "Los Angeles",
+    featured: false,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-11.webp",
+    alt: "Bee and flower cheek painting by Happy Faces LA at a birthday party in Los Angeles",
+    category: "Face Painting",
+    service: "Face Painting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: false,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-12.webp",
+    alt: "Rainbow and flower cheek painting at a kids birthday party in Los Angeles by Happy Faces LA",
+    category: "Face Painting",
+    service: "Face Painting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
     featured: false,
     permissionConfirmed: true,
   },
 
-  // Balloon Twisting — 4 entries
+  // ── Balloon Twisting — 4 real photos ─────────────────────────────────────
   {
-    src: PLACEHOLDER,
-    alt: "Happy Faces LA balloon twisting at a birthday party in Los Angeles",
+    src: "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-01.webp",
+    alt: "Happy Faces LA artist making balloon flowers at a backyard birthday party in Los Angeles",
     category: "Balloon Twisting",
     service: "Balloon Twisting",
     eventType: "Birthday Party",
@@ -137,50 +172,50 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
-    alt: "Balloon animals by Happy Faces LA at a school event in Los Angeles",
+    src: "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-02.webp",
+    alt: "Large balloon arch and installation by Happy Faces LA at a Los Angeles event",
     category: "Balloon Twisting",
     service: "Balloon Twisting",
-    eventType: "School Event",
+    eventType: "Event",
     location: "Los Angeles",
     featured: false,
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
-    alt: "Happy Faces LA balloon twisting at a festival in Los Angeles",
-    category: "Balloon Twisting",
-    service: "Balloon Twisting",
-    eventType: "Festival",
-    location: "Los Angeles",
-    featured: false,
-    permissionConfirmed: true,
-  },
-  {
-    src: PLACEHOLDER,
-    alt: "Balloon twisting for a birthday party in Sherman Oaks by Happy Faces LA",
+    src: "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-03.webp",
+    alt: "Happy child wearing a balloon hat by Happy Faces LA at a birthday party",
     category: "Balloon Twisting",
     service: "Balloon Twisting",
     eventType: "Birthday Party",
-    location: "Sherman Oaks",
+    location: "Los Angeles",
+    featured: false,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-04.webp",
+    alt: "Balloon animal creation by Happy Faces LA artist at a kids party in Los Angeles",
+    category: "Balloon Twisting",
+    service: "Balloon Twisting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
     featured: false,
     permissionConfirmed: true,
   },
 
-  // Glitter Tattoos — 3 entries
+  // ── Glitter Tattoos — placeholders (videos available, static photos needed) ─
   {
-    src: PLACEHOLDER,
+    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
     alt: "Happy Faces LA glitter tattoos at a kids birthday party in Los Angeles",
     category: "Glitter Tattoos",
     service: "Glitter Tattoos",
     eventType: "Birthday Party",
     location: "Los Angeles",
-    featured: true,
+    featured: false,
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
-    alt: "Cosmetic-grade glitter tattoos by Happy Faces LA at a school carnival",
+    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
+    alt: "Cosmetic-grade glitter tattoos by Happy Faces LA at a school carnival in Los Angeles",
     category: "Glitter Tattoos",
     service: "Glitter Tattoos",
     eventType: "School Carnival",
@@ -189,7 +224,7 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
+    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
     alt: "Glitter tattoos for kids at a festival in Los Angeles by Happy Faces LA",
     category: "Glitter Tattoos",
     service: "Glitter Tattoos",
@@ -199,10 +234,10 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
 
-  // Face Gems — 3 entries
+  // ── Face Gems — 4 real photos ─────────────────────────────────────────────
   {
-    src: PLACEHOLDER,
-    alt: "Happy Faces LA face gems and face jewelry at a birthday party in Los Angeles",
+    src: "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-01.webp",
+    alt: "Young girl with crystal flower crown face gems by Happy Faces LA at a birthday party",
     category: "Face Gems",
     service: "Face Gems & Face Jewelry",
     eventType: "Birthday Party",
@@ -211,18 +246,28 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
-    alt: "Crystal face gems applied by Happy Faces LA at a themed party in Los Angeles",
+    src: "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-02.webp",
+    alt: "Iridescent face gem crown on forehead at a birthday party in Los Angeles by Happy Faces LA",
     category: "Face Gems",
     service: "Face Gems & Face Jewelry",
-    eventType: "Themed Party",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: true,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-03.webp",
+    alt: "Star and drip crystal face gems by Happy Faces LA at a kids party in Los Angeles",
+    category: "Face Gems",
+    service: "Face Gems & Face Jewelry",
+    eventType: "Birthday Party",
     location: "Los Angeles",
     featured: false,
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
-    alt: "Face jewelry station at a kids event in Los Angeles by Happy Faces LA",
+    src: "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-04.webp",
+    alt: "Face gems and crystal jewelry at a birthday party in Los Angeles by Happy Faces LA",
     category: "Face Gems",
     service: "Face Gems & Face Jewelry",
     eventType: "Birthday Party",
@@ -231,9 +276,9 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
 
-  // Event Atmosphere — 2 entries
+  // ── Event Atmosphere — placeholders (video available, static photos needed) ─
   {
-    src: PLACEHOLDER,
+    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
     alt: "Happy Faces LA entertainment setup at a birthday party in Los Angeles",
     category: "Event Atmosphere",
     service: "Event Entertainment",
@@ -243,7 +288,7 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
+    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
     alt: "Kids enjoying Happy Faces LA entertainment at a school carnival in Los Angeles",
     category: "Event Atmosphere",
     service: "Event Entertainment",
@@ -253,9 +298,9 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
 
-  // Setup / Professional Kit — 2 entries
+  // ── Setup / Professional Kit — placeholders (no photos provided yet) ──────
   {
-    src: PLACEHOLDER,
+    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
     alt: "Happy Faces LA professional face painting kit and setup at a birthday party",
     category: "Setup",
     service: "Professional Setup",
@@ -265,7 +310,7 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
   {
-    src: PLACEHOLDER,
+    src: "/images/placeholders/happy-faces-la-hero-placeholder.svg",
     alt: "Happy Faces LA artist station and cosmetic supplies setup at an event",
     category: "Setup",
     service: "Professional Setup",

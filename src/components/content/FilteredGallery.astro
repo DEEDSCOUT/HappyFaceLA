@@ -8,8 +8,10 @@ interface Props {
 
 const { items, categories } = Astro.props;
 
-// Only show items with confirmed permission
-const visible = items.filter((item) => item.permissionConfirmed);
+// Only show items with confirmed permission AND real images (not SVG placeholders)
+const visible = items.filter(
+  (item) => item.permissionConfirmed && !item.src.endsWith(".svg")
+);
 
 // Unique id for scoping JS
 const uid = "fg-" + Math.random().toString(36).slice(2, 8);
@@ -62,7 +64,7 @@ const uid = "fg-" + Math.random().toString(36).slice(2, 8);
 
   {visible.length === 0 && (
     <p class="mt-6 text-sm text-slate-500">
-      Real gallery photos are coming soon. Owner-provided photos will replace these placeholders.
+      Photos for this category are coming soon. Check back after our next event!
     </p>
   )}
 </section>

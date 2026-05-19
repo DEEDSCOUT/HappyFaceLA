@@ -7,6 +7,8 @@ interface Props {
   secondaryCtaLabel?: string;
   secondaryCtaHref?: string;
   trustLine?: string;
+  heroImage?: string;
+  heroImageAlt?: string;
 }
 
 const {
@@ -16,7 +18,9 @@ const {
   primaryCtaHref = "/contact/",
   secondaryCtaLabel = "Call/Text 818-619-5506",
   secondaryCtaHref = "tel:+18186195506",
-  trustLine = "Face painting • Balloon twisting • Glitter tattoos • Face gems"
+  trustLine = "Face painting • Balloon twisting • Glitter tattoos • Face gems",
+  heroImage,
+  heroImageAlt = "Happy Faces LA face painting at a birthday party in Los Angeles",
 } = Astro.props;
 ---
 
@@ -25,16 +29,34 @@ const {
   <div class="absolute -right-16 bottom-0 h-64 w-64 rounded-full bg-cyan-200/50 blur-2xl"></div>
 
   <div class="relative mx-auto w-full max-w-6xl px-4 py-16 md:py-24">
-    <h1 class="max-w-4xl text-4xl font-extrabold leading-tight text-slate-900 md:text-6xl">{title}</h1>
-    <p class="mt-5 max-w-3xl text-lg text-slate-700">{subtitle}</p>
-    <div class="mt-8 flex flex-wrap gap-3">
-      <a class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600" href={primaryCtaHref}>
-        {primaryCtaLabel}
-      </a>
-      <a class="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900" href={secondaryCtaHref} data-track-event="phone_click">
-        {secondaryCtaLabel}
-      </a>
+    <div class={heroImage ? "grid gap-8 md:grid-cols-2 md:items-center" : ""}>
+      <div>
+        <h1 class="text-4xl font-extrabold leading-tight text-slate-900 md:text-6xl">{title}</h1>
+        <p class="mt-5 text-lg text-slate-700">{subtitle}</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600" href={primaryCtaHref}>
+            {primaryCtaLabel}
+          </a>
+          <a class="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900" href={secondaryCtaHref} data-track-event="phone_click">
+            {secondaryCtaLabel}
+          </a>
+        </div>
+        <p class="mt-5 text-sm text-slate-600">{trustLine}</p>
+      </div>
+      {heroImage && (
+        <div class="flex justify-center md:justify-end">
+          <img
+            src={heroImage}
+            alt={heroImageAlt}
+            width="560"
+            height="700"
+            class="w-full max-w-sm rounded-3xl object-cover shadow-xl md:max-w-md"
+            style="aspect-ratio:4/5; object-position: center top;"
+            loading="eager"
+            decoding="async"
+          />
+        </div>
+      )}
     </div>
-    <p class="mt-5 text-sm text-slate-600">{trustLine}</p>
   </div>
 </section>

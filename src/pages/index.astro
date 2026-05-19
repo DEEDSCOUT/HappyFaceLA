@@ -15,9 +15,9 @@ import { commonFaqs } from "../data/faqs";
 import { galleryItems } from "../data/gallery";
 import { organizationJsonLd, localBusinessJsonLd, websiteJsonLd } from "../utils/schema";
 
-// Show up to 6 featured gallery items on the homepage
+// Show up to 6 featured gallery items on the homepage — real photos only
 const featuredGallery = galleryItems
-  .filter((item) => item.permissionConfirmed && item.featured)
+  .filter((item) => item.permissionConfirmed && item.featured && !item.src.endsWith(".svg"))
   .slice(0, 6)
   .map((item) => ({ src: item.src, alt: item.alt }));
 ---
@@ -31,13 +31,15 @@ const featuredGallery = galleryItems
 	<Hero
 		title="Face Painting, Balloon Twisting & Glitter Tattoos in Los Angeles"
 		subtitle="Professional kids party and event entertainment by Happy Faces LA, serving birthdays, school events, corporate family events, festivals, and private celebrations across Los Angeles."
+		heroImage="/images/hero/happy-faces-la-hero-face-painting-butterfly-01.webp"
+		heroImageAlt="Butterfly face painting by Happy Faces LA at a birthday party in Los Angeles"
 	/>
 
 	<section class="mx-auto w-full max-w-6xl px-4 py-10">
 		<h2 class="text-2xl font-bold text-slate-900">Core services</h2>
 		<div class="mt-4 grid gap-4 md:grid-cols-2">
 			{services.map((service) => (
-				<ServiceCard title={service.name} description={service.description} href={`/${service.slug}/`} />
+				<ServiceCard title={service.name} description={service.description} href={`/${service.slug}/`} image={service.image} imageAlt={service.imageAlt} />
 			))}
 		</div>
 	</section>
