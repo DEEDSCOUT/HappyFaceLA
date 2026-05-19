@@ -18,19 +18,17 @@ After every completed task, update this file with:
 
 ## Latest Session Log
 
-- Cloudflare Pages first deployment succeeded.
-- Preview URL: <https://happyfacesla.pages.dev>
-- Repository: <https://github.com/DEEDSCOUT/HappyFaceLA>
-- Local Pages Functions test passed: 7 passed, 0 failed.
-- happyfacesla.com and happyfacela.com are active/protected in Cloudflare.
-- Production launch remains blocked by:
-  - environment variables
-  - CRM_WEBHOOK_URL / lead destination
-  - custom domain binding
-  - redirect rules
-  - preview /api/lead test
-  - production /api/lead test
-  - real lead delivery verification
+Last updated: 2026-05-18
+
+- Production site live at <https://happyfacesla.com> — all launch gates passed.
+- GA4 (`G-7NH6RY78TK`) live on all 24 pages.
+- Microsoft Clarity (`wsw4v74jpw`) live on all 24 pages.
+- Google Ads campaign "Kids Party Face Painting" (Performance Max, $20/day) launched.
+- `generate_lead` GA4 key event is the sole primary conversion for the campaign.
+- Lead delivery verified end-to-end (Make → Google Sheets → Gmail).
+- Google Business Profile appeal submitted; in wait state — do not create duplicate GBP.
+- No code or infrastructure blockers remain.
+- Current non-code priority: **Content Trust Sprint** — owner to provide real photos and testimonials.
 
 ## Project Facts
 
@@ -164,18 +162,16 @@ Strong set: 12 testimonials with the same category distribution, doubled.
 
 ## Developer Next Actions
 
-Next actions are deployment validation only. Do not add new features.
-
-1. Test the Cloudflare Pages preview URL: <https://happyfacesla.pages.dev>
-2. Test /api/lead on preview with valid payload, invalid payload, honeypot, malformed JSON, and non-POST method.
-3. Confirm whether Cloudflare Pages env vars are configured.
-4. Attach custom domains in Cloudflare Pages.
-5. Configure Cloudflare dashboard Redirect Rules for hostname canonicalization.
-6. Verify happyfacesla.com loads production site over HTTPS.
-7. Verify `happyfacela.com`, `www.happyfacela.com`, and `www.happyfacesla.com` redirect to <https://happyfacesla.com/> with 301 status.
-8. Test /api/lead on <https://happyfacesla.com/api/lead> after custom domain binding.
-9. Verify real lead delivery, not stub mode.
-10. Update this file with commands run, validation results, blockers, and production status.
+1. **Google Ads — hands off for 24–72h.** Do not edit the campaign, ad groups, assets, or budget unless ads are disapproved or there are zero impressions after 48h. Let Performance Max learn.
+2. **Monitor ads.** Check impressions, clicks, spend, conversions, and asset strength daily after the first 48h.
+3. **GBP appeal — wait.** Do not create a duplicate Google Business Profile or edit the existing profile while the appeal is pending.
+4. **Content Trust Sprint — when owner provides assets:**
+   - Replace SVG placeholder images with real photos.
+   - Populate the gallery page with real gallery photos.
+   - Add testimonial sections to homepage and reviews page with verified customer quotes.
+   - See "Content Trust Sprint — Required Assets" section for full breakdown.
+5. **Legal entity name** — update `legalName` in `src/data/business.ts` only after the legal entity is confirmed by the owner.
+6. **Google review link** — add to reviews page and contact page once GBP is verified and active.
 
 ## Cloudflare Status
 
