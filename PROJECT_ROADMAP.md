@@ -104,6 +104,64 @@ Owner must provide or approve:
 
 Unknown owner-specific facts must remain marked as TBD_BY_OWNER. Do not invent prices, testimonials, addresses, review counts, insurance claims, or awards.
 
+## Content Trust Sprint — Required Assets
+
+Next non-code priority after Google Ads stabilization and GBP appeal waiting period.
+Once assets are provided, the engineering task is: replace SVG placeholders, populate real gallery, and wire testimonial sections.
+
+### Minimum Viable Target
+
+| Asset type | Minimum | Strong target |
+| --- | --- | --- |
+| Website / service images | 10 | 10 |
+| Gallery photos | 18 | 36 |
+| Customer testimonials | 6 | 12 |
+
+### Images Needed
+
+Minimum set (10 images):
+
+- 1 hero image
+- 1 face painting image
+- 1 balloon twisting image
+- 1 glitter tattoos image
+- 1 face gems / face jewelry image
+- 1 group / event atmosphere image
+
+Strong set (10 images):
+
+- 2 hero options
+- 4 service images (one per service)
+- 2 event atmosphere images
+- 1 setup / professional kit image
+- 1 parent trust image (parent watching, child happy)
+
+### Gallery Photos Needed
+
+| Category | Minimum | Strong target |
+| --- | --- | --- |
+| Face painting | 8 | 14 |
+| Balloon twisting | 4 | 8 |
+| Glitter tattoos | 3 | 6 |
+| Face gems / face jewelry | 3 | 6 |
+| Setup / event atmosphere | — | 2 |
+| **Total** | **18** | **36** |
+
+### Testimonials Needed
+
+Each testimonial must include: customer first name, city/area, event type, short quote, optional date/month.
+
+Minimum set (6 testimonials):
+
+- 3 birthday party testimonials
+- 1 school / carnival / festival testimonial
+- 1 corporate / family event testimonial
+- 1 repeat / general customer testimonial
+
+Strong set: 12 testimonials with the same category distribution, doubled.
+
+**Do not add fake or invented testimonials. All testimonials must be real and verifiable.**
+
 ## Developer Next Actions
 
 Next actions are deployment validation only. Do not add new features.
@@ -372,6 +430,66 @@ Next required action:
 Production status changed:
 
 - Analytics tracking now active on all 24 pages.
+
+### 2026-05-18 - Launch Google Ads campaign; confirm GBP appeal submitted
+
+What changed:
+
+- **Google Ads campaign launched**: "Kids Party Face Painting"
+  - Campaign type: Performance Max
+  - Daily budget: $20/day
+  - Status: Live
+- **Primary conversion correctly set**:
+  - Goal: `Submit lead form`
+  - GA4 event: `generate_lead`
+  - Status: Active
+  - Used by campaign: 1 of 1
+- **Old weak conversion removed from bidding**: The `Contact Us` page-load conversion
+  (`/contact/` page view) was removed from primary optimization. It is no longer used for
+  campaign bidding.
+- **Ads terms accepted**: Call and messaging ads terms accepted. Lead form ads terms accepted.
+- **Auto-tagging**: On (required for GA4 ↔ Google Ads attribution).
+- **Microsoft Clarity and GA4**: Both remain live and confirmed on production.
+- **Lead delivery**: Gmail delivery verified end-to-end.
+- **Google Business Profile**: Appeal submitted. Profile is in wait state.
+  Do not create a duplicate GBP or edit the existing profile while appeal is pending.
+
+Files changed:
+
+- PROJECT_ROADMAP.md
+
+Commands run:
+
+- None (marketing/ads configuration performed in Google Ads dashboard)
+
+Validation result:
+
+- Google Ads campaign live with correct `generate_lead` primary conversion
+- No duplicate GBP action taken
+
+Google Ads status:
+
+| Item | Status |
+| --- | --- |
+| Campaign "Kids Party Face Painting" | ✅ Live |
+| Campaign type | Performance Max |
+| Daily budget | $20/day |
+| Primary conversion: `generate_lead` | ✅ Active, used by 1 of 1 campaigns |
+| Old `Contact Us` page-load conversion | ✅ Removed from bidding |
+| Auto-tagging | ✅ On |
+| Call/messaging ads terms | ✅ Accepted |
+| Lead form ads terms | ✅ Accepted |
+| Google Business Profile appeal | ⏳ Submitted — waiting |
+
+Next required action:
+
+- Monitor Google Ads campaign for first impressions and clicks (allow 24–48h for ramp-up).
+- Do not edit GBP while appeal is pending.
+- Begin gathering real photos and testimonials for the Content Trust Sprint (see section below).
+
+Production status changed:
+
+- Paid search traffic now active. Conversion tracking is live.
 
 ### 2026-05-17 - Replace testimonial placeholders with honest social-proof copy
 
