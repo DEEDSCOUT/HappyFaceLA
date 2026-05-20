@@ -9,16 +9,17 @@ interface Props {
   title: string;
   description: string;
   canonicalPath: string;
+  noindex?: boolean;
   jsonLd?: Array<Record<string, unknown>>;
 }
 
-const { title, description, canonicalPath, jsonLd = [] } = Astro.props;
+const { title, description, canonicalPath, noindex = false, jsonLd = [] } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
-    <SeoHead title={title} description={description} canonicalPath={canonicalPath} jsonLd={jsonLd} />
+    <SeoHead title={title} description={description} canonicalPath={canonicalPath} noindex={noindex} jsonLd={jsonLd} />
     <!-- Google Analytics 4 tracking for Happy Faces LA -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7NH6RY78TK"></script>
     <script is:inline>

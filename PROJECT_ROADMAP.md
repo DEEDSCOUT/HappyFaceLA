@@ -19,7 +19,108 @@ After every completed task, update this file with:
 ## Latest Session Log
 
 
-Last updated: 2026-05-20 (Reviews page suppressed; waiting for 6+ verified testimonials)
+Last updated: 2026-05-20 (Testimonial submission flow implemented)
+
+
+### 2026-05-20 (update) - Testimonial submission flow implemented
+
+**What changed**
+
+Private testimonial submission flow is live. Customers can submit testimonials at `/share-your-experience/`. All entries are held with `status: "New"` and require owner review before any public use.
+
+**Files created / modified**
+
+| File | Change |
+| --- | --- |
+| `functions/api/testimonial.ts` | New Cloudflare Pages Function — testimonial intake endpoint |
+| `src/pages/share-your-experience.astro` | New hidden page — `noindex: true`, not in navigation |
+| `src/layouts/BaseLayout.astro` | Added `noindex?: boolean` prop, passed through to `SeoHead` |
+
+**API endpoint: `/api/testimonial`**
+
+- Method: `POST`, `content-type: application/json`
+- Rate limit: 4 requests / minute per IP
+- Honeypot check: silent succeed on filled honeypot
+- Required fields: `first_name`, `city_or_area`, `event_type`, `services_booked[]`, `testimonial_text`, `consent_to_publish`, `consent_to_publish_details`, `contact_email_or_phone`
+- Optional fields: `last_initial`, `photo_filename` (filename only, no binary upload), `source_page`
+- Forwards to `TESTIMONIAL_WEBHOOK_URL` env var; falls back to `CRM_WEBHOOK_URL`
+- Signs payload with `CRM_WEBHOOK_SECRET` HMAC-SHA256 if set (`x-signature-sha256` header)
+- Response: `{ ok: true, submissionId }` on success; `{ ok: false, errors }` on validation failure
+- **`contact_email_or_phone` is PRIVATE** — lives in the `private` block of the webhook payload only, never exposed in any response or public page
+
+**Webhook payload structure**
+
+```json
+{
+  "submissionId": "<uuid>",
+  "submittedAt": "<ISO-8601>",
+  "type": "testimonial",
+  "status": "New",
+  "public": {
+    "first_name": "...",
+    "last_initial": "...",
+    "city_or_area": "...",
+    "event_type": "...",
+    "services_booked": ["..."],
+    "testimonial_text": "...",
+    "photo_filename": "..."
+  },
+  "private": {
+    "contact_email_or_phone": "..."
+  },
+  "consent": {
+    "consent_to_publish": true,
+    "consent_to_publish_details": true,
+    "consent_method": "Website form — /share-your-experience/",
+    "consent_date": "..."
+  },
+  "source_page": "/share-your-experience/"
+}
+```
+
+**Environment variable required**
+
+| Env var | Purpose |
+| --- | --- |
+| `TESTIMONIAL_WEBHOOK_URL` | Dedicated webhook for testimonial intake (preferred) |
+| `CRM_WEBHOOK_URL` | Fallback if `TESTIMONIAL_WEBHOOK_URL` not set |
+| `CRM_WEBHOOK_SECRET` | Shared HMAC secret (optional, same as lead.ts) |
+
+Set `TESTIMONIAL_WEBHOOK_URL` in Cloudflare Pages → Settings → Environment variables.
+
+**Status workflow**
+
+```
+Submission received → status: "New"
+  → Owner reviews in CRM / webhook destination
+  → Owner sets status: "Approved" or "Rejected"
+  → If Approved: owner adds entry to src/data/testimonials.ts with permissionConfirmed: true
+  → Entry becomes eligible for public display via getPublishableTestimonials()
+```
+
+**Hidden page: `/share-your-experience/`**
+
+- Not linked from any navigation or public page
+- `noindex: true` (robots: noindex,nofollow)
+- Not in sitemap (no public discovery)
+- Form fields: first name, last initial (optional), city/area, event type, services booked (checkboxes), experience text, optional photo (filename noted, binary collected separately), contact for verification (private), two required consent checkboxes
+- Success GA4 event: `testimonial_form_submit`
+
+**Reviews page restoration criteria (unchanged)**
+
+Restore `/reviews/` only after all of the following:
+
+1. Minimum 6 entries in `src/data/testimonials.ts` with `permissionConfirmed: true`
+2. Each entry has explicit `consentMethod` and `permissionGrantedOn` documented
+3. Each entry includes event type, city/area, and at least one service
+4. No child-identifying private details in any entry
+5. Re-add Reviews link to `src/data/navigation.ts`
+6. Remove `302` redirect from `public/_redirects`
+7. Re-create `src/pages/reviews.astro`
+
+**Production status:** new endpoint and page deployed on next `git push`.
+
+---
 
 
 ### 2026-05-20 (update) - Reviews page suppressed until testimonial proof exists

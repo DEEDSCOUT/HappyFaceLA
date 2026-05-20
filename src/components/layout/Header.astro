@@ -5,7 +5,17 @@ import { navigation } from "../../data/navigation";
 
 <header class="sticky top-0 z-50 border-b border-orange-200 bg-white/95 backdrop-blur">
   <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
-    <a class="text-lg font-bold text-slate-900" href="/">{business.name}</a>
+    <a class="flex items-center" href="/" aria-label={business.name}>
+      <img
+        src="/images/happy-faces-la-logo.png"
+        alt={`${business.name} logo`}
+        width="120"
+        height="120"
+        class="h-14 w-auto"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </a>
 
     <nav class="hidden items-center gap-4 md:flex">
       {navigation.desktop.map((item) => (
