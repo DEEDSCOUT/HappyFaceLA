@@ -49,9 +49,9 @@ const uid = "fg-" + Math.random().toString(36).slice(2, 8);
           decoding="async"
           src={item.src}
           alt={item.alt}
-          class="aspect-[4/3] w-full object-cover"
+          class="aspect-square w-full object-cover object-top"
           width="600"
-          height="450"
+          height="600"
         />
         {item.eventType && (
           <figcaption class="px-3 py-2 text-xs text-slate-500">
