@@ -18,6 +18,438 @@ After every completed task, update this file with:
 
 ## Latest Session Log
 
+Last updated: 2026-05-20 (Google Ads — GA4 generate_lead confirmed firing in realtime; Google Ads sync pending)
+
+### 2026-05-20 (update) - GA4 generate_lead confirmed; waiting for Google Ads import lag
+
+**What changed**
+
+- No file changes. Status update only.
+
+**Test lead submitted from https://happyfacesla.com/contact/**
+
+GA4 Realtime confirmed all expected events fired:
+
+| GA4 event | Count |
+| --- | --- |
+| `generate_lead` | 1 |
+| `form_start` | 1 |
+| `form_submit` | 1 |
+| `ads_conversion_Contact_Us_1` | 1 |
+
+- GA4 → Google Ads import pipeline is working end-to-end. ✅
+- Google Ads conversion action status will update after standard import lag (typically 24–48 h).
+
+**Pending checks**
+
+1. Wait for Google Ads import lag to clear.
+2. Re-check conversion action status in account `469-912-0105` — expect status to change from "No recent conversions".
+3. Re-check campaign diagnostics.
+4. Confirm `ads_conversion_Contact_Us_1` is **not** set as a primary bidding action — only `generate_lead` should be primary.
+5. Do NOT create duplicate conversion actions.
+
+**Production status:** unchanged.
+
+---
+
+### 2026-05-20 (update) - Conversion goal confirmed; pending live event validation
+
+**What changed**
+
+- No file changes. Status update only.
+
+**Conversion action state — confirmed in account 469-912-0105**
+
+| Field | Value |
+| --- | --- |
+| Conversion action | Happy Faces LA Website (web) generate_lead |
+| Goal group | Submit lead forms |
+| Source | Website / Google Analytics GA4 |
+| Action optimization | Primary |
+| Included in account-level goals | Yes |
+| Count | One |
+| Tracking status | No recent conversions |
+
+- Do NOT create duplicate conversion actions.
+
+**Remaining validation steps**
+
+1. Submit a test lead from https://happyfacesla.com/contact/
+2. Confirm GA4 Realtime shows `generate_lead` event.
+3. Wait for Google Ads to update tracking status from "No recent conversions".
+4. Re-run campaign diagnostics once a conversion event is observed.
+
+**Production status:** unchanged.
+
+---
+
+### 2026-05-20 (update) - MCC link confirmed complete; OAuth next
+
+**What changed**
+
+- No file changes. Status update only.
+
+**Topology — final confirmed**
+
+| Role | Account name | Account ID | API field | Value |
+|---|---|---|---|---|
+| Manager (MCC) | Happy Face LA | 634-051-0052 | `login_customer_id` | `6340510052` |
+| Client (target) | Happy Faces LA | 469-912-0105 | `customer_id` | `4699120105` |
+
+- `469-912-0105` is now directly linked under MCC `634-051-0052`. ✅
+
+**Resolved blockers**
+
+- ~~MCC link not established.~~ Done — `469-912-0105` linked under `634-051-0052`. ✅
+- ~~Customer ID stale (`468-234-8105`).~~ Corrected to `469-912-0105`. ✅
+- ~~Developer token placeholder.~~ Token populated in `.env.local`. ✅
+
+**Active blockers**
+
+1. **Developer token access = Test Account.** Google must approve Basic or Explorer access from MCC `634-051-0052` API Center. No live API calls against `4699120105` until approved.
+2. **OAuth credentials missing.** `GOOGLE_ADS_CLIENT_ID`, `GOOGLE_ADS_CLIENT_SECRET`, `GOOGLE_ADS_REFRESH_TOKEN` not yet set in `.env.local`.
+
+**Allowed developer work now**
+
+- Finish MCP scaffold and OAuth helper.
+- Prepare `google_ads_health_check`, read-only diagnostics tools.
+- Prepare mutation planning / snapshot / audit framework.
+
+**Not allowed yet**
+
+- Do NOT run production API calls against `4699120105` while token is Test Account.
+- Do NOT run live mutations.
+- Do NOT claim MCP is connected to production until token access is Basic or Explorer.
+
+**Production status:** unchanged.
+
+---
+
+### 2026-05-20 (correction) - Customer ID corrected; Test Account access blocker noted
+
+**Topology correction**
+
+- Previous session used stale client account `468-234-8105` / `4682348105`. That ID is unverified.
+- Confirmed active client account: `Happy Faces LA` — `469-912-0105` → API `customer_id=4699120105`.
+- MCC unchanged: `Happy Face LA` — `634-051-0052` → `login_customer_id=6340510052`.
+
+**What changed**
+
+- [tools/google_ads_mcp/.env.local](tools/google_ads_mcp/.env.local): `GOOGLE_ADS_CUSTOMER_ID` corrected to `4699120105`; added access-level warning comment.
+- [docs/google-ads/diagnostics.md](docs/google-ads/diagnostics.md): customer ID reference corrected; blocker note added.
+- [PROJECT_ROADMAP.md](PROJECT_ROADMAP.md): topology corrected; blocker documented.
+
+**Production status:** unchanged.
+
+---
+
+### 2026-05-20 - Google Ads MCC confirmed; .env.local seeded
+
+**Account topology confirmed (superseded by correction above)**
+
+- Manager Account (MCC): `Happy Face LA` — `634-051-0052` → API `login_customer_id=6340510052`.
+- Client ad account (stale — see correction above): `468-234-8105` → `customer_id=4682348105`.
+- Developer token belongs to the MCC's API Center, so every API call must
+  authenticate through `login_customer_id=6340510052` while targeting
+  the client account for diagnostics and mutations.
+- The Manager Account itself is **not** the diagnostics target — only used
+  for hierarchy lookups when needed.
+
+**What changed**
+
+- Created [tools/google_ads_mcp/.env.local](tools/google_ads_mcp/.env.local)
+  (gitignored). Token line is `GOOGLE_ADS_DEVELOPER_TOKEN=PASTE_TOKEN_HERE` —
+  owner pastes the real token directly into the file, never into chat.
+- Updated [tools/google_ads_mcp/.env.example](tools/google_ads_mcp/.env.example)
+  with confirmed customer + login customer IDs and a comment explaining the
+  MCC topology.
+- Updated `docs/google-ads/diagnostics.md` and `tools/google_ads_mcp/README.md`
+  with customer ID (now corrected again — see entry above).
+- Test fixture customer IDs left untouched (arbitrary fixture value, not a
+  live ID).
+
+**Security check**
+
+- `git check-ignore` confirms `.env.local` is ignored at `.gitignore:34`.
+- No developer token, client secret, or refresh token appears in any tracked
+  file. `.env.local` contains only the `PASTE_TOKEN_HERE` placeholder.
+- Snapshots, mutation plans, audit log directories remain gitignored.
+
+**Next blocker (in order)**
+
+1. ~~Confirm MCC + client topology.~~ Done.
+2. ~~Seed `.env.local` with confirmed IDs.~~ Done.
+3. ~~Owner pastes the developer token.~~ Done (`5x9…ABg` in `.env.local`).
+   **Blocker:** token is Test Account level — Basic/Explorer access pending approval.
+4. **OAuth client setup** in Google Cloud Console:
+   - Create or reuse a Cloud project, enable Google Ads API.
+   - Create OAuth 2.0 Desktop client → paste `client_id` and `client_secret`
+     into `.env.local`.
+5. Generate refresh token:
+   `cd tools/google_ads_mcp; python generate_refresh_token.py` (scope
+   `https://www.googleapis.com/auth/adwords`). Sign in as a Google account
+   that has access to MCC `634-051-0052`. Paste the printed refresh token
+   into `.env.local`.
+6. `python -m pip install -r tools/google_ads_mcp/requirements.txt`.
+7. VS Code → MCP: List Servers → start `happyfacesla-google-ads`.
+8. Ask Copilot to call `google_ads_health_check` — expect
+   `authenticated=true`, `customer_accessible=true`,
+   `customer_id_masked=***0105`, `login_customer_id_masked=***0052`.
+   **(Hold until Basic/Explorer access approved — Test Account will reject live calls.)**
+9. Run read-only diagnostics: `google_ads_account_summary`,
+   `google_ads_campaigns`, `google_ads_conversion_actions`,
+   `google_ads_conversion_goals`,
+   `google_ads_campaign_diagnostics` (defaults to "Kids Party Face Painting").
+10. Generate `docs/google-ads/diagnostics.md` via
+    `google_ads_generate_diagnostics_report`.
+11. **Do not perform live mutations yet.** Review diagnostics with owner first.
+
+**Production status:** unchanged.
+
+---
+
+### 2026-05-19 - Google Ads MCP read/write integration
+
+> **Warning:** Google Ads MCP has full edit capability, but all live mutations
+> require explicit approval token, mutation plan, before/after snapshots, and
+> audit log. Default mode is `validate_only=true`.
+
+**What was built**
+
+- Local MCP server at `tools/google_ads_mcp/` (FastMCP, stdio transport).
+- Full safety framework: approval gate, validate-only default, JSON mutation
+  plans, before/after snapshots, JSONL audit log, secret redaction.
+- 13 read tools + 13 write tools (see "Tools exposed" below).
+- Markdown diagnostics report generator → `docs/google-ads/diagnostics.md`.
+- 24-test pytest suite for the safety framework (all passing).
+
+**Credential requirements** (none committed)
+
+- Google Ads developer token (Tools → API Center in Ads UI)
+- OAuth Desktop client `client_id` + `client_secret` (Google Cloud Console)
+- Refresh token (generate via `tools/google_ads_mcp/generate_refresh_token.py`)
+- Customer ID: `4699120105` (Happy Faces LA — already in `.env.example`)
+- Login customer ID: only if accessing via MCC
+
+**MCP server path**
+
+- `tools/google_ads_mcp/server.py`
+- VS Code wiring: `.vscode/mcp.json` (server id `happyfacesla-google-ads`)
+- Start: VS Code → MCP: List Servers → start `happyfacesla-google-ads`
+
+**Tools exposed**
+
+Read (13): `google_ads_health_check`, `google_ads_gaql_query`,
+`google_ads_account_summary`, `google_ads_campaigns`,
+`google_ads_campaign_diagnostics`, `google_ads_conversion_actions`,
+`google_ads_conversion_goals`, `google_ads_pmax_asset_groups`,
+`google_ads_assets`, `google_ads_locations`,
+`google_ads_keywords_and_negatives`, `google_ads_change_history`,
+`google_ads_generate_diagnostics_report`.
+
+Write (13, all `validate_only=true` by default, all require approval token to
+actually mutate): `google_ads_update_campaign_status`,
+`google_ads_update_campaign_budget`, `google_ads_update_bid_strategy`,
+`google_ads_update_conversion_action`,
+`google_ads_update_customer_conversion_goal`,
+`google_ads_update_campaign_conversion_goals`,
+`google_ads_add_campaign_negative_keywords`,
+`google_ads_create_search_campaign` (always created PAUSED),
+`google_ads_create_or_update_search_keywords`,
+`google_ads_update_pmax_assets`, `google_ads_update_locations`,
+`google_ads_upload_image_assets`, `google_ads_apply_recommendation`.
+
+**Read tools tested**
+
+- All 24 safety/unit tests pass (GAQL guard, budget micros, approval
+  enforcement, redaction, snapshot/plan/audit writers, schema validation).
+- Live read smoke tests **not yet executed** — credentials not present.
+
+**Write tools implemented**
+
+- Fully implemented and gated. Mutate access is enabled in code
+  (`GOOGLE_ADS_ALLOW_MUTATE=true` in `.env.example`) but cannot run until
+  `.env.local` is populated with real credentials.
+
+**Whether live write access was validated**
+
+- No. Will only be validated when owner provides credentials AND a
+  low-risk validate-only call is performed first.
+
+**What was not changed**
+
+- No Google Ads campaign, budget, bid, conversion action, asset, location, or
+  recommendation was touched. No live API call has been made yet.
+- Production website unchanged.
+
+**Diagnostics report path**
+
+- `docs/google-ads/diagnostics.md` (placeholder until the tool runs).
+- Snapshots: `docs/google-ads/snapshots/` (gitignored).
+- Mutation plans: `docs/google-ads/mutation-plans/` (gitignored).
+- Audit log: `docs/google-ads/audit-log.jsonl` (gitignored).
+
+**Security safeguards**
+
+- `.env.local`, `google-ads.yaml`, `*.secrets.json` gitignored.
+- Operational artifacts (snapshots, plans, audit log) gitignored — they
+  contain customer-specific data.
+- Every write tool runs through `mutations.with_safety()` which enforces
+  approval, snapshots, plan, and audit.
+- GAQL read tool rejects DML keywords and multi-statement input.
+- Budget delta cap: `GOOGLE_ADS_MAX_DAILY_BUDGET_DELTA_PERCENT=25` (override
+  requires explicit `force_large_budget_change=true`).
+- Removing a campaign requires the word `REMOVE` in `reason`.
+- BROAD-match keywords require `BROAD_OK` in `reason`.
+- New Search campaigns are forced `PAUSED` at create time.
+- PMax campaign-level negative keywords are refused (correct: PMax uses
+  account-level brand-suitability lists / negative keyword lists at the
+  customer level instead).
+- `apply_recommendation` cannot run in `validate_only` mode and is hard-gated.
+- Secret redactor scrubs developer token, client secret, refresh token, and
+  client id from every snapshot, plan, audit line, and the diagnostics report.
+
+**Remaining Google Ads UI-only blockers**
+
+- Verifying the "Conversion tracking setup is incomplete" banner clears
+  after a real lead conversion is recorded.
+- Enhanced Conversions opt-in (UI consent).
+- Google Tag (gtag.js) firing verification — use Tag Assistant or Clarity.
+- Auto-apply recommendation toggles in UI.
+- Billing / payment instruments.
+
+**Diagnosis of "Conversion tracking setup is incomplete"** (without live
+data): the most likely API-visible causes — verifiable as soon as
+`google_ads_conversion_actions` and `google_ads_conversion_goals` run live —
+are (1) `Submit lead form` / `generate_lead` not marked
+`primary_for_goal=true`, (2) `include_in_conversions_metric=false`, or (3)
+customer conversion goal `SUBMIT_LEAD_FORM` not biddable. Each is fixable via
+the corresponding write tool. If all three are already correct on the API
+side, the banner is the UI's "no conversions recorded yet" state and clears
+naturally after one tracked lead.
+
+**Next required action**
+
+1. Owner pastes credentials into `tools/google_ads_mcp/.env.local`.
+2. Run `pip install -r tools/google_ads_mcp/requirements.txt` in a venv.
+3. Start MCP server in VS Code, call `google_ads_health_check`.
+4. Call `google_ads_generate_diagnostics_report` to populate
+   `docs/google-ads/diagnostics.md`.
+5. Review diagnosis, then ask Copilot to run any needed fix as
+   `validate_only=true` first — only then escalate to a real mutation with
+   `approval_token`.
+
+**Files changed**
+
+- Added `tools/google_ads_mcp/` (12 Python modules + tests + README + env
+  example + requirements).
+- Added `docs/google-ads/diagnostics.md` + `mutation-plans/README.md` +
+  `snapshots/README.md`.
+- Updated `.vscode/mcp.json` to register `happyfacesla-google-ads` server.
+- Updated `.gitignore` to exclude `.env*`, venv, OAuth artifacts, snapshots,
+  plans, and audit log.
+- Removed the earlier read-only prototype at `mcp/google-ads/` and the
+  superseded `docs/google-ads-diagnostics.md`.
+
+**Commands run**
+
+- `python -m pip install --quiet pytest pydantic python-dotenv`
+- `python -m pytest tools/google_ads_mcp/tests -q` → **24 passed**
+
+**Production status:** unchanged.
+
+---
+
+Last updated: 2026-05-19 (Google Ads read-only MCP — diagnostics scaffold)
+
+### 2026-05-19 Session: Google Ads Read-Only MCP Integration (Diagnostics Only)
+
+**What changed:**
+
+- Added a local **read-only** Google Ads MCP server under `mcp/google-ads/`.
+- Wired VS Code to it via `.vscode/mcp.json` (stdio transport, envFile-based secrets).
+- Added `docs/google-ads-diagnostics.md` placeholder; report is generated by the
+  `generate_diagnostics_report` tool.
+- Hardened `.gitignore` to exclude `.env.local`, `mcp/**/.venv/`, `mcp/**/__pycache__/`,
+  and any stray `google-ads.yaml`.
+
+**Files added / changed:**
+
+- `mcp/google-ads/server.py` — FastMCP server, GAQL `SELECT`-only.
+- `mcp/google-ads/requirements.txt` — `google-ads`, `mcp[cli]`, `python-dotenv`.
+- `mcp/google-ads/.env.local.example` — credential template (never `.env.local`).
+- `mcp/google-ads/README.md` — venv + OAuth refresh-token bootstrap steps.
+- `.vscode/mcp.json` — registers the `google-ads-readonly` server.
+- `docs/google-ads-diagnostics.md` — empty placeholder, populated by tool run.
+- `.gitignore` — added `.env.local`, MCP venv/cache, `google-ads.yaml`.
+
+**Tools exposed (all read-only):**
+
+`whoami`, `list_campaigns`, `list_conversion_actions`,
+`list_customer_conversion_goals`, `list_campaign_conversion_goals`,
+`list_asset_group_assets`, `list_pmax_search_themes`,
+`list_campaign_locations`, `list_campaign_budgets`, `run_gaql_select`
+(rejects non-`SELECT`), `generate_diagnostics_report`.
+
+**Explicitly NOT implemented (deferred):**
+
+- Campaign / budget / bid-strategy edits.
+- Conversion-action create or edit.
+- Auto-apply recommendations.
+- Any `*Mutate*` service call.
+
+**Feasibility verdict — Google Ads MCP for diagnostics: YES, feasible.**
+
+Accessible read-only via GAQL through `GoogleAdsService.SearchStream`:
+
+- Campaign metadata, status, channel/sub-type, bid strategy, optimization score.
+- Campaign budgets (shared + non-shared, delivery method, period).
+- Conversion actions: category, type/source, origin, primary_for_goal,
+  include_in_conversions_metric, counting type, attribution model.
+- Customer- and campaign-level conversion goals (which goals are biddable).
+- Performance Max asset group assets (headlines, descriptions, images, video IDs)
+  with performance labels.
+- Performance Max search themes and audience signals (`asset_group_signal`).
+- Campaign location targeting, resolved to canonical names via `geo_target_constant`.
+
+**Not accessible via the Google Ads API** (out of scope for this MCP):
+
+- Billing / payment instruments and invoices (separate Payments API; account-bound,
+  not in the standard Ads API surface).
+- Auto-apply recommendation toggles at the account UI level (recommendation
+  resources are readable, but the UI auto-apply preferences are not fully exposed).
+- Google Tag / GTM container contents (separate Tag Manager API).
+- GA4 link configuration details beyond the linked-account list.
+- Anything requiring a UI-only setting (some safety / brand-suitability toggles).
+
+**Validation:**
+
+- Static review only; no live credentials present yet.
+- `.env.local` does not exist on disk; example template only.
+- Server uses stdio transport via FastMCP — compatible with VS Code MCP host.
+- `run_gaql_select` rejects DML keywords and multi-statement input.
+
+**Remaining blockers:**
+
+- Owner must create OAuth desktop client in Google Cloud Console (or reuse the
+  one tied to the existing Ads account) and generate a refresh token using the
+  snippet in `mcp/google-ads/README.md`.
+- Owner must paste the developer token + OAuth values into
+  `mcp/google-ads/.env.local` (gitignored).
+- After `pip install -r mcp/google-ads/requirements.txt`, run **MCP: List Servers**
+  in VS Code and start `google-ads-readonly`, then ask Copilot to call
+  `generate_diagnostics_report`.
+
+**Next required action:**
+
+Owner provides credentials → diagnostics report populated → review report to
+identify conversion-tracking / PMax-signal gaps before any mutate phase is
+considered.
+
+**Production status:** unchanged (no production code touched).
+
+---
+
 Last updated: 2026-05-19 (Trust Sprint Media Gaps — Video Frame Extraction)
 
 - Production site live at <https://happyfacesla.com> — all launch gates passed.

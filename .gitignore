@@ -15,6 +15,7 @@ pnpm-debug.log*
 
 # environment variables
 .env
+.env.local
 .env.production
 .dev.vars
 
@@ -26,3 +27,18 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Python / MCP server
+tools/google_ads_mcp/.venv/
+tools/google_ads_mcp/.env
+tools/google_ads_mcp/.env.local
+tools/**/__pycache__/
+tools/**/*.pyc
+.env.google-ads
+google-ads.yaml
+*.secrets.json
+
+# Google Ads operational artifacts (local only — contain customer data)
+docs/google-ads/snapshots/
+docs/google-ads/mutation-plans/
+docs/google-ads/audit-log.jsonl
