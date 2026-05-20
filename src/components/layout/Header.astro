@@ -4,14 +4,14 @@ import { navigation } from "../../data/navigation";
 ---
 
 <header class="sticky top-0 z-50 border-b border-orange-200 bg-white/95 backdrop-blur">
-  <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
-    <a class="flex items-center" href="/" aria-label={business.name}>
+  <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-2 md:py-[10px]">
+    <a class="flex shrink-0 items-center" href="/" aria-label={business.name}>
       <img
         src="/images/happy-faces-la-logo.png"
         alt={`${business.name} logo`}
         width="120"
         height="120"
-        class="h-14 w-auto"
+        class="h-[52px] w-auto sm:h-14 md:h-[68px]"
         loading="eager"
         fetchpriority="high"
       />
@@ -24,7 +24,7 @@ import { navigation } from "../../data/navigation";
     </nav>
 
     <a
-      class="rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
+      class="shrink-0 rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
       href={`tel:${business.phone}`}
       data-track-event="phone_click"
     >
