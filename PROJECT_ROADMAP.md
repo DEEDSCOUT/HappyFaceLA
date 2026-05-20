@@ -18,36 +18,31 @@ After every completed task, update this file with:
 
 ## Latest Session Log
 
-Last updated: 2026-05-20 (Reviews — collection flow + Google Places embed built; waiting on owner to collect first verified reviews)
 
-### 2026-05-20 (update) - Real review collection flow + Google Places embed shipped
+Last updated: 2026-05-20 (Reviews page suppressed; waiting for 6+ verified testimonials)
 
-Owner correctly rejected fabricated AI-generated reviews (FTC 16 CFR Part 465 violation; Google Ads suspension risk). Pivoted to compliant infrastructure.
 
-**What changed**
+### 2026-05-20 (update) - Reviews page suppressed until testimonial proof exists
 
-- [src/data/testimonials.ts](src/data/testimonials.ts): added `sourceUrl`, `permissionGrantedOn`, `consentMethod` fields; added `getPublishableTestimonials()` helper; hard-coded comment block warning against fabricated reviews.
-- [docs/reviews/collection-flow.md](docs/reviews/collection-flow.md) (new): legally-compliant intake procedure — two valid sources (public GBP review, private feedback with written consent), SMS/email request template, quote-editing rules, publishing checklist.
-- [functions/api/google-reviews.ts](functions/api/google-reviews.ts) (new): Cloudflare Pages Function that fetches Google Places API (New) on the server, returns up to 5 reviews + aggregate rating, edge-cached 6 h. API key never exposed to browser. Returns 503 until configured.
-- [src/components/sections/GoogleReviewsSection.astro](src/components/sections/GoogleReviewsSection.astro) (new): client-side fetches `/api/google-reviews`, renders only if response succeeds and contains reviews (no empty state ever shown), includes Google attribution + "See all on Google" link.
-- [src/pages/reviews.astro](src/pages/reviews.astro): wired in `GoogleReviewsSection` above hand-curated testimonials.
-- [src/pages/index.astro](src/pages/index.astro): added `GoogleReviewsSection` (limit=3) above existing `TestimonialsSection` for homepage social proof.
 
-**Validation**
+**Reviews page suppression policy**
 
-- `npm run build` — 24 pages built, no errors.
-- Lint clean on all new files.
+- Reviews page is not published until at least 6 verified testimonials are collected, each with explicit permission, event/service context, and no child-identifying private details.
+- No placeholder testimonials, no fake Review or AggregateRating schema, and no fabricated content will be published.
+- Main navigation omits Reviews link.
+- `/reviews/` is redirected to `/gallery/` until the above criteria are met.
+- All reviews/testimonials infrastructure remains in place for later restoration.
 
-**Next steps (owner)**
+**Current priorities:**
+- Real gallery assets
+- Google Business Profile verification/photos
+- Testimonial proof collection
 
-1. **Collect first 3–5 real reviews** from past clients using the SMS/email template in [docs/reviews/collection-flow.md](docs/reviews/collection-flow.md). Save proof of permission outside the repo.
-2. **Set Cloudflare Pages secrets** (Pages project → Settings → Environment variables → Production):
-   - `GOOGLE_PLACES_API_KEY` — restricted key with Places API (New) enabled, restricted to the Pages project URL.
-   - `GOOGLE_PLACES_PLACE_ID` — Happy Faces LA Google Business Profile place ID (find via Google's Place ID Finder).
-3. Add verified entries to `src/data/testimonials.ts` with `permissionConfirmed: true`, `permissionGrantedOn`, `consentMethod`.
-4. Once 3+ entries exist OR Google Places returns reviews, remove the `/reviews/ / 302` line in [public/_redirects](public/_redirects) to re-expose the page and re-add the nav link in [src/data/navigation.ts](src/data/navigation.ts).
-
-**Production status:** unchanged. Reviews page still 302 → home until real reviews exist.
+**Restore Reviews page only after:**
+- Minimum 6 verified testimonials
+- Permission to publish
+- Event/service context included
+- No child-identifying private details
 
 ---
 

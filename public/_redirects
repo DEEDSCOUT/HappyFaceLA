@@ -10,4 +10,4 @@
 # when needed (e.g. legacy URL -> new URL after content moves).
 
 # Reviews page hidden until sufficient real reviews are collected
-/reviews/ / 302
+/reviews/ /gallery/ 302
