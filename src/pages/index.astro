@@ -8,6 +8,7 @@ import FAQAccordion from "../components/content/FAQAccordion.astro";
 import ServiceAreaLinks from "../components/sections/ServiceAreaLinks.astro";
 import TrustSection from "../components/sections/TrustSection.astro";
 import TestimonialsSection from "../components/sections/TestimonialsSection.astro";
+import GoogleReviewsSection from "../components/sections/GoogleReviewsSection.astro";
 import CTASection from "../components/sections/CTASection.astro";
 import { services } from "../data/services";
 import { packages } from "../data/packages";
@@ -54,6 +55,8 @@ const featuredGallery = galleryItems
 	<section class="mx-auto w-full max-w-6xl px-4 py-10">
 		<GalleryGrid title="Recent events" images={featuredGallery} />
 	</section>
+
+	<GoogleReviewsSection heading="What our LA families say on Google" limit={3} />
 
 	<TestimonialsSection limit={6} />
 

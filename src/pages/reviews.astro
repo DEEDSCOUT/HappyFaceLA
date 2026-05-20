@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
 import PageIntro from "../components/sections/PageIntro.astro";
 import TestimonialsSection from "../components/sections/TestimonialsSection.astro";
+import GoogleReviewsSection from "../components/sections/GoogleReviewsSection.astro";
 
 const canonicalPath = "/reviews/";
 ---
@@ -13,8 +14,9 @@ const canonicalPath = "/reviews/";
   canonicalPath={canonicalPath}
 >
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Reviews", href: canonicalPath }]} />
-  <PageIntro title="Reviews" description="Real customer reviews are being added as Happy Faces LA collects verified feedback from events." />
+  <PageIntro title="Reviews" description="Real customer reviews from verified Happy Faces LA events." />
 
+  <GoogleReviewsSection heading="Latest Google reviews" />
   <TestimonialsSection />
 
   <section class="mx-auto w-full max-w-4xl px-4 pb-10">

@@ -1,0 +1,137 @@
+---
+// Google Business Profile reviews, pulled live from the /api/google-reviews
+// Pages Function. Server returns up to 5 reviews (Places API limit).
+//
+// Until GOOGLE_PLACES_API_KEY and GOOGLE_PLACES_PLACE_ID are configured as
+// Cloudflare Pages secrets, the endpoint returns 503 and this section renders
+// nothing. That is intentional — we never show empty/placeholder state for
+// reviews.
+
+interface Props {
+  /** Section heading. Defaults to "Google reviews". */
+  heading?: string;
+  /** Max reviews to render (Places API returns up to 5). */
+  limit?: number;
+}
+
+const { heading = "Google reviews", limit = 5 } = Astro.props;
+---
+
+<section
+  class="mx-auto w-full max-w-6xl px-4 py-10"
+  data-google-reviews
+  data-limit={String(limit)}
+  hidden
+>
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <h2 class="text-2xl font-bold text-slate-900">{heading}</h2>
+    <p class="text-sm text-slate-600">
+      <span data-google-reviews-rating></span>
+      <a
+        data-google-reviews-link
+        href="#"
+        rel="noopener noreferrer"
+        target="_blank"
+        class="ml-2 text-orange-600 underline-offset-2 hover:underline"
+      >See all on Google</a>
+    </p>
+  </div>
+  <div
+    data-google-reviews-list
+    class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+  ></div>
+  <p class="mt-4 text-xs text-slate-500">
+    Reviews and ratings sourced live from the Happy Faces LA Google Business
+    Profile. Customer names and photos are shown exactly as they appear on
+    Google.
+  </p>
+</section>
+
+<script>
+  type Review = {
+    authorName: string;
+    authorPhotoUri: string | null;
+    rating: number;
+    relativeTime: string;
+    text: string;
+  };
+  type Payload = {
+    rating: number | null;
+    userRatingCount: number | null;
+    googleMapsUri: string | null;
+    reviews: Review[];
+  };
+
+  function escapeHtml(s: string): string {
+    return s
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function stars(n: number): string {
+    const full = Math.max(0, Math.min(5, Math.round(n)));
+    return "★".repeat(full) + "☆".repeat(5 - full);
+  }
+
+  async function render(): Promise<void> {
+    const section = document.querySelector<HTMLElement>("[data-google-reviews]");
+    if (!section) return;
+    const limit = Number(section.dataset.limit ?? "5");
+
+    let payload: Payload;
+    try {
+      const res = await fetch("/api/google-reviews", { headers: { accept: "application/json" } });
+      if (!res.ok) return; // stay hidden
+      payload = (await res.json()) as Payload;
+    } catch {
+      return;
+    }
+
+    if (!payload.reviews || payload.reviews.length === 0) return;
+
+    const ratingEl = section.querySelector<HTMLElement>("[data-google-reviews-rating]");
+    if (ratingEl && payload.rating != null) {
+      ratingEl.textContent = `${payload.rating.toFixed(1)} ★ · ${payload.userRatingCount ?? 0} Google reviews`;
+    }
+
+    const linkEl = section.querySelector<HTMLAnchorElement>("[data-google-reviews-link]");
+    if (linkEl && payload.googleMapsUri) linkEl.href = payload.googleMapsUri;
+
+    const listEl = section.querySelector<HTMLElement>("[data-google-reviews-list]");
+    if (!listEl) return;
+
+    listEl.innerHTML = payload.reviews
+      .slice(0, limit)
+      .map((r) => {
+        const photo = r.authorPhotoUri
+          ? `<img src="${escapeHtml(r.authorPhotoUri)}" alt="" width="32" height="32" loading="lazy" referrerpolicy="no-referrer" class="h-8 w-8 rounded-full" />`
+          : "";
+        return `
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center gap-3">
+              ${photo}
+              <div>
+                <p class="text-sm font-semibold text-slate-900">${escapeHtml(r.authorName)}</p>
+                <p class="text-xs text-amber-500" aria-label="${r.rating} out of 5 stars">${stars(r.rating)}</p>
+              </div>
+            </div>
+            <blockquote class="mt-3 text-sm leading-relaxed text-slate-700">
+              <p>&ldquo;${escapeHtml(r.text)}&rdquo;</p>
+            </blockquote>
+            <p class="mt-3 text-xs text-slate-500">${escapeHtml(r.relativeTime)} · Google</p>
+          </article>`;
+      })
+      .join("");
+
+    section.hidden = false;
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => void render());
+  } else {
+    void render();
+  }
+</script>
