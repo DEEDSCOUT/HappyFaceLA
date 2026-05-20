@@ -37,11 +37,11 @@ const uid = "fg-" + Math.random().toString(36).slice(2, 8);
     ))}
   </div>
 
-  <!-- Gallery grid -->
-  <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" id={`${uid}-grid`}>
+  <!-- Gallery grid — CSS columns masonry so images display at natural size, no cropping -->
+  <div class="mt-6 columns-2 lg:columns-3 gap-4" id={`${uid}-grid`}>
     {visible.map((item) => (
       <figure
-        class="gallery-item overflow-hidden rounded-2xl border border-slate-200 bg-white"
+        class="gallery-item mb-4 break-inside-avoid overflow-hidden rounded-2xl border border-slate-200 bg-white"
         data-category={item.category}
       >
         <img
@@ -49,9 +49,7 @@ const uid = "fg-" + Math.random().toString(36).slice(2, 8);
           decoding="async"
           src={item.src}
           alt={item.alt}
-          class="aspect-square w-full object-cover object-top"
-          width="600"
-          height="600"
+          class="w-full h-auto block"
         />
         {item.eventType && (
           <figcaption class="px-3 py-2 text-xs text-slate-500">
