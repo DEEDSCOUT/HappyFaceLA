@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Ads API Basic Access Application — Happy Faces LA</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.6;
+    color: #1a1a1a;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 40px;
+  }
+  h1 {
+    font-size: 16pt;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  h2 {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-top: 24px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 2px;
+  }
+  .subtitle {
+    font-size: 10pt;
+    color: #555;
+    margin-bottom: 24px;
+  }
+  p { margin-bottom: 8px; }
+  ul { padding-left: 20px; margin-bottom: 8px; }
+  ul li { margin-bottom: 3px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+    font-size: 10pt;
+  }
+  th {
+    background: #f0f0f0;
+    text-align: left;
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    font-weight: bold;
+  }
+  td {
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    vertical-align: top;
+  }
+  .label { font-weight: bold; }
+  .note {
+    background: #fffbe6;
+    border-left: 3px solid #f0a500;
+    padding: 8px 12px;
+    font-size: 10pt;
+    margin-bottom: 12px;
+  }
+  .section-body { margin-bottom: 16px; }
+  code {
+    font-family: Consolas, monospace;
+    font-size: 9.5pt;
+    background: #f4f4f4;
+    padding: 0 3px;
+    border-radius: 2px;
+  }
+  .mockup-box {
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    background: #fafafa;
+    padding: 14px 16px;
+    font-family: Consolas, monospace;
+    font-size: 9pt;
+    white-space: pre;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  @media print {
+    body { padding: 20px 28px; }
+    .no-break { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Google Ads API Basic Access Application</h1>
+<div class="subtitle">
+  Happy Faces LA &nbsp;·&nbsp; happyfacesla.com &nbsp;·&nbsp; MCC Account 634-051-0052 &nbsp;·&nbsp; May 2026
+</div>
+
+<!-- ─── COMPANY / BUSINESS MODEL ─────────────────────────────────── -->
+<h2>Company Name</h2>
+<div class="section-body">
+  <p>Happy Faces LA</p>
+</div>
+
+<h2>Business Model</h2>
+<div class="section-body">
+  <p>
+    Happy Faces LA is a solo-operated face painting and event entertainment business
+    serving the Greater Los Angeles area. The company advertises its own services
+    (face painting, balloon twisting, glitter tattoos, face gems) exclusively on its
+    own Google Ads account (<strong>469-912-0105</strong>). It does not manage
+    advertising for any other business, does not resell advertising services, and
+    operates no third-party client accounts.
+  </p>
+  <p>
+    All Google Ads activity is owned and operated by the same individual who owns the
+    business. The developer token lives in the Manager (MCC) account
+    <strong>634-051-0052</strong> (Happy Face LA), which manages only the single
+    client account above.
+  </p>
+</div>
+
+<!-- ─── TOOL ACCESS / USE ─────────────────────────────────────────── -->
+<h2>Tool Access / Use</h2>
+<div class="section-body">
+  <p>
+    The tool is a <strong>private, locally-executed MCP (Model Context Protocol) server</strong>
+    built in Python. It runs exclusively on the business owner's personal computer and
+    is never deployed to the internet, hosted on any server, or shared with any
+    third-party user or organization.
+  </p>
+  <p>
+    Access is restricted to the owner's local machine only. Credentials are stored in
+    a gitignored <code>.env.local</code> file and are never transmitted to or stored
+    by any external service other than Google's own OAuth 2.0 infrastructure.
+  </p>
+  <p>
+    The tool integrates with <strong>VS Code + GitHub Copilot</strong> via the MCP
+    protocol, allowing the owner to query and manage their Google Ads account through
+    natural-language prompts inside their code editor. All API calls originate from the
+    owner's local machine.
+  </p>
+  <p>
+    There is no web UI, no SaaS layer, no data warehouse, and no third-party recipients
+    of any data returned by the API.
+  </p>
+</div>
+
+<!-- ─── TOOL DESIGN ───────────────────────────────────────────────── -->
+<h2>Tool Design</h2>
+<div class="section-body">
+  <p>
+    The tool consists of a single Python process (<code>tools/google_ads_mcp/server.py</code>)
+    exposing named tools over the MCP stdio transport. When VS Code + Copilot invokes
+    a tool, the server makes the corresponding Google Ads API call and returns
+    structured JSON to the AI assistant, which then presents a human-readable summary
+    to the owner.
+  </p>
+
+  <p><span class="label">Read operations (13 tools)</span></p>
+  <ul>
+    <li>Pull account-level settings, currency, time zone, conversion tracking configuration</li>
+    <li>List all campaigns with status, channel type, budget, bid strategy, optimization score</li>
+    <li>Full diagnostics for a named campaign: asset groups, signals, locations, conversion goals, tracking health</li>
+    <li>List all conversion actions and customer/campaign-level conversion goals</li>
+    <li>List Performance Max asset groups and all creative assets (text, image, video)</li>
+    <li>List geo-targeting locations per campaign</li>
+    <li>List all keywords and campaign-level negative keywords</li>
+    <li>Pull last 30 days of change history</li>
+    <li>Generate and write a full Markdown diagnostics report to disk</li>
+    <li>Execute arbitrary read-only GAQL SELECT queries (DML keywords blocked)</li>
+  </ul>
+
+  <p><span class="label">Write operations (13 tools — all safety-gated)</span></p>
+  <p>
+    Every write tool passes through a safety framework that enforces the following
+    before any mutation is sent to Google:
+  </p>
+  <ul>
+    <li>Explicit approval token required for live mutations</li>
+    <li>Default mode is <code>validate_only=true</code> — Google validates the operation server-side without applying it</li>
+    <li>Before-snapshot saved to disk before every mutation</li>
+    <li>JSON mutation plan generated and saved before execution</li>
+    <li>After-snapshot and JSONL audit log entry written on completion</li>
+    <li>Budget changes &gt;25% blocked unless an explicit override flag is passed</li>
+    <li>Campaign removal requires the word "REMOVE" in the reason string</li>
+    <li>New Search campaigns always created in PAUSED status</li>
+    <li>BROAD match keywords require an explicit "BROAD_OK" acknowledgment in reason</li>
+  </ul>
+  <p>Write capabilities include: campaign status, daily budget, bid strategy,
+    conversion action settings, customer and campaign conversion goals,
+    campaign negative keywords, Search campaign creation, Search keyword
+    management, Performance Max asset updates, geo-targeting, image asset upload,
+    and apply-recommendation (hard-gated, cannot run in validate-only mode).</p>
+</div>
+
+<!-- ─── Q11: CAMPAIGN TYPES ───────────────────────────────────────── -->
+<h2>Q11 — Supported Campaign Types</h2>
+<div class="section-body">
+  <p>Search, Performance Max</p>
+</div>
+
+<!-- ─── Q12: CAPABILITIES ─────────────────────────────────────────── -->
+<h2>Q12 — Google Ads Capabilities Provided</h2>
+<div class="section-body">
+  <table>
+    <tr><th>Capability</th><th>Selected</th><th>Notes</th></tr>
+    <tr><td>Account Creation</td><td>No</td><td>Tool does not create Google Ads accounts</td></tr>
+    <tr><td>Account Management</td><td>No</td><td>Reads account settings; does not modify account-level structure</td></tr>
+    <tr><td>Campaign Creation</td><td><strong>Yes</strong></td><td><code>google_ads_create_search_campaign</code> — creates Search campaigns (always PAUSED)</td></tr>
+    <tr><td>Campaign Management</td><td><strong>Yes</strong></td><td>Status, budget, bid strategy, conversion goals, locations, assets, keywords, recommendations</td></tr>
+    <tr><td>Reporting</td><td><strong>Yes</strong></td><td>Full diagnostics report; campaign, conversion, asset, keyword, and change-history reads</td></tr>
+    <tr><td>Keyword Planning Services</td><td><strong>Yes</strong></td><td><code>google_ads_create_or_update_search_keywords</code>, <code>google_ads_add_campaign_negative_keywords</code></td></tr>
+  </table>
+</div>
+
+<!-- ─── API SERVICES CALLED ───────────────────────────────────────── -->
+<h2>API Services Called</h2>
+<div class="section-body">
+  <table>
+    <tr>
+      <th>Service</th>
+      <th>Operation type</th>
+      <th>Purpose</th>
+    </tr>
+    <tr>
+      <td><code>GoogleAdsService</code></td>
+      <td>Read (search / search_stream)</td>
+      <td>All read tools — campaigns, assets, keywords, conversion actions, goals, locations, change history, account settings</td>
+    </tr>
+    <tr>
+      <td><code>CampaignService</code></td>
+      <td>Write (mutate)</td>
+      <td>Create Search campaigns; update campaign status and bid strategy</td>
+    </tr>
+    <tr>
+      <td><code>CampaignBudgetService</code></td>
+      <td>Write (mutate)</td>
+      <td>Update campaign daily budget</td>
+    </tr>
+    <tr>
+      <td><code>AdGroupService</code></td>
+      <td>Write (mutate)</td>
+      <td>Create ad groups when creating new Search campaigns</td>
+    </tr>
+    <tr>
+      <td><code>AdGroupAdService</code></td>
+      <td>Write (mutate)</td>
+      <td>Create responsive search ads when creating new Search campaigns</td>
+    </tr>
+    <tr>
+      <td><code>AdGroupCriterionService</code></td>
+      <td>Write (mutate)</td>
+      <td>Create or update Search keywords; add negative keywords to ad groups</td>
+    </tr>
+    <tr>
+      <td><code>CampaignCriterionService</code></td>
+      <td>Write (mutate)</td>
+      <td>Add campaign-level negative keywords; update geo-targeting</td>
+    </tr>
+    <tr>
+      <td><code>ConversionActionService</code></td>
+      <td>Write (mutate)</td>
+      <td>Update conversion action settings (status, counting type, lookback windows)</td>
+    </tr>
+    <tr>
+      <td><code>CustomerConversionGoalService</code></td>
+      <td>Write (mutate)</td>
+      <td>Update account-level conversion goal biddability</td>
+    </tr>
+    <tr>
+      <td><code>CampaignConversionGoalService</code></td>
+      <td>Write (mutate)</td>
+      <td>Update campaign-level conversion goal biddability</td>
+    </tr>
+    <tr>
+      <td><code>AssetService</code></td>
+      <td>Write (mutate)</td>
+      <td>Upload image assets for Performance Max campaigns</td>
+    </tr>
+    <tr>
+      <td><code>AssetGroupAssetService</code></td>
+      <td>Write (mutate)</td>
+      <td>Link or update assets within Performance Max asset groups</td>
+    </tr>
+    <tr>
+      <td><code>RecommendationService</code></td>
+      <td>Write (apply)</td>
+      <td>Apply Google Ads recommendations — hard-gated, requires explicit approval token, cannot run in validate_only mode</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ─── TOOL MOCKUP ───────────────────────────────────────────────── -->
+<h2>Tool Mockup — Typical Workflow</h2>
+<div class="section-body">
+  <p>
+    The tool has no graphical user interface. The owner types natural-language requests
+    in VS Code Copilot chat; the AI translates these to tool invocations; results are
+    returned as structured text in the editor. Below are representative interactions:
+  </p>
+
+  <p style="font-weight:bold; margin-top:12px; margin-bottom:4px;">Example 1 — Read: Campaign Diagnostics</p>
+  <div class="mockup-box">Owner:  "Run diagnostics on my Kids Party campaign"
+
+Copilot invokes:  google_ads_campaign_diagnostics("Kids Party Face Painting")
+
+Response summary:
+  Campaign: Kids Party Face Painting
+  Status: ENABLED  |  Channel: PERFORMANCE_MAX  |  Budget: $30.00/day
+  Asset groups: 1  (ENABLED)
+  Final URLs: ["https://happyfacesla.com/kids-birthday-party..."]
+  Conversion goal: SUBMIT_LEAD_FORM  —  biddable: true  ✅
+  Conversion action: generate_lead  —  primary_for_goal: true  ✅
+  Diagnosis: No tracking misconfigurations detected.</div>
+
+  <p style="font-weight:bold; margin-top:12px; margin-bottom:4px;">Example 2 — Write: Budget Update (validate-only first)</p>
+  <div class="mockup-box">Owner:  "Increase my Kids Party budget to $40 — validate first"
+
+Copilot invokes:  google_ads_update_campaign_budget({
+  "campaign_name_or_id": "Kids Party Face Painting",
+  "new_daily_budget_usd": 40.00,
+  "reason": "Testing higher budget for peak season",
+  "validate_only": true
+})
+
+Response:
+  validate_only: true
+  Plan saved:  docs/google-ads/mutation-plans/2026-05-20T...budget.json
+  Old budget:  $30.00  →  New budget: $40.00  (+33.3%)
+  Google validation: PASSED (no errors)
+
+Owner:  "Looks good — apply it"
+
+Copilot invokes same tool with validate_only: false, approval_token: "I_APPROVE_..."
+
+Response:
+  Mutation applied.  Audit entry written.  After-snapshot saved.</div>
+
+  <p style="font-weight:bold; margin-top:12px; margin-bottom:4px;">Example 3 — Read: Diagnostics Report</p>
+  <div class="mockup-box">Owner:  "Generate my full Google Ads diagnostics report"
+
+Copilot invokes:  google_ads_generate_diagnostics_report()
+
+Response:
+  Written: docs/google-ads/diagnostics.md  (12,840 bytes)
+  Sections: Account · Campaigns · Conversion Actions · Goals · Assets · Locations · Change History</div>
+</div>
+
+<!-- ─── SAFETY CONTROLS SUMMARY ────────────────────────────────────── -->
+<h2>Safety Controls</h2>
+<div class="section-body">
+  <table>
+    <tr><th>Control</th><th>Detail</th></tr>
+    <tr><td>Default validate_only</td><td>All write tools default to <code>validate_only=true</code>; changes are validated server-side but never applied without explicit override</td></tr>
+    <tr><td>Approval token</td><td>Live mutations require a secret approval token stored in <code>.env.local</code> and never transmitted through AI chat</td></tr>
+    <tr><td>Budget delta cap</td><td>Budget changes &gt;25% blocked by default; requires explicit <code>force_large_budget_change=true</code></td></tr>
+    <tr><td>New campaigns paused</td><td>All newly created Search campaigns are forced to PAUSED status at creation</td></tr>
+    <tr><td>GAQL guard</td><td>Raw GAQL tool rejects any query containing INSERT, UPDATE, DELETE, CREATE, DROP, MUTATE, ALTER or multiple statements</td></tr>
+    <tr><td>Audit trail</td><td>Every mutation produces: before-snapshot, mutation plan (JSON), after-snapshot, JSONL audit log entry — all saved locally</td></tr>
+    <tr><td>No credential exposure</td><td>Developer token, client secret, and refresh token are never printed, logged, or included in any snapshot or report</td></tr>
+    <tr><td>Single-account scope</td><td>Customer ID is fixed in <code>.env.local</code>; the tool cannot target any account other than <code>469-912-0105</code></td></tr>
+  </table>
+</div>
+
+<!-- ─── ACKNOWLEDGMENT ────────────────────────────────────────────── -->
+<h2>Acknowledgment</h2>
+<div class="section-body">
+  <p>
+    All information in this application is accurate. The tool described above is used
+    solely by the business owner to manage their own Google Ads account. No third
+    parties have access to the tool or to any data returned by the API.
+  </p>
+</div>
+
+</body>
+</html>

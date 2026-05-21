@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PMax UI Optimization Checklist — Happy Faces LA</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.6; color: #1a1a1a; max-width: 780px; margin: 0 auto; padding: 32px 40px; }
+  h1 { font-size: 15pt; font-weight: bold; margin-bottom: 4px; }
+  .subtitle { font-size: 10pt; color: #555; margin-bottom: 24px; }
+  h2 { font-size: 12pt; font-weight: bold; margin-top: 28px; margin-bottom: 8px; border-bottom: 2px solid #1a73e8; padding-bottom: 3px; color: #1a73e8; }
+  h3 { font-size: 11pt; font-weight: bold; margin-top: 14px; margin-bottom: 6px; }
+  p { margin-bottom: 8px; }
+  ul { padding-left: 20px; margin-bottom: 10px; }
+  li { margin-bottom: 4px; }
+  .step { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; background: #fff; }
+  .step input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; accent-color: #1a73e8; }
+  .step label { font-size: 10.5pt; line-height: 1.5; flex: 1; }
+  .step label strong { display: block; }
+  .step label .detail { color: #555; font-size: 10pt; }
+  .blocker { background: #fff3cd; border-color: #f0a500; border-left: 4px solid #f0a500; }
+  .done { background: #e8f5e9; border-color: #4caf50; }
+  .note { background: #e8f0fe; border-left: 4px solid #1a73e8; padding: 8px 12px; font-size: 10pt; margin-bottom: 12px; border-radius: 2px; }
+  .warn { background: #fff3cd; border-left: 4px solid #f0a500; padding: 8px 12px; font-size: 10pt; margin-bottom: 12px; border-radius: 2px; }
+  .nav-path { font-family: Consolas, monospace; font-size: 9.5pt; background: #f4f4f4; padding: 4px 8px; border-radius: 3px; display: inline-block; margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10pt; }
+  th { background: #f0f4ff; text-align: left; padding: 5px 8px; border: 1px solid #ccc; font-weight: bold; }
+  td { padding: 5px 8px; border: 1px solid #ccc; vertical-align: top; }
+  .result-box { border: 1px solid #ccc; border-radius: 4px; padding: 10px 14px; margin-top: 8px; background: #fafafa; }
+  .result-box textarea { width: 100%; border: 1px solid #ccc; border-radius: 3px; padding: 6px; font-size: 10pt; font-family: Arial, sans-serif; resize: vertical; }
+  .tag { display: inline-block; background: #e8f0fe; color: #1a73e8; border: 1px solid #b3c9f5; border-radius: 3px; padding: 1px 6px; font-size: 9.5pt; margin: 2px; }
+  .section-number { display: inline-block; background: #1a73e8; color: white; border-radius: 50%; width: 22px; height: 22px; text-align: center; line-height: 22px; font-size: 10pt; font-weight: bold; margin-right: 6px; flex-shrink: 0; }
+  .status-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9.5pt; font-weight: bold; }
+  .status-pending { background: #fff3cd; color: #856404; }
+  .status-done { background: #d4edda; color: #155724; }
+  .status-blocked { background: #f8d7da; color: #721c24; }
+  @media print { body { padding: 16px 24px; } }
+</style>
+</head>
+<body>
+
+<h1>PMax UI Optimization Checklist</h1>
+<div class="subtitle">Happy Faces LA · Kids Party Face Painting campaign · May 2026 · Manual UI tasks only — no API mutations</div>
+
+<div class="warn">
+  <strong>Constraints for this session:</strong>
+  Do not increase budget above $20/day. Do not split asset groups yet.
+  Do not use Google Ads API write tools — Basic Access is pending.
+  All changes below are manual in the Google Ads web UI.
+</div>
+
+<!-- ─── SECTION 1 ─────────────────────────────────────────── -->
+<h2><span class="section-number">1</span> Conversion Quality Verification</h2>
+
+<div class="note">
+  <strong>How to verify:</strong> Your lead form captures the <code>gclid</code> (Google Click ID) in every submission and forwards it to your webhook / CRM. A Google Ads conversion requires a real form submission that came from a Google ad click.
+</div>
+
+<div class="nav-path">CRM / Google Sheets / email → look for a form submission around May 17–20, 2026</div>
+
+<p>Check for a lead entry with:</p>
+<ul>
+  <li>Non-empty <code>gclid</code> value (confirms it came from a Google Ads click)</li>
+  <li><code>utm_source = google</code> or <code>utm_medium = cpc</code></li>
+  <li>Real contact info — name, phone, event date, city</li>
+  <li>Not from your own IP or a known test submission</li>
+</ul>
+
+<div class="result-box">
+  <strong>Conversion quality result — fill this in:</strong><br><br>
+  <table>
+    <tr><th>Field</th><th>Value (fill in)</th></tr>
+    <tr><td>Date of submission</td><td></td></tr>
+    <tr><td>gclid present?</td><td>☐ Yes &nbsp; ☐ No &nbsp; ☐ Unknown</td></tr>
+    <tr><td>utm_source / utm_medium</td><td></td></tr>
+    <tr><td>Real contact info?</td><td>☐ Yes &nbsp; ☐ No &nbsp; ☐ Unknown</td></tr>
+    <tr><td>Verdict</td><td>☐ Real lead &nbsp; ☐ Test &nbsp; ☐ Spam &nbsp; ☐ Unknown</td></tr>
+    <tr><td>Did you reply / book?</td><td>☐ Yes &nbsp; ☐ No</td></tr>
+  </table>
+</div>
+
+<!-- ─── SECTION 2 ─────────────────────────────────────────── -->
+<h2><span class="section-number">2</span> Add Audience Signals to Asset Group</h2>
+
+<div class="nav-path">Google Ads UI → Campaigns → Kids Party Face Painting → Asset groups → [asset group name] → Edit → Audience signals</div>
+
+<p>Under <strong>Search themes</strong>, add each term below as a separate signal. These tell Google's AI what search intent your asset group targets.</p>
+
+<div style="margin-bottom: 12px;">
+  <span class="tag">face painter near me</span>
+  <span class="tag">face painter Los Angeles</span>
+  <span class="tag">kids face painting Los Angeles</span>
+  <span class="tag">birthday party face painter</span>
+  <span class="tag">balloon artist near me</span>
+  <span class="tag">balloon twisting Los Angeles</span>
+  <span class="tag">kids party entertainment Los Angeles</span>
+  <span class="tag">school carnival face painting</span>
+  <span class="tag">corporate family event entertainment</span>
+  <span class="tag">glitter tattoos for kids party</span>
+  <span class="tag">face gems party entertainment</span>
+</div>
+
+<p>If a GA4 audience segment exists (e.g., "All Users" or "Form Viewers"), also add it under <strong>Your data segments</strong>.</p>
+
+<div class="step">
+  <input type="checkbox" id="s2a">
+  <label for="s2a">
+    <strong>11 search themes added to asset group</strong>
+    <span class="detail">Save the asset group after adding all themes at once.</span>
+  </label>
+</div>
+<div class="step">
+  <input type="checkbox" id="s2b">
+  <label for="s2b">
+    <strong>GA4 audience linked (if available)</strong>
+    <span class="detail">Optional but recommended — connects GA4 site visitor data as a bidding signal.</span>
+  </label>
+</div>
+
+<!-- ─── SECTION 3 ─────────────────────────────────────────── -->
+<h2><span class="section-number">3</span> Add Missing Image Assets</h2>
+
+<div class="nav-path">Google Ads UI → Campaigns → Kids Party Face Painting → Asset groups → [group] → Edit → Images</div>
+
+<div class="warn">
+  Use only original photos from your own events. No stock photos.
+  Crop images to exact ratios — Google rejects images that are off-spec.
+</div>
+
+<h3>Required image specs</h3>
+<table>
+  <tr><th>Type</th><th>Ratio</th><th>Min size</th><th>Min quantity</th><th>Status</th></tr>
+  <tr><td>Horizontal (landscape)</td><td>1.91 : 1</td><td>1200 × 628 px</td><td>3+</td><td>☐ Done</td></tr>
+  <tr><td>Square</td><td>1 : 1</td><td>1200 × 1200 px</td><td>3+</td><td>☐ Done</td></tr>
+  <tr><td>Vertical (portrait)</td><td>4 : 5</td><td>960 × 1200 px</td><td>2+</td><td>☐ Done</td></tr>
+</table>
+
+<h3>Good photo subjects for each slot</h3>
+<table>
+  <tr><th>Slot</th><th>What works well</th></tr>
+  <tr><td>Horizontal</td><td>Group of kids at a party, wide event setup shot, artist at work with multiple children waiting, decorated party table</td></tr>
+  <tr><td>Square</td><td>Close-up of completed face painting design, child holding balloon animal, face gems applied, artist's setup kit</td></tr>
+  <tr><td>Vertical</td><td>Portrait-orientation photo of a child with face paint, artist applying design, smiling child at event</td></tr>
+</table>
+
+<div class="step">
+  <input type="checkbox" id="s3a">
+  <label for="s3a">
+    <strong>3+ horizontal images uploaded and added to asset group</strong>
+    <span class="detail">Ratio 1.91:1 · min 1200×628px</span>
+  </label>
+</div>
+<div class="step">
+  <input type="checkbox" id="s3b">
+  <label for="s3b">
+    <strong>3+ square images uploaded and added to asset group</strong>
+    <span class="detail">Ratio 1:1 · min 1200×1200px</span>
+  </label>
+</div>
+<div class="step">
+  <input type="checkbox" id="s3c">
+  <label for="s3c">
+    <strong>2+ vertical 4:5 images uploaded and added to asset group</strong>
+    <span class="detail">Ratio 4:5 · min 960×1200px</span>
+  </label>
+</div>
+<div class="step">
+  <input type="checkbox" id="s3d">
+  <label for="s3d">
+    <strong>Check asset strength after upload</strong>
+    <span class="detail">Should rise from "Average" to "Good" or "Excellent" once images + signals are added.</span>
+  </label>
+</div>
+
+<div class="result-box">
+  <strong>Asset strength after images added:</strong> &nbsp;
+  ☐ Poor &nbsp; ☐ Average &nbsp; ☐ Good &nbsp; ☐ Excellent
+</div>
+
+<!-- ─── SECTION 4 ─────────────────────────────────────────── -->
+<h2><span class="section-number">4</span> Add / Confirm Sitelink Assets</h2>
+
+<div class="nav-path">Google Ads UI → Campaigns → Kids Party Face Painting → Assets → Sitelinks → + New sitelink</div>
+
+<table>
+  <tr><th>Sitelink text</th><th>URL</th><th>Status</th></tr>
+  <tr><td>Face Painting</td><td>https://happyfacesla.com/face-painting-los-angeles/</td><td>☐ Added / ☐ Already exists</td></tr>
+  <tr><td>Balloon Twisting</td><td>https://happyfacesla.com/balloon-twisting-los-angeles/</td><td>☐ Added / ☐ Already exists</td></tr>
+  <tr><td>Glitter Tattoos</td><td>https://happyfacesla.com/glitter-tattoos-los-angeles/</td><td>☐ Added / ☐ Already exists</td></tr>
+  <tr><td>Gallery</td><td>https://happyfacesla.com/gallery/</td><td>☐ Added / ☐ Already exists</td></tr>
+  <tr><td>Get a Quote</td><td>https://happyfacesla.com/contact/</td><td>☐ Added / ☐ Already exists</td></tr>
+</table>
+
+<div class="step">
+  <input type="checkbox" id="s4a">
+  <label for="s4a"><strong>All 5 sitelinks confirmed present on campaign</strong></label>
+</div>
+
+<!-- ─── SECTION 5 ─────────────────────────────────────────── -->
+<h2><span class="section-number">5</span> Confirm Call Asset</h2>
+
+<div class="nav-path">Google Ads UI → Campaigns → Kids Party Face Painting → Assets → Call</div>
+
+<div class="step">
+  <input type="checkbox" id="s5a">
+  <label for="s5a">
+    <strong>Call asset shows 818-619-5506</strong>
+    <span class="detail">Confirm the number is correct and call reporting is enabled.</span>
+  </label>
+</div>
+<div class="step">
+  <input type="checkbox" id="s5b">
+  <label for="s5b">
+    <strong>Call reporting enabled on the call asset</strong>
+    <span class="detail">This allows Google to track calls as conversions (optional but recommended).</span>
+  </label>
+</div>
+
+<!-- ─── SECTION 6 ─────────────────────────────────────────── -->
+<h2><span class="section-number">6</span> Confirm Location Targeting: Presence Only</h2>
+
+<div class="nav-path">Google Ads UI → Campaigns → Kids Party Face Painting → Settings → Locations → Location options</div>
+
+<p>Under <strong>Location options</strong>, confirm the setting is:</p>
+<ul>
+  <li>✅ <strong>Presence: People in or regularly in your targeted locations</strong></li>
+  <li>❌ NOT: "Presence or interest" (this wastes budget on people outside LA who are searching for LA)</li>
+</ul>
+
+<div class="step">
+  <input type="checkbox" id="s6a">
+  <label for="s6a">
+    <strong>Location targeting confirmed as "Presence" only (not "Presence or interest")</strong>
+    <span class="detail">If currently set to "Presence or interest", change it to "Presence" and save.</span>
+  </label>
+</div>
+
+<!-- ─── SECTION 7 ─────────────────────────────────────────── -->
+<h2><span class="section-number">7</span> Budget Confirmation</h2>
+
+<div class="step blocker">
+  <input type="checkbox" id="s7a" disabled>
+  <label for="s7a">
+    <strong>Budget stays at $20/day — do not increase</strong>
+    <span class="detail">Hard gate: do not scale above $20/day until 3–5 real qualified lead conversions are confirmed across at least 2 separate weeks.</span>
+  </label>
+</div>
+
+<!-- ─── SECTION 8 ─────────────────────────────────────────── -->
+<h2><span class="section-number">8</span> Asset Group Structure — Hold</h2>
+
+<div class="step blocker">
+  <input type="checkbox" id="s8a" disabled>
+  <label for="s8a">
+    <strong>Do NOT split into multiple asset groups yet</strong>
+    <span class="detail">First improve the current asset group (signals + images). Split into service-based groups only after 3–5 confirmed qualified conversions.</span>
+  </label>
+</div>
+
+<!-- ─── SUMMARY ───────────────────────────────────────────── -->
+<h2>Post-Optimization Summary — Fill In After Completing UI Steps</h2>
+
+<table>
+  <tr><th>Item</th><th>Before</th><th>After</th></tr>
+  <tr><td>Asset strength</td><td>Average</td><td></td></tr>
+  <tr><td>Audience signals</td><td>None</td><td></td></tr>
+  <tr><td>Horizontal images</td><td>Missing</td><td></td></tr>
+  <tr><td>Square images</td><td>Missing</td><td></td></tr>
+  <tr><td>Vertical 4:5 images</td><td>Missing</td><td></td></tr>
+  <tr><td>Sitelinks</td><td>Unknown</td><td></td></tr>
+  <tr><td>Call asset</td><td>Unknown</td><td></td></tr>
+  <tr><td>Location targeting</td><td>Unknown</td><td></td></tr>
+  <tr><td>Conversion verdict</td><td>1 (unverified)</td><td></td></tr>
+  <tr><td>Budget</td><td>$20/day</td><td>$20/day (no change)</td></tr>
+</table>
+
+<div class="warn" style="margin-top: 20px;">
+  <strong>After completing all steps above:</strong> Report back the asset strength, conversion verdict, and whether any settings were out of spec (especially location targeting).
+  Once you have 3–5 confirmed qualified conversions, the next session will cover service-based asset group splits and Search campaign planning.
+</div>
+
+</body>
+</html>
