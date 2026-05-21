@@ -19,7 +19,49 @@ After every completed task, update this file with:
 ## Latest Session Log
 
 
-Last updated: 2026-05-20 (Google Ads MCP OAuth complete; API enable pending)
+Last updated: 2026-05-20 (Google Ads API enabled; only Test Account token blocks live reads)
+
+
+### 2026-05-20 (update) — GCP API enabled; developer token Test Account level confirmed
+
+**What changed**
+
+- No files changed. Status update only.
+
+**Health check result after enabling Google Ads API on GCP project `453668029032`**
+
+```
+Config OK — all required credentials present
+  customer_id      : 4699120105
+  login_customer_id: 6340510052
+  api_version      : v24
+GoogleAdsClient built OK
+API BLOCKED (expected) — developer token is Test Account level.
+  Apply for Basic/Explorer access via MCC 634-051-0052 API Center.
+```
+
+OAuth is working end-to-end. All credentials are valid. The Google Ads API reached
+`googleads.googleapis.com` and returned a meaningful API-level response.
+The only remaining blocker is developer token access level.
+
+**Active blocker**
+
+**Developer token is Test Account.** No live reads or writes against `4699120105` until
+Basic or Explorer access is approved by Google.
+
+Apply at: MCC `634-051-0052` → Tools → API Center → Apply for Basic access.
+Google review typically takes 1–2 business days.
+
+**Next required action**
+
+1. Apply for Basic access via MCC `634-051-0052` API Center
+2. Wait for Google approval email
+3. Re-run health check: `cd tools\google_ads_mcp; python _health_check.py`
+4. Once `API PASS` is confirmed, run `google_ads_generate_diagnostics_report` via MCP
+
+**Production status:** unchanged.
+
+---
 
 
 ### 2026-05-20 (update) — Google Ads MCP OAuth complete; GCP API enable required
