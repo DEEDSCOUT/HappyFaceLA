@@ -43,9 +43,9 @@ const cards = (featured ?? services).filter((item) => item.slug !== currentSlug)
             src={item.image}
             alt={item.imageAlt ?? item.name}
             width="600"
-            height="400"
-            class="aspect-[3/2] w-full object-cover"
-            style="object-position: center 25%;"
+            height="600"
+            class="aspect-square w-full object-cover"
+            style="object-position: center top;"
             loading="lazy"
             decoding="async"
           />
