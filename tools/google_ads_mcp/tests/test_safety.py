@@ -32,7 +32,7 @@ def _cfg(tmp_path: Path, **overrides) -> Config:
         refresh_token="refresh-token-zzzzzz",
         customer_id="4699120105",
         login_customer_id="",
-        api_version="v18",
+        api_version="v24",
         allow_mutate=True,
         require_approval=True,
         approval_token="I_APPROVE_GOOGLE_ADS_MUTATION",

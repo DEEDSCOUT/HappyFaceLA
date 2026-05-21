@@ -67,7 +67,7 @@ def load_config() -> Config:
         refresh_token=os.environ.get("GOOGLE_ADS_REFRESH_TOKEN", "").strip(),
         customer_id=os.environ.get("GOOGLE_ADS_CUSTOMER_ID", "").replace("-", "").strip(),
         login_customer_id=os.environ.get("GOOGLE_ADS_LOGIN_CUSTOMER_ID", "").replace("-", "").strip(),
-        api_version=os.environ.get("GOOGLE_ADS_API_VERSION", "v18").strip(),
+        api_version=os.environ.get("GOOGLE_ADS_API_VERSION", "v24").strip(),
         allow_mutate=_bool("GOOGLE_ADS_ALLOW_MUTATE", False),
         require_approval=_bool("GOOGLE_ADS_REQUIRE_APPROVAL", True),
         approval_token=os.environ.get("GOOGLE_ADS_APPROVAL_TOKEN", "").strip(),
