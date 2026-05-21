@@ -19,7 +19,103 @@ After every completed task, update this file with:
 ## Latest Session Log
 
 
-Last updated: 2026-05-20 (Testimonial submission flow implemented)
+Last updated: 2026-05-20 (Google Ads MCP OAuth complete; API enable pending)
+
+
+### 2026-05-20 (update) — Google Ads MCP OAuth complete; GCP API enable required
+
+**What changed**
+
+- No campaign, budget, bid, conversion, or asset touched. Read-only validation only.
+
+**OAuth status: COMPLETE**
+
+All required credentials are now set in `tools/google_ads_mcp/.env.local` (gitignored):
+
+| Credential | Status |
+|---|---|
+| `GOOGLE_ADS_DEVELOPER_TOKEN` | ✅ set |
+| `GOOGLE_ADS_CLIENT_ID` | ✅ set |
+| `GOOGLE_ADS_CLIENT_SECRET` | ✅ set |
+| `GOOGLE_ADS_REFRESH_TOKEN` | ✅ set (generated via `generate_refresh_token.py`) |
+| `GOOGLE_ADS_CUSTOMER_ID` | `4699120105` |
+| `GOOGLE_ADS_LOGIN_CUSTOMER_ID` | `6340510052` |
+
+**Security: `.env.local` confirmed gitignored**
+
+```
+.gitignore:34:tools/google_ads_mcp/.env.local
+```
+No secrets appear in any tracked file.
+
+**API version fix**
+
+`google-ads 31.0.0` ships v21–v24 only. Default was `v18` (ModuleNotFoundError).
+Updated to `v24` in `config.py`, `.env.example`, `tests/test_safety.py`, and `.env.local`.
+
+**Health check result**
+
+```
+Config OK — all required credentials present
+  customer_id      : 4699120105
+  login_customer_id: 6340510052
+  api_version      : v24
+GoogleAdsClient built OK
+API BLOCKED — Google Ads API not enabled on GCP project.
+  Enable at: https://console.developers.google.com/apis/api/googleads.googleapis.com/overview?project=453668029032
+```
+
+OAuth token was accepted by `googleads.googleapis.com` (request reached Google's servers).
+The only remaining blocker is the GCP API not being enabled on project `453668029032`.
+
+**Active blockers (in order)**
+
+1. **Enable Google Ads API on GCP project `453668029032`**
+   → https://console.developers.google.com/apis/api/googleads.googleapis.com/overview?project=453668029032
+   → Click Enable → wait ~2 min → re-run health check
+2. **Developer token is Test Account level.** After the API is enabled, live reads against
+   `4699120105` may still fail with `DEVELOPER_TOKEN_NOT_APPROVED` until Basic or Explorer
+   access is approved via MCC `634-051-0052` API Center. That error is expected and not a
+   configuration problem.
+
+**Not allowed until Basic/Explorer developer token access is approved**
+
+- No campaign, budget, bid, conversion action, keyword, or asset mutations via API.
+- No live write operations against `469-912-0105`.
+- All write tools remain in `validate_only=true` mode (default).
+
+**Files changed this update**
+
+| File | Change |
+|---|---|
+| `tools/google_ads_mcp/config.py` | Default API version `v18` → `v24` |
+| `tools/google_ads_mcp/.env.example` | Default API version `v18` → `v24` |
+| `tools/google_ads_mcp/tests/test_safety.py` | Test fixture API version `v18` → `v24` |
+| `tools/google_ads_mcp/generate_refresh_token.py` | Fixed stale `CALLBACK_PORT` NameError; `client_config` now built after `_find_free_port()` so `callback_url` is valid at config-build time; removed OOB fallback URI |
+| `tools/google_ads_mcp/.env.local` _(gitignored)_ | `GOOGLE_ADS_REFRESH_TOKEN` populated; `GOOGLE_ADS_API_VERSION` updated to `v24` |
+
+**Commands run**
+
+```powershell
+git check-ignore -v .\tools\google_ads_mcp\.env.local
+# → .gitignore:34:tools/google_ads_mcp/.env.local  ✅
+
+cd tools\google_ads_mcp; python _health_check.py
+# → Config OK — all credentials present; GoogleAdsClient built OK; API BLOCKED (GCP enable required)
+```
+
+**Next required action**
+
+1. Open https://console.developers.google.com/apis/api/googleads.googleapis.com/overview?project=453668029032 → **Enable**
+2. Wait ~2 minutes
+3. Re-run: `cd tools\google_ads_mcp; python _health_check.py`
+4. If Test Account error appears next, apply for Basic access via MCC `634-051-0052` API Center and wait for Google approval
+5. Once live reads succeed, call `google_ads_health_check` via VS Code MCP, then run `google_ads_generate_diagnostics_report`
+
+**Production status:** unchanged.
+
+---
+
 
 
 ### 2026-05-20 (update) - Testimonial submission flow implemented
