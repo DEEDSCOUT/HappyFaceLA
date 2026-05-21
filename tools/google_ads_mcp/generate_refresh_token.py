@@ -28,7 +28,7 @@ import os
 import socket
 import sys
 
-CALLBACK_HOST = "127.0.0.1"  # explicit loopback; avoid 'localhost' DNS ambiguity
+CALLBACK_HOST = "127.0.0.1"  # explicit loopback IP; avoids OS-level DNS resolution
 FALLBACK_PORTS = [53682, 53683, 53684, 53685]
 SCOPES = ["https://www.googleapis.com/auth/adwords"]
 
@@ -104,6 +104,9 @@ def main() -> int:
     client_id, client_secret = _load_credentials()
     _validate_client_id(client_id)
 
+    port = _find_free_port()
+    callback_url = f"http://{CALLBACK_HOST}:{port}/"
+
     # Desktop app client config — 'installed' key is the correct type for Desktop.
     # If you created a 'Web application' client you will get redirect_uri_mismatch;
     # delete it and create a new 'Desktop app' client instead.
@@ -111,17 +114,11 @@ def main() -> int:
         "installed": {
             "client_id": client_id,
             "client_secret": client_secret,
-            "redirect_uris": [
-                f"http://localhost:{CALLBACK_PORT}",
-                "urn:ietf:wg:oauth:2.0:oob",
-            ],
+            "redirect_uris": [callback_url],
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
         }
     }
-
-    port = _find_free_port()
-    callback_url = f"http://{CALLBACK_HOST}:{port}/"
 
     flow = InstalledAppFlow.from_client_config(client_config, scopes=SCOPES)
 
