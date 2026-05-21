@@ -19,7 +19,44 @@ After every completed task, update this file with:
 ## Latest Session Log
 
 
-Last updated: 2026-05-20 (PMax campaign active; asset and signal gaps identified; budget scaling blocked)
+Last updated: 2026-05-21 (Services hub + cross-sell architecture rolled out across all service pages)
+
+
+### 2026-05-21 — Services hub + cross-sell architecture for all service pages
+
+- What changed:
+  - New all-services hub page at `/services/` with H1 "Face Painting, Balloon Twisting, Glitter Tattoos & Face Gems in Los Angeles", parent-focused subcopy, primary CTA + Call/Text CTA, services grid, popular packages preview, service-area links, FAQs, and bottom booking CTA.
+  - New reusable `ServiceCrossSell` section: 3- or 4-up grid of other services with image, name, description, "View service →" link, plus optional bundle CTA + Call/Text CTA. Used on every service page (excludes current slug) and on the hub (all four).
+  - New reusable `BookingCtaBlock` section: dark "Not sure what to book?" CTA with Get Availability & Pricing + Call/Text. Inserted before `QuoteForm` on every service page and at the bottom of `/services/`.
+  - Each service page (`face-painting-los-angeles`, `balloon-twisting-los-angeles`, `glitter-tattoos-los-angeles`, `face-gems-face-jewelry-los-angeles`) now has unique meta title + description per spec, a parent-focused `heroSubcopy` directly under the H1, hero CTA buttons (Get Availability & Pricing, Call/Text 818-619-5506), a per-service `crossSellTitle`/`crossSellDescription`, and a final BookingCtaBlock above the quote form.
+  - `PageIntro` extended with optional `showCtas`, primary/secondary CTA props, and `trustLine` so service pages can render booking CTAs above the fold without duplicating markup.
+  - `ServicePageSections` now renders `ServiceCrossSell` directly under the banner image and `BookingCtaBlock` directly before `QuoteForm`.
+  - Header navigation `Services` link now points to `/services/` (desktop and mobile).
+  - `QuoteForm` now reads `?service=` from the URL after attribution hydration. Values `face-painting`, `balloon-twisting`, `glitter-tattoos`, `face-gems` pre-check the matching checkbox; `party-package` checks all four and pre-fills the message textarea.
+  - QA postbuild script updated to require `services/index.html` and to drop the stale `reviews/index.html` requirement.
+
+- Files changed:
+  - `src/pages/services.astro` (new)
+  - `src/components/sections/ServiceCrossSell.astro` (new)
+  - `src/components/sections/BookingCtaBlock.astro` (new)
+  - `src/components/sections/ServicePageSections.astro` (cross-sell + booking CTA wired in)
+  - `src/components/sections/PageIntro.astro` (CTA + trust-line props)
+  - `src/components/conversion/QuoteForm.astro` (`?service=` URL prefill)
+  - `src/data/services.ts` (`heroSubcopy`, `crossSellTitle`, `crossSellDescription` per service)
+  - `src/data/navigation.ts` (Services → `/services/`)
+  - `src/pages/face-painting-los-angeles.astro`
+  - `src/pages/balloon-twisting-los-angeles.astro`
+  - `src/pages/glitter-tattoos-los-angeles.astro`
+  - `src/pages/face-gems-face-jewelry-los-angeles.astro`
+  - `scripts/qa-postbuild.mjs`
+
+- Commands run:
+  - `npm run build` — 25 pages built, no warnings.
+  - `npm run qa:postbuild` — all required routes (incl. new `services/index.html`) present, no `TBD_BY_OWNER` strings, passed.
+
+- Validation result: build + QA both green. No tracking, conversions, or Google Ads MCP files touched.
+
+- Remaining blockers: none for this task. Existing copy ("Insured through Body Art Insurance" line) was preserved as it was already in place.
 
 
 ### 2026-05-20 (update) — PMax campaign analysis; asset/signal action items; architecture plan

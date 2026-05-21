@@ -1,0 +1,84 @@
+---
+import { services, type ServiceItem } from "../../data/services";
+
+interface Props {
+  /** Slug of the service the visitor is currently on. Excluded from the grid. */
+  currentSlug?: string;
+  /** Optional services to feature explicitly. Defaults to "all other services". */
+  featured?: ServiceItem[];
+  /** Heading shown above the cards. */
+  title?: string;
+  /** Sub-copy shown under the heading. */
+  description?: string;
+  /** Bundle CTA label. */
+  ctaLabel?: string;
+  /** Bundle CTA href. */
+  ctaHref?: string;
+  /** Show the bundle CTA row. Defaults to true. */
+  showCta?: boolean;
+}
+
+const {
+  currentSlug,
+  featured,
+  title = "Often booked together — complete kids party fun",
+  description = "Many families pair services so guests have more to do while lines move faster. Choose one service or build a package around your event size, age range, and schedule.",
+  ctaLabel = "Bundle Services for My Event",
+  ctaHref = "/contact/?service=party-package",
+  showCta = true,
+} = Astro.props;
+
+const cards = (featured ?? services).filter((item) => item.slug !== currentSlug);
+---
+
+<section class="rounded-2xl border border-orange-100 bg-orange-50/40 p-6 md:p-8">
+  <h2 class="text-2xl font-bold text-slate-900">{title}</h2>
+  <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">{description}</p>
+
+  <div class={`mt-6 grid gap-4 ${cards.length >= 4 ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-3"}`}>
+    {cards.map((item) => (
+      <article class="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+        {item.image && (
+          <img
+            src={item.image}
+            alt={item.imageAlt ?? item.name}
+            width="600"
+            height="400"
+            class="aspect-[3/2] w-full object-cover"
+            style="object-position: center 25%;"
+            loading="lazy"
+            decoding="async"
+          />
+        )}
+        <div class="flex flex-1 flex-col p-5">
+          <h3 class="text-lg font-semibold text-slate-900">{item.name}</h3>
+          <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{item.description}</p>
+          <a
+            class="mt-4 inline-block text-sm font-semibold text-orange-600 hover:text-orange-700"
+            href={`/${item.slug}/`}
+          >
+            View service →
+          </a>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  {showCta && (
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <a
+        class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600"
+        href={ctaHref}
+      >
+        {ctaLabel}
+      </a>
+      <a
+        class="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-white"
+        href="tel:+18186195506"
+        data-track-event="phone_click"
+      >
+        Call/Text 818-619-5506
+      </a>
+    </div>
+  )}
+</section>

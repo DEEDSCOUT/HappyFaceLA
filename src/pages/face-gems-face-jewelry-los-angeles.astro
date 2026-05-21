@@ -12,8 +12,8 @@ const canonicalPath = "/face-gems-face-jewelry-los-angeles/";
 ---
 
 <BaseLayout
-  title="Face Gems & Face Jewelry in Los Angeles | Happy Faces LA"
-  description="Book face gems and face jewelry in Los Angeles with Happy Faces LA for birthdays, themed events, and celebrations."
+  title="Face Gems Los Angeles | Kids Party Face Gems & Festival Looks"
+  description="Crystal-like face gems and face jewelry for themed birthday parties, princess events, and photo moments in Los Angeles. Booked alone or paired with face painting and glitter tattoos."
   canonicalPath={canonicalPath}
   jsonLd={[
     localBusinessJsonLd(),
@@ -26,6 +26,11 @@ const canonicalPath = "/face-gems-face-jewelry-los-angeles/";
   ]}
 >
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Face Gems & Face Jewelry", href: canonicalPath }]} />
-  <PageIntro title="Face Gems & Face Jewelry in Los Angeles" description={service.description} />
+  <PageIntro
+    title="Face Gems & Face Jewelry in Los Angeles"
+    description={service.heroSubcopy ?? service.description}
+    showCtas={true}
+    trustLine="Beautiful as a finishing touch on face painting or glitter tattoos."
+  />
   <ServicePageSections service={service} faqs={commonFaqs} />
 </BaseLayout>

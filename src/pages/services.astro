@@ -1,0 +1,93 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import ServiceCrossSell from "../components/sections/ServiceCrossSell.astro";
+import BookingCtaBlock from "../components/sections/BookingCtaBlock.astro";
+import PackageCard from "../components/content/PackageCard.astro";
+import ServiceAreaLinks from "../components/sections/ServiceAreaLinks.astro";
+import FAQAccordion from "../components/content/FAQAccordion.astro";
+import { packages } from "../data/packages";
+import { commonFaqs } from "../data/faqs";
+import { breadcrumbJsonLd, localBusinessJsonLd } from "../utils/schema";
+
+const canonicalPath = "/services/";
+---
+
+<BaseLayout
+  title="Kids Party Entertainment Los Angeles | Face Painting, Balloons, Glitter Tattoos"
+  description="Book Happy Faces LA for face painting, balloon twisting, glitter tattoos, and face gems for birthdays, school events, festivals, and private parties across Los Angeles."
+  canonicalPath={canonicalPath}
+  jsonLd={[
+    localBusinessJsonLd(),
+    breadcrumbJsonLd([
+      { name: "Home", url: "https://happyfacesla.com/" },
+      { name: "Services", url: `https://happyfacesla.com${canonicalPath}` }
+    ])
+  ]}
+>
+  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Services", href: canonicalPath }]} />
+
+  <section class="relative overflow-hidden bg-gradient-to-br from-amber-50 via-white to-cyan-50">
+    <div class="absolute -left-16 top-8 h-52 w-52 rounded-full bg-orange-200/50 blur-2xl"></div>
+    <div class="absolute -right-16 bottom-0 h-64 w-64 rounded-full bg-cyan-200/50 blur-2xl"></div>
+
+    <div class="relative mx-auto w-full max-w-6xl px-4 py-14 md:py-20">
+      <h1 class="text-4xl font-extrabold leading-tight text-slate-900 md:text-5xl lg:text-6xl">
+        Face Painting, Balloon Twisting, Glitter Tattoos &amp; Face Gems in Los Angeles
+      </h1>
+      <p class="mt-5 max-w-3xl text-lg text-slate-700">
+        Happy Faces LA brings colorful, kid-friendly party entertainment to birthdays, school events, festivals, community events, and family celebrations across Los Angeles, Orange County, and Ventura County.
+      </p>
+      <div class="mt-7 flex flex-wrap gap-3">
+        <a class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600" href="/contact/">
+          Get Availability &amp; Pricing
+        </a>
+        <a class="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900" href="tel:+18186195506" data-track-event="phone_click">
+          Call/Text 818-619-5506
+        </a>
+      </div>
+      <p class="mt-5 text-sm text-slate-600">Face painting • Balloon twisting • Glitter tattoos • Face gems • Bundled packages</p>
+    </div>
+  </section>
+
+  <section class="mx-auto w-full max-w-6xl px-4 py-12">
+    <h2 class="text-2xl font-bold text-slate-900">Our services</h2>
+    <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">
+      Pick a single service or combine two or more to keep guests engaged across the whole event. Each service can be booked alone or bundled into a custom package.
+    </p>
+    <div class="mt-6">
+      <ServiceCrossSell
+        title="Choose a service to learn more"
+        description="Each page includes what is included, who it is best for, and how it pairs with other services. The same booking form works for any combination."
+        showCta={false}
+      />
+    </div>
+  </section>
+
+  <section class="mx-auto w-full max-w-6xl px-4 pb-12">
+    <h2 class="text-2xl font-bold text-slate-900">Popular packages</h2>
+    <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">
+      Bundled packages combine multiple services and are usually the easiest way to book when you have 15+ guests or a longer event window.
+    </p>
+    <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {packages.slice(0, 3).map((pkg) => <PackageCard {...pkg} />)}
+    </div>
+    <div class="mt-6">
+      <a class="inline-block text-sm font-semibold text-orange-600 hover:text-orange-700" href="/pricing/">
+        View all package options →
+      </a>
+    </div>
+  </section>
+
+  <section class="mx-auto w-full max-w-6xl px-4 pb-12">
+    <ServiceAreaLinks />
+  </section>
+
+  <section class="mx-auto w-full max-w-6xl px-4 pb-12">
+    <FAQAccordion items={commonFaqs} />
+  </section>
+
+  <section class="mx-auto w-full max-w-6xl px-4 pb-14">
+    <BookingCtaBlock />
+  </section>
+</BaseLayout>

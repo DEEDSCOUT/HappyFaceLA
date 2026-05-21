@@ -1,0 +1,39 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  primaryHref?: string;
+  primaryLabel?: string;
+}
+
+const {
+  title = "Not sure what to book? Tell us about your event.",
+  description = "Share your event date, city, guest count, and the services you are considering. We will help recommend the right setup for your party, school event, festival, or family celebration.",
+  primaryHref = "/contact/",
+  primaryLabel = "Get Availability & Pricing",
+} = Astro.props;
+---
+
+<section class="rounded-2xl bg-slate-900 px-6 py-10 text-white md:px-10">
+  <div class="grid gap-6 md:grid-cols-[2fr_1fr] md:items-center">
+    <div>
+      <h2 class="text-2xl font-bold md:text-3xl">{title}</h2>
+      <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-200">{description}</p>
+    </div>
+    <div class="flex flex-wrap gap-3 md:justify-end">
+      <a
+        class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600"
+        href={primaryHref}
+      >
+        {primaryLabel}
+      </a>
+      <a
+        class="rounded-xl border border-slate-500 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+        href="tel:+18186195506"
+        data-track-event="phone_click"
+      >
+        Call/Text 818-619-5506
+      </a>
+    </div>
+  </div>
+</section>

@@ -1,6 +1,6 @@
 export const navigation = {
     desktop: [
-        { label: "Services", href: "/face-painting-los-angeles/" },
+        { label: "Services", href: "/services/" },
         { label: "Packages", href: "/pricing/" },
         { label: "Gallery", href: "/gallery/" },
         { label: "Service Areas", href: "/service-areas/" },
@@ -8,7 +8,7 @@ export const navigation = {
         { label: "Contact", href: "/contact/" }
     ],
     mobile: [
-        { label: "Services", href: "/face-painting-los-angeles/" },
+        { label: "Services", href: "/services/" },
         { label: "Packages", href: "/pricing/" },
         { label: "Gallery", href: "/gallery/" },
         { label: "Areas", href: "/service-areas/" },

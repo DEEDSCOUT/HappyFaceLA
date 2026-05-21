@@ -12,8 +12,8 @@ const canonicalPath = "/face-painting-los-angeles/";
 ---
 
 <BaseLayout
-  title="Face Painting in Los Angeles | Happy Faces LA"
-  description="Book Happy Faces LA for professional face painting in Los Angeles for birthdays, schools, festivals, and private events. Call/text 818-619-5506."
+  title="Face Painting Los Angeles | Kids Birthday Parties & Events"
+  description="Professional face painting for birthdays, school events, festivals, and private celebrations in Los Angeles. Bundle with balloon twisting, glitter tattoos, and face gems."
   canonicalPath={canonicalPath}
   jsonLd={[
     localBusinessJsonLd(),
@@ -26,6 +26,11 @@ const canonicalPath = "/face-painting-los-angeles/";
   ]}
 >
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Face Painting", href: canonicalPath }]} />
-  <PageIntro title="Face Painting in Los Angeles" description={service.description} />
+  <PageIntro
+    title="Face Painting in Los Angeles"
+    description={service.heroSubcopy ?? service.description}
+    showCtas={true}
+    trustLine="Often booked with balloon twisting, glitter tattoos, or face gems."
+  />
   <ServicePageSections service={service} faqs={commonFaqs} />
 </BaseLayout>

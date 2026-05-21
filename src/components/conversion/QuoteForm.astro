@@ -131,6 +131,45 @@ const currentPath = Astro.url.pathname;
       });
     }
 
+    /**
+     * Prefill service checkboxes (and a helpful message) from a `?service=` URL param.
+     * Accepted values: face-painting, balloon-twisting, glitter-tattoos, face-gems, party-package
+     */
+    function prefillFromQuery(form) {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const requested = (params.get("service") || "").trim().toLowerCase();
+        if (!requested) return;
+
+        const map = {
+          "face-painting": ["Face Painting"],
+          "balloon-twisting": ["Balloon Twisting"],
+          "glitter-tattoos": ["Glitter Tattoos"],
+          "face-gems": ["Face Gems"],
+          "party-package": ["Face Painting", "Balloon Twisting", "Glitter Tattoos", "Face Gems"],
+        };
+        const targets = map[requested];
+        if (!targets) return;
+
+        targets.forEach((value) => {
+          const cb = form.querySelector(`input[name="services_requested[]"][value="${value}"]`);
+          if (cb instanceof HTMLInputElement) {
+            cb.checked = true;
+          }
+        });
+
+        if (requested === "party-package") {
+          const messageInput = form.querySelector('textarea[name="message"]');
+          if (messageInput instanceof HTMLTextAreaElement && !messageInput.value.trim()) {
+            messageInput.value =
+              "I am considering a bundled party package. Please help me pick the right combination of services for my event size, age range, and schedule.";
+          }
+        }
+      } catch {
+        /* noop */
+      }
+    }
+
     const forms = document.querySelectorAll("form[data-quote-form]");
     forms.forEach((form) => {
       if (!(form instanceof HTMLFormElement)) {
@@ -138,6 +177,7 @@ const currentPath = Astro.url.pathname;
       }
 
       hydrateAttribution(form);
+      prefillFromQuery(form);
 
       const sourceInput = form.querySelector('input[name="source_page"]');
       if (sourceInput instanceof HTMLInputElement && !sourceInput.value.trim()) {

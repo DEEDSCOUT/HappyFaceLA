@@ -12,8 +12,8 @@ const canonicalPath = "/balloon-twisting-los-angeles/";
 ---
 
 <BaseLayout
-  title="Balloon Twisting in Los Angeles | Happy Faces LA"
-  description="Book Happy Faces LA for balloon twisting in Los Angeles for birthdays, school events, and festivals. Call/text 818-619-5506."
+  title="Balloon Twisting Los Angeles | Birthday Party Balloon Artist"
+  description="Book Happy Faces LA for balloon twisting at birthdays, school events, festivals, and corporate family days in Los Angeles. Pairs with face painting, glitter tattoos, and face gems."
   canonicalPath={canonicalPath}
   jsonLd={[
     localBusinessJsonLd(),
@@ -26,6 +26,11 @@ const canonicalPath = "/balloon-twisting-los-angeles/";
   ]}
 >
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Balloon Twisting", href: canonicalPath }]} />
-  <PageIntro title="Balloon Twisting in Los Angeles" description={service.description} />
+  <PageIntro
+    title="Balloon Twisting in Los Angeles"
+    description={service.heroSubcopy ?? service.description}
+    showCtas={true}
+    trustLine="Often paired with face painting, glitter tattoos, or face gems."
+  />
   <ServicePageSections service={service} faqs={commonFaqs} />
 </BaseLayout>

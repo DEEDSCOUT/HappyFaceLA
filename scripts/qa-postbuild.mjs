@@ -11,6 +11,7 @@ const requiredFiles = [
 
 const requiredHtmlRoutes = [
     "index.html",
+    "services/index.html",
     "face-painting-los-angeles/index.html",
     "balloon-twisting-los-angeles/index.html",
     "glitter-tattoos-los-angeles/index.html",
@@ -20,7 +21,6 @@ const requiredHtmlRoutes = [
     "school-festival-face-painting-los-angeles/index.html",
     "pricing/index.html",
     "gallery/index.html",
-    "reviews/index.html",
     "faq/index.html",
     "contact/index.html",
     "service-areas/index.html",

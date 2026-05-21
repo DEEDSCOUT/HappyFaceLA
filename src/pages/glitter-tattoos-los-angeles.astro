@@ -12,8 +12,8 @@ const canonicalPath = "/glitter-tattoos-los-angeles/";
 ---
 
 <BaseLayout
-  title="Glitter Tattoos in Los Angeles | Happy Faces LA"
-  description="Book glitter tattoos in Los Angeles for birthdays, school events, and festivals with Happy Faces LA. Call/text 818-619-5506."
+  title="Glitter Tattoos Los Angeles | Kids Party Glitter Tattoos"
+  description="Cosmetic-grade glitter tattoos for kids parties, school carnivals, and festivals in Los Angeles. Lasts 1–3 days. Pairs with face painting and face gems."
   canonicalPath={canonicalPath}
   jsonLd={[
     localBusinessJsonLd(),
@@ -26,6 +26,11 @@ const canonicalPath = "/glitter-tattoos-los-angeles/";
   ]}
 >
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Glitter Tattoos", href: canonicalPath }]} />
-  <PageIntro title="Glitter Tattoos in Los Angeles" description={service.description} />
+  <PageIntro
+    title="Glitter Tattoos in Los Angeles"
+    description={service.heroSubcopy ?? service.description}
+    showCtas={true}
+    trustLine="A fast station — great alongside face painting, balloon twisting, or face gems."
+  />
   <ServicePageSections service={service} faqs={commonFaqs} />
 </BaseLayout>

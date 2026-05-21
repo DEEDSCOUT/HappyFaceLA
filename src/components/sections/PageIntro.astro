@@ -2,12 +2,40 @@
 interface Props {
   title: string;
   description: string;
+  /** Show booking CTA buttons under the description. */
+  showCtas?: boolean;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+  /** Optional small trust line under the CTAs. */
+  trustLine?: string;
 }
 
-const { title, description } = Astro.props;
+const {
+  title,
+  description,
+  showCtas = false,
+  primaryCtaLabel = "Get Availability & Pricing",
+  primaryCtaHref = "/contact/",
+  secondaryCtaLabel = "Call/Text 818-619-5506",
+  secondaryCtaHref = "tel:+18186195506",
+  trustLine,
+} = Astro.props;
 ---
 
 <section class="mx-auto w-full max-w-6xl px-4 pt-10">
   <h1 class="text-4xl font-extrabold text-slate-900 md:text-5xl">{title}</h1>
   <p class="mt-4 max-w-3xl text-lg text-slate-700">{description}</p>
+  {showCtas && (
+    <div class="mt-6 flex flex-wrap gap-3">
+      <a class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600" href={primaryCtaHref}>
+        {primaryCtaLabel}
+      </a>
+      <a class="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900" href={secondaryCtaHref} data-track-event="phone_click">
+        {secondaryCtaLabel}
+      </a>
+    </div>
+  )}
+  {trustLine && <p class="mt-4 text-sm text-slate-600">{trustLine}</p>}
 </section>
