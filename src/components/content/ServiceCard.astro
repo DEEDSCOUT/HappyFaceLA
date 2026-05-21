@@ -16,9 +16,8 @@ const { title, description, href, image, imageAlt = title } = Astro.props;
       src={image}
       alt={imageAlt}
       width="600"
-      height="600"
-      class="aspect-square w-full object-cover"
-      style="object-position: center top;"
+      height="750"
+      class="aspect-[4/5] w-full bg-slate-100 object-contain"
       loading="lazy"
       decoding="async"
     />
