@@ -19,7 +19,109 @@ After every completed task, update this file with:
 ## Latest Session Log
 
 
-Last updated: 2026-05-20 (Google Ads API enabled; only Test Account token blocks live reads)
+Last updated: 2026-05-20 (PMax campaign active; asset and signal gaps identified; budget scaling blocked)
+
+
+### 2026-05-20 (update) — PMax campaign analysis; asset/signal action items; architecture plan
+
+**What changed**
+
+- No API calls made. No campaign mutations. UI observation only.
+- No files changed except this roadmap.
+
+**Current PMax campaign state (observed via Google Ads UI)**
+
+| Field | Value |
+| --- | --- |
+| Campaign name | Kids Party Face Painting |
+| Type | Performance Max |
+| Date range observed | May 17–20, 2026 (4 days) |
+| Status | Active / Delivering |
+| Daily budget | $20.00 |
+| Spend (4 days) | $20.37 |
+| Impressions | ~2,701 |
+| Clicks | 28 |
+| Avg CPC | $0.73 |
+| CTR | ~1.04% |
+| Conversions | 1 |
+| Conv. rate (shown) | 2.38% |
+| Optimization score | 95.2% |
+| Asset strength | Average |
+
+**Assessment**
+
+Early delivery metrics are promising — $0.73 CPC and 1.04% CTR are reasonable for a local service PMax campaign in its first days.
+However, the data is statistically immature (4 days, 28 clicks, 1 conversion). No budget scaling decisions should be made yet.
+
+**Active blockers — do not proceed past these without resolution**
+
+1. **Conversion quality unverified.** The 1 reported conversion must be confirmed as a real qualified lead inquiry (not a bot, accidental click, or self-visit) before the conversion signal can be trusted for Smart Bidding. Check CRM / contact form submissions for the corresponding contact.
+2. **Google Ads API mutations blocked.** Developer token is still Test Account level. No API write operations against the campaign until Basic or Explorer access is approved.
+3. **Budget scaling blocked.** Do not raise the daily budget above $20/day until at least 3–5 real qualified lead conversions are confirmed across at minimum 2 separate weeks.
+
+**Asset group gaps — action required**
+
+| Gap | Required fix | Priority |
+| --- | --- | --- |
+| No audience signals | Add at least one signal: Search themes (keywords describing ideal customer), Customer match list, or GA4 audience segment | High |
+| Missing horizontal images | Add 3+ horizontal (1.91:1) images — event photos, action shots, wide group shots | High |
+| Missing square images | Add 3+ square (1:1) images — close-up face painting shots, completed designs | High |
+| Missing vertical images | Add 2+ vertical 4:5 images — portrait-style photos of children or artist at work | High |
+| Asset strength: Average | Strength improves once image gaps and audience signals are filled | Medium |
+| Video assets | Prepare 1–2 short (15–30 sec) videos for PMax — Google will auto-generate if none provided, but owner-supplied videos outperform auto-generated | Low–Medium |
+
+All image and video assets must use only images the owner has rights to (original photos from past events). No stock photos.
+
+**Recommended action sequence (no API required yet)**
+
+1. Verify the 1 reported conversion is a real qualified lead inquiry.
+2. Export 8–12 event photos from PICS/ or phone gallery; crop to the required aspect ratios.
+3. In Google Ads UI → campaign → asset group → add images (horizontal, square, vertical 4:5).
+4. In Google Ads UI → campaign → asset group → add audience signals:
+   - Add Search themes: "face painter for kids birthday party", "face painting party Los Angeles", etc.
+   - If a GA4 audience exists, link it here.
+5. Upload 1–2 short event videos (15–30 sec) to YouTube; add to asset group.
+6. Monitor for 7–14 more days before any budget or bid strategy changes.
+
+**Recommended campaign architecture (planning only — do not implement yet)**
+
+Keep the current PMax campaign running. Once Basic Access is approved and 3–5 qualified conversions are confirmed, evolve to:
+
+**Phase 1 — Improve current asset group (now)**
+- Fill image gaps and add audience signals as above.
+- Do not restructure yet.
+
+**Phase 2 — Split PMax into service-based asset groups (after 3–5 conversions)**
+After the current asset group is performing, add 3 more asset groups within the same PMax campaign:
+
+| Asset group | Target services | Key signals |
+| --- | --- | --- |
+| Face Painting Birthday Parties | Face painting for kids parties | Birthday party keywords, parent demographics |
+| Balloon Twisting Birthday Parties | Balloon twisting, balloon animals | Balloon twisting terms, party entertainment |
+| Glitter Tattoos + Face Gems | Glitter tattoos, face jewelry | Glitter tattoo, festival terms |
+| School / Festival / Corporate Family Events | School festivals, corporate events, community events | School event, festival, corporate family keywords |
+
+Each asset group gets its own images, headlines, descriptions, and final URL tailored to that service.
+
+**Phase 3 — Add separate Search campaign (after Basic Access approval)**
+- Target high-intent terms: "face painter Los Angeles", "face painting birthday party LA", etc.
+- Allows manual bidding control on bottom-of-funnel terms.
+- Do not create via API until Basic Access is confirmed and approval gates are tested with validate_only=true first.
+
+**Budget scaling gates (hard rules)**
+
+| Gate | Condition |
+| --- | --- |
+| Hold at $20/day | Until 3–5 real qualified leads confirmed |
+| First scale (→ $30/day) | After 3–5 qualified conversions and CPA < $30 observed |
+| Second scale (→ $40/day) | After 7–10 qualified conversions; CPA trending stable or declining |
+| Add Search campaign budget | Only after PMax is stable and Basic Access is live |
+
+All budget changes via API require approval token + validate_only=true pass first (enforced by mutation framework).
+
+**Production status:** unchanged. No campaign mutations made or planned without owner approval.
+
+---
 
 
 ### 2026-05-20 (update) — GCP API enabled; developer token Test Account level confirmed
