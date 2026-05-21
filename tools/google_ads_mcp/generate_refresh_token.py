@@ -8,13 +8,15 @@ Create an OAuth 2.0 credential in Google Cloud Console:
   APIs & Services > Credentials > Create credentials > OAuth client ID
   Application type: Desktop app   <-- REQUIRED. Web Application will fail.
 
-The redirect URI http://localhost:8080 is handled automatically by this
-script. You do NOT need to add it manually in the Cloud Console for
-Desktop app clients (Google handles loopback URIs for Desktop apps).
+For Desktop app clients Google allows any loopback port (127.0.0.1:*);
+you do NOT need to register the redirect URI in Cloud Console.
 
 Usage
 -----
     python generate_refresh_token.py
+
+Override the callback port via env if the default is occupied:
+    GOOGLE_ADS_OAUTH_PORT=53683 python generate_refresh_token.py
 
 The script prints ONLY the refresh token. Paste it into .env.local as
 GOOGLE_ADS_REFRESH_TOKEN. Never commit that file.
@@ -23,10 +25,43 @@ from __future__ import annotations
 
 import getpass
 import os
+import socket
 import sys
 
-CALLBACK_PORT = 8080  # stable loopback port; must match Cloud Console for Web clients
+CALLBACK_HOST = "127.0.0.1"  # explicit loopback; avoid 'localhost' DNS ambiguity
+FALLBACK_PORTS = [53682, 53683, 53684, 53685]
 SCOPES = ["https://www.googleapis.com/auth/adwords"]
+
+
+def _find_free_port() -> int:
+    """Return the first available port from FALLBACK_PORTS (or env override)."""
+    env_port = os.environ.get("GOOGLE_ADS_OAUTH_PORT", "").strip()
+    if env_port:
+        try:
+            candidates = [int(env_port)]
+        except ValueError:
+            print(f"WARNING: GOOGLE_ADS_OAUTH_PORT='{env_port}' is not a number; using defaults.",
+                  file=sys.stderr)
+            candidates = FALLBACK_PORTS
+    else:
+        candidates = FALLBACK_PORTS
+
+    for port in candidates:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.bind((CALLBACK_HOST, port))
+            return port
+        except OSError:
+            continue
+
+    tried = ", ".join(str(p) for p in candidates)
+    print(
+        f"ERROR: All candidate ports are occupied or blocked ({tried}).\n"
+        "  Set GOOGLE_ADS_OAUTH_PORT=<free-port> and retry.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 
 def _load_credentials() -> tuple[str, str]:
@@ -85,12 +120,17 @@ def main() -> int:
         }
     }
 
+    port = _find_free_port()
+    callback_url = f"http://{CALLBACK_HOST}:{port}/"
+
     flow = InstalledAppFlow.from_client_config(client_config, scopes=SCOPES)
 
-    print(f"\nOpening browser for Google sign-in. Listening on http://localhost:{CALLBACK_PORT} ...")
+    print(f"\nOAuth callback URL : {callback_url}")
+    print("Opening browser for Google sign-in ...")
     try:
         creds = flow.run_local_server(
-            port=CALLBACK_PORT,
+            host=CALLBACK_HOST,
+            port=port,
             open_browser=True,
             # Suppress the library's own token-dump to stdout
             success_message=(
@@ -98,9 +138,13 @@ def main() -> int:
             ),
         )
     except OSError as exc:
-        if "redirect_uri_mismatch" in str(exc).lower() or "address already in use" in str(exc).lower():
+        msg = str(exc)
+        if "address already in use" in msg.lower() or "winerror 10013" in msg.lower() or "10048" in msg:
             print(
-                f"ERROR: Port {CALLBACK_PORT} is already in use. Close the process using it and retry.",
+                f"ERROR: Port {port} is occupied or blocked (WinError 10013 / EADDRINUSE).\n"
+                "  This usually means another process (e.g. Apache/httpd) owns that port.\n"
+                f"  Set GOOGLE_ADS_OAUTH_PORT=<free-port> and retry, or kill the process\n"
+                f"  blocking port {port}.",
                 file=sys.stderr,
             )
         else:
@@ -110,13 +154,13 @@ def main() -> int:
         msg = str(exc)
         if "redirect_uri_mismatch" in msg.lower():
             print(
-                "ERROR: redirect_uri_mismatch\n"
-                "  This means either:\n"
-                "  1. Your OAuth client type is 'Web application' instead of 'Desktop app'.\n"
-                "     Fix: Delete it in Cloud Console and create a new Desktop app client.\n"
-                "  2. The redirect URI http://localhost:{CALLBACK_PORT} is not listed in the\n"
-                "     Cloud Console (only relevant for Web application clients).\n"
-                "  The correct fix is almost always option 1.",
+                f"ERROR: redirect_uri_mismatch\n"
+                f"  Callback tried: http://{CALLBACK_HOST}:{port}/\n"
+                f"  This means either:\n"
+                f"  1. Your OAuth client type is 'Web application' instead of 'Desktop app'.\n"
+                f"     Fix: Delete it in Cloud Console and create a new Desktop app client.\n"
+                f"  2. (Web app clients only) The URI above is not listed in Cloud Console.\n"
+                f"  The correct fix is almost always option 1.",
                 file=sys.stderr,
             )
         elif "access_denied" in msg.lower():

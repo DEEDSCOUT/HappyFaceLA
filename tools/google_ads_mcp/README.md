@@ -51,12 +51,23 @@ notepad .env.local      # fill in DEV TOKEN, CLIENT_ID, CLIENT_SECRET, REFRESH_T
 python generate_refresh_token.py
 # Sign in as the Google account that has access to MCC 634-051-0052
 # (which manages client account 469-912-0105).
-# The script opens a browser, listens on http://localhost:8080, and
-# prints ONLY the refresh token. Paste it into .env.local.
+# The script opens a browser, listens on http://127.0.0.1:53682/ by default,
+# and prints ONLY the refresh token. Paste it into .env.local.
+```
+
+The callback defaults to `http://127.0.0.1:53682/`. Override if that port is occupied:
+```powershell
+$env:GOOGLE_ADS_OAUTH_PORT = "53683"
+python generate_refresh_token.py
 ```
 
 **If you see `redirect_uri_mismatch`:** your OAuth client is type "Web application".
 Delete it and create a new "Desktop app" client.
+
+**If you see `WinError 10013` or `address already in use`:** the selected loopback port
+is occupied or blocked by another process (e.g. Apache/httpd on 8080). Set
+`GOOGLE_ADS_OAUTH_PORT` to a free port (e.g. `53683`) and retry. You can identify
+the blocking process with `netstat -ano | findstr :<port>`.
 
 **Security note:** if a client secret was previously exposed (e.g. printed to terminal,
 logged, or committed), treat that OAuth client as compromised. Delete it in Cloud Console
