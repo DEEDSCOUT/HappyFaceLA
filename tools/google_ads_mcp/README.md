@@ -38,16 +38,29 @@ notepad .env.local      # fill in DEV TOKEN, CLIENT_ID, CLIENT_SECRET, REFRESH_T
 
 ### Generate refresh token (one-time)
 
-You need an OAuth 2.0 **Desktop** client in Google Cloud Console
-(APIs & Services > Credentials > Create credentials > OAuth client > Desktop).
-The Cloud project must have the Google Ads API enabled.
+> **OAuth client type MUST be "Desktop app".**
+> Do NOT use "Web application" — it will fail with `redirect_uri_mismatch`.
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials.
+2. Click **Create credentials → OAuth client ID**.
+3. Application type: **Desktop app**. Give it any name.
+4. Download or copy the **Client ID** and **Client secret** into `.env.local`.
+5. Enable the **Google Ads API** on the same Cloud project.
 
 ```powershell
 python generate_refresh_token.py
 # Sign in as the Google account that has access to MCC 634-051-0052
-# (which manages client account 468-234-8105).
-# The script prints ONLY the refresh token. Paste it into .env.local.
+# (which manages client account 469-912-0105).
+# The script opens a browser, listens on http://localhost:8080, and
+# prints ONLY the refresh token. Paste it into .env.local.
 ```
+
+**If you see `redirect_uri_mismatch`:** your OAuth client is type "Web application".
+Delete it and create a new "Desktop app" client.
+
+**Security note:** if a client secret was previously exposed (e.g. printed to terminal,
+logged, or committed), treat that OAuth client as compromised. Delete it in Cloud Console
+and create a fresh Desktop app client before running this script.
 
 ## VS Code wiring
 
