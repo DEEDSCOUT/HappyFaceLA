@@ -19,7 +19,92 @@ After every completed task, update this file with:
 ## Latest Session Log
 
 
-Last updated: 2026-05-21 (Services hub + cross-sell architecture rolled out across all service pages)
+Last updated: 2026-05-21 (SEO indexing recovery — sitemap fix, placeholder purge, service-specific FAQs, internal linking)
+
+
+### 2026-05-21 — Google Search Console indexing recovery + live SEO quality audit
+
+**What changed**
+
+- Excluded `/share-your-experience/` (noindex page) from Astro-generated sitemap via `filter` in `sitemap()` config. Sitemap now has 23 URLs — the erroneously-included URL is gone.
+- Removed all placeholder SVG images and placeholder alt text from `EventTypePageSections.astro` (3 event-type pages: kids birthday, corporate, school festival) and `LocationPageSections.astro` (7 city pages). Replaced placeholder gallery blocks with a real services links section (crawlable HTML links to each service page, /services/, /contact/, /pricing/).
+- Removed SVG placeholder fallback from `ServicePageSections.astro`. Gallery section now renders only when real images exist (`serviceGallery.length > 0`). Glitter Tattoos page previously rendered 3 placeholder tiles — now renders no gallery section (intentional; gallery will render when owner adds real photos).
+- Added service-specific FAQ arrays to `src/data/faqs.ts`: `facePaintingFaqs` (5 Qs), `balloonTwistingFaqs` (5 Qs), `glitterTattooFaqs` (5 Qs), `faceGemsFaqs` (5 Qs). Each covers service-specific topics (design options, timing, safety, removal, age ranges). `commonFaqs` retained for FAQ hub page.
+- Updated all 4 service pages to import and pass their service-specific FAQ array instead of `commonFaqs` — both the JSON-LD `faqJsonLd()` call and the `<ServicePageSections faqs={...} />` prop.
+- Added "See all packages and pricing →" link (pointing to `/pricing/`) at the bottom of the packages section in `ServicePageSections.astro`.
+- Added crawlable "View service details:" link row on the gallery page (`/gallery/`) above the gallery grid — links to all 4 service pages and `/services/`.
+
+**Trust claims verified (all owner-originated — no changes made)**
+- "Insured through Body Art Insurance. COI availability is confirmed during booking." — `ServicePageSections.astro` + `business.ts`
+- "cosmetic-grade face paints" — `services.ts`, `ServicePageSections.astro`
+- "skin-safe temporary tattoos", "face/body-safe adhesives" — `ServicePageSections.astro`, `services.ts`
+- "Bookings start at $150", "$50 deposit" — `booking-policy.astro` (owner-authored), `packages.ts`
+
+**Search Console baseline (as of 2026-05-17, pre-deploy)**
+- Pages indexed: ~2
+- Pages discovered, not indexed: ~21
+- Root cause identified: site was newly launched, no sitemap was actively submitted, and placeholder content was present on 10+ pages
+
+**Priority URLs safe to request indexing in Search Console (post-deploy)**
+
+| URL | Indexable | In sitemap | Notes |
+|---|---|---|---|
+| `https://happyfacesla.com/` | Yes | Yes | Homepage |
+| `https://happyfacesla.com/face-painting-los-angeles/` | Yes | Yes | Primary revenue page |
+| `https://happyfacesla.com/balloon-twisting-los-angeles/` | Yes | Yes | Revenue page |
+| `https://happyfacesla.com/glitter-tattoos-los-angeles/` | Yes | Yes | Revenue page |
+| `https://happyfacesla.com/face-gems-face-jewelry-los-angeles/` | Yes | Yes | Revenue page |
+| `https://happyfacesla.com/services/` | Yes | Yes | Services hub |
+| `https://happyfacesla.com/pricing/` | Yes | Yes | Packages/pricing page |
+| `https://happyfacesla.com/gallery/` | Yes | Yes | Gallery — now has service links |
+| `https://happyfacesla.com/faq/` | Yes | Yes | FAQ hub |
+| `https://happyfacesla.com/contact/` | Yes | Yes | Contact/booking |
+| `https://happyfacesla.com/service-areas/los-angeles/` | Yes | Yes | Primary city page |
+| `https://happyfacesla.com/kids-birthday-party-entertainment-los-angeles/` | Yes | Yes | Event-type page |
+| `https://happyfacesla.com/corporate-event-face-painting-los-angeles/` | Yes | Yes | Event-type page |
+| `https://happyfacesla.com/school-festival-face-painting-los-angeles/` | Yes | Yes | Event-type page |
+
+**Owner action required — Search Console**
+1. Go to Google Search Console → URL Inspection
+2. Test each URL in the table above — confirm "URL is on Google" or request indexing
+3. If "Discovered — currently not indexed": click "Request Indexing" for each
+4. Submit sitemap: Settings → Sitemaps → add `https://happyfacesla.com/sitemap-index.xml` (if not already submitted)
+5. Wait 1–7 days per URL; check Coverage report for progress
+
+**Files changed**
+
+| File | Change |
+|---|---|
+| `astro.config.mjs` | Added `filter` to `sitemap()` to exclude `/share-your-experience/` |
+| `src/data/faqs.ts` | Added `facePaintingFaqs`, `balloonTwistingFaqs`, `glitterTattooFaqs`, `faceGemsFaqs` |
+| `src/pages/face-painting-los-angeles.astro` | Uses `facePaintingFaqs` |
+| `src/pages/balloon-twisting-los-angeles.astro` | Uses `balloonTwistingFaqs` |
+| `src/pages/glitter-tattoos-los-angeles.astro` | Uses `glitterTattooFaqs` |
+| `src/pages/face-gems-face-jewelry-los-angeles.astro` | Uses `faceGemsFaqs` |
+| `src/components/sections/ServicePageSections.astro` | Gallery only renders when real images exist; added `/pricing/` link |
+| `src/components/sections/EventTypePageSections.astro` | Removed placeholder GalleryGrid; added service links section |
+| `src/components/sections/LocationPageSections.astro` | Removed placeholder GalleryGrid; added service links to `/services/`, `/contact/`, `/pricing/` |
+| `src/pages/gallery.astro` | Added crawlable service links row above gallery grid |
+
+**Commands run**
+```powershell
+npm run build   # 25 pages, exit 0
+npm run qa:postbuild  # all checks passed, exit 0
+grep -i "share-your-experience" dist/sitemap-0.xml  # 0 matches ✅
+grep -ri "owner replacement" dist/ --include="*.html"  # 0 matches ✅
+grep -ri "placeholder image" dist/ --include="*.html"  # 0 matches ✅
+```
+
+**Validation result:** build green, QA green, sitemap 23 URLs, no placeholder content in any built HTML page.
+
+**Remaining blockers / next actions**
+- Owner should submit/verify sitemap in Search Console and request indexing for the priority URLs above
+- Gallery photos: Glitter Tattoos and Balloon Twisting pages still have fewer images than Face Painting. When owner adds photos, gallery section will auto-render on those pages.
+- Service area pages (Burbank, Glendale, Pasadena, Sherman Oaks, Studio City, Encino): no unique content beyond city name in template. Long-term content uniqueness improvement (owner-supplied city-specific text) would improve indexing of these pages.
+
+**Production status:** deployed to `main` → Cloudflare Pages auto-deploy triggered.
+
+---
 
 
 ### 2026-05-21 — Services hub + cross-sell architecture for all service pages

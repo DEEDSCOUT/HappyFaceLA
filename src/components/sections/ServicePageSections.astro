@@ -18,18 +18,10 @@ interface Props {
 
 const { service, faqs } = Astro.props;
 
-// Use real gallery images for this service, falling back to placeholder if none
+// Use real gallery images for this service only — no placeholder fallback
 const serviceGallery = galleryItems
   .filter((item) => item.permissionConfirmed && item.service === service.name && !item.src.endsWith(".svg"))
   .map((item) => ({ src: item.src, alt: item.alt }));
-
-const gallery = serviceGallery.length > 0
-  ? serviceGallery
-  : [
-      { src: "/images/placeholders/happy-faces-la-hero-placeholder.svg", alt: `${service.name} photo — coming soon` },
-      { src: "/images/placeholders/happy-faces-la-hero-placeholder.svg", alt: `${service.name} photo — coming soon` },
-      { src: "/images/placeholders/happy-faces-la-hero-placeholder.svg", alt: `${service.name} photo — coming soon` },
-    ];
 ---
 
 <section class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-10">
@@ -100,13 +92,18 @@ const gallery = serviceGallery.length > 0
     </article>
   </div>
 
-  <GalleryGrid title={`${service.name} Gallery`} images={gallery} />
+  {serviceGallery.length > 0 && (
+    <GalleryGrid title={`${service.name} Gallery`} images={serviceGallery} />
+  )}
 
   <section>
     <h2 class="text-2xl font-bold text-slate-900">Package options</h2>
     <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {packages.slice(0, 3).map((item) => <PackageCard {...item} />)}
     </div>
+    <p class="mt-4 text-sm text-slate-600">
+      <a href="/pricing/" class="text-orange-600 hover:underline">See all packages and pricing →</a>
+    </p>
   </section>
 
   <section class="rounded-2xl border border-slate-200 bg-white p-6">

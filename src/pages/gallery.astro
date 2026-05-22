@@ -16,6 +16,21 @@ const canonicalPath = "/gallery/";
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Gallery", href: canonicalPath }]} />
   <PageIntro title="Gallery" description="Face painting, balloon twisting, glitter tattoos, and face gems at parties and events across Los Angeles, Orange County, and Ventura County." />
 
+  <section class="mx-auto w-full max-w-6xl px-4 pt-4 pb-0">
+    <p class="text-sm text-slate-600">
+      View service details:
+      <a href="/face-painting-los-angeles/" class="text-orange-600 hover:underline">Face Painting</a>
+      <span class="mx-1 text-slate-300">·</span>
+      <a href="/balloon-twisting-los-angeles/" class="text-orange-600 hover:underline">Balloon Twisting</a>
+      <span class="mx-1 text-slate-300">·</span>
+      <a href="/face-gems-face-jewelry-los-angeles/" class="text-orange-600 hover:underline">Face Gems</a>
+      <span class="mx-1 text-slate-300">·</span>
+      <a href="/glitter-tattoos-los-angeles/" class="text-orange-600 hover:underline">Glitter Tattoos</a>
+      <span class="mx-1 text-slate-300">·</span>
+      <a href="/services/" class="text-orange-600 hover:underline">All Services</a>
+    </p>
+  </section>
+
   <section class="mx-auto w-full max-w-6xl px-4 py-10">
     <FilteredGallery items={galleryItems} categories={galleryCategories} />
   </section>

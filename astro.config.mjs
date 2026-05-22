@@ -8,7 +8,12 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   site: 'https://happyfacesla.com',
   trailingSlash: 'always',
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      // Exclude noindex pages from sitemap
+      filter: (page) => !page.includes('/share-your-experience/')
+    })
+  ],
   vite: {
     plugins: [tailwindcss()]
   }
