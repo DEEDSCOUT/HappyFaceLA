@@ -43,9 +43,9 @@ export const facePaintingFaqs: FaqItem[] = [
             "Please share any sensitivities or event requirements when requesting a quote. For very young children or guests with known skin conditions, parents can request that designs be skipped or adjusted. Service details are confirmed before booking."
     },
     {
-        question: "How do children remove face paint after the party?",
+        question: "What should guests do to prepare for face painting?",
         answer:
-            "Most face paint washes off with warm water and gentle soap or a damp cloth. Most designs come off within one or two gentle washes. Avoid scrubbing."
+            "Guests with known skin sensitivities, recent skin reactions, or conditions should let us know before booking so designs can be adjusted or skipped as needed. Service details are confirmed before booking."
     },
     {
         question: "What is the minimum booking for face painting?",
@@ -84,56 +84,56 @@ export const balloonTwistingFaqs: FaqItem[] = [
 
 export const glitterTattooFaqs: FaqItem[] = [
     {
-        question: "How long do glitter tattoos last?",
+        question: "What types of events are glitter tattoos good for?",
         answer:
-            "Glitter tattoos typically last 1–3 days with normal activity. They last longer when kept dry and away from oils and lotions. Rubbing or frequent water exposure will shorten wear time."
+            "Glitter tattoos are popular at school carnivals, birthday parties, festival booths, and any event where guests want a fast, eye-catching design. They work well as a dedicated station or alongside face painting and face gems."
     },
     {
-        question: "How are glitter tattoos removed?",
+        question: "Can glitter tattoos be added to face painting or balloon twisting?",
         answer:
-            "Apply baby oil or coconut oil to the design, wait a few minutes, then gently wipe with a soft cloth or cotton pad. Avoid scrubbing. Most designs come off cleanly with one or two applications."
+            "Yes. Glitter tattoos pair well with face painting and balloon twisting as part of a multi-station event setup. Bundling services helps keep each station moving and gives guests more options."
     },
     {
-        question: "What age groups enjoy glitter tattoos most?",
+        question: "How do I request glitter tattoos for my event?",
         answer:
-            "Glitter tattoos are popular with children ages 5 and older, teens, and adults. They are a fast, engaging station for school carnivals, festivals, and events where guests want a wearable keepsake."
+            "Submit your event details using the quote form or contact page. Include your event date, location, approximate guest count, and any services you want to combine. Availability and pricing are confirmed before booking."
     },
     {
-        question: "Are glitter tattoos safe for children?",
+        question: "Are glitter tattoos suitable for school or festival stations?",
         answer:
-            "Please share any sensitivities or event requirements when requesting a quote. Service details are confirmed before booking."
+            "Yes. Glitter tattoos are a popular add-on at school carnivals, PTA events, and festival booths. Happy Faces LA can set up a dedicated glitter tattoo station or combine it with other services at the same event."
     },
     {
-        question: "Can glitter tattoos be paired with face painting?",
+        question: "How is availability confirmed?",
         answer:
-            "Yes. Glitter tattoos and face painting are frequently booked together. Glitter tattoos are often applied to arms or hands, which adds variety and keeps lines at each station manageable."
+            "Availability and final service details are confirmed during the booking process. Share your event date, location, and guest count when requesting a quote."
     }
 ];
 
 export const faceGemsFaqs: FaqItem[] = [
     {
-        question: "How long do face gems stay on?",
+        question: "What themes work well with face gems?",
         answer:
-            "Face gems typically stay on for several hours during a normal event. Rubbing, perspiration, and contact with water or oils will reduce wear time."
-    },
-    {
-        question: "How are face gems removed after an event?",
-        answer:
-            "Gently lift the edge of the gem and peel off slowly. Applying a small amount of baby oil or micellar water around the gem first makes removal easier and more comfortable."
-    },
-    {
-        question: "Is the adhesive used for face gems safe for children?",
-        answer:
-            "Please share any sensitivities or event requirements when requesting a quote. Product is not applied near the eyes or on broken skin. Service details are confirmed before booking."
-    },
-    {
-        question: "What events are face gems best for?",
-        answer:
-            "Face gems are especially popular at princess birthday parties, festival looks, dance recitals, and events where guests want a glamorous photo-ready look. They also pair well with face painting for an elevated final look."
+            "Face gems are popular for princess, fairy, fantasy, and festival-themed events. They can be applied in simple accent patterns or more elaborate designs depending on the event theme and guest preferences."
     },
     {
         question: "Can face gems be combined with face painting or glitter tattoos?",
         answer:
-            "Yes. Face gems are frequently added to face painting designs as a finishing detail, or offered as a separate station alongside glitter tattoos for guests who prefer gems on arms or hands."
+            "Yes. Face gems are frequently paired with face painting as a finishing detail, or offered alongside glitter tattoos as a separate station. Bundling services creates a more complete experience for guests and helps keep each station moving."
+    },
+    {
+        question: "Are face gems a good option for older kids and teens?",
+        answer:
+            "Face gems are popular with older kids, teens, and adults who prefer a subtler option compared to full face painting. They work well as a standalone station or as an add-on at events with a mixed age range."
+    },
+    {
+        question: "How do I request face gems for my event?",
+        answer:
+            "Submit your event details through the quote form or contact page. Include your event date, location, guest count, and any other services you want to combine. Availability and service details are confirmed before booking."
+    },
+    {
+        question: "What events are face gems best for?",
+        answer:
+            "Face gems work well at themed birthday parties, school events, festivals, photo booths, and events where guests want a photo-ready accent look. They can be booked alone or as part of a multi-service package."
     }
 ];

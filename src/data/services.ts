@@ -90,13 +90,12 @@ export const services: ServiceItem[] = [
         intro:
             "Glitter tattoos are a fast, photo-friendly add-on for events where guests want fun designs and short wait times.",
         heroSubcopy:
-            "Temporary glitter tattoo designs for parties and events, lasting 1–3 days — a fast, photo-friendly station for older kids and teens. Great for school carnivals, festival booths, and high-traffic birthday lines across Los Angeles. Often paired with face painting or face gems for full theme looks.",
+            "Temporary glitter tattoo designs for parties and events — a fast, photo-friendly station for older kids and teens. Great for school carnivals, festival booths, and high-traffic birthday lines across Los Angeles. Often paired with face painting or face gems for full theme looks.",
         crossSellTitle: "Pair Glitter Tattoos With Other Party Services",
         crossSellDescription:
             "Glitter tattoos move fast — perfect alongside slower stations like face painting or as a finishing touch with face gems. Add balloon twisting to give younger guests a take-home keepsake.",
         whatItIncludes: [
             "Glitter tattoo designs in a range of styles",
-            "Lasts 1–3 days on skin",
             "Fast application, great for large groups",
         ],
         bestFor: [
@@ -126,7 +125,6 @@ export const services: ServiceItem[] = [
         whatItIncludes: [
             "Face gems and face jewelry pieces",
             "Crystal-like accent designs",
-            "Easy removal after the event",
             "Photo-ready results for any theme",
         ],
         bestFor: [
