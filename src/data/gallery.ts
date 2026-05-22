@@ -191,17 +191,6 @@ export const galleryItems: GalleryItem[] = [
     featured: false,
     permissionConfirmed: true,
   },
-  {
-    src: "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-04.webp",
-    alt: "Balloon animal creation by Happy Faces LA artist at a kids party in Los Angeles",
-    category: "Balloon Twisting",
-    service: "Balloon Twisting",
-    eventType: "Birthday Party",
-    location: "Los Angeles",
-    featured: false,
-    permissionConfirmed: true,
-  },
-
   // ── Glitter Tattoos — temporarily removed pending better imagery ─────────
 
   // ── Face Gems — 4 real photos ─────────────────────────────────────────────
