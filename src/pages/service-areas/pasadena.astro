@@ -9,7 +9,7 @@ const location = priorityLocations.find((item) => item.slug === "pasadena")!;
 const canonicalPath = "/service-areas/pasadena/";
 ---
 
-<BaseLayout title="Face Painting in Pasadena | Happy Faces LA" description="Book Happy Faces LA for face painting, balloons, glitter tattoos, and face gems in Pasadena." canonicalPath={canonicalPath}>
+<BaseLayout title="Face Painting in Pasadena | Happy Faces LA" description="Book Happy Faces LA for face painting, balloons, glitter tattoos, and face gems in Pasadena." canonicalPath={canonicalPath} noindex={true}>
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Service Areas", href: "/service-areas/" }, { label: "Pasadena", href: canonicalPath }]} />
   <PageIntro title="Face Painting, Balloon Twisting & Glitter Tattoos in Pasadena" description="Happy Faces LA provides face painting, balloon twisting, glitter tattoos, and face jewelry for birthdays, school events, and private celebrations in Pasadena." />
   <LocationPageSections location={location} />

@@ -9,7 +9,7 @@ const location = priorityLocations.find((item) => item.slug === "burbank")!;
 const canonicalPath = "/service-areas/burbank/";
 ---
 
-<BaseLayout title="Face Painting in Burbank | Happy Faces LA" description="Book Happy Faces LA for face painting, balloons, glitter tattoos, and face gems in Burbank." canonicalPath={canonicalPath}>
+<BaseLayout title="Face Painting in Burbank | Happy Faces LA" description="Book Happy Faces LA for face painting, balloons, glitter tattoos, and face gems in Burbank." canonicalPath={canonicalPath} noindex={true}>
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Service Areas", href: "/service-areas/" }, { label: "Burbank", href: canonicalPath }]} />
   <PageIntro title="Face Painting, Balloon Twisting & Glitter Tattoos in Burbank" description="Happy Faces LA provides face painting, balloon twisting, glitter tattoos, and face jewelry for birthdays, school events, and private celebrations in Burbank." />
   <LocationPageSections location={location} />

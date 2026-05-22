@@ -9,7 +9,7 @@ const location = priorityLocations.find((item) => item.slug === "encino")!;
 const canonicalPath = "/service-areas/encino/";
 ---
 
-<BaseLayout title="Face Painting in Encino | Happy Faces LA" description="Book Happy Faces LA for face painting, balloons, glitter tattoos, and face gems in Encino." canonicalPath={canonicalPath}>
+<BaseLayout title="Face Painting in Encino | Happy Faces LA" description="Book Happy Faces LA for face painting, balloons, glitter tattoos, and face gems in Encino." canonicalPath={canonicalPath} noindex={true}>
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Service Areas", href: "/service-areas/" }, { label: "Encino", href: canonicalPath }]} />
   <PageIntro title="Face Painting, Balloon Twisting & Glitter Tattoos in Encino" description="Happy Faces LA provides face painting, balloon twisting, glitter tattoos, and face jewelry for birthdays, school events, and private celebrations in Encino." />
   <LocationPageSections location={location} />

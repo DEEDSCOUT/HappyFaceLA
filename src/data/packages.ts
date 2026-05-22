@@ -36,8 +36,8 @@ export const packages: PackageItem[] = [
         name: "Glitter + Gems Add-On",
         bestFor: "Themed events, older kids, and photo moments",
         features: [
-            "Cosmetic-grade glitter tattoos",
-            "Body-safe face gems and face jewelry",
+            "Glitter tattoo designs",
+            "Face gems and face jewelry",
             "Can be combined with any other service",
         ],
         duration: "Varies by guest count",
@@ -61,7 +61,6 @@ export const packages: PackageItem[] = [
         bestFor: "Company picnics, city events, and malls",
         features: [
             "Custom setup and professional invoice",
-            "COI available (confirmed at booking)",
             "Full-service entertainment station",
         ],
         duration: "Varies by event",

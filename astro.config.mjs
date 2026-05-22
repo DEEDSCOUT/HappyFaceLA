@@ -10,8 +10,17 @@ export default defineConfig({
   trailingSlash: 'always',
   integrations: [
     sitemap({
-      // Exclude noindex pages from sitemap
-      filter: (page) => !page.includes('/share-your-experience/')
+      // Exclude all noindex pages from sitemap
+      filter: (page) => {
+        const excludedPaths = [
+          '/share-your-experience/',
+          '/kids-birthday-party-entertainment-los-angeles/',
+          '/corporate-event-face-painting-los-angeles/',
+          '/school-festival-face-painting-los-angeles/',
+          '/service-areas/'
+        ];
+        return !excludedPaths.some((p) => page.includes(p));
+      }
     })
   ],
   vite: {

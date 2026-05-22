@@ -9,7 +9,7 @@ const location = priorityLocations.find((item) => item.slug === "sherman-oaks")!
 const canonicalPath = "/service-areas/sherman-oaks/";
 ---
 
-<BaseLayout title="Face Painting in Sherman Oaks | Happy Faces LA" description="Book Happy Faces LA for face painting, balloons, glitter tattoos, and face gems in Sherman Oaks." canonicalPath={canonicalPath}>
+<BaseLayout title="Face Painting in Sherman Oaks | Happy Faces LA" description="Book Happy Faces LA for face painting, balloons, glitter tattoos, and face gems in Sherman Oaks." canonicalPath={canonicalPath} noindex={true}>
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Service Areas", href: "/service-areas/" }, { label: "Sherman Oaks", href: canonicalPath }]} />
   <PageIntro title="Face Painting, Balloon Twisting & Glitter Tattoos in Sherman Oaks" description="Happy Faces LA provides face painting, balloon twisting, glitter tattoos, and face jewelry for birthdays, school events, and private celebrations in Sherman Oaks." />
   <LocationPageSections location={location} />

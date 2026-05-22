@@ -40,12 +40,12 @@ export const facePaintingFaqs: FaqItem[] = [
     {
         question: "Is face painting safe for toddlers and younger children?",
         answer:
-            "Happy Faces LA uses professional cosmetic-grade face paints formulated for skin use. Product is not applied to broken, irritated, or sensitive skin. For very young children or guests with known skin conditions, parents can request that designs be skipped or adjusted."
+            "Please share any sensitivities or event requirements when requesting a quote. For very young children or guests with known skin conditions, parents can request that designs be skipped or adjusted. Service details are confirmed before booking."
     },
     {
         question: "How do children remove face paint after the party?",
         answer:
-            "Most cosmetic-grade face paint washes off with warm water and gentle soap or a damp cloth. Most designs come off within one or two gentle washes. Avoid scrubbing."
+            "Most face paint washes off with warm water and gentle soap or a damp cloth. Most designs come off within one or two gentle washes. Avoid scrubbing."
     },
     {
         question: "What is the minimum booking for face painting?",
@@ -101,7 +101,7 @@ export const glitterTattooFaqs: FaqItem[] = [
     {
         question: "Are glitter tattoos safe for children?",
         answer:
-            "Happy Faces LA uses cosmetic-grade glitter and skin-safe adhesives. We do not use craft glitter or craft glues on skin. Product is not applied to broken, irritated, or sensitive skin."
+            "Please share any sensitivities or event requirements when requesting a quote. Service details are confirmed before booking."
     },
     {
         question: "Can glitter tattoos be paired with face painting?",
@@ -114,7 +114,7 @@ export const faceGemsFaqs: FaqItem[] = [
     {
         question: "How long do face gems stay on?",
         answer:
-            "Face gems applied with cosmetic adhesive typically stay on for several hours during a normal event. Rubbing, perspiration, and contact with water or oils will reduce wear time."
+            "Face gems typically stay on for several hours during a normal event. Rubbing, perspiration, and contact with water or oils will reduce wear time."
     },
     {
         question: "How are face gems removed after an event?",
@@ -124,7 +124,7 @@ export const faceGemsFaqs: FaqItem[] = [
     {
         question: "Is the adhesive used for face gems safe for children?",
         answer:
-            "Happy Faces LA uses body-safe cosmetic adhesive. We do not use craft glue or strong adhesives on skin. Product is not applied near the eyes, on broken skin, or for guests who report adhesive sensitivities."
+            "Please share any sensitivities or event requirements when requesting a quote. Product is not applied near the eyes or on broken skin. Service details are confirmed before booking."
     },
     {
         question: "What events are face gems best for?",

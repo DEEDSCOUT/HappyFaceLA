@@ -10,7 +10,7 @@ export const business = {
     instagramUrl: "https://www.instagram.com/happy_faces_la/",
     businessAddress: "",
     serviceAreaOnly: "Yes — service-area-only. No public address.",
-    insuranceCoiStatus: "Body Art Insurance",
+    insuranceCoiStatus: "",
     serviceRadius: "Los Angeles County, Orange County, and Ventura County",
     services: [
         "Face Painting",

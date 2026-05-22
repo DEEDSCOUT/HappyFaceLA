@@ -30,7 +30,7 @@ export const services: ServiceItem[] = [
         intro:
             "Happy Faces LA provides colorful, event-ready face painting with kid-friendly designs and fast line management for busy events.",
         heroSubcopy:
-            "Cosmetic-grade face paints, kid-friendly designs, and quick line management for birthdays, school events, festivals, and family celebrations across Los Angeles, Orange County, and Ventura County. Often booked together with balloon twisting, glitter tattoos, or face gems for a full party experience.",
+            "Face painting designs for parties and events, with kid-friendly designs and quick line management for birthdays, school events, festivals, and family celebrations across Los Angeles, Orange County, and Ventura County. Often booked together with balloon twisting, glitter tattoos, or face gems for a full party experience.",
         crossSellTitle: "More Than Face Painting — Complete Kids Party Fun",
         crossSellDescription:
             "Many families book face painting together with balloon twisting, glitter tattoos, or face gems so guests have more to do while lines move faster. Choose one service or build a package around your event size, age range, and schedule.",
@@ -38,7 +38,7 @@ export const services: ServiceItem[] = [
             "Custom designs for each child",
             "Kid-friendly theme options",
             "Fast line management for busy parties",
-            "Cosmetic-grade face paints and clean supplies",
+            "Face painting designs for parties and events",
         ],
         bestFor: [
             "Kids birthday parties",
@@ -90,14 +90,13 @@ export const services: ServiceItem[] = [
         intro:
             "Glitter tattoos are a fast, photo-friendly add-on for events where guests want fun designs and short wait times.",
         heroSubcopy:
-            "Cosmetic-grade glitter tattoos that last 1–3 days — a fast, photo-friendly station for older kids and teens. Great for school carnivals, festival booths, and high-traffic birthday lines across Los Angeles. Often paired with face painting or face gems for full theme looks.",
+            "Temporary glitter tattoo designs for parties and events, lasting 1–3 days — a fast, photo-friendly station for older kids and teens. Great for school carnivals, festival booths, and high-traffic birthday lines across Los Angeles. Often paired with face painting or face gems for full theme looks.",
         crossSellTitle: "Pair Glitter Tattoos With Other Party Services",
         crossSellDescription:
             "Glitter tattoos move fast — perfect alongside slower stations like face painting or as a finishing touch with face gems. Add balloon twisting to give younger guests a take-home keepsake.",
         whatItIncludes: [
-            "Cosmetic-grade glitter in a range of designs",
+            "Glitter tattoo designs in a range of styles",
             "Lasts 1–3 days on skin",
-            "Safe for most skin types",
             "Fast application, great for large groups",
         ],
         bestFor: [
@@ -125,9 +124,9 @@ export const services: ServiceItem[] = [
         crossSellDescription:
             "Face gems pair beautifully with face painting and glitter tattoos for layered, photo-ready looks. Add balloon twisting to keep younger guests engaged at the same event.",
         whatItIncludes: [
-            "Body-safe gems and face jewelry pieces",
+            "Face gems and face jewelry pieces",
             "Crystal-like accent designs",
-            "Safe adhesive with easy removal",
+            "Easy removal after the event",
             "Photo-ready results for any theme",
         ],
         bestFor: [
