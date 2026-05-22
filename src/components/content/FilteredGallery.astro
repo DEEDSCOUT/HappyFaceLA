@@ -37,24 +37,24 @@ const uid = "fg-" + Math.random().toString(36).slice(2, 8);
     ))}
   </div>
 
-  <!-- Masonry column gallery — each photo at its natural aspect ratio, no cropping, no gray bands -->
-  <div class="mt-6 columns-1 gap-4 sm:columns-2 lg:columns-3" id={`${uid}-grid`}>
+  <!-- Uniform grid gallery — all tiles the same 4:5 portrait size, faces stay visible -->
+  <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" id={`${uid}-grid`}>
     {visible.map((item) => (
       <figure
-        class="gallery-item group mb-4 break-inside-avoid overflow-hidden rounded-2xl border border-slate-200 bg-white"
+        class="gallery-item group overflow-hidden rounded-xl border border-slate-200 bg-white"
         data-category={item.category}
       >
-        <div class="overflow-hidden">
+        <div class="aspect-[4/5] w-full overflow-hidden">
           <img
             loading="lazy"
             decoding="async"
             src={item.src}
             alt={item.alt}
-            class="block h-auto w-full transition-transform duration-300 ease-out group-hover:scale-105"
+            class="h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-105"
           />
         </div>
         {item.eventType && (
-          <figcaption class="px-3 py-2 text-xs text-slate-500">
+          <figcaption class="px-2 py-1.5 text-xs text-slate-500">
             {item.category}{item.location ? ` · ${item.location}` : ""}
           </figcaption>
         )}

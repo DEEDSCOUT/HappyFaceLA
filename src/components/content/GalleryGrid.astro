@@ -14,16 +14,16 @@ const { title = "Event gallery", images } = Astro.props;
 
 <section>
   <h2 class="text-2xl font-bold text-slate-900">{title}</h2>
-  <div class="mt-4 columns-1 gap-4 sm:columns-2 lg:columns-3">
+  <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
     {images.map((image) => (
-      <figure class="group mb-4 break-inside-avoid overflow-hidden rounded-2xl border border-slate-200 bg-white">
-        <div class="overflow-hidden">
+      <figure class="group overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div class="aspect-[4/5] w-full overflow-hidden">
           <img
             loading="lazy"
             decoding="async"
             src={image.src}
             alt={image.alt}
-            class="block h-auto w-full transition-transform duration-300 ease-out group-hover:scale-105"
+            class="h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-105"
           />
         </div>
       </figure>
