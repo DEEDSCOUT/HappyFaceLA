@@ -202,47 +202,7 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
 
-  // ── Glitter Tattoos — 4 stills extracted from owner video uploads 2026-05-19 ─
-  {
-    src: "/images/gallery/glitter-tattoos/happy-faces-la-glitter-tattoo-kids-party-los-angeles-01.webp",
-    alt: "Glitter tattoo application by Happy Faces LA at a kids birthday party in Los Angeles",
-    category: "Glitter Tattoos",
-    service: "Glitter Tattoos",
-    eventType: "Birthday Party",
-    location: "Los Angeles",
-    featured: true,
-    permissionConfirmed: true,
-  },
-  {
-    src: "/images/gallery/glitter-tattoos/happy-faces-la-glitter-tattoo-kids-party-los-angeles-02.webp",
-    alt: "Cosmetic-grade glitter tattoo design by Happy Faces LA at a party in Los Angeles",
-    category: "Glitter Tattoos",
-    service: "Glitter Tattoos",
-    eventType: "Birthday Party",
-    location: "Los Angeles",
-    featured: false,
-    permissionConfirmed: true,
-  },
-  {
-    src: "/images/gallery/glitter-tattoos/happy-faces-la-glitter-tattoo-kids-party-los-angeles-03.webp",
-    alt: "Kids glitter tattoo at a Los Angeles birthday party by Happy Faces LA",
-    category: "Glitter Tattoos",
-    service: "Glitter Tattoos",
-    eventType: "Birthday Party",
-    location: "Los Angeles",
-    featured: false,
-    permissionConfirmed: true,
-  },
-  {
-    src: "/images/gallery/glitter-tattoos/happy-faces-la-glitter-tattoo-kids-party-los-angeles-04.webp",
-    alt: "Glitter tattoo art at a kids party in Los Angeles by Happy Faces LA",
-    category: "Glitter Tattoos",
-    service: "Glitter Tattoos",
-    eventType: "Birthday Party",
-    location: "Los Angeles",
-    featured: false,
-    permissionConfirmed: true,
-  },
+  // ── Glitter Tattoos — temporarily removed pending better imagery ─────────
 
   // ── Face Gems — 4 real photos ─────────────────────────────────────────────
   {
@@ -286,17 +246,7 @@ export const galleryItems: GalleryItem[] = [
     permissionConfirmed: true,
   },
 
-  // ── Event Atmosphere — 1 still extracted from owner video upload 2026-05-19 ──
-  {
-    src: "/images/gallery/event-atmosphere/happy-faces-la-event-atmosphere-party-los-angeles-01.webp",
-    alt: "Live party entertainment by Happy Faces LA — face painting and activities at a birthday in Los Angeles",
-    category: "Event Atmosphere",
-    service: "Event Entertainment",
-    eventType: "Birthday Party",
-    location: "Los Angeles",
-    featured: false,
-    permissionConfirmed: true,
-  },
+  // ── Event Atmosphere — temporarily removed pending better imagery ────────
 
   // ── Setup / Professional Kit — placeholders (no photos provided yet) ──────
   {
@@ -324,8 +274,6 @@ export const galleryItems: GalleryItem[] = [
 export const galleryCategories: GalleryCategory[] = [
   "Face Painting",
   "Balloon Twisting",
-  "Glitter Tattoos",
   "Face Gems",
-  "Event Atmosphere",
   "Setup",
 ];
