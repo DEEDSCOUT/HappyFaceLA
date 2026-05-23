@@ -1,17 +1,19 @@
 # Happy Faces LA — Commercial Control Room Dry-Run Build Plan
 
 **Phase:** PHASE_1_DRY_RUN  
-**Generated (UTC):** 2026-05-23T21:49:24+00:00  
+**Generated (UTC):** 2026-05-23T22:36:10+00:00  
 **Live Google API calls:** False  
 **Total operations:** 22  
 
 ## Summary
 
-| Asset Type | Count |
+| Operation Type | Count |
 |---|---|
-| Folders | 14 |
-| Sheets   | 2 |
-| Docs     | 2 |
+| CREATE_FOLDER | 14 |
+| CREATE_SPREADSHEET_FILE | 2 |
+| CREATE_DOCUMENT_FILE | 2 |
+| CONFIGURE_SPREADSHEET | 2 |
+| CONFIGURE_DOCUMENT | 2 |
 
 ## Operations
 
@@ -29,14 +31,14 @@
 - **classification:** INTERNAL_CONTROLLED
 - **live_action:** False
 
-### 3. `CREATE_ASSET` — HF-LA Commercial Policy & Channel Governance Master
+### 3. `CREATE_SPREADSHEET_FILE` — HF-LA Commercial Policy & Channel Governance Master
 
 - **asset_type:** sheet
 - **path:** Happy Faces LA — Commercial Control Room/00_ACTIVE_GOVERNANCE/HF-LA Commercial Policy & Channel Governance Master
 - **classification:** INTERNAL_CONTROLLED
 - **live_action:** False
 
-### 4. `CREATE_ASSET` — HF-LA Active Commercial Policy Manual
+### 4. `CREATE_DOCUMENT_FILE` — HF-LA Active Commercial Policy Manual
 
 - **asset_type:** doc
 - **path:** Happy Faces LA — Commercial Control Room/00_ACTIVE_GOVERNANCE/HF-LA Active Commercial Policy Manual
@@ -50,7 +52,7 @@
 - **classification:** RESTRICTED_PII
 - **live_action:** False
 
-### 6. `CREATE_ASSET` — HF-LA Leads, Quotes, Bookings & Profitability Control
+### 6. `CREATE_SPREADSHEET_FILE` — HF-LA Leads, Quotes, Bookings & Profitability Control
 
 - **asset_type:** sheet
 - **path:** Happy Faces LA — Commercial Control Room/01_RESTRICTED_OPERATIONS_PII/HF-LA Leads, Quotes, Bookings & Profitability Control
@@ -64,7 +66,7 @@
 - **classification:** INTERNAL_CONTROLLED
 - **live_action:** False
 
-### 8. `CREATE_ASSET` — TEMPLATE — Website Ads AI Implementation Release Brief
+### 8. `CREATE_DOCUMENT_FILE` — TEMPLATE — Website Ads AI Implementation Release Brief
 
 - **asset_type:** template
 - **path:** Happy Faces LA — Commercial Control Room/02_RELEASE_PACKAGES/TEMPLATE — Website Ads AI Implementation Release Brief
@@ -141,7 +143,7 @@
 - **classification:** INTERNAL_CONTROLLED
 - **live_action:** False
 
-### 19. `CREATE_SHEET` — HF-LA Commercial Policy & Channel Governance Master
+### 19. `CONFIGURE_SPREADSHEET` — HF-LA Commercial Policy & Channel Governance Master
 
 - **asset_type:** sheet
 - **classification:** INTERNAL_CONTROLLED
@@ -149,7 +151,7 @@
 - **tab_titles:** 00_CONTROL_CENTER, 01_CEO_APPROVAL_QUEUE, 02_OPEN_BLOCKERS, 03_RULE_REGISTER_MASTER, 04_ACTIVE_RULES_EXPORT, 05_PUBLIC_PRICING_PACKAGES, 06_INTERNAL_QUOTE_TRAVEL_RULES, 07_BOOKING_POLICY_COMPLIANCE, 08_VENDOR_SCHOOL_CORPORATE_RULES, 09_CHANNEL_IMPLEMENTATION_MAP, 10_AI_CUSTOMER_RESPONSE_MATRIX, 11_SOURCE_EVIDENCE, 12_RELEASE_CHANGELOG, 99_VALIDATION_CONFIG
 - **live_action:** False
 
-### 20. `CREATE_SHEET` — HF-LA Leads, Quotes, Bookings & Profitability Control
+### 20. `CONFIGURE_SPREADSHEET` — HF-LA Leads, Quotes, Bookings & Profitability Control
 
 - **asset_type:** sheet
 - **classification:** RESTRICTED_PII
@@ -157,7 +159,7 @@
 - **tab_titles:** 00_ACCESS_AND_USAGE_RULES, 01_QUOTE_WORKBENCH, 02_LEAD_PIPELINE, 03_BOOKINGS_EVENTS, 04_EVENT_DELIVERY_METRICS, 05_UNIT_ECONOMICS, 06_GOOGLE_ADS_PERFORMANCE, 07_KPI_DASHBOARD, 99_VALIDATION_CONFIG
 - **live_action:** False
 
-### 21. `CREATE_DOC` — HF-LA Active Commercial Policy Manual
+### 21. `CONFIGURE_DOCUMENT` — HF-LA Active Commercial Policy Manual
 
 - **asset_type:** doc
 - **classification:** INTERNAL_CONTROLLED
@@ -166,7 +168,7 @@
 - **section_headings:** 1. Document Status and Active Version, 2. CEO Approval Record, 3. Approved Public Pricing, 4. Approved Service Descriptions, 5. Approved Quote and Travel Rules, 6. Approved Deposit and Payment Rules, 7. Approved Cancellation, Rescheduling and Overtime Rules, 8. Approved School, Festival and Corporate Event Rules, 9. Approved Vendor / Community Event Rules, 10. Approved Safety and Customer-Care Wording, 11. Approved AI / Customer Response Boundaries, 12. Superseded Policy References
 - **live_action:** False
 
-### 22. `CREATE_DOC` — TEMPLATE — Website Ads AI Implementation Release Brief
+### 22. `CONFIGURE_DOCUMENT` — TEMPLATE — Website Ads AI Implementation Release Brief
 
 - **asset_type:** template
 - **classification:** INTERNAL_CONTROLLED

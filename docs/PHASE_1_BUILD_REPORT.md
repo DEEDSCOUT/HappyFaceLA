@@ -1,7 +1,8 @@
 # HAPPY FACES LA — COMMERCIAL CONTROL ROOM PHASE 1 BUILD REPORT
 
-**Status:** COMPLETE  
+**Status:** COMPLETE — AMENDED BY PHASE 1B REMEDIATION  
 **Date:** 2026-05-23  
+**Amended:** 2026-05-23 (Phase 1B security and governance remediation)  
 **Authorized scope:** LOCAL PROVISIONER + DRY-RUN SPECIFICATION ONLY — NO LIVE GOOGLE MUTATIONS  
 
 ---
@@ -21,8 +22,8 @@
 
 | Item | Value |
 |---|---|
-| Branch | `master` |
-| Commit SHA | `7737f22e3b3bb84ae4f8869cc6a3ce0c5a4379fd` |
+| Branch | `main` |
+| Commit SHA | `1b95eec525edd0f0b06b2e8b5ac65f5ddfb5b629` |
 | Commit message | `feat(control-room): scaffold google workspace provisioner with guarded dry-run` |
 | Files committed | 46 files, 6 755 insertions |
 | Remote | NONE — local only, no push authorized in Phase 1 |
@@ -32,17 +33,17 @@
 
 ## SECTION 3 — FILES CREATED (COMPLETE INVENTORY)
 
-### Python source package — `src/hfla_control_room/` (13 modules)
+### Python source package — `src/hfla_control_room/` (14 modules)
 
 | Module | Purpose |
 |---|---|
 | `__init__.py` | Package marker |
-| `constants.py` | Enums (`AssetType`, `SensitivityClassification`, `RuleStatus`, `BlockerType`, `BannerSeverity`, `ExportChannel`), `PII_FIELD_NAMES`, `INTERNAL_ONLY_FIELD_NAMES`, `PHASE_1_BLOCK_MESSAGE`, `AUTHORIZED_WORKSPACE_PATH` |
-| `models.py` | Pydantic v2 models: `RuleRow`, `RuleRegister`, `WorkbookSpec`, `TabSpec`, `DriveStructureSpec`, `DocumentSpec`, `FullConfigSpec`, `ApprovedRuleExport` |
+| `constants.py` | Enums (`AssetType`, `SensitivityClassification`, `RuleStatus`, `BlockerType`, `BannerSeverity`, `ExportChannel`, `ChannelVisibility`, `PublicSafeReviewStatus`, `AdsReviewStatus`, `AIReviewStatus`, `EvidenceStatus`, `EvidenceReliabilityTier`), path constants (`SECRETS_DIR`, `CLIENT_SECRET_PATH`, `RUNTIME_DIR`, `TOKEN_PATH`, `MANIFEST_PATH`, `AUDIT_REPORT_PATH`, `PRIVATE_EXPORT_DIR`), `PII_FIELD_NAMES`, `INTERNAL_ONLY_FIELD_NAMES`, `PHASE_1_BLOCK_MESSAGE`, `AUTHORIZED_WORKSPACE_PATH` |
+| `models.py` | Pydantic v2 models: `RuleRow` (+ 8 channel-safety fields), `RuleRegister`, `WorkbookSpec`, `TabSpec`, `DriveStructureSpec`, `DocumentSpec`, `FullConfigSpec`, `ApprovedRuleExport` (rewritten), `EvidenceRecord`, `EvidenceRegister` |
 | `spec_loader.py` | `load_full_spec(config_dir)` — YAML loader using `safe_load` only |
-| `validation.py` | `assert_authorized_workspace`, `validate_rule_for_export`, `validate_rules_batch`, `validate_no_pii_in_export`, `validate_workbook_spec`, `validate_full_spec`, `check_no_secrets_in_tree` |
+| `validation.py` | `assert_authorized_workspace`, `validate_rule_for_export`, `validate_rules_batch`, `validate_no_pii_in_export`, `validate_workbook_spec`, `validate_full_spec`, `check_no_secrets_in_tree`, `validate_channel_export_safety`, `validate_evidence_integrity` |
 | `plan_builder.py` | `build_plan(spec)` → dry-run operation dict; `write_plan_artifacts(plan, output_dir)` |
-| `manifest.py` | `Manifest` dataclass; `build_manifest(spec)` |
+| `manifest.py` | `Manifest` dataclass; `build_manifest(spec)`; `ASSET_KEYS` dict (10 deterministic key entries); `make_key()` |
 | `drive_provisioner.py` | `DriveProvisioner` — raises `PHASE_1_BLOCK_MESSAGE` in `__init__` when `dry_run=False` |
 | `sheets_provisioner.py` | `SheetsProvisioner` — all methods raise `PHASE_1_BLOCK_MESSAGE` |
 | `docs_provisioner.py` | `DocsProvisioner` — all methods raise `PHASE_1_BLOCK_MESSAGE` |
@@ -51,7 +52,7 @@
 | `audit_report.py` | `write_audit_report(manifest, output_dir)` |
 | `cli.py` | Typer CLI: `validate`, `plan`, `validate-release`, `provision` commands |
 
-### Configuration YAML — `config/` (7 files)
+### Configuration YAML — `config/` (6 files)
 
 | File | Purpose |
 |---|---|
@@ -62,6 +63,8 @@
 | `validation_lists.yaml` | 20 dropdown validation lists |
 | `rule_schema.yaml` | Rule field definitions and validation schema |
 
+> **Note (Phase 1B):** The count was corrected from 7 to 6. There are 6 config root files and 5 seed data files.
+
 ### Seed data YAML — `config/seed_data/` (5 files, all DRAFT)
 
 | File | Rules |
@@ -70,11 +73,11 @@
 | `draft_pricing_recommendations.yaml` | 4 DRAFT rules (RULE-PRICE-001/002/003/004) |
 | `draft_policy_recommendations.yaml` | 7 DRAFT rules (RULE-POL-001 through 007) |
 | `draft_ai_channel_rules.yaml` | 5 DRAFT rules (RULE-AI-001 through 005) |
-| `source_evidence.yaml` | 3 evidence placeholders (skipped by spec loader — no `rules:` key) |
+| `source_evidence.yaml` | Evidence placeholders — `evidence_records` key is read by spec_loader into `FullConfigSpec.evidence_records`; legacy field aliases (`linked_rule_id`, `source_url`, `date_captured`) are normalised by `EvidenceRecord` model validator |
 
 **Total seed rules: 19 — ALL DRAFT. Zero approved rules.**
 
-### Docs — `docs/` (5 files)
+### Docs — `docs/` (6 files)
 
 | File |
 |---|
@@ -83,8 +86,9 @@
 | `GOOGLE_OAUTH_SCOPE_DECISION_PENDING.md` |
 | `RELEASE_GOVERNANCE.md` |
 | `PHASE_1_BUILD_REPORT.md` (this document) |
+| `PHASE_1A_FORENSIC_ACCEPTANCE_AUDIT.md` (Phase 1B addition) |
 
-### Tests — `tests/` (9 files, 69 tests)
+### Tests — `tests/` (11 files, 107 tests)
 
 | File | Tests |
 |---|---|
@@ -92,10 +96,13 @@
 | `test_spec_integrity.py` | 10 |
 | `test_tab_inventory.py` | 7 |
 | `test_rule_id_uniqueness.py` | 5 |
-| `test_release_gate.py` | 10 |
+| `test_release_gate.py` | 13 |
 | `test_no_pii_in_governance_export.py` | 9 |
-| `test_no_secrets_tracked.py` | 11 |
-| `test_dry_run_plan.py` | 13 |
+| `test_no_secrets_tracked.py` | 15 |
+| `test_dry_run_plan.py` | 17 |
+| `test_evidence_loader.py` | 9 |
+| `test_idempotency_contract.py` | 10 |
+| `test_dirty_tree_guard.py` | 7 |
 
 ### Artifacts — `artifacts/dry_run/` (3 files)
 
@@ -265,7 +272,7 @@ The dry-run plan is designed so its operation list maps 1:1 to Phase 2 provision
 
 ## SECTION 11 — TEST AND QUALITY GATE RESULTS
 
-### pytest — 69 / 69 PASSED ✅
+### pytest — 107 / 107 PASSED ✅
 
 | Test file | Tests | Result |
 |---|---|---|
@@ -273,11 +280,14 @@ The dry-run plan is designed so its operation list maps 1:1 to Phase 2 provision
 | `test_spec_integrity.py` | 10 | ✅ ALL PASS |
 | `test_tab_inventory.py` | 7 | ✅ ALL PASS |
 | `test_rule_id_uniqueness.py` | 5 | ✅ ALL PASS |
-| `test_release_gate.py` | 10 | ✅ ALL PASS |
+| `test_release_gate.py` | 13 | ✅ ALL PASS |
 | `test_no_pii_in_governance_export.py` | 9 | ✅ ALL PASS |
-| `test_no_secrets_tracked.py` | 11 | ✅ ALL PASS |
-| `test_dry_run_plan.py` | 13 | ✅ ALL PASS |
-| **TOTAL** | **69** | **✅ 69 / 69** |
+| `test_no_secrets_tracked.py` | 15 | ✅ ALL PASS |
+| `test_dry_run_plan.py` | 17 | ✅ ALL PASS |
+| `test_evidence_loader.py` | 9 | ✅ ALL PASS |
+| `test_idempotency_contract.py` | 10 | ✅ ALL PASS |
+| `test_dirty_tree_guard.py` | 7 | ✅ ALL PASS |
+| **TOTAL** | **107** | **✅ 107 / 107** |
 
 ### ruff — ALL CHECKS PASSED ✅
 
@@ -302,13 +312,15 @@ Result: No issues found.
 |---|---|
 | JSON plan | `artifacts/dry_run/control_room_build_plan.json` |
 | Markdown plan | `artifacts/dry_run/control_room_build_plan.md` |
-| Audit report | `artifacts/dry_run/audit_report.json` |
+| Audit report | `.runtime/audit/audit_report.json` (git-ignored — written on demand) |
 
 **Plan summary:**
 - Total operations: **22**
 - Folder operations: **14** (1 root + 5 top-level + 8 nested)
-- Sheet operations: **2** (CREATE_ASSET + CREATE_SHEET for each workbook)
-- Doc operations: **2** (governance manual + release brief template)
+- Spreadsheet file operations: **2** (`CREATE_SPREADSHEET_FILE`)
+- Document file operations: **2** (`CREATE_DOCUMENT_FILE`)
+- Spreadsheet configure operations: **2** (`CONFIGURE_SPREADSHEET`)
+- Document configure operations: **2** (`CONFIGURE_DOCUMENT`)
 - Live Google API calls: **FALSE**
 
 ---
@@ -362,7 +374,7 @@ When the CEO is ready to advance to Phase 2, authorize with the following exact 
 Before Phase 2 execution, the following gates must be satisfied:
 
 1. CEO has reviewed and approved `docs/GOOGLE_OAUTH_SCOPE_DECISION_PENDING.md` — narrowest permissible Drive OAuth scope selected.
-2. OAuth client credentials have been provisioned and placed in `secrets/client_secret.json` (`.gitignore`-protected, never committed).
+2. OAuth client credentials have been provisioned and placed in `.secrets/client_secret.json` (`.gitignore`-protected, never committed).
 3. At least one rule has been moved from `status: DRAFT` to `status: APPROVED` with all required fields populated.
 4. Phase 2 idempotency tests pass locally.
 5. CEO provides explicit written authorization for the target Google Drive location.
@@ -372,20 +384,7 @@ Before Phase 2 execution, the following gates must be satisfied:
 ---
 
 *Report generated: 2026-05-23*  
-*Commit: `7737f22e3b3bb84ae4f8869cc6a3ce0c5a4379fd`*  
+*Amended (Phase 1B): 2026-05-23*  
+*Commit: `1b95eec525edd0f0b06b2e8b5ac65f5ddfb5b629`*  
 *Phase: PHASE_1_DRY_RUN*  
 *Live Google calls: FALSE*
-
-3. Files Created
-4. Architecture Summary
-5. Governance Workbook Tab Inventory
-6. Restricted Operations Workbook Tab Inventory
-7. Document Template Inventory
-8. Security and PII Boundary Confirmation
-9. OAuth / Google Drive Mutation Confirmation
-10. Idempotency Design
-11. Test and Quality Gate Results
-12. Dry-Run Build Plan Location
-13. Blocked Live Operations Proof
-14. Remaining Inputs Required for Phase 2
-15. Exact Next Recommended Authorization

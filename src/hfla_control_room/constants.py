@@ -4,6 +4,7 @@ Enumerations and fixed constants shared across modules.
 """
 
 from enum import StrEnum
+from pathlib import Path
 
 
 class AssetType(StrEnum):
@@ -49,6 +50,48 @@ class ExportChannel(StrEnum):
     AI_COPILOT = "ai_copilot"
     CHATBOT = "chatbot"
     INTERNAL = "internal"
+
+
+class ChannelVisibility(StrEnum):
+    INTERNAL_ONLY = "INTERNAL_ONLY"         # Never exported to any channel
+    RESTRICTED_PII = "RESTRICTED_PII"       # Never exported — PII or sensitive financial data
+    INTERNAL_APPROVED = "INTERNAL_APPROVED" # Eligible for internal/copilot channel only
+    CHANNEL_SAFE = "CHANNEL_SAFE"           # Eligible for public channels after per-channel review
+
+
+class PublicSafeReviewStatus(StrEnum):
+    NOT_REVIEWED = "NOT_REVIEWED"
+    UNDER_REVIEW = "UNDER_REVIEW"
+    APPROVED_PUBLIC_SAFE = "APPROVED_PUBLIC_SAFE"
+    REJECTED = "REJECTED"
+
+
+class AdsReviewStatus(StrEnum):
+    NOT_REVIEWED = "NOT_REVIEWED"
+    UNDER_REVIEW = "UNDER_REVIEW"
+    APPROVED_FOR_ADS = "APPROVED_FOR_ADS"
+    REJECTED = "REJECTED"
+
+
+class AIReviewStatus(StrEnum):
+    NOT_REVIEWED = "NOT_REVIEWED"
+    UNDER_REVIEW = "UNDER_REVIEW"
+    APPROVED_FOR_AI = "APPROVED_FOR_AI"
+    REJECTED = "REJECTED"
+
+
+class EvidenceStatus(StrEnum):
+    DRAFT = "DRAFT"
+    PENDING_VERIFICATION = "PENDING_VERIFICATION"
+    VERIFIED = "VERIFIED"
+    SUPERSEDED = "SUPERSEDED"
+
+
+class EvidenceReliabilityTier(StrEnum):
+    TIER_1_PRIMARY = "TIER_1_PRIMARY"         # Official source, direct observation
+    TIER_2_SECONDARY = "TIER_2_SECONDARY"     # Derived/calculated from primary
+    TIER_3_INDICATIVE = "TIER_3_INDICATIVE"   # Third-party, pending verification
+    UNCLASSIFIED = "UNCLASSIFIED"
 
 
 # Sentinel values used in seed data
@@ -110,3 +153,22 @@ AUTHORIZED_WORKSPACE_PATH = r"C:\Dev\happyfacesla-commercial-control-room"
 
 # Phase gate label
 PHASE_1_BLOCK_MESSAGE = "BLOCKED — LIVE GOOGLE PROVISIONING NOT AUTHORIZED IN PHASE 1."
+
+# ---------------------------------------------------------------------------
+# Canonical local path constants (all git-ignored, never tracked)
+# ---------------------------------------------------------------------------
+
+_WORKSPACE_ROOT = Path(AUTHORIZED_WORKSPACE_PATH)
+
+# OAuth credential storage — git-ignored .secrets/
+SECRETS_DIR = _WORKSPACE_ROOT / ".secrets"
+CLIENT_SECRET_PATH = SECRETS_DIR / "client_secret.json"
+
+# Runtime state — git-ignored .runtime/
+RUNTIME_DIR = _WORKSPACE_ROOT / ".runtime"
+TOKEN_PATH = RUNTIME_DIR / "token.json"
+MANIFEST_PATH = RUNTIME_DIR / "manifests" / "manifest.json"
+AUDIT_REPORT_PATH = RUNTIME_DIR / "audit" / "audit_report.json"
+
+# Private exports — git-ignored .exports/private/
+PRIVATE_EXPORT_DIR = _WORKSPACE_ROOT / ".exports" / "private"

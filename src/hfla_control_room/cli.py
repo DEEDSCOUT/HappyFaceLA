@@ -18,7 +18,7 @@ from pathlib import Path
 
 import typer
 
-from hfla_control_room.constants import PHASE_1_BLOCK_MESSAGE
+from hfla_control_room.constants import AUDIT_REPORT_PATH, MANIFEST_PATH, PHASE_1_BLOCK_MESSAGE
 from hfla_control_room.validation import assert_authorized_workspace
 
 logging.basicConfig(
@@ -95,8 +95,11 @@ def plan(
     meta = plan_data["plan_metadata"]
     typer.echo(
         f"  Operations: {meta['operation_count']}  "
-        f"(sheets={meta['sheet_count']}, docs={meta['doc_count']}, "
-        f"folders={meta['folder_count']})"
+        f"(folders={meta['folder_count']}, "
+        f"spreadsheet_files={meta['spreadsheet_asset_count']}, "
+        f"spreadsheet_configs={meta['sheet_configuration_count']}, "
+        f"document_files={meta['document_asset_count']}, "
+        f"document_configs={meta['document_configuration_count']})"
     )
     typer.echo("  Live Google API calls: FALSE")
 
@@ -177,7 +180,7 @@ def provision(
 
     typer.echo("[DRY-RUN] Loading configuration …")
     spec = load_full_spec(config)
-    manifest = Manifest()
+    manifest = Manifest.load(MANIFEST_PATH)
     all_log: list[str] = []
 
     drive_p = DriveProvisioner(manifest=manifest, dry_run=True)
@@ -191,8 +194,10 @@ def provision(
     for doc_spec in spec.documents:
         all_log.extend(docs_p.provision_document(doc_spec))
 
-    report_path = Path("artifacts/dry_run/audit_report.json")
+    report_path = AUDIT_REPORT_PATH
     generate_audit_report(manifest, all_log, report_path, dry_run=True)
+
+    manifest.save(MANIFEST_PATH)
 
     typer.secho("[DRY-RUN] PROVISION SIMULATION COMPLETE.", fg=typer.colors.GREEN, bold=True)
     for line in all_log:

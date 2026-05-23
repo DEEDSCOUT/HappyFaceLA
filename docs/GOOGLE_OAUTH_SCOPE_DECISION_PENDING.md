@@ -66,8 +66,8 @@ The CEO must explicitly select and confirm the business account before any live 
 
 OAuth credential and token files **must remain outside version control** at all times:
 
-- `client_secret.json` → store in `.secrets/` (git-ignored)
-- `token.json` → store in `.secrets/` (git-ignored)
+- `client_secret.json` → store in `.secrets/` (git-ignored; constant `CLIENT_SECRET_PATH`)
+- `token.json` → store in `.runtime/` (git-ignored; constant `TOKEN_PATH`)
 - Service account keys (if applicable) → store in `.secrets/` (git-ignored)
 
 ### 6. Scope Approval Gate
@@ -88,7 +88,7 @@ When OAuth scope approval is granted, update this document:
 
 - Change status from `PENDING` to `APPROVED`
 - Record: Approved scopes, justification, CEO approval date, account selected
-- Record: Token storage location (relative path within `.secrets/`)
+- Record: Token storage location — `.runtime/token.json` (constant `TOKEN_PATH`)
 
 ---
 

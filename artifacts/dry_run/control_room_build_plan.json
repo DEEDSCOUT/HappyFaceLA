@@ -1,12 +1,14 @@
 {
   "plan_metadata": {
     "phase": "PHASE_1_DRY_RUN",
-    "generated_at_utc": "2026-05-23T21:49:24+00:00",
+    "generated_at_utc": "2026-05-23T22:36:10+00:00",
     "live_google_calls": false,
     "operation_count": 22,
-    "sheet_count": 2,
-    "doc_count": 2,
     "folder_count": 14,
+    "spreadsheet_asset_count": 2,
+    "document_asset_count": 2,
+    "sheet_configuration_count": 2,
+    "document_configuration_count": 2,
     "authorized_workspace": "C:\\Dev\\happyfacesla-commercial-control-room"
   },
   "operations": [
@@ -27,7 +29,7 @@
       "live_action": false
     },
     {
-      "op": "CREATE_ASSET",
+      "op": "CREATE_SPREADSHEET_FILE",
       "asset_type": "sheet",
       "name": "HF-LA Commercial Policy & Channel Governance Master",
       "path": "Happy Faces LA \u2014 Commercial Control Room/00_ACTIVE_GOVERNANCE/HF-LA Commercial Policy & Channel Governance Master",
@@ -35,7 +37,7 @@
       "live_action": false
     },
     {
-      "op": "CREATE_ASSET",
+      "op": "CREATE_DOCUMENT_FILE",
       "asset_type": "doc",
       "name": "HF-LA Active Commercial Policy Manual",
       "path": "Happy Faces LA \u2014 Commercial Control Room/00_ACTIVE_GOVERNANCE/HF-LA Active Commercial Policy Manual",
@@ -51,7 +53,7 @@
       "live_action": false
     },
     {
-      "op": "CREATE_ASSET",
+      "op": "CREATE_SPREADSHEET_FILE",
       "asset_type": "sheet",
       "name": "HF-LA Leads, Quotes, Bookings & Profitability Control",
       "path": "Happy Faces LA \u2014 Commercial Control Room/01_RESTRICTED_OPERATIONS_PII/HF-LA Leads, Quotes, Bookings & Profitability Control",
@@ -67,7 +69,7 @@
       "live_action": false
     },
     {
-      "op": "CREATE_ASSET",
+      "op": "CREATE_DOCUMENT_FILE",
       "asset_type": "template",
       "name": "TEMPLATE \u2014 Website Ads AI Implementation Release Brief",
       "path": "Happy Faces LA \u2014 Commercial Control Room/02_RELEASE_PACKAGES/TEMPLATE \u2014 Website Ads AI Implementation Release Brief",
@@ -155,7 +157,7 @@
       "live_action": false
     },
     {
-      "op": "CREATE_SHEET",
+      "op": "CONFIGURE_SPREADSHEET",
       "asset_type": "sheet",
       "name": "HF-LA Commercial Policy & Channel Governance Master",
       "classification": "INTERNAL_CONTROLLED",
@@ -179,7 +181,7 @@
       "live_action": false
     },
     {
-      "op": "CREATE_SHEET",
+      "op": "CONFIGURE_SPREADSHEET",
       "asset_type": "sheet",
       "name": "HF-LA Leads, Quotes, Bookings & Profitability Control",
       "classification": "RESTRICTED_PII",
@@ -198,7 +200,7 @@
       "live_action": false
     },
     {
-      "op": "CREATE_DOC",
+      "op": "CONFIGURE_DOCUMENT",
       "asset_type": "doc",
       "name": "HF-LA Active Commercial Policy Manual",
       "classification": "INTERNAL_CONTROLLED",
@@ -221,7 +223,7 @@
       "live_action": false
     },
     {
-      "op": "CREATE_DOC",
+      "op": "CONFIGURE_DOCUMENT",
       "asset_type": "template",
       "name": "TEMPLATE \u2014 Website Ads AI Implementation Release Brief",
       "classification": "INTERNAL_CONTROLLED",

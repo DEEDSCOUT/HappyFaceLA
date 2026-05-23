@@ -6,6 +6,7 @@
 
 # --- SECURITY: OAuth credentials and tokens — NEVER track ---
 .secrets/
+secrets/
 .runtime/
 .exports/private/
 client_secret.json
@@ -61,6 +62,9 @@ coverage.xml
 # --- Build artefacts ---
 artifacts/dry_run/*.json.bak
 artifacts/dry_run/*.md.bak
+# audit_report.json is dynamic output — written to .runtime/audit/ in Phase 1B
+# block the old location (pre-remediation leftover) from showing as untracked
+artifacts/dry_run/audit_report.json
 
 # --- IDE ---
 .vscode/settings.json

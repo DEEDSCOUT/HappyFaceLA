@@ -12,10 +12,16 @@ from typing import Any
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from hfla_control_room.constants import (
+    AdsReviewStatus,
+    AIReviewStatus,
     AssetType,
     BannerSeverity,
     BlockerType,
+    ChannelVisibility,
+    EvidenceReliabilityTier,
+    EvidenceStatus,
     ExportChannel,
+    PublicSafeReviewStatus,
     RuleStatus,
     SensitivityClassification,
 )
@@ -165,6 +171,16 @@ class RuleRow(BaseModel):
     internal_notes: str = ""
     ceo_notes: str = ""
     source_evidence_ref: str = ""
+    # Channel-safe export controls (populated in Phase 1C+ CEO data payload)
+    channel_visibility: ChannelVisibility = ChannelVisibility.INTERNAL_ONLY
+    public_safe_review_status: PublicSafeReviewStatus = PublicSafeReviewStatus.NOT_REVIEWED
+    ai_response_review_status: AIReviewStatus = AIReviewStatus.NOT_REVIEWED
+    ads_claim_review_status: AdsReviewStatus = AdsReviewStatus.NOT_REVIEWED
+    # Separately reviewed public-safe text; never raw CEO/internal notes
+    approved_export_text: str = ""
+    contains_internal_only_logic: bool = False
+    contains_pii: bool = False
+    requires_human_quote: bool = False
 
     @field_validator("rule_id")
     @classmethod
@@ -193,21 +209,30 @@ class RuleRegister(BaseModel):
 
 
 class ApprovedRuleExport(BaseModel):
+    """Channel-safe export record.
+
+    Serialises ONLY fields that are safe for public/AI/Ads consumption.
+    Strips: final_effective_rule, ceo_notes, internal_notes, draft_recommendation,
+            blockers, source_evidence_ref, contains_* flags.
+    Exports approved_export_text (separately reviewed text) not raw CEO rule text.
+    """
+
     rule_id: str
     rule_category: str
     rule_title: str
-    final_effective_rule: str
+    approved_export_text: str  # Separately reviewed public-safe text; never raw CEO/internal notes
     release_version: str
     effective_date: str
     policy_version: str
     export_channels: list[ExportChannel]
+    channel_visibility: ChannelVisibility
 
     @model_validator(mode="after")
     def validate_all_required_fields_populated(self) -> ApprovedRuleExport:
         empty = [
             f
             for f in (
-                "final_effective_rule",
+                "approved_export_text",
                 "release_version",
                 "effective_date",
                 "policy_version",
@@ -218,6 +243,71 @@ class ApprovedRuleExport(BaseModel):
             raise ValueError(
                 f"Rule '{self.rule_id}' export is missing required fields: {empty}"
             )
+        return self
+
+
+# ---------------------------------------------------------------------------
+# Source evidence models
+# ---------------------------------------------------------------------------
+
+
+class EvidenceRecord(BaseModel):
+    """A source evidence record supporting one or more governance rules.
+
+    Phase 1: all records are DRAFT placeholders.
+    Phase 2+: populated with real source citations under CEO direction.
+    """
+
+    evidence_id: str
+    source_category: str = ""     # e.g. WEBSITE, INTERNAL_CALCULATION, SAFETY_MATERIAL
+    source_name: str = ""
+    source_locator: str = ""      # URL or Drive path (PLACEHOLDER in Phase 1)
+    access_or_extraction_date: str = ""
+    verified_fact: str = ""
+    related_rule_ids: list[str] = Field(default_factory=list)
+    reliability_tier: EvidenceReliabilityTier = EvidenceReliabilityTier.UNCLASSIFIED
+    notes: str = ""
+    status: EvidenceStatus = EvidenceStatus.DRAFT
+    # Legacy fields from Phase 1 seed YAML — mapped in model_validator
+    linked_rule_id: str | None = None
+    evidence_type: str = ""
+    description: str = ""
+    source_url: str = ""
+    date_captured: str = ""
+    captured_by: str = ""
+    drive_folder_link: str = ""
+    expiry_date: str = ""
+
+    @field_validator("evidence_id")
+    @classmethod
+    def evidence_id_not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("evidence_id must not be empty.")
+        return v
+
+    @model_validator(mode="after")
+    def normalise_related_rule_ids(self) -> EvidenceRecord:
+        if not self.related_rule_ids and self.linked_rule_id:
+            self.related_rule_ids = [self.linked_rule_id]
+        if not self.source_category and self.evidence_type:
+            self.source_category = self.evidence_type
+        if not self.source_locator and self.source_url:
+            self.source_locator = self.source_url
+        if not self.access_or_extraction_date and self.date_captured:
+            self.access_or_extraction_date = self.date_captured
+        return self
+
+
+class EvidenceRegister(BaseModel):
+    records: list[EvidenceRecord] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_unique_evidence_ids(self) -> EvidenceRegister:
+        ids = [r.evidence_id for r in self.records]
+        if len(ids) != len(set(ids)):
+            seen: set[str] = set()
+            dupes = [i for i in ids if i in seen or seen.add(i)]  # type: ignore[func-returns-value]
+            raise ValueError(f"Duplicate evidence IDs: {dupes}")
         return self
 
 
@@ -267,4 +357,5 @@ class FullConfigSpec(BaseModel):
     validation_lists: ValidationListsSpec
     rule_schema: RuleSchema
     seed_rules: list[RuleRow] = Field(default_factory=list)
+    evidence_records: list[EvidenceRecord] = Field(default_factory=list)
     raw: dict[str, Any] = Field(default_factory=dict, exclude=True)

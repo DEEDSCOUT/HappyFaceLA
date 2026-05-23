@@ -31,7 +31,7 @@ from typing import Any
 
 from hfla_control_room.constants import ExportChannel, RuleStatus
 from hfla_control_room.models import ApprovedRuleExport, RuleRow
-from hfla_control_room.validation import validate_rule_for_export
+from hfla_control_room.validation import validate_channel_export_safety, validate_rule_for_export
 
 logger = logging.getLogger(__name__)
 
@@ -83,16 +83,30 @@ def export_approved_rules(
             skipped_validation += 1
             continue
 
+        # Per-channel review-status gate
+        if channel:
+            channel_errors = validate_channel_export_safety(rule, channel)
+            if channel_errors:
+                logger.warning(
+                    "Rule '%s' failed channel safety check for '%s' (skipped): %s",
+                    rule.rule_id,
+                    channel.value,
+                    channel_errors,
+                )
+                skipped_validation += 1
+                continue
+
         exported.append(
             ApprovedRuleExport(
                 rule_id=rule.rule_id,
                 rule_category=rule.rule_category,
                 rule_title=rule.rule_title,
-                final_effective_rule=rule.final_effective_rule,
+                approved_export_text=rule.approved_export_text,
                 release_version=rule.release_version,
                 effective_date=rule.effective_date,
                 policy_version=rule.policy_version,
                 export_channels=rule.export_channels,
+                channel_visibility=rule.channel_visibility,
             )
         )
 

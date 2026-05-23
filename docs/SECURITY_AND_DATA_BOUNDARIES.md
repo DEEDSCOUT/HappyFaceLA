@@ -2,7 +2,7 @@
 
 ## Happy Faces LA — Commercial Control Room
 
-**Version:** 1.0 — Phase 1
+**Version:** 1.1 — Phase 1B Remediation
 **Date:** 2026-05-23
 **Status:** ACTIVE
 
@@ -16,6 +16,7 @@ The following rules are enforced at all times in this repository:
 2. `.gitignore` was created as the first file before any secret or runtime state location.
 3. The following directories are permanently git-ignored:
    - `.secrets/` — OAuth credentials, token files
+   - `secrets/` — alternative spelling, also blocked
    - `.runtime/` — Runtime state, temporary API responses
    - `.exports/private/` — Private export outputs containing PII or internal data
 4. The following file names are permanently git-ignored regardless of location:
@@ -23,6 +24,22 @@ The following rules are enforced at all times in this repository:
    - `token.json`, `token.pickle`
    - `credentials.json`, `service_account.json`
    - `*.p12`, `*.pem`, `*.key`
+
+---
+
+## 1A. Canonical Path Model (Phase 1B Addition)
+
+| Path | Purpose | Git tracked? |
+|---|---|---|
+| `.secrets/client_secret.json` | OAuth client credentials | No (.gitignore) |
+| `.runtime/token.json` | OAuth refresh token | No (.gitignore) |
+| `.runtime/manifests/manifest.json` | Execution receipt / idempotency cache | No (.gitignore) |
+| `.runtime/audit/audit_report.json` | Dynamic audit receipt | No (.gitignore) |
+| `.exports/private/` | Private export outputs | No (.gitignore) |
+| `secrets/` | Alternative spelling — also blocked | No (.gitignore) |
+
+All path constants are defined in `constants.py` (`SECRETS_DIR`, `CLIENT_SECRET_PATH`, `RUNTIME_DIR`, `TOKEN_PATH`, `MANIFEST_PATH`, `AUDIT_REPORT_PATH`, `PRIVATE_EXPORT_DIR`).
+Running `provision --dry-run` writes only to `.runtime/` and does not dirty the tracked git tree.
 
 ---
 

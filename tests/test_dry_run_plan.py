@@ -2,7 +2,7 @@
 Tests for the dry-run plan builder.
 
 Verifies:
-- The plan contains exactly 2 sheet assets and 2 doc assets.
+- The plan contains correct operation counts per the new semantic types.
 - No live Google API calls are made during plan generation.
 - plan_builder.build_plan returns all expected operation types.
 - provision --apply raises the Phase 1 block.
@@ -33,27 +33,27 @@ class TestDryRunPlan:
         assert "operations" in plan
 
     def test_plan_contains_exactly_two_sheet_operations(self):
-        """Plan must contain exactly 2 CREATE_SHEET operations (governance + restricted)."""
+        """Plan must contain exactly 2 CONFIGURE_SPREADSHEET operations."""
         spec = load_full_spec(CONFIG_DIR)
         plan = build_plan(spec)
         sheet_ops = [
             op for op in plan["operations"]
-            if op.get("op") == "CREATE_SHEET"
+            if op.get("op") == "CONFIGURE_SPREADSHEET"
         ]
         assert len(sheet_ops) == 2, (
-            f"Expected exactly 2 CREATE_SHEET operations, got {len(sheet_ops)}."
+            f"Expected exactly 2 CONFIGURE_SPREADSHEET operations, got {len(sheet_ops)}."
         )
 
     def test_plan_contains_exactly_two_doc_operations(self):
-        """Plan must contain exactly 2 CREATE_DOC operations."""
+        """Plan must contain exactly 2 CONFIGURE_DOCUMENT operations."""
         spec = load_full_spec(CONFIG_DIR)
         plan = build_plan(spec)
         doc_ops = [
             op for op in plan["operations"]
-            if op.get("op") == "CREATE_DOC"
+            if op.get("op") == "CONFIGURE_DOCUMENT"
         ]
         assert len(doc_ops) == 2, (
-            f"Expected exactly 2 CREATE_DOC operations, got {len(doc_ops)}."
+            f"Expected exactly 2 CONFIGURE_DOCUMENT operations, got {len(doc_ops)}."
         )
 
     def test_plan_contains_folder_operations(self):
@@ -89,7 +89,7 @@ class TestDryRunPlan:
         """The governance workbook in the plan must list 14 tab titles."""
         spec = load_full_spec(CONFIG_DIR)
         plan = build_plan(spec)
-        sheet_ops = [op for op in plan["operations"] if op.get("op") == "CREATE_SHEET"]
+        sheet_ops = [op for op in plan["operations"] if op.get("op") == "CONFIGURE_SPREADSHEET"]
         # Find whichever sheet has 14 tabs
         fourteen_tab_sheets = [op for op in sheet_ops if op.get("tab_count") == 14]
         assert len(fourteen_tab_sheets) == 1, (
@@ -100,7 +100,7 @@ class TestDryRunPlan:
         """The restricted operations workbook in the plan must list 9 tab titles."""
         spec = load_full_spec(CONFIG_DIR)
         plan = build_plan(spec)
-        sheet_ops = [op for op in plan["operations"] if op.get("op") == "CREATE_SHEET"]
+        sheet_ops = [op for op in plan["operations"] if op.get("op") == "CONFIGURE_SPREADSHEET"]
         nine_tab_sheets = [op for op in sheet_ops if op.get("tab_count") == 9]
         assert len(nine_tab_sheets) == 1, (
             f"Expected exactly 1 sheet with 9 tabs; found {len(nine_tab_sheets)}."
@@ -116,7 +116,7 @@ class TestDryRunPlan:
             DriveProvisioner(manifest=manifest, dry_run=False)
 
     def test_plan_metadata_keys_present(self):
-        """Plan dict must include plan_metadata with phase, generated_at, and dry_run keys."""
+        """Plan dict must include plan_metadata with all new semantic count fields."""
         spec = load_full_spec(CONFIG_DIR)
         plan = build_plan(spec)
         assert "plan_metadata" in plan
@@ -124,3 +124,67 @@ class TestDryRunPlan:
         assert "phase" in meta
         assert "generated_at_utc" in meta
         assert meta.get("live_google_calls") is False
+        # New metadata fields (Phase 1B)
+        for key in (
+            "folder_count",
+            "spreadsheet_asset_count",
+            "document_asset_count",
+            "sheet_configuration_count",
+            "document_configuration_count",
+        ):
+            assert key in meta, f"plan_metadata missing expected key: '{key}'"
+
+    def test_operation_count_reconciles(self):
+        """All category counts must sum to operation_count (== 22 for Phase 1 spec)."""
+        spec = load_full_spec(CONFIG_DIR)
+        plan = build_plan(spec)
+        meta = plan["plan_metadata"]
+        total = (
+            meta["folder_count"]
+            + meta["spreadsheet_asset_count"]
+            + meta["document_asset_count"]
+            + meta["sheet_configuration_count"]
+            + meta["document_configuration_count"]
+        )
+        assert total == meta["operation_count"], (
+            "Category counts do not reconcile with operation_count: "
+            f"{total} != {meta['operation_count']}."
+        )
+        assert meta["operation_count"] == 22, (
+            f"Expected 22 total operations for Phase 1 spec, got {meta['operation_count']}."
+        )
+
+    def test_exactly_14_folder_operations(self):
+        """Phase 1 Drive spec has exactly 14 folder operations."""
+        spec = load_full_spec(CONFIG_DIR)
+        plan = build_plan(spec)
+        count = sum(1 for o in plan["operations"] if o["op"] == "CREATE_FOLDER")
+        assert count == 14, f"Expected 14 CREATE_FOLDER operations, got {count}."
+
+    def test_exactly_2_spreadsheet_file_operations(self):
+        """Phase 1 Drive spec has exactly 2 CREATE_SPREADSHEET_FILE operations."""
+        spec = load_full_spec(CONFIG_DIR)
+        plan = build_plan(spec)
+        count = sum(1 for o in plan["operations"] if o["op"] == "CREATE_SPREADSHEET_FILE")
+        assert count == 2, f"Expected 2 CREATE_SPREADSHEET_FILE operations, got {count}."
+
+    def test_exactly_2_spreadsheet_configure_operations(self):
+        """Phase 1 spec has exactly 2 CONFIGURE_SPREADSHEET operations."""
+        spec = load_full_spec(CONFIG_DIR)
+        plan = build_plan(spec)
+        count = sum(1 for o in plan["operations"] if o["op"] == "CONFIGURE_SPREADSHEET")
+        assert count == 2, f"Expected 2 CONFIGURE_SPREADSHEET operations, got {count}."
+
+    def test_exactly_2_document_file_operations(self):
+        """Phase 1 Drive spec has exactly 2 CREATE_DOCUMENT_FILE operations."""
+        spec = load_full_spec(CONFIG_DIR)
+        plan = build_plan(spec)
+        count = sum(1 for o in plan["operations"] if o["op"] == "CREATE_DOCUMENT_FILE")
+        assert count == 2, f"Expected 2 CREATE_DOCUMENT_FILE operations, got {count}."
+
+    def test_exactly_2_document_configure_operations(self):
+        """Phase 1 spec has exactly 2 CONFIGURE_DOCUMENT operations."""
+        spec = load_full_spec(CONFIG_DIR)
+        plan = build_plan(spec)
+        count = sum(1 for o in plan["operations"] if o["op"] == "CONFIGURE_DOCUMENT")
+        assert count == 2, f"Expected 2 CONFIGURE_DOCUMENT operations, got {count}."

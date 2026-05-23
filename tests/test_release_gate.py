@@ -46,10 +46,15 @@ def _make_approved_rule(rule_id: str = "RULE-TEST-001") -> RuleRow:
         draft_recommendation="CEO_INPUT_REQUIRED — placeholder.",
         ceo_decision="Approved as recommended on 2026-05-23.",
         final_effective_rule="The approved effective rule text.",
+        approved_export_text="The approved channel-safe export text for this rule.",
         release_version="v1.0.0",
         effective_date="2026-06-01",
         policy_version="POL-2026-001",
         export_channels=["website"],
+        channel_visibility="CHANNEL_SAFE",
+        public_safe_review_status="APPROVED_PUBLIC_SAFE",
+        ai_response_review_status="NOT_REVIEWED",
+        ads_claim_review_status="NOT_REVIEWED",
         blockers=[],
         internal_notes="",
         ceo_notes="",
@@ -132,4 +137,26 @@ class TestReleaseGate:
         assert approved == [], (
             f"Expected no seed rules to pass export gate, but got: "
             f"{[r.get('rule_id') for r in approved]}"
+        )
+
+    def test_missing_approved_export_text_fails(self):
+        """A rule with empty approved_export_text must fail validation."""
+        rule = _make_approved_rule()
+        rule.approved_export_text = ""
+        errors = validate_rule_for_export(rule)
+        assert any("approved_export_text" in e for e in errors), (
+            f"Expected error about approved_export_text, got: {errors}"
+        )
+
+    def test_approved_export_text_used_in_export(self):
+        """export_approved_rules must use approved_export_text, not final_effective_rule."""
+        rule = _make_approved_rule("RULE-EXPORT-001")
+        rule.approved_export_text = "Publicly safe export text."
+        rule.final_effective_rule = "INTERNAL CEO NOTES — DO NOT EXPORT."
+        approved = export_approved_rules([rule])
+        assert len(approved) == 1
+        assert approved[0].approved_export_text == "Publicly safe export text."
+        # Confirm final_effective_rule is not present in the export model
+        assert not hasattr(approved[0], "final_effective_rule"), (
+            "ApprovedRuleExport must not expose final_effective_rule."
         )

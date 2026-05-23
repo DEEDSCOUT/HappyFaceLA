@@ -9,7 +9,7 @@ is performed in Phase 1.
 In a future authorized phase, this module will:
 1. Read the minimum required OAuth scopes from configuration.
 2. Use google-auth-oauthlib InstalledAppFlow with the CEO-selected account.
-3. Persist token.json to .secrets/ (git-ignored).
+3. Persist token.json to .runtime/ (git-ignored).
 4. Refresh credentials automatically.
 
 OAuth scope decisions are deferred — see:

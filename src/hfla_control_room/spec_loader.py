@@ -15,6 +15,8 @@ import yaml
 from hfla_control_room.models import (
     DocumentSpec,
     DriveStructureSpec,
+    EvidenceRecord,
+    EvidenceRegister,
     FullConfigSpec,
     RuleRegister,
     RuleRow,
@@ -57,16 +59,24 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
     # Load seed data (DRAFT — no CEO-approved content in Phase 1)
     seed_dir = config_dir / "seed_data"
     seed_rules: list[RuleRow] = []
+    evidence_records: list[EvidenceRecord] = []
     for seed_file in sorted(seed_dir.glob("*.yaml")):
         seed_data = yaml.safe_load(seed_file.read_text(encoding="utf-8"))
         if not seed_data:
             continue
-        if isinstance(seed_data, dict) and "rules" in seed_data:
-            for raw_rule in seed_data["rules"]:
-                seed_rules.append(RuleRow.model_validate(raw_rule))
+        if isinstance(seed_data, dict):
+            if "rules" in seed_data:
+                for raw_rule in seed_data["rules"]:
+                    seed_rules.append(RuleRow.model_validate(raw_rule))
+            if "evidence_records" in seed_data:
+                for raw_ev in seed_data["evidence_records"]:
+                    evidence_records.append(EvidenceRecord.model_validate(raw_ev))
 
     # Validate rule-ID uniqueness across all seed files
     RuleRegister(rules=seed_rules)
+
+    # Validate evidence-ID uniqueness across all seed files
+    EvidenceRegister(records=evidence_records)
 
     drive_spec = DriveStructureSpec.model_validate(drive_raw)
     governance_spec = WorkbookSpec.model_validate(governance_raw)
@@ -86,6 +96,7 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
         validation_lists=validation_lists,
         rule_schema=rule_schema,
         seed_rules=seed_rules,
+        evidence_records=evidence_records,
         raw={
             "drive": drive_raw,
             "governance": governance_raw,

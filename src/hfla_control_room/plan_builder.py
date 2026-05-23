@@ -45,9 +45,14 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
             if hasattr(child, "children"):
                 _add_folder(path, child)
             else:
+                # Assets in the folder tree — CREATE_SPREADSHEET_FILE or CREATE_DOCUMENT_FILE
+                if child.asset_type.value == AssetType.SHEET.value:
+                    op = "CREATE_SPREADSHEET_FILE"
+                else:
+                    op = "CREATE_DOCUMENT_FILE"
                 operations.append(
                     {
-                        "op": "CREATE_ASSET",
+                        "op": op,
                         "asset_type": child.asset_type.value,
                         "name": child.name,
                         "path": f"{path}/{child.name}",
@@ -71,9 +76,13 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
         if hasattr(child, "children"):
             _add_folder(root_name, child)
         else:
+            if child.asset_type.value == AssetType.SHEET.value:
+                op = "CREATE_SPREADSHEET_FILE"
+            else:
+                op = "CREATE_DOCUMENT_FILE"
             operations.append(
                 {
-                    "op": "CREATE_ASSET",
+                    "op": op,
                     "asset_type": child.asset_type.value,
                     "name": child.name,
                     "path": f"{root_name}/{child.name}",
@@ -82,10 +91,10 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
                 }
             )
 
-    # --- Governance workbook (Sheet A) ---
+    # --- Governance workbook: CONFIGURE_SPREADSHEET (tabs/formatting) ---
     operations.append(
         {
-            "op": "CREATE_SHEET",
+            "op": "CONFIGURE_SPREADSHEET",
             "asset_type": AssetType.SHEET.value,
             "name": spec.governance_workbook.spreadsheet_name,
             "classification": spec.governance_workbook.classification.value,
@@ -95,10 +104,10 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
         }
     )
 
-    # --- Restricted operations workbook (Sheet B) ---
+    # --- Restricted operations workbook: CONFIGURE_SPREADSHEET ---
     operations.append(
         {
-            "op": "CREATE_SHEET",
+            "op": "CONFIGURE_SPREADSHEET",
             "asset_type": AssetType.SHEET.value,
             "name": spec.restricted_operations_workbook.spreadsheet_name,
             "classification": spec.restricted_operations_workbook.classification.value,
@@ -108,11 +117,11 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
         }
     )
 
-    # --- Documents ---
+    # --- Documents: CONFIGURE_DOCUMENT ---
     for doc in spec.documents:
         operations.append(
             {
-                "op": "CREATE_DOC",
+                "op": "CONFIGURE_DOCUMENT",
                 "asset_type": doc.asset_type.value,
                 "name": doc.document_name,
                 "classification": doc.classification.value,
@@ -129,19 +138,34 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
             "generated_at_utc": _utcnow(),
             "live_google_calls": False,
             "operation_count": len(operations),
-            "sheet_count": sum(1 for o in operations if o["op"] == "CREATE_SHEET"),
-            "doc_count": sum(1 for o in operations if o["op"] == "CREATE_DOC"),
             "folder_count": sum(1 for o in operations if o["op"] == "CREATE_FOLDER"),
+            "spreadsheet_asset_count": sum(
+                1 for o in operations if o["op"] == "CREATE_SPREADSHEET_FILE"
+            ),
+            "document_asset_count": sum(
+                1 for o in operations if o["op"] == "CREATE_DOCUMENT_FILE"
+            ),
+            "sheet_configuration_count": sum(
+                1 for o in operations if o["op"] == "CONFIGURE_SPREADSHEET"
+            ),
+            "document_configuration_count": sum(
+                1 for o in operations if o["op"] == "CONFIGURE_DOCUMENT"
+            ),
             "authorized_workspace": r"C:\Dev\happyfacesla-commercial-control-room",
         },
         "operations": operations,
     }
+    meta = plan["plan_metadata"]
     logger.info(
-        "Dry-run plan generated: %d operations (%d sheets, %d docs, %d folders).",
-        len(operations),
-        plan["plan_metadata"]["sheet_count"],
-        plan["plan_metadata"]["doc_count"],
-        plan["plan_metadata"]["folder_count"],
+        "Dry-run plan generated: %d operations "
+        "(%d folders, %d spreadsheet files, %d document files, "
+        "%d sheet configs, %d doc configs).",
+        meta["operation_count"],
+        meta["folder_count"],
+        meta["spreadsheet_asset_count"],
+        meta["document_asset_count"],
+        meta["sheet_configuration_count"],
+        meta["document_configuration_count"],
     )
     return plan
 
@@ -156,21 +180,24 @@ def write_plan(plan: dict[str, Any], output_dir: Path) -> tuple[Path, Path]:
     json_path.write_text(json.dumps(plan, indent=2), encoding="utf-8")
     logger.info("Plan JSON written: %s", json_path)
 
+    pm = plan["plan_metadata"]
     md_lines = [
         "# Happy Faces LA — Commercial Control Room Dry-Run Build Plan",
         "",
-        f"**Phase:** {plan['plan_metadata']['phase']}  ",
-        f"**Generated (UTC):** {plan['plan_metadata']['generated_at_utc']}  ",
-        f"**Live Google API calls:** {plan['plan_metadata']['live_google_calls']}  ",
-        f"**Total operations:** {plan['plan_metadata']['operation_count']}  ",
+        f"**Phase:** {pm['phase']}  ",
+        f"**Generated (UTC):** {pm['generated_at_utc']}  ",
+        f"**Live Google API calls:** {pm['live_google_calls']}  ",
+        f"**Total operations:** {pm['operation_count']}  ",
         "",
         "## Summary",
         "",
-        "| Asset Type | Count |",
+        "| Operation Type | Count |",
         "|---|---|",
-        f"| Folders | {plan['plan_metadata']['folder_count']} |",
-        f"| Sheets   | {plan['plan_metadata']['sheet_count']} |",
-        f"| Docs     | {plan['plan_metadata']['doc_count']} |",
+        f"| CREATE_FOLDER | {pm['folder_count']} |",
+        f"| CREATE_SPREADSHEET_FILE | {pm['spreadsheet_asset_count']} |",
+        f"| CREATE_DOCUMENT_FILE | {pm['document_asset_count']} |",
+        f"| CONFIGURE_SPREADSHEET | {pm['sheet_configuration_count']} |",
+        f"| CONFIGURE_DOCUMENT | {pm['document_configuration_count']} |",
         "",
         "## Operations",
         "",

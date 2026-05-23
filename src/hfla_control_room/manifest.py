@@ -73,3 +73,27 @@ def make_key(asset_type: str, name: str) -> str:
     """Produce a deterministic, stable key for an asset."""
     safe_name = name.lower().replace(" ", "_").replace("/", "-")
     return f"{asset_type}:{safe_name}"
+
+
+# ---------------------------------------------------------------------------
+# Deterministic asset key registry
+# Phase 2 live provisioner MUST use these keys for idempotency lookup.
+# ---------------------------------------------------------------------------
+
+_GOVERNANCE_SHEET_NAME = "HF-LA Commercial Policy & Channel Governance Master"
+_RESTRICTED_SHEET_NAME = "HF-LA Leads, Quotes, Bookings & Profitability Control"
+_RELEASE_BRIEF_NAME = "TEMPLATE — Website Ads AI Implementation Release Brief"
+_ROOT_FOLDER_NAME = "Happy Faces LA — Commercial Control Room"
+
+ASSET_KEYS: dict[str, str] = {
+    "root_control_room_folder":     make_key("folder",   _ROOT_FOLDER_NAME),
+    "active_governance_folder":     make_key("folder",   "00_ACTIVE_GOVERNANCE"),
+    "governance_master_sheet":      make_key("sheet",    _GOVERNANCE_SHEET_NAME),
+    "active_policy_manual_doc":     make_key("doc",      "HF-LA Active Commercial Policy Manual"),
+    "restricted_operations_folder": make_key("folder",   "01_RESTRICTED_OPERATIONS_PII"),
+    "restricted_operations_sheet":  make_key("sheet",    _RESTRICTED_SHEET_NAME),
+    "release_packages_folder":      make_key("folder",   "02_RELEASE_PACKAGES"),
+    "release_brief_template_doc":   make_key("template", _RELEASE_BRIEF_NAME),
+    "source_evidence_folder":       make_key("folder",   "03_SOURCE_EVIDENCE_COMPLIANCE"),
+    "archive_folder":               make_key("folder",   "99_ARCHIVE_SUPERSEDED"),
+}
