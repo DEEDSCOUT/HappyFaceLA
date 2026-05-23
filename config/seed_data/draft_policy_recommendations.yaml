@@ -1,0 +1,153 @@
+# Happy Faces LA — Commercial Control Room
+# Seed Data: Draft Policy Recommendations
+# Phase 1 — DRAFT placeholders only.
+#
+# PURPOSE: Framework structure for draft booking, cancellation, deposit,
+#          and operational policy recommendations.
+# RULE: All rows are DRAFT with CEO_INPUT_REQUIRED blockers.
+#       No policy value may be marked approved or exported in Phase 1.
+
+rules:
+  - rule_id: "RULE-POL-001"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Deposit Requirement — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — Deposit requirement policy has not been established.
+      This structure is reserved for the Phase 2 CEO-reviewed policy payload.
+      Do not assume any deposit percentage or amount.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-POL-002"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Cancellation Policy — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — Cancellation policy windows and refund rules have not
+      been established. This structure is reserved for the Phase 2 policy payload.
+      COMPLIANCE_REVIEW_REQUIRED before any cancellation policy is finalized.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "COMPLIANCE_REVIEW_REQUIRED"
+    internal_notes: "PHASE 1 PLACEHOLDER. Legal review recommended before finalizing."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-POL-003"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Rescheduling Policy — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — Rescheduling conditions and fees have not been established.
+      Reserved for Phase 2 policy payload.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-POL-004"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Overtime Rate Policy — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — Overtime rate and conditions have not been established.
+      Reserved for Phase 2 policy payload.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-POL-005"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Payment Methods and Schedule — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — Accepted payment methods and payment schedule have not
+      been established. Reserved for Phase 2 policy payload.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-POL-006"
+    rule_category: "VENDOR_SCHOOL_CORPORATE"
+    rule_title: "School and Nonprofit Event Policy — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — School and nonprofit event eligibility and any rate
+      differential have not been established. Reserved for Phase 2 policy payload.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-POL-007"
+    rule_category: "SAFETY_CARE"
+    rule_title: "Safety Requirements and Liability Disclosure — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — Safety requirements and customer-care wording have not
+      been established. COMPLIANCE_REVIEW_REQUIRED before any safety language is
+      published to any channel.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "COMPLIANCE_REVIEW_REQUIRED"
+      - "LEGAL_REVIEW_REQUIRED"
+    internal_notes: "PHASE 1 PLACEHOLDER. Legal review required."
+    ceo_notes: ""
+    source_evidence_ref: ""

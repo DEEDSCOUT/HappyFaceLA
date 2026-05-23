@@ -1,0 +1,76 @@
+# Happy Faces LA — Commercial Control Room
+# Seed Data: Current Live Facts
+# Phase 1 — DRAFT placeholders only.
+#
+# PURPOSE: Placeholder structure for verified current-live facts about the business.
+# RULE: Only verified facts supplied in a controller-approved data payload may populate
+#       this file with real values. Do not invent facts, pricing, or policy from memory.
+#
+# All rows are DRAFT with CEO_INPUT_REQUIRED blockers until a controller-approved
+# data payload is delivered in Phase 2.
+
+rules:
+  - rule_id: "RULE-FACT-001"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Current Live Pricing — Placeholder Pending CEO Data Payload"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — No verified current pricing data has been loaded.
+      This placeholder will be replaced when a controller-approved current-live-facts
+      data payload is provided in Phase 2. Do not populate from memory or prior chat context.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: >
+      PHASE 1 PLACEHOLDER. No live pricing facts have been loaded.
+      Awaiting Phase 2 controller-approved data payload.
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-FACT-002"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Current Live Deposit Policy — Placeholder Pending CEO Data Payload"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — No verified current deposit policy data has been loaded.
+      This placeholder will be replaced when a controller-approved data payload
+      is provided in Phase 2.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-FACT-003"
+    rule_category: "QUOTE_TRAVEL"
+    rule_title: "Current Live Travel Policy — Placeholder Pending CEO Data Payload"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — No verified current travel fee policy has been loaded.
+      This placeholder will be replaced when a controller-approved data payload
+      is provided in Phase 2.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""

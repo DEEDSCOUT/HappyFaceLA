@@ -1,0 +1,68 @@
+# Happy Faces LA — Commercial Control Room
+# Drive Structure Specification
+# Phase 1 — Local dry-run only. No live Google Drive assets.
+#
+# Classification key:
+#   INTERNAL_CONTROLLED      — Internal staff only; no public distribution
+#   RESTRICTED_PII           — Contains customer/financial PII; strictly need-to-know
+#   CHANNEL_SAFE_AFTER_RELEASE — Machine-readable export; safe after CEO release approval
+
+root_folder_name: "Happy Faces LA — Commercial Control Room"
+
+children:
+
+  - name: "00_ACTIVE_GOVERNANCE"
+    classification: INTERNAL_CONTROLLED
+    children:
+      - name: "HF-LA Commercial Policy & Channel Governance Master"
+        asset_type: sheet
+        classification: INTERNAL_CONTROLLED
+      - name: "HF-LA Active Commercial Policy Manual"
+        asset_type: doc
+        classification: INTERNAL_CONTROLLED
+
+  - name: "01_RESTRICTED_OPERATIONS_PII"
+    classification: RESTRICTED_PII
+    children:
+      - name: "HF-LA Leads, Quotes, Bookings & Profitability Control"
+        asset_type: sheet
+        classification: RESTRICTED_PII
+
+  - name: "02_RELEASE_PACKAGES"
+    classification: INTERNAL_CONTROLLED
+    children:
+      - name: "TEMPLATE — Website Ads AI Implementation Release Brief"
+        asset_type: template
+        classification: INTERNAL_CONTROLLED
+      - name: "Release Packages"
+        classification: INTERNAL_CONTROLLED
+        children: []
+
+  - name: "03_SOURCE_EVIDENCE_COMPLIANCE"
+    classification: INTERNAL_CONTROLLED
+    children:
+      - name: "Website Audit Evidence"
+        classification: INTERNAL_CONTROLLED
+        children: []
+      - name: "Google Ads Policy Evidence"
+        classification: INTERNAL_CONTROLLED
+        children: []
+      - name: "Tax Compliance Evidence"
+        classification: INTERNAL_CONTROLLED
+        children: []
+      - name: "Safety Materials Insurance Evidence"
+        classification: INTERNAL_CONTROLLED
+        children: []
+      - name: "Competitor Market Research"
+        classification: INTERNAL_CONTROLLED
+        children: []
+
+  - name: "99_ARCHIVE_SUPERSEDED"
+    classification: INTERNAL_CONTROLLED
+    children:
+      - name: "Original Pricing Rule Approval Form"
+        classification: INTERNAL_CONTROLLED
+        children: []
+      - name: "Superseded Versions"
+        classification: INTERNAL_CONTROLLED
+        children: []

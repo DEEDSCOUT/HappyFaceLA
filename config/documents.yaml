@@ -1,0 +1,209 @@
+# Happy Faces LA — Commercial Control Room
+# Documents Specification
+# Phase 1 — Specification only. No live Google Docs created.
+
+documents:
+
+  - document_name: "HF-LA Active Commercial Policy Manual"
+    asset_type: doc
+    classification: INTERNAL_CONTROLLED
+    initial_status: "DRAFT SHELL — NO ACTIVE COMMERCIAL POLICY RELEASE UNTIL CEO APPROVAL"
+    draft_banner: >
+      DRAFT SHELL — NO ACTIVE COMMERCIAL POLICY RELEASE UNTIL CEO APPROVAL.
+      This document contains no approved commercial rules.
+      All sections are placeholders pending the first CEO release authorization.
+    sections:
+      - heading: "1. Document Status and Active Version"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will record the current active policy version,
+          the effective date, and the document approval status.
+          No active version exists until the first CEO release authorization.
+        notes: "Must include: Version number, effective date, CEO approval reference."
+
+      - heading: "2. CEO Approval Record"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will record the CEO's name, approval date,
+          and scope of each approved release.
+          CEO_INPUT_REQUIRED — no approved release exists in Phase 1.
+        notes: "Immutable approval log; one entry per release."
+
+      - heading: "3. Approved Public Pricing"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will contain CEO-approved public pricing packages
+          and rate structures.
+          CEO_INPUT_REQUIRED — pricing rules are in DRAFT status in Phase 1.
+        notes: "Source: 05_PUBLIC_PRICING_PACKAGES approved rows."
+
+      - heading: "4. Approved Service Descriptions"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will contain CEO-approved service descriptions
+          authorized for website and channel publication.
+          CEO_INPUT_REQUIRED.
+        notes: "Source: 03_RULE_REGISTER_MASTER approved service-description rules."
+
+      - heading: "5. Approved Quote and Travel Rules"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will contain CEO-approved quoting logic
+          and travel fee rules authorized for customer-facing disclosure.
+          CEO_INPUT_REQUIRED.
+        notes: "Source: 06_INTERNAL_QUOTE_TRAVEL_RULES approved rows."
+
+      - heading: "6. Approved Deposit and Payment Rules"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will contain CEO-approved deposit requirements,
+          payment schedules, and payment method policies.
+          CEO_INPUT_REQUIRED.
+        notes: "Source: 07_BOOKING_POLICY_COMPLIANCE, Policy Area = DEPOSIT / PAYMENT."
+
+      - heading: "7. Approved Cancellation, Rescheduling and Overtime Rules"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will contain CEO-approved cancellation windows,
+          refund policies, rescheduling conditions, and overtime rates.
+          CEO_INPUT_REQUIRED.
+        notes: "Source: 07_BOOKING_POLICY_COMPLIANCE."
+
+      - heading: "8. Approved School, Festival and Corporate Event Rules"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will contain CEO-approved special-event policies
+          for schools, festivals, and corporate clients.
+          CEO_INPUT_REQUIRED.
+        notes: "Source: 08_VENDOR_SCHOOL_CORPORATE_RULES."
+
+      - heading: "9. Approved Vendor / Community Event Rules"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will contain CEO-approved vendor and community
+          event participation rules.
+          CEO_INPUT_REQUIRED.
+        notes: "Source: 08_VENDOR_SCHOOL_CORPORATE_RULES."
+
+      - heading: "10. Approved Safety and Customer-Care Wording"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will contain CEO-approved safety disclosures
+          and customer-care language authorized for publication.
+          COMPLIANCE_REVIEW_REQUIRED.
+        notes: "Must be reviewed for legal compliance before CEO approval."
+
+      - heading: "11. Approved AI / Customer Response Boundaries"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will define the approved boundaries for AI
+          and chatbot customer responses, including prohibited claim areas.
+          CEO_INPUT_REQUIRED.
+        notes: "Source: 10_AI_CUSTOMER_RESPONSE_MATRIX approved rows."
+
+      - heading: "12. Superseded Policy References"
+        level: 1
+        placeholder_text: >
+          [DRAFT SHELL] This section will log all superseded policy versions with
+          effective-end dates and replacement version references.
+        notes: "Append-only historical record."
+
+  - document_name: "TEMPLATE — Website Ads AI Implementation Release Brief"
+    asset_type: template
+    classification: INTERNAL_CONTROLLED
+    initial_status: "TEMPLATE — Populate from CEO-approved release package only"
+    draft_banner: >
+      TEMPLATE — DO NOT USE DIRECTLY.
+      This template must be copied and populated from a CEO-approved release package.
+      No release brief is valid without CEO signature and effective date.
+    sections:
+      - heading: "1. Release Version"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] Release version identifier (e.g. v1.0.0).
+          Must match the release version in 12_RELEASE_CHANGELOG.
+        notes: "Semantic versioning recommended: MAJOR.MINOR.PATCH"
+
+      - heading: "2. CEO Approval and Effective Date"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] CEO name, approval date, and effective date for this release.
+          No implementation may proceed without this section completed and signed.
+        notes: "Required: CEO full name, date approved, effective date."
+
+      - heading: "3. Rules Activated in This Release"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] List of Rule IDs and titles activated in this release,
+          sourced from 04_ACTIVE_RULES_EXPORT.
+        notes: "Each rule must be in APPROVED status with non-empty Final Effective Rule."
+
+      - heading: "4. Website Pages Requiring Change"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] List of website pages that require copy or content updates
+          as a result of this release. Include page URL and change type.
+        notes: "Must reference exact page URLs."
+
+      - heading: "5. Exact Website Copy Authorized for Publication"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] The exact, word-for-word website copy authorized for publication.
+          No variation from this copy is permitted without a new release.
+        notes: "Copy must be sourced from approved 03_RULE_REGISTER_MASTER rows."
+
+      - heading: "6. Google Ads Claims Authorized for Use"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] List of approved claims for Google Ads copy, headlines,
+          and descriptions. Must comply with Google Ads policies.
+        notes: "Include: Headline copy, description copy, prohibited claim list."
+
+      - heading: "7. Claims Prohibited from Use"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] Explicit list of claims that must NOT appear in any
+          website, ad, or AI response for this release period.
+        notes: "Include unapproved pricing claims, unverified superlatives, prohibited comparisons."
+
+      - heading: "8. Quote Form / CRM Field Changes"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] Changes required to the website quote form and CRM fields
+          as a result of this release.
+        notes: "Include field names, validation rules, and dropdown values."
+
+      - heading: "9. AI / Copilot Rules Activated"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] List of AI response rules activated in this release,
+          sourced from 10_AI_CUSTOMER_RESPONSE_MATRIX approved rows.
+        notes: "Include trigger topics, permitted boundaries, prohibited content."
+
+      - heading: "10. Developer Acceptance Checklist"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] Checklist of implementation tasks that must be completed
+          and verified before this release is considered deployed.
+        notes: "Include: Each change item, assignee, due date, verification method."
+
+      - heading: "11. QA Evidence"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] Links to QA test results, screenshots, or other evidence
+          confirming implementation accuracy.
+        notes: "Store evidence in 03_SOURCE_EVIDENCE_COMPLIANCE / Website Audit Evidence."
+
+      - heading: "12. Rollback Procedure"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] Exact steps to roll back this release if a post-deployment
+          issue is discovered.
+        notes: "Must include: rollback trigger criteria, step-by-step instructions, rollback owner."
+
+      - heading: "13. Final Release Sign-Off"
+        level: 1
+        placeholder_text: >
+          [TEMPLATE FIELD] Final sign-off confirming all checklist items are complete,
+          QA is verified, and the release is live as approved.
+        notes: "Required: Developer sign-off, QA sign-off, CEO acknowledgment."

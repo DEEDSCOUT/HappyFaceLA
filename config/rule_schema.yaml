@@ -1,0 +1,204 @@
+# Happy Faces LA — Commercial Control Room
+# Rule Schema Specification
+# Defines the canonical field schema for rule rows in the register and exports.
+# Phase 1 — Local spec only.
+
+fields:
+
+  - name: "rule_id"
+    field_type: "string"
+    required: true
+    pii: false
+    internal_only: false
+    description: "Unique rule identifier. Format: RULE-{CATEGORY_PREFIX}-{SEQUENCE}."
+
+  - name: "rule_category"
+    field_type: "enum"
+    required: true
+    pii: false
+    internal_only: false
+    allowed_values:
+      - "PUBLIC_PRICING"
+      - "QUOTE_TRAVEL"
+      - "BOOKING_POLICY"
+      - "VENDOR_SCHOOL_CORPORATE"
+      - "AI_CUSTOMER_RESPONSE"
+      - "SAFETY_CARE"
+      - "CHANNEL_IMPLEMENTATION"
+    description: "Category grouping for the rule."
+
+  - name: "rule_title"
+    field_type: "string"
+    required: true
+    pii: false
+    internal_only: false
+    description: "Short descriptive title for the rule."
+
+  - name: "status"
+    field_type: "enum"
+    required: true
+    pii: false
+    internal_only: false
+    allowed_values:
+      - "DRAFT"
+      - "CEO_REVIEW"
+      - "APPROVED_AS_RECOMMENDED"
+      - "APPROVED_WITH_CONDITIONS"
+      - "REJECTED"
+      - "SUPERSEDED"
+    description: "Current governance status of the rule."
+
+  - name: "draft_recommendation"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: true
+    description: >
+      The draft rule text as recommended for CEO review.
+      Internal only — never exported to channel-safe outputs.
+
+  - name: "ceo_decision"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: true
+    description: >
+      The CEO's recorded decision on this rule.
+      Internal only — never exported. Required for export eligibility.
+
+  - name: "final_effective_rule"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: false
+    description: >
+      The final, approved, public-safe rule text as authorized by the CEO.
+      This is the text that appears in channel-safe exports.
+
+  - name: "release_version"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: false
+    description: "The release version in which this rule was first activated (e.g. v1.0.0)."
+
+  - name: "effective_date"
+    field_type: "date"
+    required: false
+    pii: false
+    internal_only: false
+    description: "The date on which this rule became/becomes effective."
+
+  - name: "policy_version"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: false
+    description: "The policy document version referencing this rule."
+
+  - name: "export_channels"
+    field_type: "list"
+    required: false
+    pii: false
+    internal_only: false
+    allowed_values:
+      - "website"
+      - "google_ads"
+      - "ai_copilot"
+      - "chatbot"
+      - "internal"
+    description: "List of channels to which this rule is eligible for export."
+
+  - name: "blockers"
+    field_type: "list"
+    required: false
+    pii: false
+    internal_only: true
+    allowed_values:
+      - "CEO_INPUT_REQUIRED"
+      - "COMPLIANCE_REVIEW_REQUIRED"
+      - "LEGAL_REVIEW_REQUIRED"
+      - "DATA_MISSING"
+    description: "Active blockers preventing this rule from being exported."
+
+  - name: "internal_notes"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: true
+    description: "Internal staff notes — never exported."
+
+  - name: "ceo_notes"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: true
+    description: "CEO-specific notes — never exported."
+
+  - name: "source_evidence_ref"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: true
+    description: "Reference to supporting evidence in 11_SOURCE_EVIDENCE."
+
+  # PII fields — present in restricted operations workbook only
+  # Listed here to document their existence and enforce exclusion from exports.
+
+  - name: "customer_name"
+    field_type: "string"
+    required: false
+    pii: true
+    internal_only: true
+    description: "Customer full name. RESTRICTED_PII — never in governance export."
+
+  - name: "customer_email"
+    field_type: "string"
+    required: false
+    pii: true
+    internal_only: true
+    description: "Customer email address. RESTRICTED_PII — never in governance export."
+
+  - name: "customer_phone"
+    field_type: "string"
+    required: false
+    pii: true
+    internal_only: true
+    description: "Customer phone number. RESTRICTED_PII — never in governance export."
+
+  - name: "event_address"
+    field_type: "string"
+    required: false
+    pii: true
+    internal_only: true
+    description: "Full event street address. RESTRICTED_PII — never in governance export."
+
+  # Internal financial fields — never in any channel-safe export
+
+  - name: "internal_cost"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: true
+    description: "Internal cost input for unit economics. Never exported."
+
+  - name: "margin"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: true
+    description: "Gross margin. Never exported."
+
+  - name: "dispatch_origin"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: true
+    description: "Private dispatch origin address. Never exported."
+
+  - name: "ceo_notes"
+    field_type: "string"
+    required: false
+    pii: false
+    internal_only: true
+    description: "CEO notes. Never exported."

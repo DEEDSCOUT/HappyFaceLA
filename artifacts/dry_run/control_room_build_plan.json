@@ -1,0 +1,248 @@
+{
+  "plan_metadata": {
+    "phase": "PHASE_1_DRY_RUN",
+    "generated_at_utc": "2026-05-23T21:49:24+00:00",
+    "live_google_calls": false,
+    "operation_count": 22,
+    "sheet_count": 2,
+    "doc_count": 2,
+    "folder_count": 14,
+    "authorized_workspace": "C:\\Dev\\happyfacesla-commercial-control-room"
+  },
+  "operations": [
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "Happy Faces LA \u2014 Commercial Control Room",
+      "path": "Happy Faces LA \u2014 Commercial Control Room",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "00_ACTIVE_GOVERNANCE",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/00_ACTIVE_GOVERNANCE",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_ASSET",
+      "asset_type": "sheet",
+      "name": "HF-LA Commercial Policy & Channel Governance Master",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/00_ACTIVE_GOVERNANCE/HF-LA Commercial Policy & Channel Governance Master",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_ASSET",
+      "asset_type": "doc",
+      "name": "HF-LA Active Commercial Policy Manual",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/00_ACTIVE_GOVERNANCE/HF-LA Active Commercial Policy Manual",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "01_RESTRICTED_OPERATIONS_PII",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/01_RESTRICTED_OPERATIONS_PII",
+      "classification": "RESTRICTED_PII",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_ASSET",
+      "asset_type": "sheet",
+      "name": "HF-LA Leads, Quotes, Bookings & Profitability Control",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/01_RESTRICTED_OPERATIONS_PII/HF-LA Leads, Quotes, Bookings & Profitability Control",
+      "classification": "RESTRICTED_PII",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "02_RELEASE_PACKAGES",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/02_RELEASE_PACKAGES",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_ASSET",
+      "asset_type": "template",
+      "name": "TEMPLATE \u2014 Website Ads AI Implementation Release Brief",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/02_RELEASE_PACKAGES/TEMPLATE \u2014 Website Ads AI Implementation Release Brief",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "Release Packages",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/02_RELEASE_PACKAGES/Release Packages",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "03_SOURCE_EVIDENCE_COMPLIANCE",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/03_SOURCE_EVIDENCE_COMPLIANCE",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "Website Audit Evidence",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/03_SOURCE_EVIDENCE_COMPLIANCE/Website Audit Evidence",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "Google Ads Policy Evidence",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/03_SOURCE_EVIDENCE_COMPLIANCE/Google Ads Policy Evidence",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "Tax Compliance Evidence",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/03_SOURCE_EVIDENCE_COMPLIANCE/Tax Compliance Evidence",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "Safety Materials Insurance Evidence",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/03_SOURCE_EVIDENCE_COMPLIANCE/Safety Materials Insurance Evidence",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "Competitor Market Research",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/03_SOURCE_EVIDENCE_COMPLIANCE/Competitor Market Research",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "99_ARCHIVE_SUPERSEDED",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/99_ARCHIVE_SUPERSEDED",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "Original Pricing Rule Approval Form",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/99_ARCHIVE_SUPERSEDED/Original Pricing Rule Approval Form",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_FOLDER",
+      "asset_type": "folder",
+      "name": "Superseded Versions",
+      "path": "Happy Faces LA \u2014 Commercial Control Room/99_ARCHIVE_SUPERSEDED/Superseded Versions",
+      "classification": "INTERNAL_CONTROLLED",
+      "live_action": false
+    },
+    {
+      "op": "CREATE_SHEET",
+      "asset_type": "sheet",
+      "name": "HF-LA Commercial Policy & Channel Governance Master",
+      "classification": "INTERNAL_CONTROLLED",
+      "tab_count": 14,
+      "tab_titles": [
+        "00_CONTROL_CENTER",
+        "01_CEO_APPROVAL_QUEUE",
+        "02_OPEN_BLOCKERS",
+        "03_RULE_REGISTER_MASTER",
+        "04_ACTIVE_RULES_EXPORT",
+        "05_PUBLIC_PRICING_PACKAGES",
+        "06_INTERNAL_QUOTE_TRAVEL_RULES",
+        "07_BOOKING_POLICY_COMPLIANCE",
+        "08_VENDOR_SCHOOL_CORPORATE_RULES",
+        "09_CHANNEL_IMPLEMENTATION_MAP",
+        "10_AI_CUSTOMER_RESPONSE_MATRIX",
+        "11_SOURCE_EVIDENCE",
+        "12_RELEASE_CHANGELOG",
+        "99_VALIDATION_CONFIG"
+      ],
+      "live_action": false
+    },
+    {
+      "op": "CREATE_SHEET",
+      "asset_type": "sheet",
+      "name": "HF-LA Leads, Quotes, Bookings & Profitability Control",
+      "classification": "RESTRICTED_PII",
+      "tab_count": 9,
+      "tab_titles": [
+        "00_ACCESS_AND_USAGE_RULES",
+        "01_QUOTE_WORKBENCH",
+        "02_LEAD_PIPELINE",
+        "03_BOOKINGS_EVENTS",
+        "04_EVENT_DELIVERY_METRICS",
+        "05_UNIT_ECONOMICS",
+        "06_GOOGLE_ADS_PERFORMANCE",
+        "07_KPI_DASHBOARD",
+        "99_VALIDATION_CONFIG"
+      ],
+      "live_action": false
+    },
+    {
+      "op": "CREATE_DOC",
+      "asset_type": "doc",
+      "name": "HF-LA Active Commercial Policy Manual",
+      "classification": "INTERNAL_CONTROLLED",
+      "initial_status": "DRAFT SHELL \u2014 NO ACTIVE COMMERCIAL POLICY RELEASE UNTIL CEO APPROVAL",
+      "section_count": 12,
+      "section_headings": [
+        "1. Document Status and Active Version",
+        "2. CEO Approval Record",
+        "3. Approved Public Pricing",
+        "4. Approved Service Descriptions",
+        "5. Approved Quote and Travel Rules",
+        "6. Approved Deposit and Payment Rules",
+        "7. Approved Cancellation, Rescheduling and Overtime Rules",
+        "8. Approved School, Festival and Corporate Event Rules",
+        "9. Approved Vendor / Community Event Rules",
+        "10. Approved Safety and Customer-Care Wording",
+        "11. Approved AI / Customer Response Boundaries",
+        "12. Superseded Policy References"
+      ],
+      "live_action": false
+    },
+    {
+      "op": "CREATE_DOC",
+      "asset_type": "template",
+      "name": "TEMPLATE \u2014 Website Ads AI Implementation Release Brief",
+      "classification": "INTERNAL_CONTROLLED",
+      "initial_status": "TEMPLATE \u2014 Populate from CEO-approved release package only",
+      "section_count": 13,
+      "section_headings": [
+        "1. Release Version",
+        "2. CEO Approval and Effective Date",
+        "3. Rules Activated in This Release",
+        "4. Website Pages Requiring Change",
+        "5. Exact Website Copy Authorized for Publication",
+        "6. Google Ads Claims Authorized for Use",
+        "7. Claims Prohibited from Use",
+        "8. Quote Form / CRM Field Changes",
+        "9. AI / Copilot Rules Activated",
+        "10. Developer Acceptance Checklist",
+        "11. QA Evidence",
+        "12. Rollback Procedure",
+        "13. Final Release Sign-Off"
+      ],
+      "live_action": false
+    }
+  ]
+}

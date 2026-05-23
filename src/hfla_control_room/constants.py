@@ -1,0 +1,112 @@
+"""
+Happy Faces LA — Commercial Control Room
+Enumerations and fixed constants shared across modules.
+"""
+
+from enum import StrEnum
+
+
+class AssetType(StrEnum):
+    FOLDER = "folder"
+    SHEET = "sheet"
+    DOC = "doc"
+    TEMPLATE = "template"
+    EXPORT = "export"
+
+
+class SensitivityClassification(StrEnum):
+    INTERNAL_CONTROLLED = "INTERNAL_CONTROLLED"
+    RESTRICTED_PII = "RESTRICTED_PII"
+    CHANNEL_SAFE_AFTER_RELEASE = "CHANNEL_SAFE_AFTER_RELEASE"
+
+
+class RuleStatus(StrEnum):
+    DRAFT = "DRAFT"
+    CEO_REVIEW = "CEO_REVIEW"
+    APPROVED_AS_RECOMMENDED = "APPROVED_AS_RECOMMENDED"
+    APPROVED_WITH_CONDITIONS = "APPROVED_WITH_CONDITIONS"
+    REJECTED = "REJECTED"
+    SUPERSEDED = "SUPERSEDED"
+
+
+class BlockerType(StrEnum):
+    CEO_INPUT_REQUIRED = "CEO_INPUT_REQUIRED"
+    COMPLIANCE_REVIEW_REQUIRED = "COMPLIANCE_REVIEW_REQUIRED"
+    LEGAL_REVIEW_REQUIRED = "LEGAL_REVIEW_REQUIRED"
+    DATA_MISSING = "DATA_MISSING"
+
+
+class BannerSeverity(StrEnum):
+    INFO = "INFO"
+    WARNING = "WARNING"
+    CRITICAL = "CRITICAL"
+    RESTRICTED = "RESTRICTED"
+
+
+class ExportChannel(StrEnum):
+    WEBSITE = "website"
+    GOOGLE_ADS = "google_ads"
+    AI_COPILOT = "ai_copilot"
+    CHATBOT = "chatbot"
+    INTERNAL = "internal"
+
+
+# Sentinel values used in seed data
+CEO_INPUT_REQUIRED = "CEO_INPUT_REQUIRED"
+COMPLIANCE_REVIEW_REQUIRED = "COMPLIANCE_REVIEW_REQUIRED"
+TBD = "TBD"
+
+# PII field names that must never appear in channel-safe exports
+PII_FIELD_NAMES = frozenset(
+    {
+        "customer_name",
+        "customer_email",
+        "customer_phone",
+        "event_address",
+        "billing_address",
+        "client_name",
+        "contact_email",
+        "contact_phone",
+        "lead_name",
+        "quote_recipient",
+        "booking_contact",
+    }
+)
+
+# Fields classified as internal-only that must never appear in channel-safe exports
+INTERNAL_ONLY_FIELD_NAMES = frozenset(
+    {
+        "ceo_notes",
+        "internal_profitability_input",
+        "dispatch_origin",
+        "unapproved_price",
+        "draft_policy",
+        "internal_cost",
+        "margin",
+        "vendor_rate",
+        "performer_cost",
+    }
+)
+
+# Required banner text for public-facing / channel-safe tabs
+DRAFT_CHANNEL_BANNER = (
+    "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
+)
+
+# Required banner text for restricted operations workbook
+RESTRICTED_OPERATIONS_BANNER = (
+    "RESTRICTED BUSINESS DATA — CUSTOMER AND FINANCIAL INFORMATION"
+    " — DO NOT SHARE WITH PUBLIC AI SYSTEMS OR UNAUTHORIZED AGENTS"
+)
+
+# Governance workbook — required tab count
+GOVERNANCE_TAB_COUNT = 14
+
+# Restricted operations workbook — required tab count
+RESTRICTED_OPS_TAB_COUNT = 9
+
+# Authorized workspace path (Windows)
+AUTHORIZED_WORKSPACE_PATH = r"C:\Dev\happyfacesla-commercial-control-room"
+
+# Phase gate label
+PHASE_1_BLOCK_MESSAGE = "BLOCKED — LIVE GOOGLE PROVISIONING NOT AUTHORIZED IN PHASE 1."

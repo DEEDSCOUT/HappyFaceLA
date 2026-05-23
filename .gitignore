@@ -1,0 +1,81 @@
+# ============================================================
+# Happy Faces LA — Commercial Control Room
+# .gitignore — SECURITY-CRITICAL: created before any secret
+#              or runtime state location exists.
+# ============================================================
+
+# --- SECURITY: OAuth credentials and tokens — NEVER track ---
+.secrets/
+.runtime/
+.exports/private/
+client_secret.json
+client_secrets.json
+token.json
+token.pickle
+credentials.json
+service_account.json
+*.p12
+*.pem
+*.key
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+MANIFEST
+pip-wheel-metadata/
+share/python-wheels/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# --- Environment variable files (may contain secrets) ---
+.env
+.env.*
+!.env.example
+
+# --- Pytest / coverage ---
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+*.pytest.ini
+
+# --- Ruff / linting caches ---
+.ruff_cache/
+.mypy_cache/
+.pytype/
+
+# --- Build artefacts ---
+artifacts/dry_run/*.json.bak
+artifacts/dry_run/*.md.bak
+
+# --- IDE ---
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Jupyter (excluded from this project scope) ---
+.ipynb_checkpoints/
+
+# --- Logs ---
+*.log
+logs/

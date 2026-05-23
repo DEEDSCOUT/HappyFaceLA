@@ -1,0 +1,115 @@
+# Happy Faces LA — Commercial Control Room
+# Seed Data: Draft AI Channel Rules
+# Phase 1 — DRAFT placeholders only.
+#
+# PURPOSE: Framework structure for draft AI and chatbot response boundary rules.
+# RULE: All rows are DRAFT with CEO_INPUT_REQUIRED blockers.
+#       No AI rule may be activated or exported until CEO release approval.
+#       No AI system may use this data directly — only 04_ACTIVE_RULES_EXPORT
+#       approved rows may be consumed by AI systems.
+
+rules:
+  - rule_id: "RULE-AI-001"
+    rule_category: "AI_CUSTOMER_RESPONSE"
+    rule_title: "Pricing Disclosure Boundaries for AI — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — The approved pricing disclosure boundary for AI and
+      chatbot responses has not been established. AI systems must not quote
+      specific prices until this rule is CEO-approved and released.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER. AI price-disclosure boundary TBD."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-AI-002"
+    rule_category: "AI_CUSTOMER_RESPONSE"
+    rule_title: "Escalation Triggers for AI Customer Inquiries — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — AI escalation trigger criteria (when to hand off to
+      human staff) have not been established. Reserved for Phase 2 payload.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-AI-003"
+    rule_category: "AI_CUSTOMER_RESPONSE"
+    rule_title: "Prohibited AI Response Topics — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — The list of topics the AI must not discuss or claim
+      has not been established. Reserved for Phase 2 payload.
+      This must include: unapproved pricing, competitor comparisons, unverified
+      claims, and any topic requiring legal review.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "COMPLIANCE_REVIEW_REQUIRED"
+    internal_notes: "PHASE 1 PLACEHOLDER. Compliance review required."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-AI-004"
+    rule_category: "AI_CUSTOMER_RESPONSE"
+    rule_title: "Approved AI Safety Disclosure Wording — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — Approved safety disclosure wording for AI channels
+      has not been established. COMPLIANCE_REVIEW_REQUIRED.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "COMPLIANCE_REVIEW_REQUIRED"
+      - "LEGAL_REVIEW_REQUIRED"
+    internal_notes: "PHASE 1 PLACEHOLDER. Legal review required before any AI safety disclosure."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-AI-005"
+    rule_category: "AI_CUSTOMER_RESPONSE"
+    rule_title: "Google Ads Claim Boundaries for AI — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — The boundary between claims approved for Google Ads
+      vs claims the AI may independently make has not been established.
+      Reserved for Phase 2 payload.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""

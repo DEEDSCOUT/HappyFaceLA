@@ -1,0 +1,95 @@
+# Happy Faces LA — Commercial Control Room
+# Seed Data: Draft Pricing Recommendations
+# Phase 1 — DRAFT placeholders only.
+#
+# PURPOSE: Framework structure for draft pricing rule recommendations.
+# RULE: No pricing value in this file may be marked CEO-approved or exported.
+#       All rows are DRAFT with CEO_INPUT_REQUIRED blockers.
+#       Do not populate from memory, prior chat context, website scraping, or market claims.
+#
+# This file establishes the rule framework that will safely accept the
+# complete reviewed pricing rule payload in Phase 2.
+
+rules:
+  - rule_id: "RULE-PRICE-001"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Standard Party Package Pricing — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — Draft pricing recommendation for standard party packages
+      has not been populated. This structure is reserved for the Phase 2 CEO-reviewed
+      pricing payload. Do not invent or assume any price point.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: >
+      PHASE 1 PLACEHOLDER. Pricing framework established.
+      CEO input required before any recommendation can be drafted.
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-PRICE-002"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Add-On Pricing Options — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — Add-on pricing options have not been defined.
+      This structure is reserved for the Phase 2 CEO-reviewed pricing payload.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-PRICE-003"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Corporate / School Event Rate Structure — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — Corporate and school event rate structures have not
+      been defined. This structure is reserved for the Phase 2 pricing payload.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""
+
+  - rule_id: "RULE-PRICE-004"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Minimum Booking Value — DRAFT Placeholder"
+    status: "DRAFT"
+    draft_recommendation: >
+      CEO_INPUT_REQUIRED — Minimum booking value has not been established.
+      This structure is reserved for the Phase 2 pricing payload.
+    ceo_decision: ""
+    final_effective_rule: ""
+    release_version: ""
+    effective_date: ""
+    policy_version: ""
+    export_channels: []
+    blockers:
+      - "CEO_INPUT_REQUIRED"
+      - "DATA_MISSING"
+    internal_notes: "PHASE 1 PLACEHOLDER."
+    ceo_notes: ""
+    source_evidence_ref: ""

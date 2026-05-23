@@ -1,0 +1,640 @@
+# Happy Faces LA — Commercial Control Room
+# Restricted Operations Workbook Specification — Sheet B
+# Future Google Sheet: HF-LA Leads, Quotes, Bookings & Profitability Control
+# Classification: RESTRICTED_PII
+# Phase 1 — Specification only. No live sheet created.
+#
+# REQUIRED: exactly 9 tabs (enforced by required_tab_count).
+# PII WARNING BANNER required on every tab containing customer data.
+# This workbook must NEVER be merged into any channel-safe or public export.
+
+spreadsheet_name: "HF-LA Leads, Quotes, Bookings & Profitability Control"
+classification: RESTRICTED_PII
+required_tab_count: 9
+global_banner: "RESTRICTED BUSINESS DATA — CUSTOMER AND FINANCIAL INFORMATION — DO NOT SHARE WITH PUBLIC AI SYSTEMS OR UNAUTHORIZED AGENTS"
+
+tabs:
+
+  - title: "00_ACCESS_AND_USAGE_RULES"
+    purpose: >
+      Defines access policy, authorized users, permitted use cases, and
+      prohibited actions for this restricted workbook. Read-only for all
+      users except system administrator. First-screen governance notice.
+    sensitivity: RESTRICTED_PII
+    column_headers:
+      - "Policy Item"
+      - "Rule"
+      - "Enforcement Method"
+      - "Last Reviewed"
+      - "Notes"
+    frozen_row_count: 2
+    filter_enabled: false
+    editable_columns:
+      - "Notes"
+    protected_formula_columns:
+      - "Policy Item"
+      - "Rule"
+      - "Enforcement Method"
+      - "Last Reviewed"
+    data_validation_rules: []
+    conditional_formatting_rules: []
+    banner_content: "RESTRICTED BUSINESS DATA — CUSTOMER AND FINANCIAL INFORMATION — DO NOT SHARE WITH PUBLIC AI SYSTEMS OR UNAUTHORIZED AGENTS"
+    banner_severity: RESTRICTED
+    formula_requirements: []
+    notes: >
+      Contents include: authorized user list, prohibited sharing actions,
+      PII handling requirements, retention policy, and AI/export prohibitions.
+
+  - title: "01_QUOTE_WORKBENCH"
+    purpose: >
+      Active quote-building workspace. Calculates event quotes from approved
+      pricing rules, travel fees, and event specifics. Contains customer PII
+      and internal cost inputs. Restricted to authorized staff only.
+    sensitivity: RESTRICTED_PII
+    column_headers:
+      - "Quote ID"
+      - "Lead ID"
+      - "Customer Name"
+      - "Customer Email"
+      - "Customer Phone"
+      - "Event Date"
+      - "Event Type"
+      - "Event Location"
+      - "Duration Hours"
+      - "Package ID"
+      - "Base Rate"
+      - "Travel Fee"
+      - "Add-On Charges"
+      - "Subtotal"
+      - "Discount Applied"
+      - "Total Quote"
+      - "Internal Cost"
+      - "Gross Margin"
+      - "Quote Status"
+      - "Quote Date"
+      - "Expiry Date"
+      - "Sent To Customer"
+      - "Follow-Up Date"
+      - "Assigned Staff"
+      - "Notes"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Customer Name"
+      - "Customer Email"
+      - "Customer Phone"
+      - "Event Date"
+      - "Event Type"
+      - "Event Location"
+      - "Duration Hours"
+      - "Package ID"
+      - "Add-On Charges"
+      - "Discount Applied"
+      - "Internal Cost"
+      - "Quote Status"
+      - "Quote Date"
+      - "Expiry Date"
+      - "Sent To Customer"
+      - "Follow-Up Date"
+      - "Assigned Staff"
+      - "Notes"
+    protected_formula_columns:
+      - "Quote ID"
+      - "Lead ID"
+      - "Base Rate"
+      - "Travel Fee"
+      - "Subtotal"
+      - "Total Quote"
+      - "Gross Margin"
+    data_validation_rules:
+      - column: "Quote Status"
+        validation_type: dropdown
+        values:
+          - "DRAFT"
+          - "SENT"
+          - "ACCEPTED"
+          - "DECLINED"
+          - "EXPIRED"
+          - "CONVERTED"
+        error_message: "Select a valid quote status."
+      - column: "Event Type"
+        validation_type: dropdown
+        values:
+          - "PRIVATE_BIRTHDAY"
+          - "SCHOOL"
+          - "CORPORATE"
+          - "VENDOR_COMMUNITY"
+          - "FESTIVAL"
+          - "NONPROFIT"
+        error_message: "Select a valid event type."
+    conditional_formatting_rules:
+      - column: "Quote Status"
+        condition: EQUALS
+        value: "EXPIRED"
+        background_color: "#F4CCCC"
+      - column: "Quote Status"
+        condition: EQUALS
+        value: "CONVERTED"
+        background_color: "#D9EAD3"
+      - column: "Gross Margin"
+        condition: LESS_THAN
+        value: "0"
+        background_color: "#F4CCCC"
+        bold: true
+    banner_content: "RESTRICTED BUSINESS DATA — CUSTOMER AND FINANCIAL INFORMATION — DO NOT SHARE WITH PUBLIC AI SYSTEMS OR UNAUTHORIZED AGENTS"
+    banner_severity: RESTRICTED
+    formula_requirements:
+      - "Base Rate = VLOOKUP(Package ID, 05_PUBLIC_PRICING_PACKAGES, rate_column)"
+      - "Travel Fee = calculated from 06_INTERNAL_QUOTE_TRAVEL_RULES"
+      - "Subtotal = Base Rate + Travel Fee + Add-On Charges"
+      - "Total Quote = Subtotal - Discount Applied"
+      - "Gross Margin = Total Quote - Internal Cost"
+
+  - title: "02_LEAD_PIPELINE"
+    purpose: >
+      Customer lead tracking from first contact to quote conversion.
+      Contains full PII: names, emails, phone numbers, event details.
+      Authorized staff only. Never export to AI or public channels.
+    sensitivity: RESTRICTED_PII
+    column_headers:
+      - "Lead ID"
+      - "Lead Date"
+      - "Lead Source"
+      - "Customer Name"
+      - "Customer Email"
+      - "Customer Phone"
+      - "Event Type"
+      - "Requested Date"
+      - "Estimated Budget"
+      - "Event Location Area"
+      - "Stage"
+      - "Assigned Staff"
+      - "First Contact Date"
+      - "Last Follow-Up Date"
+      - "Next Action"
+      - "Next Action Date"
+      - "Quote ID"
+      - "Conversion Date"
+      - "Lost Reason"
+      - "Notes"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Lead Date"
+      - "Lead Source"
+      - "Customer Name"
+      - "Customer Email"
+      - "Customer Phone"
+      - "Event Type"
+      - "Requested Date"
+      - "Estimated Budget"
+      - "Event Location Area"
+      - "Stage"
+      - "Assigned Staff"
+      - "First Contact Date"
+      - "Last Follow-Up Date"
+      - "Next Action"
+      - "Next Action Date"
+      - "Quote ID"
+      - "Conversion Date"
+      - "Lost Reason"
+      - "Notes"
+    protected_formula_columns:
+      - "Lead ID"
+    data_validation_rules:
+      - column: "Lead Source"
+        validation_type: dropdown
+        values:
+          - "WEBSITE"
+          - "GOOGLE_ADS"
+          - "REFERRAL"
+          - "INSTAGRAM"
+          - "FACEBOOK"
+          - "DIRECT"
+          - "REPEAT_CLIENT"
+          - "OTHER"
+        error_message: "Select a valid lead source."
+      - column: "Stage"
+        validation_type: dropdown
+        values:
+          - "NEW"
+          - "CONTACTED"
+          - "QUOTED"
+          - "NEGOTIATING"
+          - "BOOKED"
+          - "LOST"
+          - "UNQUALIFIED"
+        error_message: "Select a valid stage."
+    conditional_formatting_rules:
+      - column: "Stage"
+        condition: EQUALS
+        value: "NEW"
+        background_color: "#CFE2F3"
+      - column: "Stage"
+        condition: EQUALS
+        value: "BOOKED"
+        background_color: "#D9EAD3"
+      - column: "Stage"
+        condition: EQUALS
+        value: "LOST"
+        background_color: "#F4CCCC"
+    banner_content: "RESTRICTED BUSINESS DATA — CUSTOMER AND FINANCIAL INFORMATION — DO NOT SHARE WITH PUBLIC AI SYSTEMS OR UNAUTHORIZED AGENTS"
+    banner_severity: RESTRICTED
+    formula_requirements:
+      - "Lead ID auto-generated as LEAD-{YEAR}-{SEQUENCE}"
+
+  - title: "03_BOOKINGS_EVENTS"
+    purpose: >
+      Confirmed bookings and event details. Full PII: customer names, event
+      addresses, contact information, performer assignments. Operational use only.
+      Never export to public channels or AI systems.
+    sensitivity: RESTRICTED_PII
+    column_headers:
+      - "Booking ID"
+      - "Lead ID"
+      - "Quote ID"
+      - "Customer Name"
+      - "Customer Email"
+      - "Customer Phone"
+      - "Event Date"
+      - "Event Start Time"
+      - "Event End Time"
+      - "Event Address"
+      - "Event Type"
+      - "Package ID"
+      - "Total Booked Value"
+      - "Deposit Amount"
+      - "Deposit Paid Date"
+      - "Balance Due"
+      - "Balance Due Date"
+      - "Balance Paid Date"
+      - "Performer Assigned"
+      - "Booking Status"
+      - "Special Requirements"
+      - "Internal Notes"
+      - "Post-Event Rating"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Customer Name"
+      - "Customer Email"
+      - "Customer Phone"
+      - "Event Date"
+      - "Event Start Time"
+      - "Event End Time"
+      - "Event Address"
+      - "Event Type"
+      - "Package ID"
+      - "Deposit Amount"
+      - "Deposit Paid Date"
+      - "Balance Paid Date"
+      - "Performer Assigned"
+      - "Booking Status"
+      - "Special Requirements"
+      - "Internal Notes"
+      - "Post-Event Rating"
+    protected_formula_columns:
+      - "Booking ID"
+      - "Lead ID"
+      - "Quote ID"
+      - "Total Booked Value"
+      - "Balance Due"
+      - "Balance Due Date"
+    data_validation_rules:
+      - column: "Booking Status"
+        validation_type: dropdown
+        values:
+          - "CONFIRMED"
+          - "DEPOSIT_PENDING"
+          - "PAID_IN_FULL"
+          - "RESCHEDULED"
+          - "CANCELLED_BY_CLIENT"
+          - "CANCELLED_BY_HFLA"
+          - "COMPLETED"
+          - "NO_SHOW"
+        error_message: "Select a valid booking status."
+    conditional_formatting_rules:
+      - column: "Booking Status"
+        condition: EQUALS
+        value: "CONFIRMED"
+        background_color: "#CFE2F3"
+      - column: "Booking Status"
+        condition: EQUALS
+        value: "COMPLETED"
+        background_color: "#D9EAD3"
+      - column: "Booking Status"
+        condition: EQUALS
+        value: "CANCELLED_BY_CLIENT"
+        background_color: "#F4CCCC"
+      - column: "Balance Due"
+        condition: LESS_THAN
+        value: "0"
+        background_color: "#F4CCCC"
+        bold: true
+    banner_content: "RESTRICTED BUSINESS DATA — CUSTOMER AND FINANCIAL INFORMATION — DO NOT SHARE WITH PUBLIC AI SYSTEMS OR UNAUTHORIZED AGENTS"
+    banner_severity: RESTRICTED
+    formula_requirements:
+      - "Balance Due = Total Booked Value - Deposit Amount - (Balance Paid if date populated)"
+      - "Booking ID auto-generated as BK-{YEAR}-{SEQUENCE}"
+
+  - title: "04_EVENT_DELIVERY_METRICS"
+    purpose: >
+      Post-event performance and delivery quality metrics: on-time arrival,
+      customer satisfaction ratings, performer performance, incident log.
+      Aggregated metrics feed 07_KPI_DASHBOARD. No customer PII in formulas.
+    sensitivity: RESTRICTED_PII
+    column_headers:
+      - "Booking ID"
+      - "Event Date"
+      - "Event Type"
+      - "Performer"
+      - "Scheduled Start"
+      - "Actual Arrival"
+      - "On-Time Status"
+      - "Setup Duration Minutes"
+      - "Customer Satisfaction Score"
+      - "Performer Quality Score"
+      - "Incidents"
+      - "Incident Description"
+      - "Repeat Booking Indicator"
+      - "Review Left"
+      - "Review Platform"
+      - "Notes"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Performer"
+      - "Scheduled Start"
+      - "Actual Arrival"
+      - "On-Time Status"
+      - "Setup Duration Minutes"
+      - "Customer Satisfaction Score"
+      - "Performer Quality Score"
+      - "Incidents"
+      - "Incident Description"
+      - "Repeat Booking Indicator"
+      - "Review Left"
+      - "Review Platform"
+      - "Notes"
+    protected_formula_columns:
+      - "Booking ID"
+      - "Event Date"
+      - "Event Type"
+    data_validation_rules:
+      - column: "On-Time Status"
+        validation_type: dropdown
+        values:
+          - "ON_TIME"
+          - "LATE_MINOR"
+          - "LATE_SIGNIFICANT"
+          - "EARLY"
+        error_message: "Select a valid on-time status."
+      - column: "Customer Satisfaction Score"
+        validation_type: number_range
+        min_value: 1
+        max_value: 5
+        error_message: "Score must be between 1 and 5."
+    conditional_formatting_rules:
+      - column: "On-Time Status"
+        condition: EQUALS
+        value: "LATE_SIGNIFICANT"
+        background_color: "#F4CCCC"
+        bold: true
+      - column: "Customer Satisfaction Score"
+        condition: LESS_THAN
+        value: "3"
+        background_color: "#F4CCCC"
+    banner_content: "RESTRICTED BUSINESS DATA — CUSTOMER AND FINANCIAL INFORMATION — DO NOT SHARE WITH PUBLIC AI SYSTEMS OR UNAUTHORIZED AGENTS"
+    banner_severity: RESTRICTED
+    formula_requirements:
+      - "On-Time Status computed from Scheduled Start vs Actual Arrival"
+
+  - title: "05_UNIT_ECONOMICS"
+    purpose: >
+      Internal financial analysis: revenue per event, cost per event, gross margin,
+      performer cost allocation, travel cost, and profitability by event type.
+      Contains internal cost and margin data — strictly need-to-know.
+      Never export to AI or public channels.
+    sensitivity: RESTRICTED_PII
+    column_headers:
+      - "Period"
+      - "Event Type"
+      - "Events Count"
+      - "Total Revenue"
+      - "Total Performer Cost"
+      - "Total Travel Cost"
+      - "Total Other Cost"
+      - "Total Cost"
+      - "Gross Profit"
+      - "Gross Margin Percent"
+      - "Revenue Per Event"
+      - "Cost Per Event"
+      - "Profit Per Event"
+      - "Top Package"
+      - "Average Quote Value"
+      - "Conversion Rate Percent"
+      - "Notes"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Period"
+      - "Event Type"
+      - "Total Performer Cost"
+      - "Total Travel Cost"
+      - "Total Other Cost"
+      - "Notes"
+    protected_formula_columns:
+      - "Events Count"
+      - "Total Revenue"
+      - "Total Cost"
+      - "Gross Profit"
+      - "Gross Margin Percent"
+      - "Revenue Per Event"
+      - "Cost Per Event"
+      - "Profit Per Event"
+      - "Top Package"
+      - "Average Quote Value"
+      - "Conversion Rate Percent"
+    data_validation_rules: []
+    conditional_formatting_rules:
+      - column: "Gross Margin Percent"
+        condition: LESS_THAN
+        value: "0"
+        background_color: "#F4CCCC"
+        bold: true
+      - column: "Gross Margin Percent"
+        condition: LESS_THAN
+        value: "20"
+        background_color: "#FCE8B2"
+    banner_content: "RESTRICTED BUSINESS DATA — CUSTOMER AND FINANCIAL INFORMATION — DO NOT SHARE WITH PUBLIC AI SYSTEMS OR UNAUTHORIZED AGENTS"
+    banner_severity: RESTRICTED
+    formula_requirements:
+      - "Total Revenue = SUMIF from 03_BOOKINGS_EVENTS by period and type"
+      - "Gross Profit = Total Revenue - Total Cost"
+      - "Gross Margin Percent = Gross Profit / Total Revenue * 100"
+      - "Events Count = COUNTIF from 03_BOOKINGS_EVENTS by period and type"
+
+  - title: "06_GOOGLE_ADS_PERFORMANCE"
+    purpose: >
+      Google Ads campaign performance data: impressions, clicks, CTR, CPC, ROAS,
+      conversions, and cost per lead. Used for budget decisions and channel ROI.
+      Contains ad spend financial data — internal controlled.
+    sensitivity: RESTRICTED_PII
+    column_headers:
+      - "Period"
+      - "Campaign Name"
+      - "Campaign Type"
+      - "Impressions"
+      - "Clicks"
+      - "CTR Percent"
+      - "Avg CPC"
+      - "Total Spend"
+      - "Conversions"
+      - "Cost Per Conversion"
+      - "ROAS"
+      - "Lead Volume"
+      - "Cost Per Lead"
+      - "Booking Conversions"
+      - "Cost Per Booking"
+      - "Top Performing Ad"
+      - "Notes"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Period"
+      - "Campaign Name"
+      - "Campaign Type"
+      - "Impressions"
+      - "Clicks"
+      - "Total Spend"
+      - "Conversions"
+      - "Lead Volume"
+      - "Booking Conversions"
+      - "Top Performing Ad"
+      - "Notes"
+    protected_formula_columns:
+      - "CTR Percent"
+      - "Avg CPC"
+      - "Cost Per Conversion"
+      - "ROAS"
+      - "Cost Per Lead"
+      - "Cost Per Booking"
+    data_validation_rules:
+      - column: "Campaign Type"
+        validation_type: dropdown
+        values:
+          - "SEARCH"
+          - "DISPLAY"
+          - "LOCAL"
+          - "PMAX"
+          - "REMARKETING"
+        error_message: "Select a valid campaign type."
+    conditional_formatting_rules:
+      - column: "ROAS"
+        condition: LESS_THAN
+        value: "1"
+        background_color: "#F4CCCC"
+        bold: true
+      - column: "Cost Per Lead"
+        condition: LESS_THAN
+        value: "0"
+        background_color: "#F4CCCC"
+    banner_content: "RESTRICTED BUSINESS DATA — CUSTOMER AND FINANCIAL INFORMATION — DO NOT SHARE WITH PUBLIC AI SYSTEMS OR UNAUTHORIZED AGENTS"
+    banner_severity: RESTRICTED
+    formula_requirements:
+      - "CTR Percent = Clicks / Impressions * 100"
+      - "Avg CPC = Total Spend / Clicks"
+      - "Cost Per Conversion = Total Spend / Conversions"
+      - "ROAS = Revenue attributable / Total Spend"
+      - "Cost Per Lead = Total Spend / Lead Volume"
+      - "Cost Per Booking = Total Spend / Booking Conversions"
+
+  - title: "07_KPI_DASHBOARD"
+    purpose: >
+      Executive KPI summary dashboard. Aggregates metrics from all other tabs
+      into a single management view: revenue, bookings, conversion rate, margin,
+      ad performance, and delivery quality. No raw PII displayed in formulas.
+    sensitivity: RESTRICTED_PII
+    column_headers:
+      - "KPI"
+      - "Current Period"
+      - "Prior Period"
+      - "Change"
+      - "Change Percent"
+      - "Target"
+      - "Status vs Target"
+      - "Trend"
+      - "Notes"
+    frozen_row_count: 2
+    filter_enabled: false
+    editable_columns:
+      - "Target"
+      - "Notes"
+    protected_formula_columns:
+      - "KPI"
+      - "Current Period"
+      - "Prior Period"
+      - "Change"
+      - "Change Percent"
+      - "Status vs Target"
+      - "Trend"
+    data_validation_rules: []
+    conditional_formatting_rules:
+      - column: "Status vs Target"
+        condition: EQUALS
+        value: "BELOW"
+        background_color: "#F4CCCC"
+        bold: true
+      - column: "Status vs Target"
+        condition: EQUALS
+        value: "ON_TARGET"
+        background_color: "#D9EAD3"
+      - column: "Status vs Target"
+        condition: EQUALS
+        value: "ABOVE"
+        background_color: "#B7E1CD"
+        bold: true
+    banner_content: "RESTRICTED BUSINESS DATA — CUSTOMER AND FINANCIAL INFORMATION — DO NOT SHARE WITH PUBLIC AI SYSTEMS OR UNAUTHORIZED AGENTS"
+    banner_severity: RESTRICTED
+    formula_requirements:
+      - "All KPI values driven by formulas from tabs 01–06"
+      - "No raw PII rows referenced in dashboard display formulas"
+      - "Change = Current Period - Prior Period"
+      - "Change Percent = Change / Prior Period * 100"
+      - "Status vs Target = IF(Current >= Target, ON_TARGET or ABOVE, BELOW)"
+
+  - title: "99_VALIDATION_CONFIG"
+    purpose: >
+      Master dropdown lists and lookup tables for this restricted workbook.
+      Managed by system administrator only.
+    sensitivity: RESTRICTED_PII
+    column_headers:
+      - "List Name"
+      - "Value"
+      - "Display Label"
+      - "Active"
+      - "Notes"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "List Name"
+      - "Value"
+      - "Display Label"
+      - "Active"
+      - "Notes"
+    protected_formula_columns: []
+    data_validation_rules:
+      - column: "Active"
+        validation_type: dropdown
+        values:
+          - "YES"
+          - "NO"
+        error_message: "Select YES or NO."
+    conditional_formatting_rules:
+      - column: "Active"
+        condition: EQUALS
+        value: "NO"
+        background_color: "#EFEFEF"
+    banner_content: "RESTRICTED BUSINESS DATA — VALIDATION CONFIG — SYSTEM ADMINISTRATION ONLY"
+    banner_severity: RESTRICTED
+    formula_requirements: []

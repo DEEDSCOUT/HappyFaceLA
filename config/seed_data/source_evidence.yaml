@@ -1,0 +1,56 @@
+# Happy Faces LA — Commercial Control Room
+# Seed Data: Source Evidence Registry
+# Phase 1 — DRAFT placeholders only.
+#
+# PURPOSE: Framework structure for tracking source evidence supporting each rule.
+# RULE: Evidence entries are placeholders only. No real URLs, screenshots, or
+#       customer data may be included in this tracked file.
+#       Real evidence files are stored in the .secrets/ or .exports/private/
+#       directories (git-ignored) or in the Google Drive evidence folders
+#       (to be provisioned in Phase 2).
+
+# Note: This file does not use the rules: key — it tracks evidence records
+# separately. The spec_loader will skip files that do not contain a 'rules:' key.
+# Evidence records are informational only in Phase 1.
+
+evidence_records:
+
+  - evidence_id: "EVD-001"
+    linked_rule_id: "RULE-FACT-001"
+    evidence_type: "WEBSITE_SCREENSHOT"
+    description: >
+      PHASE 1 PLACEHOLDER — Website pricing page screenshot evidence.
+      To be captured and stored in Drive folder: 03_SOURCE_EVIDENCE_COMPLIANCE/Website Audit Evidence/
+      when Phase 2 provisioning is authorized.
+    source_url: "PLACEHOLDER — do not populate until Phase 2"
+    date_captured: ""
+    captured_by: ""
+    drive_folder_link: "PLACEHOLDER"
+    expiry_date: ""
+    notes: "Evidence to be collected under CEO direction in Phase 2."
+
+  - evidence_id: "EVD-002"
+    linked_rule_id: "RULE-POL-002"
+    evidence_type: "INTERNAL_CALCULATION"
+    description: >
+      PHASE 1 PLACEHOLDER — Cancellation policy supporting analysis.
+      COMPLIANCE_REVIEW_REQUIRED before evidence is finalized.
+    source_url: "PLACEHOLDER"
+    date_captured: ""
+    captured_by: ""
+    drive_folder_link: "PLACEHOLDER"
+    expiry_date: ""
+    notes: "Legal review required. Evidence to be collected in Phase 2."
+
+  - evidence_id: "EVD-003"
+    linked_rule_id: "RULE-POL-007"
+    evidence_type: "SAFETY_MATERIAL"
+    description: >
+      PHASE 1 PLACEHOLDER — Safety materials and insurance evidence.
+      To be stored in Drive folder: 03_SOURCE_EVIDENCE_COMPLIANCE/Safety Materials Insurance Evidence/
+    source_url: "PLACEHOLDER"
+    date_captured: ""
+    captured_by: ""
+    drive_folder_link: "PLACEHOLDER"
+    expiry_date: ""
+    notes: "Insurance and safety documentation to be uploaded in Phase 2."

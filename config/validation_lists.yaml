@@ -1,0 +1,176 @@
+# Happy Faces LA — Commercial Control Room
+# Validation Lists Specification
+# Master dropdown lists used for data validation across all workbook tabs.
+# Phase 1 — Local spec only.
+
+lists:
+
+  - list_name: "rule_status"
+    values:
+      - "DRAFT"
+      - "CEO_REVIEW"
+      - "APPROVED_AS_RECOMMENDED"
+      - "APPROVED_WITH_CONDITIONS"
+      - "REJECTED"
+      - "SUPERSEDED"
+
+  - list_name: "blocker_type"
+    values:
+      - "CEO_INPUT_REQUIRED"
+      - "COMPLIANCE_REVIEW_REQUIRED"
+      - "LEGAL_REVIEW_REQUIRED"
+      - "DATA_MISSING"
+
+  - list_name: "sensitivity_classification"
+    values:
+      - "INTERNAL_CONTROLLED"
+      - "RESTRICTED_PII"
+      - "CHANNEL_SAFE_AFTER_RELEASE"
+
+  - list_name: "rule_category"
+    values:
+      - "PUBLIC_PRICING"
+      - "QUOTE_TRAVEL"
+      - "BOOKING_POLICY"
+      - "VENDOR_SCHOOL_CORPORATE"
+      - "AI_CUSTOMER_RESPONSE"
+      - "SAFETY_CARE"
+      - "CHANNEL_IMPLEMENTATION"
+
+  - list_name: "export_channel"
+    values:
+      - "WEBSITE"
+      - "GOOGLE_ADS"
+      - "AI_COPILOT"
+      - "CHATBOT"
+      - "QUOTE_FORM"
+      - "CRM"
+      - "INTERNAL"
+
+  - list_name: "ceo_decision"
+    values:
+      - "CEO_INPUT_REQUIRED"
+      - "Approved as Recommended"
+      - "Approved with Conditions"
+      - "Rejected"
+      - "Needs More Information"
+
+  - list_name: "event_type"
+    values:
+      - "PRIVATE_BIRTHDAY"
+      - "SCHOOL"
+      - "CORPORATE"
+      - "VENDOR_COMMUNITY"
+      - "FESTIVAL"
+      - "NONPROFIT"
+
+  - list_name: "lead_source"
+    values:
+      - "WEBSITE"
+      - "GOOGLE_ADS"
+      - "REFERRAL"
+      - "INSTAGRAM"
+      - "FACEBOOK"
+      - "DIRECT"
+      - "REPEAT_CLIENT"
+      - "OTHER"
+
+  - list_name: "booking_status"
+    values:
+      - "CONFIRMED"
+      - "DEPOSIT_PENDING"
+      - "PAID_IN_FULL"
+      - "RESCHEDULED"
+      - "CANCELLED_BY_CLIENT"
+      - "CANCELLED_BY_HFLA"
+      - "COMPLETED"
+      - "NO_SHOW"
+
+  - list_name: "quote_status"
+    values:
+      - "DRAFT"
+      - "SENT"
+      - "ACCEPTED"
+      - "DECLINED"
+      - "EXPIRED"
+      - "CONVERTED"
+
+  - list_name: "campaign_type"
+    values:
+      - "SEARCH"
+      - "DISPLAY"
+      - "LOCAL"
+      - "PMAX"
+      - "REMARKETING"
+
+  - list_name: "rate_type"
+    values:
+      - "FLAT_RATE"
+      - "HOURLY"
+      - "PER_PERSON"
+      - "PACKAGE"
+
+  - list_name: "evidence_type"
+    values:
+      - "WEBSITE_SCREENSHOT"
+      - "COMPETITOR_RESEARCH"
+      - "GOOGLE_ADS_POLICY"
+      - "TAX_DOCUMENT"
+      - "INSURANCE_DOCUMENT"
+      - "SAFETY_MATERIAL"
+      - "INTERNAL_CALCULATION"
+      - "CEO_STATEMENT"
+
+  - list_name: "ai_system_target"
+    values:
+      - "WEBSITE_CHATBOT"
+      - "COPILOT"
+      - "ALL_AI"
+      - "INTERNAL_ONLY"
+
+  - list_name: "implementation_status"
+    values:
+      - "PENDING_APPROVAL"
+      - "APPROVED_PENDING_DEPLOY"
+      - "DEPLOYED"
+      - "VERIFIED"
+      - "SUPERSEDED"
+
+  - list_name: "on_time_status"
+    values:
+      - "ON_TIME"
+      - "LATE_MINOR"
+      - "LATE_SIGNIFICANT"
+      - "EARLY"
+
+  - list_name: "policy_area"
+    values:
+      - "DEPOSIT"
+      - "PAYMENT"
+      - "CANCELLATION"
+      - "RESCHEDULING"
+      - "OVERTIME"
+      - "LATE_ARRIVAL"
+      - "NO_SHOW"
+
+  - list_name: "vendor_event_type"
+    values:
+      - "VENDOR_COMMUNITY"
+      - "SCHOOL_K12"
+      - "CORPORATE"
+      - "NONPROFIT"
+      - "FESTIVAL"
+      - "PRIVATE"
+
+  - list_name: "banner_severity"
+    values:
+      - "INFO"
+      - "WARNING"
+      - "CRITICAL"
+      - "RESTRICTED"
+
+  - list_name: "kpi_status"
+    values:
+      - "BELOW"
+      - "ON_TARGET"
+      - "ABOVE"

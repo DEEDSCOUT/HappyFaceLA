@@ -1,0 +1,837 @@
+# Happy Faces LA — Commercial Control Room
+# Governance Workbook Specification — Sheet A
+# Future Google Sheet: HF-LA Commercial Policy & Channel Governance Master
+# Classification: INTERNAL_CONTROLLED
+# Phase 1 — Specification only. No live sheet created.
+#
+# REQUIRED: exactly 14 tabs (enforced by required_tab_count).
+# DRAFT banner required on any tab involving public pricing, website, ads, or AI.
+
+spreadsheet_name: "HF-LA Commercial Policy & Channel Governance Master"
+classification: INTERNAL_CONTROLLED
+required_tab_count: 14
+global_banner: "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
+
+tabs:
+
+  - title: "00_CONTROL_CENTER"
+    purpose: >
+      Master dashboard showing overall governance health: open blockers, CEO approval
+      queue depth, last release version, and system status. Read-only summary view.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Dashboard Item"
+      - "Current Value"
+      - "Status"
+      - "Last Updated"
+      - "Notes"
+    frozen_row_count: 2
+    filter_enabled: false
+    editable_columns:
+      - "Notes"
+    protected_formula_columns:
+      - "Current Value"
+      - "Status"
+      - "Last Updated"
+    data_validation_rules: []
+    conditional_formatting_rules:
+      - column: "Status"
+        condition: EQUALS
+        value: "BLOCKED"
+        background_color: "#F4CCCC"
+        bold: true
+      - column: "Status"
+        condition: EQUALS
+        value: "OK"
+        background_color: "#D9EAD3"
+    banner_content: "GOVERNANCE CONTROL CENTER — READ-ONLY SUMMARY"
+    banner_severity: INFO
+    formula_requirements:
+      - "COUNTA over 01_CEO_APPROVAL_QUEUE for open-items count"
+      - "COUNTA over 02_OPEN_BLOCKERS for blocker count"
+      - "MAX of 12_RELEASE_CHANGELOG release dates for last-release display"
+
+  - title: "01_CEO_APPROVAL_QUEUE"
+    purpose: >
+      Staging area for draft rules awaiting CEO review and decision.
+      CEO enters decision directly in this tab; approved items flow to
+      03_RULE_REGISTER_MASTER via formula reference.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Rule ID"
+      - "Rule Category"
+      - "Rule Title"
+      - "Draft Recommendation"
+      - "Supporting Evidence Ref"
+      - "Date Submitted"
+      - "CEO Decision"
+      - "CEO Conditions / Notes"
+      - "Decision Date"
+      - "Assigned Reviewer"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "CEO Decision"
+      - "CEO Conditions / Notes"
+      - "Decision Date"
+      - "Assigned Reviewer"
+    protected_formula_columns:
+      - "Rule ID"
+      - "Rule Category"
+      - "Rule Title"
+      - "Draft Recommendation"
+      - "Supporting Evidence Ref"
+      - "Date Submitted"
+    data_validation_rules:
+      - column: "CEO Decision"
+        validation_type: dropdown
+        values:
+          - "CEO_INPUT_REQUIRED"
+          - "Approved as Recommended"
+          - "Approved with Conditions"
+          - "Rejected"
+          - "Needs More Information"
+        error_message: "Select a valid CEO decision."
+    conditional_formatting_rules:
+      - column: "CEO Decision"
+        condition: EQUALS
+        value: "CEO_INPUT_REQUIRED"
+        background_color: "#FCE8B2"
+        bold: true
+      - column: "CEO Decision"
+        condition: EQUALS
+        value: "Approved as Recommended"
+        background_color: "#D9EAD3"
+      - column: "CEO Decision"
+        condition: EQUALS
+        value: "Rejected"
+        background_color: "#F4CCCC"
+    banner_content: "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
+    banner_severity: WARNING
+    formula_requirements:
+      - "Rule ID must reference 03_RULE_REGISTER_MASTER:Rule_ID"
+
+  - title: "02_OPEN_BLOCKERS"
+    purpose: >
+      Active log of all unresolved governance blockers: pricing decisions pending CEO,
+      compliance reviews outstanding, data missing, and legal reviews required.
+      No rule may be exported while listed here as unresolved.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Blocker ID"
+      - "Linked Rule ID"
+      - "Blocker Type"
+      - "Description"
+      - "Date Opened"
+      - "Owner"
+      - "Status"
+      - "Resolution Notes"
+      - "Date Resolved"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Status"
+      - "Resolution Notes"
+      - "Date Resolved"
+      - "Owner"
+    protected_formula_columns:
+      - "Blocker ID"
+      - "Linked Rule ID"
+      - "Blocker Type"
+      - "Description"
+      - "Date Opened"
+    data_validation_rules:
+      - column: "Blocker Type"
+        validation_type: dropdown
+        values:
+          - "CEO_INPUT_REQUIRED"
+          - "COMPLIANCE_REVIEW_REQUIRED"
+          - "LEGAL_REVIEW_REQUIRED"
+          - "DATA_MISSING"
+        error_message: "Select a valid blocker type."
+      - column: "Status"
+        validation_type: dropdown
+        values:
+          - "OPEN"
+          - "IN_REVIEW"
+          - "RESOLVED"
+          - "SUPERSEDED"
+        error_message: "Select a valid status."
+    conditional_formatting_rules:
+      - column: "Status"
+        condition: EQUALS
+        value: "OPEN"
+        background_color: "#F4CCCC"
+        bold: true
+      - column: "Status"
+        condition: EQUALS
+        value: "RESOLVED"
+        background_color: "#D9EAD3"
+    banner_content: "OPEN BLOCKERS — RULES WITH ACTIVE BLOCKERS CANNOT BE EXPORTED"
+    banner_severity: WARNING
+    formula_requirements: []
+
+  - title: "03_RULE_REGISTER_MASTER"
+    purpose: >
+      Master repository of all commercial rules across all categories.
+      Source of truth for pricing, policy, quoting, cancellation, vendor rules,
+      AI response rules, and channel eligibility. Drives 04_ACTIVE_RULES_EXPORT.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Rule ID"
+      - "Rule Category"
+      - "Rule Title"
+      - "Status"
+      - "Draft Recommendation"
+      - "CEO Decision"
+      - "Final Effective Rule"
+      - "Release Version"
+      - "Effective Date"
+      - "Policy Version"
+      - "Export Channels"
+      - "Source Evidence Ref"
+      - "Blockers"
+      - "Internal Notes"
+      - "CEO Notes"
+      - "Last Modified Date"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Rule Category"
+      - "Rule Title"
+      - "Status"
+      - "Draft Recommendation"
+      - "CEO Decision"
+      - "Final Effective Rule"
+      - "Release Version"
+      - "Effective Date"
+      - "Policy Version"
+      - "Export Channels"
+      - "Source Evidence Ref"
+      - "Blockers"
+      - "Internal Notes"
+      - "CEO Notes"
+    protected_formula_columns:
+      - "Rule ID"
+      - "Last Modified Date"
+    data_validation_rules:
+      - column: "Status"
+        validation_type: dropdown
+        values:
+          - "DRAFT"
+          - "CEO_REVIEW"
+          - "APPROVED_AS_RECOMMENDED"
+          - "APPROVED_WITH_CONDITIONS"
+          - "REJECTED"
+          - "SUPERSEDED"
+        error_message: "Select a valid rule status."
+      - column: "Rule Category"
+        validation_type: dropdown
+        values:
+          - "PUBLIC_PRICING"
+          - "QUOTE_TRAVEL"
+          - "BOOKING_POLICY"
+          - "VENDOR_SCHOOL_CORPORATE"
+          - "AI_CUSTOMER_RESPONSE"
+          - "SAFETY_CARE"
+          - "CHANNEL_IMPLEMENTATION"
+        error_message: "Select a valid rule category."
+    conditional_formatting_rules:
+      - column: "Status"
+        condition: EQUALS
+        value: "DRAFT"
+        background_color: "#FCE8B2"
+      - column: "Status"
+        condition: EQUALS
+        value: "APPROVED_AS_RECOMMENDED"
+        background_color: "#D9EAD3"
+        bold: true
+      - column: "Status"
+        condition: EQUALS
+        value: "REJECTED"
+        background_color: "#F4CCCC"
+    banner_content: "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
+    banner_severity: WARNING
+    formula_requirements:
+      - "Rule ID auto-generated as RULE-{CATEGORY_PREFIX}-{SEQUENCE}"
+      - "Last Modified Date set via NOW() on row edit"
+
+  - title: "04_ACTIVE_RULES_EXPORT"
+    purpose: >
+      Read-only formula-driven view of all rules with status
+      APPROVED_AS_RECOMMENDED or APPROVED_WITH_CONDITIONS that have a
+      completed Final Effective Rule, release version, effective date, and
+      policy version. This is the source for machine-readable channel exports.
+      No PII or internal-only content may appear here.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Rule ID"
+      - "Rule Category"
+      - "Rule Title"
+      - "Final Effective Rule"
+      - "Release Version"
+      - "Effective Date"
+      - "Policy Version"
+      - "Export Channels"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns: []
+    protected_formula_columns:
+      - "Rule ID"
+      - "Rule Category"
+      - "Rule Title"
+      - "Final Effective Rule"
+      - "Release Version"
+      - "Effective Date"
+      - "Policy Version"
+      - "Export Channels"
+    data_validation_rules: []
+    conditional_formatting_rules: []
+    banner_content: "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
+    banner_severity: CRITICAL
+    formula_requirements:
+      - "FILTER(03_RULE_REGISTER_MASTER, Status IN (APPROVED_AS_RECOMMENDED, APPROVED_WITH_CONDITIONS))"
+      - "Only include rows where Final Effective Rule, Release Version, Effective Date, Policy Version are all non-empty"
+      - "Exclude columns: Draft Recommendation, CEO Notes, Internal Notes, CEO Decision, Blockers"
+    notes: "PII and internal-only columns are excluded by design — no formula may reference them."
+
+  - title: "05_PUBLIC_PRICING_PACKAGES"
+    purpose: >
+      Approved public-facing pricing packages and rate structures.
+      All rows in this tab require CEO approval before any public or channel use.
+      DRAFT until first CEO release.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Package ID"
+      - "Package Name"
+      - "Description (Public-Safe)"
+      - "Duration"
+      - "Base Rate"
+      - "Rate Type"
+      - "Add-On Options"
+      - "Minimum Booking Notice"
+      - "Status"
+      - "Release Version"
+      - "Effective Date"
+      - "Linked Rule IDs"
+      - "Channel Eligibility"
+      - "CEO Approval Date"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Package Name"
+      - "Description (Public-Safe)"
+      - "Duration"
+      - "Base Rate"
+      - "Rate Type"
+      - "Add-On Options"
+      - "Minimum Booking Notice"
+      - "Status"
+      - "Release Version"
+      - "Effective Date"
+      - "Linked Rule IDs"
+      - "Channel Eligibility"
+      - "CEO Approval Date"
+    protected_formula_columns:
+      - "Package ID"
+    data_validation_rules:
+      - column: "Status"
+        validation_type: dropdown
+        values:
+          - "DRAFT"
+          - "CEO_REVIEW"
+          - "APPROVED"
+          - "SUPERSEDED"
+        error_message: "Select a valid status."
+      - column: "Rate Type"
+        validation_type: dropdown
+        values:
+          - "FLAT_RATE"
+          - "HOURLY"
+          - "PER_PERSON"
+          - "PACKAGE"
+        error_message: "Select a valid rate type."
+    conditional_formatting_rules:
+      - column: "Status"
+        condition: EQUALS
+        value: "DRAFT"
+        background_color: "#FCE8B2"
+        bold: true
+      - column: "Status"
+        condition: EQUALS
+        value: "APPROVED"
+        background_color: "#D9EAD3"
+    banner_content: "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
+    banner_severity: CRITICAL
+    formula_requirements:
+      - "Package ID auto-generated as PKG-{SEQUENCE}"
+
+  - title: "06_INTERNAL_QUOTE_TRAVEL_RULES"
+    purpose: >
+      Internal quoting logic: travel fee thresholds, mileage rates, travel time
+      calculation rules, minimum event values for travel, and override conditions.
+      INTERNAL CONTROLLED — not for public or channel export.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Rule ID"
+      - "Rule Title"
+      - "Rule Text"
+      - "Travel Zone"
+      - "Threshold Miles"
+      - "Fee Structure"
+      - "Minimum Event Value"
+      - "Override Conditions"
+      - "Status"
+      - "CEO Approval Date"
+      - "Notes"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Rule Title"
+      - "Rule Text"
+      - "Travel Zone"
+      - "Threshold Miles"
+      - "Fee Structure"
+      - "Minimum Event Value"
+      - "Override Conditions"
+      - "Status"
+      - "CEO Approval Date"
+      - "Notes"
+    protected_formula_columns:
+      - "Rule ID"
+    data_validation_rules:
+      - column: "Status"
+        validation_type: dropdown
+        values:
+          - "DRAFT"
+          - "CEO_REVIEW"
+          - "APPROVED"
+          - "SUPERSEDED"
+        error_message: "Select a valid status."
+    conditional_formatting_rules:
+      - column: "Status"
+        condition: EQUALS
+        value: "DRAFT"
+        background_color: "#FCE8B2"
+    banner_content: "INTERNAL ONLY — QUOTE AND TRAVEL RULES — NOT FOR PUBLIC OR CHANNEL EXPORT"
+    banner_severity: WARNING
+    formula_requirements: []
+
+  - title: "07_BOOKING_POLICY_COMPLIANCE"
+    purpose: >
+      Approved deposit, payment, cancellation, rescheduling, overtime, and
+      late-arrival policy rules. DRAFT until CEO release approval.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Rule ID"
+      - "Policy Area"
+      - "Rule Title"
+      - "Public-Safe Rule Text"
+      - "Internal Clarification"
+      - "Deposit Percent"
+      - "Payment Due Date Rule"
+      - "Cancellation Window Days"
+      - "Refund Policy"
+      - "Overtime Rate"
+      - "Status"
+      - "Release Version"
+      - "Effective Date"
+      - "Channel Eligibility"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Policy Area"
+      - "Rule Title"
+      - "Public-Safe Rule Text"
+      - "Internal Clarification"
+      - "Deposit Percent"
+      - "Payment Due Date Rule"
+      - "Cancellation Window Days"
+      - "Refund Policy"
+      - "Overtime Rate"
+      - "Status"
+      - "Release Version"
+      - "Effective Date"
+      - "Channel Eligibility"
+    protected_formula_columns:
+      - "Rule ID"
+    data_validation_rules:
+      - column: "Policy Area"
+        validation_type: dropdown
+        values:
+          - "DEPOSIT"
+          - "PAYMENT"
+          - "CANCELLATION"
+          - "RESCHEDULING"
+          - "OVERTIME"
+          - "LATE_ARRIVAL"
+          - "NO_SHOW"
+        error_message: "Select a valid policy area."
+      - column: "Status"
+        validation_type: dropdown
+        values:
+          - "DRAFT"
+          - "CEO_REVIEW"
+          - "APPROVED"
+          - "SUPERSEDED"
+        error_message: "Select a valid status."
+    conditional_formatting_rules:
+      - column: "Status"
+        condition: EQUALS
+        value: "DRAFT"
+        background_color: "#FCE8B2"
+      - column: "Status"
+        condition: EQUALS
+        value: "APPROVED"
+        background_color: "#D9EAD3"
+    banner_content: "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
+    banner_severity: WARNING
+    formula_requirements: []
+
+  - title: "08_VENDOR_SCHOOL_CORPORATE_RULES"
+    purpose: >
+      Rules governing vendor events, school partnerships, community festivals,
+      and corporate event policies. Includes eligibility, pricing differentials,
+      and special-condition handling. DRAFT until CEO release.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Rule ID"
+      - "Event Type"
+      - "Rule Title"
+      - "Public-Safe Rule Text"
+      - "Internal Notes"
+      - "Eligibility Criteria"
+      - "Pricing Differential"
+      - "Special Conditions"
+      - "Required Documentation"
+      - "Status"
+      - "Release Version"
+      - "Channel Eligibility"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Event Type"
+      - "Rule Title"
+      - "Public-Safe Rule Text"
+      - "Internal Notes"
+      - "Eligibility Criteria"
+      - "Pricing Differential"
+      - "Special Conditions"
+      - "Required Documentation"
+      - "Status"
+      - "Release Version"
+      - "Channel Eligibility"
+    protected_formula_columns:
+      - "Rule ID"
+    data_validation_rules:
+      - column: "Event Type"
+        validation_type: dropdown
+        values:
+          - "VENDOR_COMMUNITY"
+          - "SCHOOL_K12"
+          - "CORPORATE"
+          - "NONPROFIT"
+          - "FESTIVAL"
+          - "PRIVATE"
+        error_message: "Select a valid event type."
+      - column: "Status"
+        validation_type: dropdown
+        values:
+          - "DRAFT"
+          - "CEO_REVIEW"
+          - "APPROVED"
+          - "SUPERSEDED"
+        error_message: "Select a valid status."
+    conditional_formatting_rules:
+      - column: "Status"
+        condition: EQUALS
+        value: "DRAFT"
+        background_color: "#FCE8B2"
+      - column: "Status"
+        condition: EQUALS
+        value: "APPROVED"
+        background_color: "#D9EAD3"
+    banner_content: "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
+    banner_severity: WARNING
+    formula_requirements: []
+
+  - title: "09_CHANNEL_IMPLEMENTATION_MAP"
+    purpose: >
+      Maps each approved rule to its required implementation action across channels:
+      website pages, Google Ads copy, quote form fields, CRM fields, and AI system
+      prompts. Drives release brief generation.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Rule ID"
+      - "Channel"
+      - "Implementation Action"
+      - "Target Page / Location"
+      - "Authorized Copy Snippet"
+      - "Prohibited Claims"
+      - "CRM / Form Field"
+      - "AI Prompt Reference"
+      - "Implementation Status"
+      - "Release Version"
+      - "Developer Owner"
+      - "QA Status"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Channel"
+      - "Implementation Action"
+      - "Target Page / Location"
+      - "Authorized Copy Snippet"
+      - "Prohibited Claims"
+      - "CRM / Form Field"
+      - "AI Prompt Reference"
+      - "Implementation Status"
+      - "Release Version"
+      - "Developer Owner"
+      - "QA Status"
+    protected_formula_columns:
+      - "Rule ID"
+    data_validation_rules:
+      - column: "Channel"
+        validation_type: dropdown
+        values:
+          - "WEBSITE"
+          - "GOOGLE_ADS"
+          - "AI_COPILOT"
+          - "CHATBOT"
+          - "QUOTE_FORM"
+          - "CRM"
+          - "INTERNAL"
+        error_message: "Select a valid channel."
+      - column: "Implementation Status"
+        validation_type: dropdown
+        values:
+          - "PENDING_APPROVAL"
+          - "APPROVED_PENDING_DEPLOY"
+          - "DEPLOYED"
+          - "VERIFIED"
+          - "SUPERSEDED"
+        error_message: "Select a valid implementation status."
+    conditional_formatting_rules:
+      - column: "Implementation Status"
+        condition: EQUALS
+        value: "PENDING_APPROVAL"
+        background_color: "#FCE8B2"
+      - column: "Implementation Status"
+        condition: EQUALS
+        value: "DEPLOYED"
+        background_color: "#D9EAD3"
+    banner_content: "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
+    banner_severity: WARNING
+    formula_requirements:
+      - "Rule ID must exist in 03_RULE_REGISTER_MASTER"
+
+  - title: "10_AI_CUSTOMER_RESPONSE_MATRIX"
+    purpose: >
+      Defines approved AI and chatbot response rules: permitted claim boundaries,
+      escalation triggers, prohibited topics, and pricing-disclosure rules.
+      Any AI system consuming this must use only APPROVED rows from 04_ACTIVE_RULES_EXPORT.
+      DRAFT until CEO release approval.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Rule ID"
+      - "Trigger Topic"
+      - "Permitted Response Boundary"
+      - "Prohibited Response Content"
+      - "Escalation Required"
+      - "Escalation Trigger"
+      - "Approved Pricing Disclosure"
+      - "Approved Safety Wording"
+      - "Status"
+      - "Release Version"
+      - "Effective Date"
+      - "AI System Target"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Trigger Topic"
+      - "Permitted Response Boundary"
+      - "Prohibited Response Content"
+      - "Escalation Required"
+      - "Escalation Trigger"
+      - "Approved Pricing Disclosure"
+      - "Approved Safety Wording"
+      - "Status"
+      - "Release Version"
+      - "Effective Date"
+      - "AI System Target"
+    protected_formula_columns:
+      - "Rule ID"
+    data_validation_rules:
+      - column: "Escalation Required"
+        validation_type: dropdown
+        values:
+          - "YES"
+          - "NO"
+          - "CONDITIONAL"
+        error_message: "Select YES, NO, or CONDITIONAL."
+      - column: "Status"
+        validation_type: dropdown
+        values:
+          - "DRAFT"
+          - "CEO_REVIEW"
+          - "APPROVED"
+          - "SUPERSEDED"
+        error_message: "Select a valid status."
+      - column: "AI System Target"
+        validation_type: dropdown
+        values:
+          - "WEBSITE_CHATBOT"
+          - "COPILOT"
+          - "ALL_AI"
+          - "INTERNAL_ONLY"
+        error_message: "Select a valid AI system target."
+    conditional_formatting_rules:
+      - column: "Status"
+        condition: EQUALS
+        value: "DRAFT"
+        background_color: "#FCE8B2"
+        bold: true
+      - column: "Escalation Required"
+        condition: EQUALS
+        value: "YES"
+        background_color: "#F4CCCC"
+    banner_content: "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
+    banner_severity: CRITICAL
+    formula_requirements: []
+    notes: "This tab is the source for AI/Copilot channel exports. No PII fields permitted."
+
+  - title: "11_SOURCE_EVIDENCE"
+    purpose: >
+      Registry of source evidence documents supporting each rule:
+      website screenshots, competitor research, Google Ads policy citations,
+      tax filings, insurance documents. Links to 03_SOURCE_EVIDENCE_COMPLIANCE folder.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Evidence ID"
+      - "Linked Rule ID"
+      - "Evidence Type"
+      - "Description"
+      - "Source URL / Location"
+      - "Date Captured"
+      - "Captured By"
+      - "Drive Folder Link"
+      - "Expiry Date"
+      - "Notes"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Linked Rule ID"
+      - "Evidence Type"
+      - "Description"
+      - "Source URL / Location"
+      - "Date Captured"
+      - "Captured By"
+      - "Drive Folder Link"
+      - "Expiry Date"
+      - "Notes"
+    protected_formula_columns:
+      - "Evidence ID"
+    data_validation_rules:
+      - column: "Evidence Type"
+        validation_type: dropdown
+        values:
+          - "WEBSITE_SCREENSHOT"
+          - "COMPETITOR_RESEARCH"
+          - "GOOGLE_ADS_POLICY"
+          - "TAX_DOCUMENT"
+          - "INSURANCE_DOCUMENT"
+          - "SAFETY_MATERIAL"
+          - "INTERNAL_CALCULATION"
+          - "CEO_STATEMENT"
+        error_message: "Select a valid evidence type."
+    conditional_formatting_rules: []
+    banner_content: "SOURCE EVIDENCE REGISTRY — INTERNAL CONTROLLED"
+    banner_severity: INFO
+    formula_requirements:
+      - "Evidence ID auto-generated as EVD-{SEQUENCE}"
+
+  - title: "12_RELEASE_CHANGELOG"
+    purpose: >
+      Immutable log of every commercial rule release: version, approval date,
+      rules activated, channels deployed to, and rollback references.
+      No deletion of rows permitted after entry.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Release Version"
+      - "Release Date"
+      - "CEO Approval Date"
+      - "Rules Activated"
+      - "Rules Superseded"
+      - "Channels Deployed"
+      - "Website Pages Changed"
+      - "Google Ads Changes"
+      - "AI Rules Activated"
+      - "Rollback Reference"
+      - "Release Brief Link"
+      - "QA Verified By"
+      - "Notes"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Release Version"
+      - "Release Date"
+      - "CEO Approval Date"
+      - "Rules Activated"
+      - "Rules Superseded"
+      - "Channels Deployed"
+      - "Website Pages Changed"
+      - "Google Ads Changes"
+      - "AI Rules Activated"
+      - "Rollback Reference"
+      - "Release Brief Link"
+      - "QA Verified By"
+      - "Notes"
+    protected_formula_columns: []
+    data_validation_rules:
+      - column: "Release Date"
+        validation_type: date
+        error_message: "Enter a valid date."
+      - column: "CEO Approval Date"
+        validation_type: date
+        error_message: "Enter a valid date."
+    conditional_formatting_rules: []
+    banner_content: "RELEASE CHANGELOG — APPEND ONLY — NO ROW DELETION PERMITTED"
+    banner_severity: INFO
+    formula_requirements: []
+
+  - title: "99_VALIDATION_CONFIG"
+    purpose: >
+      Master dropdown lists and lookup tables used for data validation across
+      all other tabs. Managed by system administrator only.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "List Name"
+      - "Value"
+      - "Display Label"
+      - "Active"
+      - "Notes"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "List Name"
+      - "Value"
+      - "Display Label"
+      - "Active"
+      - "Notes"
+    protected_formula_columns: []
+    data_validation_rules:
+      - column: "Active"
+        validation_type: dropdown
+        values:
+          - "YES"
+          - "NO"
+        error_message: "Select YES or NO."
+    conditional_formatting_rules:
+      - column: "Active"
+        condition: EQUALS
+        value: "NO"
+        background_color: "#EFEFEF"
+        text_color: "#999999"
+    banner_content: "VALIDATION CONFIG — SYSTEM ADMINISTRATION ONLY"
+    banner_severity: INFO
+    formula_requirements: []
