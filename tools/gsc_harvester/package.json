@@ -1,0 +1,26 @@
+{
+  "name": "@happyfacesla/gsc-harvester",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "tsx --test tests/**/*.test.ts",
+    "discover": "tsx src/discover-tools.ts",
+    "harvest": "tsx src/index.ts",
+    "probe": "tsx src/diagnostic-probe.ts",
+    "probe:reauth": "tsx src/reauth-check.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.13.2",
+    "pino": "^9.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
