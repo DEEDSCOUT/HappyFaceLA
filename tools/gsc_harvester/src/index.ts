@@ -1,6 +1,7 @@
 import { GscMcpClient } from "./client.js";
 import { logger } from "./logger.js";
 import { GscPipeline } from "./pipeline.js";
+import { DIAGNOSTIC_OVERRIDE_ENV, enforcePinnedRuntimeForHarvest, resolveMcpRuntime } from "./runtime-config.js";
 import { validateReadOnlyToolNames } from "./safety.js";
 import { resolveOutputRoot } from "./storage.js";
 import type { PipelineRunConfig, ToolNames } from "./types.js";
@@ -57,13 +58,9 @@ async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
 
   const siteUrl = requireValue("siteUrl", args.siteUrl ?? process.env.GSC_SITE_URL);
-  const mcpCommand = requireValue("mcpCommand", args.mcpCommand ?? process.env.GSC_MCP_COMMAND);
-  const mcpArgsJson = requireValue("mcpArgsJson", args.mcpArgsJson ?? process.env.GSC_MCP_ARGS_JSON);
-
-  const mcpArgs = JSON.parse(mcpArgsJson) as unknown;
-  if (!Array.isArray(mcpArgs) || mcpArgs.some((v) => typeof v !== "string")) {
-    throw new Error("mcpArgsJson must parse to a JSON string array");
-  }
+  const runtime = resolveMcpRuntime(args.mcpCommand ?? process.env.GSC_MCP_COMMAND, args.mcpArgsJson ?? process.env.GSC_MCP_ARGS_JSON);
+  const allowUnpinnedOverride = args.allowUnpinnedMcp ?? process.env[DIAGNOSTIC_OVERRIDE_ENV];
+  enforcePinnedRuntimeForHarvest(runtime.command, runtime.args, allowUnpinnedOverride);
 
   const toolNames: ToolNames = {
     searchAnalytics: args.searchAnalyticsTool ?? process.env.GSC_TOOL_SEARCH_ANALYTICS ?? "get_search_analytics",
@@ -93,8 +90,8 @@ async function main(): Promise<void> {
 
   const client = new GscMcpClient(
     {
-      command: mcpCommand,
-      args: mcpArgs,
+      command: runtime.command,
+      args: runtime.args,
       env: {
         ...process.env
       } as Record<string, string>

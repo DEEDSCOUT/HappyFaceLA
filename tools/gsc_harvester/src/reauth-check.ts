@@ -1,5 +1,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { resolveMcpRuntime } from "./runtime-config.js";
 
 type JsonMap = Record<string, unknown>;
 
@@ -16,18 +17,7 @@ function parseArgs(argv: string[]): { command: string; args: string[] } {
     bag[key] = rest.join("=");
   }
 
-  const command = bag.mcpCommand ?? process.env.GSC_MCP_COMMAND;
-  const argsJson = bag.mcpArgsJson ?? process.env.GSC_MCP_ARGS_JSON;
-  if (!command || !argsJson) {
-    throw new Error("Missing --mcpCommand or --mcpArgsJson");
-  }
-
-  const parsed = JSON.parse(argsJson) as unknown;
-  if (!Array.isArray(parsed) || parsed.some((v) => typeof v !== "string")) {
-    throw new Error("mcpArgsJson must parse to a string array");
-  }
-
-  return { command, args: parsed };
+  return resolveMcpRuntime(bag.mcpCommand ?? process.env.GSC_MCP_COMMAND, bag.mcpArgsJson ?? process.env.GSC_MCP_ARGS_JSON);
 }
 
 function sanitize(value: unknown): unknown {

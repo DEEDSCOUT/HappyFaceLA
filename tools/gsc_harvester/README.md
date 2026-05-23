@@ -29,12 +29,23 @@ npm install
 
 1. Copy `.env.example` to `.env` and update values.
 
+## Approved MCP Runtime (Operational)
+
+The approved Happy Faces LA operational MCP server invocation is pinned to a fixed release:
+
+```bash
+uvx --from "mcp-search-console==0.3.2" mcp-search-console
+```
+
+`harvest` enforces this pin by default. Unpinned `mcp-search-console` invocations are rejected unless
+`GSC_ALLOW_UNPINNED_MCP_FOR_DIAGNOSTIC=true` is explicitly set for diagnostic/development-only use.
+
 ## Step 1 - Discover Exact MCP Tool Schemas
 
 Run:
 
 ```bash
-npm run discover -- --mcpCommand=npx --mcpArgsJson='["-y","your-gsc-mcp-package-or-command"]'
+npm run discover -- --mcpCommand=uvx --mcpArgsJson='["--from","mcp-search-console==0.3.2","mcp-search-console"]'
 ```
 
 This prints matching tool names and input schemas so you can set:
@@ -46,7 +57,13 @@ This prints matching tool names and input schemas so you can set:
 ## Step 2 - Run Harvester Pipeline
 
 ```bash
-npm run harvest -- --siteUrl=sc-domain:happyfacesla.com --mcpCommand=npx --mcpArgsJson='["-y","your-gsc-mcp-package-or-command"]'
+npm run harvest -- --siteUrl=sc-domain:happyfacesla.com --mcpCommand=uvx --mcpArgsJson='["--from","mcp-search-console==0.3.2","mcp-search-console"]'
+```
+
+Read-only safety note:
+
+```bash
+GSC_ALLOW_DESTRUCTIVE=false npm run harvest -- --siteUrl=sc-domain:happyfacesla.com
 ```
 
 Optional parameters:

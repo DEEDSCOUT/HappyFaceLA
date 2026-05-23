@@ -1,5 +1,6 @@
 import { GscMcpClient } from "./client.js";
 import { logger } from "./logger.js";
+import { resolveMcpRuntime } from "./runtime-config.js";
 
 function parseArgs(argv: string[]): Record<string, string> {
   const result: Record<string, string> = {};
@@ -18,28 +19,14 @@ function parseArgs(argv: string[]): Record<string, string> {
   return result;
 }
 
-function requireValue(name: string, value: string | undefined): string {
-  if (!value || value.trim().length === 0) {
-    throw new Error(`Missing required value for ${name}`);
-  }
-  return value;
-}
-
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
-
-  const mcpCommand = requireValue("mcpCommand", args.mcpCommand ?? process.env.GSC_MCP_COMMAND);
-  const mcpArgsJson = requireValue("mcpArgsJson", args.mcpArgsJson ?? process.env.GSC_MCP_ARGS_JSON);
-
-  const mcpArgs = JSON.parse(mcpArgsJson) as unknown;
-  if (!Array.isArray(mcpArgs) || mcpArgs.some((v) => typeof v !== "string")) {
-    throw new Error("mcpArgsJson must parse to a JSON string array");
-  }
+  const runtime = resolveMcpRuntime(args.mcpCommand ?? process.env.GSC_MCP_COMMAND, args.mcpArgsJson ?? process.env.GSC_MCP_ARGS_JSON);
 
   const client = new GscMcpClient(
     {
-      command: mcpCommand,
-      args: mcpArgs,
+      command: runtime.command,
+      args: runtime.args,
       env: {
         ...process.env
       } as Record<string, string>

@@ -1,5 +1,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { resolveMcpRuntime } from "./runtime-config.js";
+import { normalizeSitemapStatus } from "./transform.js";
 
 type JsonMap = Record<string, unknown>;
 
@@ -34,23 +36,13 @@ function parseArgs(argv: string[]): ParsedArgs {
     bag[key] = rest.join("=");
   }
 
-  const mcpCommand = bag.mcpCommand ?? process.env.GSC_MCP_COMMAND;
-  const mcpArgsJson = bag.mcpArgsJson ?? process.env.GSC_MCP_ARGS_JSON;
-
-  if (!mcpCommand || !mcpArgsJson) {
-    throw new Error("Missing required --mcpCommand and --mcpArgsJson values.");
-  }
-
-  const parsed = JSON.parse(mcpArgsJson) as unknown;
-  if (!Array.isArray(parsed) || parsed.some((v) => typeof v !== "string")) {
-    throw new Error("mcpArgsJson must parse to a string array");
-  }
+  const runtime = resolveMcpRuntime(bag.mcpCommand ?? process.env.GSC_MCP_COMMAND, bag.mcpArgsJson ?? process.env.GSC_MCP_ARGS_JSON);
 
   const preferredSiteUrl = bag.preferredSiteUrl ?? process.env.GSC_SITE_URL;
 
   return {
-    mcpCommand,
-    mcpArgs: parsed,
+    mcpCommand: runtime.command,
+    mcpArgs: runtime.args,
     ...(preferredSiteUrl ? { preferredSiteUrl } : {}),
     pageUrl: bag.pageUrl ?? "https://happyfacesla.com/services/"
   };
@@ -260,7 +252,7 @@ async function main(): Promise<void> {
       );
     }
 
-    await callToolWithEvidence(client, "get_sitemaps", { site_url: selectedSiteUrl }, evidence);
+    const sitemapPayload = await callToolWithEvidence(client, "get_sitemaps", { site_url: selectedSiteUrl }, evidence);
     await callToolWithEvidence(
       client,
       "get_search_analytics",
@@ -293,6 +285,11 @@ async function main(): Promise<void> {
       },
       tools,
       selectedSiteUrl,
+      sitemapSemantics: normalizeSitemapStatus(sitemapPayload).map((status) => ({
+        sitemap: status.sitemap,
+        submitted_urls: status.submitted_urls,
+        hasIndexedUrlsProperty: Object.prototype.hasOwnProperty.call(status, "indexed_urls")
+      })),
       evidence: sanitizeValue(evidence),
       status: "success",
       noSecretAssertion: true,
