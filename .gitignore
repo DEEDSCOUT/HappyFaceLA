@@ -42,3 +42,8 @@ google-ads.yaml
 docs/google-ads/snapshots/
 docs/google-ads/mutation-plans/
 docs/google-ads/audit-log.jsonl
+
+# GSC harvester output (local historical snapshots)
+data/gsc/raw/
+data/gsc/normalized/
+!data/gsc/.gitkeep
