@@ -18,7 +18,12 @@ from pathlib import Path
 
 import typer
 
-from hfla_control_room.constants import AUDIT_REPORT_PATH, MANIFEST_PATH, PHASE_1_BLOCK_MESSAGE
+from hfla_control_room.constants import (
+    AUDIT_REPORT_PATH,
+    LAST_PLAN_RUN_PATH,
+    MANIFEST_PATH,
+    PHASE_1_BLOCK_MESSAGE,
+)
 from hfla_control_room.validation import assert_authorized_workspace
 
 logging.basicConfig(
@@ -81,17 +86,32 @@ def plan(
     """Generate a dry-run build plan from CONFIG and write to OUTPUT."""
     assert_authorized_workspace()
 
-    from hfla_control_room.plan_builder import build_plan, write_plan
+    from hfla_control_room.plan_builder import (
+        build_plan,
+        validate_plan_destination_tabs,
+        write_plan,
+        write_plan_runtime_receipt,
+    )
     from hfla_control_room.spec_loader import load_full_spec
 
     typer.echo(f"Loading configuration from: {config.resolve()}")
     spec = load_full_spec(config)
     plan_data = build_plan(spec)
+
+    tab_errors = validate_plan_destination_tabs(plan_data)
+    if tab_errors:
+        typer.secho("PLAN DESTINATION TAB VALIDATION FAILED:", fg=typer.colors.RED, bold=True)
+        for err in tab_errors:
+            typer.secho(f"  ✗ {err}", fg=typer.colors.RED)
+        raise typer.Exit(code=1)
+
     json_path, md_path = write_plan(plan_data, output)
+    receipt_path = write_plan_runtime_receipt(plan_data, LAST_PLAN_RUN_PATH)
 
     typer.secho("DRY-RUN PLAN GENERATED.", fg=typer.colors.GREEN, bold=True)
-    typer.echo(f"  JSON: {json_path}")
-    typer.echo(f"  Markdown: {md_path}")
+    typer.echo(f"  JSON:    {json_path}")
+    typer.echo(f"  Markdown:{md_path}")
+    typer.echo(f"  Receipt: {receipt_path}")
     meta = plan_data["plan_metadata"]
     typer.echo(
         f"  Operations: {meta['operation_count']}  "
@@ -99,8 +119,11 @@ def plan(
         f"spreadsheet_files={meta['spreadsheet_asset_count']}, "
         f"spreadsheet_configs={meta['sheet_configuration_count']}, "
         f"document_files={meta['document_asset_count']}, "
-        f"document_configs={meta['document_configuration_count']})"
+        f"document_configs={meta['document_configuration_count']}, "
+        f"populate={meta['populate_operation_count']}, "
+        f"derive={meta['derive_operation_count']})"
     )
+    typer.echo(f"  Spec fingerprint: {meta['spec_fingerprint']}")
     typer.echo("  Live Google API calls: FALSE")
 
 

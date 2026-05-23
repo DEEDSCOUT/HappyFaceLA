@@ -10,6 +10,25 @@ Design:
 - On each run, the provisioner reads the manifest first.
 - If an asset key is already present, the provisioner skips creation.
 - Deletion is not supported in the initial release.
+
+Phase 1D idempotency contract (live Google provisioning):
+
+1. Asset keys are derived deterministically from asset type and name via
+   :func:`make_key`; the same controlled spec always produces the same keys.
+2. Before creating any Drive asset, the live provisioner MUST:
+     a. consult the manifest for an entry under the deterministic key, AND
+     b. if absent, search Drive within the controlled parent folder for a
+        controlled-asset match (by name + parent + mimeType).
+3. If exactly one match is found in Drive but the manifest is missing the
+   entry, the provisioner reuses that asset and records its
+   ``google_id`` in the manifest (the manifest is a cache/receipt, never the
+   source of truth).
+4. If multiple Drive matches are found, the provisioner FAILS CLOSED with a
+   blocking error.  It MUST NOT guess, deduplicate, or delete.
+5. The provisioner NEVER deletes assets in the initial release; superseded
+   assets are flagged ``SUPERSEDED`` in the manifest and left untouched.
+6. The persisted Google asset id is stored under the canonical field name
+   ``google_id`` (NOT ``drive_id`` — that legacy field name is unsupported).
 """
 
 from __future__ import annotations

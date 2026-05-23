@@ -3,15 +3,28 @@
 # Phase 1 — DRAFT placeholders only.
 #
 # PURPOSE: Framework structure for tracking source evidence supporting each rule.
-# RULE: Evidence entries are placeholders only. No real URLs, screenshots, or
-#       customer data may be included in this tracked file.
-#       Real evidence files are stored in the .secrets/ or .exports/private/
-#       directories (git-ignored) or in the Google Drive evidence folders
-#       (to be provisioned in Phase 2).
+# RULE: Evidence entries below are DRAFT placeholders only. No real URLs,
+#       screenshots, or customer data may be included in this tracked file.
+#
+# STORAGE OF REAL EVIDENCE ARTIFACTS:
+#   - The git-ignored `.secrets/` directory is for OAuth credentials ONLY
+#     (e.g. client_secret.json, token.json).  Evidence artifacts MUST NOT
+#     be placed under `.secrets/`.
+#   - Private local evidence artifacts (raw screenshots, exported CSVs,
+#     customer-bearing data) live under the git-ignored `.exports/private/`
+#     directory only.
+#   - Controlled evidence records — the structured rows defined below —
+#     ultimately populate the governance workbook tab
+#     `11_SOURCE_EVIDENCE` via the `POPULATE_SOURCE_EVIDENCE` plan
+#     operation.  No raw private artifact is ever serialized into a
+#     channel-safe export.
+#   - Drive evidence folders are provisioned in Phase 2 (live OAuth).
 
-# Note: This file does not use the rules: key — it tracks evidence records
-# separately. The spec_loader will skip files that do not contain a 'rules:' key.
-# Evidence records are informational only in Phase 1.
+# Note: This file uses the `evidence_records:` key.  The spec_loader
+# intentionally loads BOTH `rules:` (in rule-bearing files) and
+# `evidence_records:` (in this file) into the FullConfigSpec — this file is
+# NOT skipped.  Evidence records are validated for unique IDs and rule
+# linkage by the validator.
 
 evidence_records:
 

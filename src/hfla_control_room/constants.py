@@ -142,6 +142,30 @@ RESTRICTED_OPERATIONS_BANNER = (
     " — DO NOT SHARE WITH PUBLIC AI SYSTEMS OR UNAUTHORIZED AGENTS"
 )
 
+# Governance workbook — controlled destination tabs for data-population and
+# derived-view plan operations.  Any plan operation that targets a governance
+# tab must use one of these exact titles.  Tabs not listed here may not be
+# populated by `POPULATE_*` operations and may not be the target of
+# `DERIVE_*` operations.
+GOVERNANCE_DESTINATION_TABS: frozenset[str] = frozenset(
+    {
+        "00_CONTROL_CENTER",
+        "01_CEO_APPROVAL_QUEUE",
+        "02_OPEN_BLOCKERS",
+        "03_RULE_REGISTER_MASTER",
+        "04_ACTIVE_RULES_EXPORT",
+        "05_PUBLIC_PRICING_PACKAGES",
+        "06_INTERNAL_QUOTE_TRAVEL_RULES",
+        "07_BOOKING_POLICY_COMPLIANCE",
+        "08_VENDOR_SCHOOL_CORPORATE_RULES",
+        "09_CHANNEL_IMPLEMENTATION_MAP",
+        "10_AI_CUSTOMER_RESPONSE_MATRIX",
+        "11_SOURCE_EVIDENCE",
+        "12_RELEASE_CHANGELOG",
+        "99_VALIDATION_CONFIG",
+    }
+)
+
 # Governance workbook — required tab count
 GOVERNANCE_TAB_COUNT = 14
 
@@ -169,6 +193,7 @@ RUNTIME_DIR = _WORKSPACE_ROOT / ".runtime"
 TOKEN_PATH = RUNTIME_DIR / "token.json"
 MANIFEST_PATH = RUNTIME_DIR / "manifests" / "manifest.json"
 AUDIT_REPORT_PATH = RUNTIME_DIR / "audit" / "audit_report.json"
+LAST_PLAN_RUN_PATH = RUNTIME_DIR / "audit" / "last_plan_run.json"
 
 # Private exports — git-ignored .exports/private/
 PRIVATE_EXPORT_DIR = _WORKSPACE_ROOT / ".exports" / "private"

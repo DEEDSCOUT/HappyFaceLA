@@ -166,3 +166,36 @@ No Google OAuth or live Drive action occurred during or as a result of this audi
 *Commit at audit: `1b95eec525edd0f0b06b2e8b5ac65f5ddfb5b629`*  
 *Phase 1B remediation commit: pending (Phase 1B commit to follow)*  
 *Live Google calls: FALSE*
+
+
+---
+
+## 7. Phase 1B Follow-on Findings (recorded retrospectively in Phase 1B.1)
+
+The Phase 1B acceptance audit (commit `b00fec093c5a4a40edd69017e9570f8ee7028e7a`)
+discovered four follow-on issues that the Phase 1A scope did not detect:
+
+1. **Tracked plan artifact churn from wall-clock timestamps.**  The dry-run
+   plan files under `artifacts/dry_run/` embedded `generated_at_utc`
+   on each invocation, producing a dirty worktree on every audit run.
+   Closed in Phase 1B.1 by removing the timestamp from tracked snapshots,
+   introducing a SHA-256 `spec_fingerprint`, and routing receipts to
+   `.runtime/audit/last_plan_run.json`.
+2. **Stale governance documentation.**  `docs/PHASE_1_BUILD_REPORT.md`
+   Section 15 and `docs/RELEASE_GOVERNANCE.md` Sections 3, 4, and 6
+   referenced a Phase 1 -> Phase 2 sequence that skipped Phase 1C and
+   Phase 1D, and referenced the raw `final_effective_rule` as the
+   channel-safe payload.  Closed in Phase 1B.1.
+3. **Missing channel-safe export branch tests.**  The release-gate test
+   suite covered the happy paths but did not include explicit per-branch
+   rejection tests for each channel-safety failure mode.  Closed in
+   Phase 1B.1 (`tests/test_channel_safety_branches.py`).
+4. **Incomplete data-to-sheet mapping.**  The dry-run plan did not
+   encode where seed rules / evidence records / blockers are written
+   inside the governance workbook, nor distinguish derived views from
+   single-source-of-truth populations.  Closed in Phase 1B.1 by adding
+   the `POPULATE_*` and `DERIVE_*` plan operations and a controlled
+   destination-tab vocabulary.
+
+See `docs/PHASE_1B_ACCEPTANCE_AUDIT.md` for the full Phase 1B audit
+verdict and `docs/PHASE_1B_1_CLOSURE_REPORT.md` for the closure record.

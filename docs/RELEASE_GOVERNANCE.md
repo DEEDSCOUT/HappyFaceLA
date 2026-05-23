@@ -27,7 +27,8 @@ A rule is eligible for release if and only if ALL of the following are true:
 |---|---|---|
 | CEO decision recorded | `ceo_decision` | Non-empty string |
 | CEO decision is approved | `status` | `APPROVED_AS_RECOMMENDED` or `APPROVED_WITH_CONDITIONS` |
-| Final effective rule text written | `final_effective_rule` | Non-empty string |
+| Final effective rule text written (internal, NOT exported) | `final_effective_rule` | Non-empty string |
+| Separately reviewed channel-safe text | `approved_export_text` | Non-empty string; used as the export payload |
 | Release version assigned | `release_version` | Non-empty, follows semantic versioning |
 | Effective date set | `effective_date` | Non-empty date |
 | Policy version assigned | `policy_version` | Non-empty string |
@@ -39,11 +40,21 @@ Failure on any requirement = rule excluded from export. No exceptions. No overri
 
 ## 3. Approved Rule Export Process
 
-1. Governance team runs `python -m hfla_control_room.cli validate --config config`
+> **Phase 1B.1 clarification.**  Rule approval occurs only *after* the
+> complete controlled CEO draft content has been loaded (Phase 1C) and
+> reviewed.  Raw drafts, internal notes, blockers, and placeholder rows
+> MUST NOT be exported to any public channel.  The export gate uses the
+> separately reviewed `approved_export_text` field — never the raw
+> `final_effective_rule` text — for channel-safe payloads.
+
+1. Governance team runs `python -m hfla_control_room.cli validate --config config`.
 2. All spec integrity checks pass.
-3. `04_ACTIVE_RULES_EXPORT` tab is reviewed — only approved rules appear.
-4. `python -m hfla_control_room.cli plan --config config --output artifacts/dry_run` is run and reviewed.
-5. CEO reviews release package (release brief populated from TEMPLATE Doc B).
+3. The DERIVED tab `04_ACTIVE_RULES_EXPORT` is reviewed — only approved
+   rules with non-empty `approved_export_text` appear.
+4. `python -m hfla_control_room.cli plan --config config --output artifacts/dry_run`
+   is run and reviewed.  The tracked plan snapshot is byte-stable; a
+   wall-clock receipt is also written under `.runtime/audit/`.
+5. CEO reviews release package (Release Brief populated from TEMPLATE Doc B).
 6. CEO signs the Release Brief.
 7. (Phase 2+) `python -m hfla_control_room.cli provision --config config --apply` is run.
 8. Audit report is generated and retained.
@@ -55,10 +66,17 @@ Failure on any requirement = rule excluded from export. No exceptions. No overri
 
 The sanitized machine-readable export for website, Google Ads, Copilot, and chatbot use:
 
-- Contains only `final_effective_rule` text — no drafts, no recommendations.
-- Excludes ALL PII fields.
-- Excludes ALL internal-only fields (ceo_notes, internal_cost, margin, etc.).
-- Is filtered by channel: each channel receives only rules marked for that channel.
+- Contains only `approved_export_text` (the separately reviewed
+  customer-facing text) — never the raw `final_effective_rule`, drafts,
+  recommendations, blockers, internal notes, or CEO notes.
+- Excludes ALL PII fields (see `PII_FIELD_NAMES` in `constants.py`).
+- Excludes ALL internal-only fields (`ceo_notes`, `internal_cost`,
+  `margin`, `dispatch_origin`, `performer_cost`, `internal_profitability_input`,
+  etc. — see `INTERNAL_ONLY_FIELD_NAMES`).
+- Is filtered by channel: each channel receives only rules whose
+  `export_channels` list includes it AND whose per-channel review status
+  is approved (`APPROVED_PUBLIC_SAFE`, `APPROVED_FOR_ADS`, or
+  `APPROVED_FOR_AI` as applicable).
 - Is never produced from Sheet B (Restricted Operations) data.
 - Is never produced from DRAFT or REJECTED rules.
 
@@ -79,16 +97,45 @@ If a deployed release is found to be incorrect:
 
 ---
 
-## 6. Phase 2 Authorization Requirements
+## 6. Authoritative Phase Sequence
 
-Phase 2 live provisioning requires:
+Live Google action is gated by an explicit multi-phase sequence.  Phase 2
+is **not** the immediate successor to Phase 1; intermediate Phase 1C and
+Phase 1D acceptances are mandatory.
 
-1. CEO/Controller explicit written authorization.
-2. Delivery of a controller-approved data payload (pricing, policy, AI rules).
-3. OAuth scope research completed and approved (see `GOOGLE_OAUTH_SCOPE_DECISION_PENDING.md`).
-4. Business Google account selected by CEO.
-5. All Phase 1 quality gates re-confirmed passing on the Phase 2 payload.
-6. Dry-run plan reviewed and approved before `--apply` is executed.
+1. **Phase 1B.1 — Acceptance gap closure.**  Deterministic plan
+   generation; governance documentation corrections; rule / evidence /
+   blocker → tab mapping contract; channel-safe branch tests; idempotency
+   test fix; source-evidence comment corrections.  No live Google action.
+2. **Phase 1C — Controlled draft content load.**  The 19 seed rules
+   currently in the repository are scaffold placeholders.  Phase 1C
+   replaces them with the complete controlled CEO draft content (still
+   `status: DRAFT`).  Loads complete source evidence records.  No live
+   Google action.  No APPROVED rules.
+3. **Phase 1D — Idempotency contract validation.**  Exercise the
+   manifest / Google-side idempotency contract — deterministic keys,
+   search-before-create, fail-closed on multiple Drive matches,
+   never-delete — against the full Phase 1C content set.  Still no live
+   Google action.
+4. **Phase 2 — Connect Google OAuth and execute live Drive provisioning.**
+   First live Google call.  Authorized only after Phase 1D acceptance.
+5. **Phase 3 — Controlled rule approval.**  Per-rule transitions from
+   DRAFT to APPROVED under explicit CEO authorization, after complete
+   Phase 1C content has been loaded and reviewed.  Raw drafts, internal
+   notes, and placeholder rows MUST NOT be exported.
+6. **Phase 4 — Channel-safe release.**  Approved rules with the required
+   per-channel review status are exported to website / Google Ads / AI
+   copilot / chatbot via `release_exporter`.
+
+### Phase 2 prerequisites (when finally reached)
+
+1. CEO/Controller explicit written authorization for Phase 2.
+2. Phase 1B.1, 1C, and 1D acceptance reports on record.
+3. Delivery of a controller-approved data payload (pricing, policy, AI rules).
+4. OAuth scope research completed and approved (see `GOOGLE_OAUTH_SCOPE_DECISION_PENDING.md`).
+5. Business Google account selected by CEO.
+6. All Phase 1 quality gates re-confirmed passing on the Phase 1C payload.
+7. Dry-run plan reviewed and approved before `--apply` is executed.
 
 ---
 

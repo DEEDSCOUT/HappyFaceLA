@@ -122,20 +122,30 @@ class TestDryRunPlan:
         assert "plan_metadata" in plan
         meta = plan["plan_metadata"]
         assert "phase" in meta
-        assert "generated_at_utc" in meta
+        # Phase 1B.1: tracked plan must NOT carry a wall-clock timestamp.
+        assert "generated_at_utc" not in meta, (
+            "plan_metadata must not include 'generated_at_utc'; "
+            "timestamps belong only in the .runtime/audit receipt."
+        )
+        assert "spec_fingerprint" in meta, (
+            "plan_metadata must include a deterministic SHA-256 'spec_fingerprint'."
+        )
         assert meta.get("live_google_calls") is False
-        # New metadata fields (Phase 1B)
+        # New metadata fields (Phase 1B / 1B.1)
         for key in (
             "folder_count",
             "spreadsheet_asset_count",
             "document_asset_count",
             "sheet_configuration_count",
             "document_configuration_count",
+            "populate_operation_count",
+            "derive_operation_count",
+            "data_population",
         ):
             assert key in meta, f"plan_metadata missing expected key: '{key}'"
 
     def test_operation_count_reconciles(self):
-        """All category counts must sum to operation_count (== 22 for Phase 1 spec)."""
+        """All category counts must sum to operation_count (== 28 for Phase 1 spec)."""
         spec = load_full_spec(CONFIG_DIR)
         plan = build_plan(spec)
         meta = plan["plan_metadata"]
@@ -145,13 +155,15 @@ class TestDryRunPlan:
             + meta["document_asset_count"]
             + meta["sheet_configuration_count"]
             + meta["document_configuration_count"]
+            + meta["populate_operation_count"]
+            + meta["derive_operation_count"]
         )
         assert total == meta["operation_count"], (
             "Category counts do not reconcile with operation_count: "
             f"{total} != {meta['operation_count']}."
         )
-        assert meta["operation_count"] == 22, (
-            f"Expected 22 total operations for Phase 1 spec, got {meta['operation_count']}."
+        assert meta["operation_count"] == 28, (
+            f"Expected 28 total operations for Phase 1 spec, got {meta['operation_count']}."
         )
 
     def test_exactly_14_folder_operations(self):

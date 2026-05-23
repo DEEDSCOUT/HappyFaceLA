@@ -193,13 +193,15 @@ def validate_channel_export_safety(
                 f"must be APPROVED_FOR_ADS for google_ads channel."
             )
 
-    if channel == ExportChannel.AI_COPILOT:
+    if channel in (ExportChannel.AI_COPILOT, ExportChannel.CHATBOT):
         if rule.ai_response_review_status != AIReviewStatus.APPROVED_FOR_AI:
             errors.append(
                 f"Rule '{rule.rule_id}' ai_response_review_status is "
                 f"'{rule.ai_response_review_status.value}' — "
-                f"must be APPROVED_FOR_AI for ai_copilot channel."
+                f"must be APPROVED_FOR_AI for channel '{channel.value}'."
             )
+
+    if channel == ExportChannel.AI_COPILOT:
         eligible = (ChannelVisibility.CHANNEL_SAFE, ChannelVisibility.INTERNAL_APPROVED)
         if rule.channel_visibility not in eligible:
             errors.append(

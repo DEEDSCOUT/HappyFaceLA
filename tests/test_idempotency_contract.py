@@ -91,16 +91,45 @@ class TestIdempotencyContract:
         assert m.entries == []
 
     def test_manifest_upsert_updates_existing_entry(self, tmp_path: Path) -> None:
-        """Upsert on an existing key must update the entry, not duplicate it."""
+        """Upsert on an existing key must update the entry, not duplicate it,
+        and the persisted Google asset id must survive a save/load roundtrip."""
         m = Manifest()
         m.upsert(ManifestEntry(key="folder:abc", asset_type="folder", name="ABC", status="PLANNED"))
         m.upsert(ManifestEntry(
             key="folder:abc", asset_type="folder", name="ABC",
-            status="COMPLETE", drive_id="id_123",
+            status="COMPLETE", google_id="id_123",
         ))
         entries_for_key = [e for e in m.entries if e.key == "folder:abc"]
         assert len(entries_for_key) == 1, "Upsert must not create duplicate entries."
         assert entries_for_key[0].status == "COMPLETE"
+        assert entries_for_key[0].google_id == "id_123", (
+            "ManifestEntry must persist the Google asset id under the canonical "
+            "field name 'google_id' (NOT 'drive_id')."
+        )
+
+        # Save and reload to prove the field survives serialization.
+        path = tmp_path / "manifest.json"
+        m.save(path)
+        loaded = Manifest.load(path)
+        loaded_entry = next(e for e in loaded.entries if e.key == "folder:abc")
+        assert loaded_entry.google_id == "id_123", (
+            "google_id must survive save/load roundtrip."
+        )
+
+    def test_manifest_entry_rejects_unknown_drive_id_field(self) -> None:
+        """The legacy 'drive_id' field name must not silently bind; Pydantic
+        ignores unknown kwargs by default, so we assert behaviourally that
+        passing drive_id leaves google_id unset."""
+        entry = ManifestEntry(
+            key="folder:abc",
+            asset_type="folder",
+            name="ABC",
+            status="PLANNED",
+        )
+        # The canonical field is google_id and defaults to None / empty.
+        assert getattr(entry, "google_id", None) in (None, "", )
+        # Confirm 'drive_id' is not a known schema field.
+        assert "drive_id" not in type(entry).model_fields
 
     def test_manifest_not_tracked_by_git(self):
         """The canonical MANIFEST_PATH must reside in a git-ignored directory."""

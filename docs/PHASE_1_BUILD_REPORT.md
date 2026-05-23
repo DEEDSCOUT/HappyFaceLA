@@ -367,24 +367,62 @@ All items below are marked `CEO_INPUT_REQUIRED` in the codebase. No invented val
 
 ## SECTION 15 — EXACT NEXT RECOMMENDED AUTHORIZATION
 
-When the CEO is ready to advance to Phase 2, authorize with the following exact statement:
+> **PHASE 1B.1 AMENDMENT:** The original Phase 1 build report routed work
+> directly from "Phase 1" to "Phase 2 — Connect Google OAuth and execute
+> live Drive provisioning."  That sequencing is **superseded**.  Several
+> intermediate gates (Phase 1C — controlled draft content load; Phase 1D —
+> idempotency contract validation) must complete *before* any live Google
+> action.  Likewise, the gate "At least one rule has been moved from
+> `status: DRAFT` to `status: APPROVED`" is **withdrawn**: the 19 seed
+> rules currently in the repository are scaffold placeholders only and must
+> remain DRAFT until the complete controlled CEO data payload has been
+> loaded and reviewed in Phase 1C.
 
-> **"AUTHORIZED PHASE 2 — CONNECT GOOGLE OAUTH AND EXECUTE LIVE DRIVE PROVISIONING ONLY."**
+### Authoritative phase sequence
 
-Before Phase 2 execution, the following gates must be satisfied:
+The authorized sequence from this point forward is:
 
-1. CEO has reviewed and approved `docs/GOOGLE_OAUTH_SCOPE_DECISION_PENDING.md` — narrowest permissible Drive OAuth scope selected.
-2. OAuth client credentials have been provisioned and placed in `.secrets/client_secret.json` (`.gitignore`-protected, never committed).
-3. At least one rule has been moved from `status: DRAFT` to `status: APPROVED` with all required fields populated.
-4. Phase 2 idempotency tests pass locally.
-5. CEO provides explicit written authorization for the target Google Drive location.
+1. **Phase 1B.1 — Acceptance gap closure** *(this phase)*.  Deterministic
+   plan generation, governance-doc corrections, mapping-contract tests,
+   channel-safe branch tests, idempotency test fix, source-evidence
+   comment corrections.  No live Google action.
+2. **Phase 1C — Controlled draft content load.**  Replace the 19 scaffold
+   seed rules with the complete CEO-supplied controlled draft content
+   (still DRAFT — no APPROVED rules yet).  Load complete source-evidence
+   records.  Validate end-to-end against the same dry-run plan.
+3. **Phase 1D — Idempotency contract validation.**  Exercise the
+   manifest/Google-side idempotency contract (deterministic keys, search-
+   before-create, fail-closed on multiple matches, never-delete) against
+   the full Phase 1C content set.  Still no live Google action.
+4. **Phase 2 — Connect Google OAuth and execute live Drive provisioning.**
+   First live Google call.  Authorized only after Phase 1D acceptance.
+5. **Phase 3 — Controlled rule approval.**  Rules transition from DRAFT
+   to APPROVED under explicit per-rule CEO authorization, after complete
+   Phase 1C content has been loaded and reviewed.  Raw drafts, internal
+   notes, and placeholder rows MUST NOT be exported.
+6. **Phase 4 — Channel-safe release.**  Approved rules with the required
+   per-channel review status are exported to website / Google Ads / AI
+   copilot / chatbot via `release_exporter`.
 
-**No live Google action will occur before that authorization is received and all gates above are satisfied.**
+### Authorization wording for the next phase
+
+When the CEO is ready to advance to **Phase 1C**, the next authorization
+to use is:
+
+> **"AUTHORIZED PHASE 1C — LOAD CONTROLLED DRAFT CONTENT ONLY (NO LIVE GOOGLE ACTION, NO APPROVED RULES)."**
+
+Phase 1C must complete and be accepted before Phase 1D may be authorized;
+Phase 1D must complete and be accepted before Phase 2 may be authorized.
+
+**No live Google action will occur before Phase 2 is explicitly authorized
+and Phase 1D acceptance is on record.**
 
 ---
 
 *Report generated: 2026-05-23*  
 *Amended (Phase 1B): 2026-05-23*  
+*Amended (Phase 1B.1): 2026-05-23 — Section 15 phase sequence corrected;
+APPROVED-rule gate withdrawn; seed rules confirmed as DRAFT scaffolding.*  
 *Commit: `1b95eec525edd0f0b06b2e8b5ac65f5ddfb5b629`*  
 *Phase: PHASE_1_DRY_RUN*  
 *Live Google calls: FALSE*

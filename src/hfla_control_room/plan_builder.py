@@ -4,28 +4,89 @@ Dry-run build plan generator.
 
 Produces a deterministic JSON + Markdown plan of all assets that the live
 provisioner *would* create, without touching any Google API.
+
+Determinism contract (Phase 1B.1):
+
+- The tracked plan artifacts (``control_room_build_plan.json`` and
+  ``control_room_build_plan.md``) must be byte-identical for unchanged
+  configuration.  They MUST NOT include any current timestamp.
+- Each tracked snapshot embeds a SHA-256 ``spec_fingerprint`` computed over
+  the canonical serialised plan body (operations + sorted seed/evidence IDs).
+- All run-time receipts (when the plan was last regenerated, by whom, with
+  which exit code) belong under ``.runtime/audit/last_plan_run.json`` only.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from hfla_control_room.constants import AssetType
+from hfla_control_room.constants import (
+    GOVERNANCE_DESTINATION_TABS,
+    AssetType,
+)
 from hfla_control_room.models import FullConfigSpec
 
 logger = logging.getLogger(__name__)
+
+
+# Controlled vocabulary of plan operation types.
+# Any operation written into the plan MUST use one of these exact op strings.
+PLAN_OPERATION_TYPES: frozenset[str] = frozenset(
+    {
+        "CREATE_FOLDER",
+        "CREATE_SPREADSHEET_FILE",
+        "CREATE_DOCUMENT_FILE",
+        "CONFIGURE_SPREADSHEET",
+        "CONFIGURE_DOCUMENT",
+        "POPULATE_RULE_REGISTER",
+        "POPULATE_SOURCE_EVIDENCE",
+        "DERIVE_OPEN_BLOCKERS",
+        "DERIVE_ACTIVE_RULES_EXPORT",
+        "DERIVE_PUBLIC_PRICING_PACKAGES",
+        "DERIVE_AI_RESPONSE_MATRIX",
+    }
+)
+
+_POPULATE_OPS: frozenset[str] = frozenset(
+    {"POPULATE_RULE_REGISTER", "POPULATE_SOURCE_EVIDENCE"}
+)
+
+_DERIVE_OPS: frozenset[str] = frozenset(
+    {
+        "DERIVE_OPEN_BLOCKERS",
+        "DERIVE_ACTIVE_RULES_EXPORT",
+        "DERIVE_PUBLIC_PRICING_PACKAGES",
+        "DERIVE_AI_RESPONSE_MATRIX",
+    }
+)
 
 
 def _utcnow() -> str:
     return datetime.now(tz=UTC).isoformat(timespec="seconds")
 
 
+def _compute_spec_fingerprint(plan_body: dict[str, Any]) -> str:
+    """Return a deterministic SHA-256 hex digest of the canonical plan body.
+
+    The fingerprint is computed over a *canonical* JSON serialisation:
+    keys are sorted, no whitespace variation, no timestamp content.
+    Identical configuration produces an identical fingerprint.
+    """
+    canonical = json.dumps(plan_body, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
-    """Generate a deterministic dry-run plan dict from *spec*."""
+    """Generate a deterministic dry-run plan dict from *spec*.
+
+    The returned plan is timestamp-free.  Identical *spec* input always
+    produces a byte-identical serialisation.
+    """
     operations: list[dict[str, Any]] = []
 
     # --- Drive folder hierarchy ---
@@ -45,7 +106,6 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
             if hasattr(child, "children"):
                 _add_folder(path, child)
             else:
-                # Assets in the folder tree — CREATE_SPREADSHEET_FILE or CREATE_DOCUMENT_FILE
                 if child.asset_type.value == AssetType.SHEET.value:
                     op = "CREATE_SPREADSHEET_FILE"
                 else:
@@ -132,10 +192,110 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
             }
         )
 
-    plan = {
+    # --- Data-population operations (Phase 1B.1) ---
+    #
+    # These operations document how seed records map to controlled
+    # governance-workbook tabs.  They are deterministic; no live API call is
+    # made.  The actual population is performed by the Phase 1D provisioner.
+    governance_sheet_name = spec.governance_workbook.spreadsheet_name
+
+    operations.append(
+        {
+            "op": "POPULATE_RULE_REGISTER",
+            "asset_type": AssetType.SHEET.value,
+            "name": governance_sheet_name,
+            "target_tab": "03_RULE_REGISTER_MASTER",
+            "source": "config/seed_data/*.yaml (rules)",
+            "record_count": len(spec.seed_rules),
+            "rule_ids": sorted(r.rule_id for r in spec.seed_rules),
+            "is_derived_view": False,
+            "live_action": False,
+        }
+    )
+
+    operations.append(
+        {
+            "op": "POPULATE_SOURCE_EVIDENCE",
+            "asset_type": AssetType.SHEET.value,
+            "name": governance_sheet_name,
+            "target_tab": "11_SOURCE_EVIDENCE",
+            "source": "config/seed_data/source_evidence.yaml (evidence_records)",
+            "record_count": len(spec.evidence_records),
+            "evidence_ids": sorted(e.evidence_id for e in spec.evidence_records),
+            "is_derived_view": False,
+            "live_action": False,
+        }
+    )
+
+    # --- Derived-view operations ---
+    #
+    # Derived tabs are populated by formula / query / filter logic from
+    # 03_RULE_REGISTER_MASTER.  They are NOT independently maintained copies
+    # of policy text; that is a governance violation (single-source-of-truth).
+    operations.append(
+        {
+            "op": "DERIVE_OPEN_BLOCKERS",
+            "asset_type": AssetType.SHEET.value,
+            "name": governance_sheet_name,
+            "target_tab": "02_OPEN_BLOCKERS",
+            "source_tab": "03_RULE_REGISTER_MASTER",
+            "derivation": "FILTER where blockers is non-empty",
+            "is_derived_view": True,
+            "live_action": False,
+        }
+    )
+
+    operations.append(
+        {
+            "op": "DERIVE_ACTIVE_RULES_EXPORT",
+            "asset_type": AssetType.SHEET.value,
+            "name": governance_sheet_name,
+            "target_tab": "04_ACTIVE_RULES_EXPORT",
+            "source_tab": "03_RULE_REGISTER_MASTER",
+            "derivation": (
+                "FILTER where status in (APPROVED_AS_RECOMMENDED,"
+                " APPROVED_WITH_CONDITIONS) AND approved_export_text is non-empty"
+            ),
+            "is_derived_view": True,
+            "live_action": False,
+        }
+    )
+
+    operations.append(
+        {
+            "op": "DERIVE_PUBLIC_PRICING_PACKAGES",
+            "asset_type": AssetType.SHEET.value,
+            "name": governance_sheet_name,
+            "target_tab": "05_PUBLIC_PRICING_PACKAGES",
+            "source_tab": "03_RULE_REGISTER_MASTER",
+            "derivation": (
+                "FILTER where rule_category=PUBLIC_PRICING AND"
+                " public_safe_review_status=APPROVED_PUBLIC_SAFE"
+            ),
+            "is_derived_view": True,
+            "live_action": False,
+        }
+    )
+
+    operations.append(
+        {
+            "op": "DERIVE_AI_RESPONSE_MATRIX",
+            "asset_type": AssetType.SHEET.value,
+            "name": governance_sheet_name,
+            "target_tab": "10_AI_CUSTOMER_RESPONSE_MATRIX",
+            "source_tab": "03_RULE_REGISTER_MASTER",
+            "derivation": (
+                "FILTER where rule_category=AI_CUSTOMER_RESPONSE AND"
+                " ai_response_review_status=APPROVED_FOR_AI"
+            ),
+            "is_derived_view": True,
+            "live_action": False,
+        }
+    )
+
+    plan_body: dict[str, Any] = {
         "plan_metadata": {
             "phase": "PHASE_1_DRY_RUN",
-            "generated_at_utc": _utcnow(),
             "live_google_calls": False,
             "operation_count": len(operations),
             "folder_count": sum(1 for o in operations if o["op"] == "CREATE_FOLDER"),
@@ -151,33 +311,62 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
             "document_configuration_count": sum(
                 1 for o in operations if o["op"] == "CONFIGURE_DOCUMENT"
             ),
+            "populate_operation_count": sum(
+                1 for o in operations if o["op"] in _POPULATE_OPS
+            ),
+            "derive_operation_count": sum(
+                1 for o in operations if o["op"] in _DERIVE_OPS
+            ),
+            "data_population": {
+                "rule_record_count": len(spec.seed_rules),
+                "evidence_record_count": len(spec.evidence_records),
+            },
             "authorized_workspace": r"C:\Dev\happyfacesla-commercial-control-room",
         },
         "operations": operations,
     }
-    meta = plan["plan_metadata"]
+
+    # Compute fingerprint AFTER plan_body is fully assembled (excluding itself).
+    plan_body["plan_metadata"]["spec_fingerprint"] = _compute_spec_fingerprint(plan_body)
+
+    meta = plan_body["plan_metadata"]
     logger.info(
         "Dry-run plan generated: %d operations "
         "(%d folders, %d spreadsheet files, %d document files, "
-        "%d sheet configs, %d doc configs).",
+        "%d sheet configs, %d doc configs, %d populate, %d derive); "
+        "spec_fingerprint=%s",
         meta["operation_count"],
         meta["folder_count"],
         meta["spreadsheet_asset_count"],
         meta["document_asset_count"],
         meta["sheet_configuration_count"],
         meta["document_configuration_count"],
+        meta["populate_operation_count"],
+        meta["derive_operation_count"],
+        meta["spec_fingerprint"][:12],
     )
-    return plan
+    return plan_body
 
 
 def write_plan(plan: dict[str, Any], output_dir: Path) -> tuple[Path, Path]:
-    """Write plan as JSON and Markdown to *output_dir*.  Returns (json_path, md_path)."""
+    """Write plan as JSON and Markdown to *output_dir*.
+
+    The written content is fully deterministic: identical plan input yields
+    byte-identical output.  No timestamp, run id, or environment-specific
+    value is written into these files.
+
+    Returns ``(json_path, md_path)``.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
 
     json_path = output_dir / "control_room_build_plan.json"
     md_path = output_dir / "control_room_build_plan.md"
 
-    json_path.write_text(json.dumps(plan, indent=2), encoding="utf-8")
+    # Trailing newline keeps the file POSIX-friendly and consistent with the
+    # markdown writer, ensuring a deterministic last byte.
+    json_path.write_text(
+        json.dumps(plan, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     logger.info("Plan JSON written: %s", json_path)
 
     pm = plan["plan_metadata"]
@@ -185,9 +374,13 @@ def write_plan(plan: dict[str, Any], output_dir: Path) -> tuple[Path, Path]:
         "# Happy Faces LA — Commercial Control Room Dry-Run Build Plan",
         "",
         f"**Phase:** {pm['phase']}  ",
-        f"**Generated (UTC):** {pm['generated_at_utc']}  ",
+        f"**Spec fingerprint (SHA-256):** `{pm['spec_fingerprint']}`  ",
         f"**Live Google API calls:** {pm['live_google_calls']}  ",
         f"**Total operations:** {pm['operation_count']}  ",
+        "",
+        "> This file is a deterministic snapshot.  The same configuration always",
+        "> produces a byte-identical file.  Run-time timestamps and receipts are",
+        "> written separately under `.runtime/audit/last_plan_run.json`.",
         "",
         "## Summary",
         "",
@@ -198,6 +391,8 @@ def write_plan(plan: dict[str, Any], output_dir: Path) -> tuple[Path, Path]:
         f"| CREATE_DOCUMENT_FILE | {pm['document_asset_count']} |",
         f"| CONFIGURE_SPREADSHEET | {pm['sheet_configuration_count']} |",
         f"| CONFIGURE_DOCUMENT | {pm['document_configuration_count']} |",
+        f"| POPULATE_* | {pm['populate_operation_count']} |",
+        f"| DERIVE_* | {pm['derive_operation_count']} |",
         "",
         "## Operations",
         "",
@@ -206,15 +401,55 @@ def write_plan(plan: dict[str, Any], output_dir: Path) -> tuple[Path, Path]:
     for i, op in enumerate(plan["operations"], start=1):
         md_lines.append(f"### {i}. `{op['op']}` — {op['name']}")
         md_lines.append("")
-        for k, v in op.items():
-            if k not in ("op", "name"):
-                if isinstance(v, list):
-                    md_lines.append(f"- **{k}:** {', '.join(str(x) for x in v)}")
-                else:
-                    md_lines.append(f"- **{k}:** {v}")
+        for k in sorted(k for k in op if k not in ("op", "name")):
+            v = op[k]
+            if isinstance(v, list):
+                md_lines.append(f"- **{k}:** {', '.join(str(x) for x in v)}")
+            else:
+                md_lines.append(f"- **{k}:** {v}")
         md_lines.append("")
 
-    md_path.write_text("\n".join(md_lines), encoding="utf-8")
+    md_path.write_text("\n".join(md_lines) + "\n", encoding="utf-8")
     logger.info("Plan Markdown written: %s", md_path)
 
     return json_path, md_path
+
+
+def write_plan_runtime_receipt(plan: dict[str, Any], receipt_path: Path) -> Path:
+    """Write a run-time receipt of plan generation under ``.runtime/audit/``.
+
+    The receipt is *intentionally* non-deterministic — it carries the wall-clock
+    timestamp of the run so operators can audit when the plan was last
+    regenerated, while keeping the tracked snapshot byte-stable.
+    """
+    receipt = {
+        "phase": plan["plan_metadata"]["phase"],
+        "spec_fingerprint": plan["plan_metadata"]["spec_fingerprint"],
+        "operation_count": plan["plan_metadata"]["operation_count"],
+        "generated_at_utc": _utcnow(),
+        "live_google_calls": False,
+    }
+    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+    receipt_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    logger.info("Plan runtime receipt written: %s", receipt_path)
+    return receipt_path
+
+
+def validate_plan_destination_tabs(plan: dict[str, Any]) -> list[str]:
+    """Return violation messages for any plan operation that targets an unknown
+    governance destination tab.
+
+    Operations carrying a ``target_tab`` or ``source_tab`` field must reference
+    a tab present in :data:`hfla_control_room.constants.GOVERNANCE_DESTINATION_TABS`.
+    """
+    errors: list[str] = []
+    for op in plan["operations"]:
+        for key in ("target_tab", "source_tab"):
+            value = op.get(key)
+            if value is not None and value not in GOVERNANCE_DESTINATION_TABS:
+                errors.append(
+                    f"Operation '{op['op']}' references unknown governance tab "
+                    f"({key}='{value}')."
+                )
+    return errors
+
