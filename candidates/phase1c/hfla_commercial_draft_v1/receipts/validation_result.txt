@@ -1,0 +1,24 @@
+PHASE 1C INPUT VALIDATION PASSED
+Intake gate: validate-phase1c-input
+Exit code: 0
+Timestamp: 2026-05-24T08:30:31Z
+Candidate: candidates/phase1c/hfla_commercial_draft_v1
+candidate.yaml SHA-256: 8BC0B9129F0DB8CE35D4260B623EABB563D4CCAC1D5A3BF12C5E42F6B659AD7E
+
+Record counts:
+  rules:                  19
+  evidence_records:        6
+  blocker_records:        18
+  channel_projections:    10
+  release_records:         1
+  channel_activations:     5
+
+ruff check:    PASS (all checks passed)
+pytest:        PASS (353 passed, 0 failed)
+validate:      PASS (VALIDATION PASSED)
+plan:          PASS (32 operations generated)
+intake-gate:   PASS (PHASE 1C INPUT VALIDATION PASSED, exit 0)
+provision-dry: PASS (dry-run complete, no live API calls)
+provision-apply: BLOCKED (exit 1, expected ? no approved release)
+
+Unresolved non-structural blockers: 18 (all blocks_phase_1c_content_loading=False)
