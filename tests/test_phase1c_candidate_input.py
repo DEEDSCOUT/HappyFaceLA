@@ -1,9 +1,11 @@
-"""Phase 1B.5A \u2014 candidate Phase 1C intake gate.
+"""Phase 1B.5A/5B/5C-R — candidate Phase 1C intake gate.
 
 Tests the non-mutating ``validate-phase1c-input`` CLI command and the
 ``validate_phase1c_candidate_input`` validator.  The validator must:
 
-* accept a clean DRAFT-only candidate dataset,
+* accept a clean, complete DRAFT-only candidate dataset (all six register
+  families, exactly one DRAFT release shell, exactly one DRAFT activation
+  per projected channel),
 * refuse any candidate that carries an OPEN structural Phase-1C blocker,
 * permit ordinary OPEN business-decision blockers (reported as warnings),
 * operate independently of baseline scaffold placeholder blockers
@@ -14,6 +16,12 @@ Tests the non-mutating ``validate-phase1c-input`` CLI command and the
 * refuse broken foreign keys and duplicate identifiers,
 * refuse unknown / misspelled fields via Pydantic strict schema,
 * refuse RESTRICTED_PII channel-visibility content in the intake payload,
+* refuse any candidate with zero or more-than-one DRAFT ReleaseRecord,
+* refuse projected channels lacking exactly one DRAFT activation,
+* refuse activations that target a channel absent from the projections,
+* verify every required governance field has exactly one column mapping to
+  the model's authorized destination tab,
+* refuse ``--mode`` / ``-m`` option (removed; no partial-fixture bypass),
 * write nothing to disk and trigger no Google API / OAuth activity,
 * report intake counts and unresolved non-structural decisions.
 """
@@ -36,8 +44,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 CONFIG_DIR = REPO_ROOT / "config"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
-SAFE_FIXTURE = FIXTURES / "phase1c_candidate_safe_draft"
-BLOCKED_FIXTURE = FIXTURES / "phase1c_candidate_blocked_structural"
+# Phase 1B.5C-R: complete fixtures — all six register families present.
+SAFE_FIXTURE = FIXTURES / "phase1c_candidate_safe_complete_draft"
+BLOCKED_FIXTURE = FIXTURES / "phase1c_candidate_blocked_structural_complete"
+INCOMPLETE_FIXTURE = FIXTURES / "phase1c_candidate_incomplete_rules_only"
+# Legacy single-concern fixtures (still used by targeted tests).
 INVALID_APPROVED_FIXTURE = FIXTURES / "phase1c_candidate_invalid_approved"
 INVALID_FK_FIXTURE = FIXTURES / "phase1c_candidate_invalid_reference"
 
@@ -609,31 +620,22 @@ class TestSchemaUnknownFieldBranchesAdditional:
 
 
 # ---------------------------------------------------------------------------
-# Phase 1B.5B \u2014 Production-intake completeness contract.
+# Phase 1B.5B / 5C-R — Production-intake completeness contract.
 # ---------------------------------------------------------------------------
 
 
 class TestProductionIntakeCompletenessContract:
-    """In production_intake mode (default), the candidate MUST contain all
-    six DRAFT record families AND every projected output channel MUST have
-    a paired DRAFT channel_release_activation row."""
+    """The candidate MUST contain all six DRAFT record families.  There is
+    no operator bypass; the completeness contract is always enforced."""
 
     def _safe(self):
         return _load_candidate(SAFE_FIXTURE)
 
     def test_rules_only_payload_is_refused(self):
         spec = _load_spec()
-        cand = self._safe()
-        for key in (
-            "evidence_records",
-            "blocker_records",
-            "channel_projection_records",
-            "release_records",
-            "channel_release_activations",
-        ):
-            cand[key] = []
+        cand = _load_candidate(INCOMPLETE_FIXTURE)
         errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
-        # All five missing families must be flagged.
+        # Five missing families must be flagged.
         for key in (
             "evidence_records",
             "blocker_records",
@@ -642,7 +644,8 @@ class TestProductionIntakeCompletenessContract:
             "channel_release_activations",
         ):
             assert any(
-                "production_intake" in e and f"'{key}'" in e for e in errors
+                "Candidate intake is missing" in e and f"'{key}'" in e
+                for e in errors
             ), (key, errors)
 
     def test_missing_evidence_family_is_refused(self):
@@ -651,7 +654,7 @@ class TestProductionIntakeCompletenessContract:
         cand["evidence_records"] = []
         errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
         assert any(
-            "production_intake" in e and "'evidence_records'" in e
+            "Candidate intake is missing" in e and "'evidence_records'" in e
             for e in errors
         ), errors
 
@@ -661,7 +664,7 @@ class TestProductionIntakeCompletenessContract:
         cand["blocker_records"] = []
         errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
         assert any(
-            "production_intake" in e and "'blocker_records'" in e
+            "Candidate intake is missing" in e and "'blocker_records'" in e
             for e in errors
         ), errors
 
@@ -671,7 +674,7 @@ class TestProductionIntakeCompletenessContract:
         cand["channel_projection_records"] = []
         errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
         assert any(
-            "production_intake" in e
+            "Candidate intake is missing" in e
             and "'channel_projection_records'" in e
             for e in errors
         ), errors
@@ -686,7 +689,7 @@ class TestProductionIntakeCompletenessContract:
         cand["channel_release_activations"] = []
         errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
         assert any(
-            "production_intake" in e and "'release_records'" in e
+            "Candidate intake is missing" in e and "'release_records'" in e
             for e in errors
         ), errors
 
@@ -696,7 +699,7 @@ class TestProductionIntakeCompletenessContract:
         cand["channel_release_activations"] = []
         errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
         assert any(
-            "production_intake" in e
+            "Candidate intake is missing" in e
             and "'channel_release_activations'" in e
             for e in errors
         ), errors
@@ -711,15 +714,14 @@ class TestProductionIntakeCompletenessContract:
         cand["channel_release_activations"][0]["channel"] = "GOOGLE_BUSINESS"
         errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
         assert any(
-            "SYNTH-PROJ-001" in e
-            and "WEBSITE_PUBLIC" in e
+            "WEBSITE_PUBLIC" in e
             and "channel_release_activation" in e
             for e in errors
         ), errors
 
 
 # ---------------------------------------------------------------------------
-# Phase 1B.5B \u2014 Workbook destination + canonical-list contracts.
+# Phase 1B.5B / 5C-R — Workbook destination + canonical-list contracts.
 # ---------------------------------------------------------------------------
 
 
@@ -738,7 +740,7 @@ class TestWorkbookDestinationContract:
 
     def test_rejects_when_workbook_has_no_tabs(self, monkeypatch):
         """Removing all workbook tabs surfaces a structural error that
-        prevents intake \u2014 candidate records lose addressable destinations."""
+        prevents intake — candidate records lose addressable destinations."""
         spec = _load_spec()
         cand = _load_candidate(SAFE_FIXTURE)
         # Simulate a corrupted baseline workbook in-memory only.
@@ -750,160 +752,23 @@ class TestWorkbookDestinationContract:
 
 
 # ---------------------------------------------------------------------------
-# Phase 1B.5B \u2014 Partial-fixture mode (test-only escape hatch).
+# Phase 1B.5C-R — CLI surface: --mode must not exist.
 # ---------------------------------------------------------------------------
 
 
-class TestPartialFixtureMode:
-    """``validation_mode='partial_fixture'`` is permitted ONLY for synthetic
-    test fixtures that intentionally isolate a single rejection branch.  It
-    skips the production_intake completeness / channel-activation /
-    workbook-destination / canonical-rule_category checks but every other
-    check (DRAFT-only state, FK, duplicates, strict schema, restricted-PII,
-    structural blockers) still runs."""
+class TestCLISurface:
+    """The ``--mode`` / ``-m`` operator escape hatch was removed in
+    Phase 1B.5C-R.  These tests confirm the removal at the CLI level."""
 
-    def test_rejects_unknown_validation_mode(self):
-        spec = _load_spec()
-        cand = _load_candidate(SAFE_FIXTURE)
-        import pytest
-
-        with pytest.raises(ValueError):
-            validate_phase1c_candidate_input(
-                spec, cand, validation_mode="not_a_real_mode"
-            )
-
-    def test_partial_fixture_mode_skips_completeness_checks(self):
-        spec = _load_spec()
-        cand = _load_candidate(SAFE_FIXTURE)
-        # Empty every family except rules - production_intake would refuse,
-        # partial_fixture must NOT emit completeness errors.
-        for key in (
-            "evidence_records",
-            "blocker_records",
-            "channel_projection_records",
-            "release_records",
-            "channel_release_activations",
-        ):
-            cand[key] = []
-        errors, _w, _c = validate_phase1c_candidate_input(
-            spec, cand, validation_mode="partial_fixture"
-        )
-        assert not any("production_intake" in e for e in errors), errors
-
-    def test_partial_fixture_mode_still_runs_structural_blocker_check(self):
-        spec = _load_spec()
-        cand = _load_candidate(BLOCKED_FIXTURE)
-        errors, _w, _c = validate_phase1c_candidate_input(
-            spec, cand, validation_mode="partial_fixture"
-        )
-        # Structural-blocker rejection still fires; production_intake
-        # completeness noise is suppressed.
-        assert any(
-            "blocks_phase_1c_content_loading=True" in e
-            and "SYNTH-BLK-STRUCTURAL-001" in e
-            for e in errors
-        ), errors
-        assert not any("production_intake" in e for e in errors), errors
-
-    def test_partial_fixture_mode_skips_canonical_rule_category(self):
-        spec = _load_spec()
-        cand = _load_candidate(SAFE_FIXTURE)
-        cand["rules"][0]["rule_category"] = "SYNTHETIC_TEST_CATEGORY"
-        errors, _w, _c = validate_phase1c_candidate_input(
-            spec, cand, validation_mode="partial_fixture"
-        )
-        assert not any(
-            "canonical rule_category validation list" in e for e in errors
-        ), errors
-
-
-# ---------------------------------------------------------------------------
-# Phase 1B.5B \u2014 CLI --mode wiring.
-# ---------------------------------------------------------------------------
-
-
-class TestCLIModeOption:
-    def test_cli_blocks_rules_only_payload_under_default_production_intake(
-        self, tmp_path
-    ):
-        # Build a rules-only candidate fixture on the fly.
-        partial = tmp_path / "candidate.yaml"
-        partial.write_text(
-            (SAFE_FIXTURE / "candidate.yaml").read_text(encoding="utf-8"),
-            encoding="utf-8",
-        )
-        # Now blank out every family except `rules`.
-        import yaml
-
-        data = yaml.safe_load(partial.read_text(encoding="utf-8"))
-        for key in (
-            "evidence_records",
-            "blocker_records",
-            "channel_projection_records",
-            "release_records",
-            "channel_release_activations",
-        ):
-            data[key] = []
-        partial.write_text(yaml.safe_dump(data), encoding="utf-8")
-
+    def test_help_does_not_expose_mode_option(self):
         runner = CliRunner()
-        result = runner.invoke(
-            app,
-            [
-                "validate-phase1c-input",
-                "-c",
-                str(CONFIG_DIR),
-                "-i",
-                str(tmp_path),
-            ],
-        )
-        assert result.exit_code == 1, result.output
-        assert "BLOCKED \u2014 PHASE 1C INPUT VALIDATION FAILED" in result.output
-        assert "production_intake" in result.output
-        assert "Validation mode: production-intake" in result.output
-
-    def test_cli_partial_fixture_mode_allows_rules_only_payload(
-        self, tmp_path
-    ):
-        partial = tmp_path / "candidate.yaml"
-        partial.write_text(
-            (SAFE_FIXTURE / "candidate.yaml").read_text(encoding="utf-8"),
-            encoding="utf-8",
-        )
-        import yaml
-
-        data = yaml.safe_load(partial.read_text(encoding="utf-8"))
-        for key in (
-            "evidence_records",
-            "blocker_records",
-            "channel_projection_records",
-            "release_records",
-            "channel_release_activations",
-        ):
-            data[key] = []
-        partial.write_text(yaml.safe_dump(data), encoding="utf-8")
-
-        runner = CliRunner()
-        result = runner.invoke(
-            app,
-            [
-                "validate-phase1c-input",
-                "-c",
-                str(CONFIG_DIR),
-                "-i",
-                str(tmp_path),
-                "--mode",
-                "partial-fixture",
-            ],
-        )
-        # No structural blocker, no FK breaks, no completeness checks \u2014
-        # the rules-only synthetic fixture is admissible under
-        # partial_fixture mode.
+        result = runner.invoke(app, ["validate-phase1c-input", "--help"])
         assert result.exit_code == 0, result.output
-        assert "PHASE 1C INPUT VALIDATION PASSED" in result.output
-        assert "Validation mode: partial-fixture" in result.output
+        assert "--mode" not in result.output
+        assert "partial-fixture" not in result.output
+        assert "partial_fixture" not in result.output
 
-    def test_cli_rejects_unknown_mode(self):
+    def test_mode_partial_fixture_is_rejected_as_unknown_option(self):
         runner = CliRunner()
         result = runner.invoke(
             app,
@@ -914,9 +779,319 @@ class TestCLIModeOption:
                 "-i",
                 str(SAFE_FIXTURE),
                 "--mode",
-                "not-a-real-mode",
+                "partial-fixture",
+            ],
+        )
+        assert result.exit_code != 0, result.output
+
+    def test_rules_only_fixture_fails_through_cli(self):
+        runner = CliRunner()
+        result = runner.invoke(
+            app,
+            [
+                "validate-phase1c-input",
+                "-c",
+                str(CONFIG_DIR),
+                "-i",
+                str(INCOMPLETE_FIXTURE),
             ],
         )
         assert result.exit_code == 1, result.output
-        assert "unknown --mode" in result.output
+        assert "BLOCKED" in result.output
+        # No "Validation mode:" line should be present.
+        assert "Validation mode:" not in result.output
 
+
+# ---------------------------------------------------------------------------
+# Phase 1B.5C-R — Exact projection ↔ activation coverage.
+# ---------------------------------------------------------------------------
+
+
+class TestExactProjectionActivationCoverage:
+    """Every distinct projected channel must have EXACTLY ONE DRAFT
+    activation.  No orphan activations allowed."""
+
+    def _safe(self):
+        return _load_candidate(SAFE_FIXTURE)
+
+    def test_exact_one_activation_per_projected_channel_passes(self):
+        spec = _load_spec()
+        errors, _w, _c = validate_phase1c_candidate_input(
+            spec, self._safe()
+        )
+        assert errors == [], errors
+
+    def test_rejects_missing_activation_for_projected_channel(self):
+        spec = _load_spec()
+        cand = self._safe()
+        cand["channel_release_activations"] = []
+        errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
+        assert any(
+            "WEBSITE_PUBLIC" in e and "channel_release_activation" in e
+            for e in errors
+        ), errors
+
+    def test_rejects_duplicate_activation_for_same_channel(self):
+        """Two DRAFT activation shells for the same projected channel violates
+        the exactly-one invariant."""
+        spec = _load_spec()
+        cand = self._safe()
+        second_act = dict(cand["channel_release_activations"][0])
+        second_act["activation_id"] = "SYNTH-ACT-002"
+        cand["channel_release_activations"].append(second_act)
+        errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
+        assert any(
+            "WEBSITE_PUBLIC" in e
+            and ("2 DRAFT activation" in e or "exactly one" in e.lower())
+            for e in errors
+        ), errors
+
+    def test_rejects_activation_for_unprojected_channel(self):
+        """An activation that targets a channel with no projection record
+        must be refused."""
+        spec = _load_spec()
+        cand = self._safe()
+        # Add a second activation on a channel with no projection.
+        extra_act = {
+            "activation_id": "SYNTH-ACT-ORPHAN",
+            "release_id": "SYNTH-REL-001",
+            "channel": "GOOGLE_ADS_PUBLIC",
+            "activation_status": "DRAFT",
+        }
+        cand["channel_release_activations"].append(extra_act)
+        errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
+        assert any(
+            "GOOGLE_ADS_PUBLIC" in e
+            and "channel_projection_record" in e
+            for e in errors
+        ), errors
+
+    def test_rejects_restricted_pii_projection(self):
+        spec = _load_spec()
+        cand = self._safe()
+        cand["rules"][0]["channel_visibility"] = "RESTRICTED_PII"
+        errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
+        assert any(
+            "SYNTH-RULE-001" in e and "RESTRICTED_PII" in e for e in errors
+        ), errors
+
+
+# ---------------------------------------------------------------------------
+# Phase 1B.5C-R — Exactly one DRAFT ReleaseRecord shell.
+# ---------------------------------------------------------------------------
+
+
+class TestExactOneRelease:
+    """The candidate must carry exactly one DRAFT ReleaseRecord shell."""
+
+    def _safe(self):
+        return _load_candidate(SAFE_FIXTURE)
+
+    def test_exactly_one_release_passes(self):
+        spec = _load_spec()
+        errors, _w, _c = validate_phase1c_candidate_input(
+            spec, self._safe()
+        )
+        assert errors == [], errors
+
+    def test_rejects_multiple_draft_releases(self):
+        spec = _load_spec()
+        cand = self._safe()
+        second_rel = {
+            "release_id": "SYNTH-REL-002",
+            "release_version": "",
+            "release_title": "Second synthetic DRAFT release (test-only)",
+            "status": "DRAFT",
+        }
+        cand["release_records"].append(second_rel)
+        errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
+        assert any(
+            "exactly one DRAFT ReleaseRecord" in e for e in errors
+        ), errors
+
+    def test_rejects_activation_referencing_wrong_release(self):
+        """When the activation's release_id differs from the single DRAFT
+        release, it must be rejected."""
+        spec = _load_spec()
+        cand = self._safe()
+        cand["channel_release_activations"][0]["release_id"] = (
+            "SYNTH-REL-WRONG"
+        )
+        errors, _w, _c = validate_phase1c_candidate_input(spec, cand)
+        # Both FK error and wrong-release error should fire.
+        assert any(
+            "SYNTH-ACT-001" in e for e in errors
+        ), errors
+
+
+# ---------------------------------------------------------------------------
+# Phase 1B.5C-R — Field-to-column mapping compatibility (Section 4).
+# ---------------------------------------------------------------------------
+
+
+class TestFieldToColumnMappingCompatibility:
+    """Every required governance field must have exactly one column mapping
+    entry pointing to the model's authorized destination tab."""
+
+    def _spec_without_field(self, source_model: str, field: str):
+        """Return a spec copy with the mapping for (source_model, field) removed."""
+        spec = _load_spec()
+        spec.column_mappings = [
+            m for m in spec.column_mappings
+            if not (m.source_model == source_model and m.source_field == field)
+        ]
+        return spec
+
+    def _spec_with_duplicate_field(self, source_model: str, field: str):
+        """Return a spec copy with a duplicate mapping entry for (source_model, field)."""
+        spec = _load_spec()
+        match = next(
+            (m for m in spec.column_mappings
+             if m.source_model == source_model and m.source_field == field),
+            None,
+        )
+        if match is not None:
+            from hfla_control_room.models import ColumnMappingRecord
+            spec.column_mappings = list(spec.column_mappings) + [
+                ColumnMappingRecord(
+                    source_model=match.source_model,
+                    source_field=match.source_field,
+                    destination_tab=match.destination_tab,
+                    column_header=match.column_header,
+                )
+            ]
+        return spec
+
+    def _spec_with_wrong_tab(self, source_model: str, field: str, wrong_tab: str):
+        """Return a spec copy with the field's mapping destination_tab changed."""
+        from hfla_control_room.models import ColumnMappingRecord
+        spec = _load_spec()
+        new_mappings = []
+        for m in spec.column_mappings:
+            if m.source_model == source_model and m.source_field == field:
+                new_mappings.append(ColumnMappingRecord(
+                    source_model=m.source_model,
+                    source_field=m.source_field,
+                    destination_tab=wrong_tab,
+                    column_header=m.column_header,
+                ))
+            else:
+                new_mappings.append(m)
+        spec.column_mappings = new_mappings
+        return spec
+
+    def _cand(self):
+        return _load_candidate(SAFE_FIXTURE)
+
+    # --- ChannelProjectionRecord ---
+
+    def test_rejects_missing_publication_key_mapping(self):
+        spec = self._spec_without_field("ChannelProjectionRecord", "publication_key")
+        errors, _w, _c = validate_phase1c_candidate_input(spec, self._cand())
+        assert any(
+            "ChannelProjectionRecord.publication_key" in e
+            and "no column mapping" in e
+            for e in errors
+        ), errors
+
+    def test_rejects_missing_approved_channel_text_mapping(self):
+        spec = self._spec_without_field(
+            "ChannelProjectionRecord", "approved_channel_text"
+        )
+        errors, _w, _c = validate_phase1c_candidate_input(spec, self._cand())
+        assert any(
+            "ChannelProjectionRecord.approved_channel_text" in e
+            and "no column mapping" in e
+            for e in errors
+        ), errors
+
+    def test_rejects_wrong_tab_for_publication_key(self):
+        spec = self._spec_with_wrong_tab(
+            "ChannelProjectionRecord", "publication_key", "03_RULE_REGISTER_MASTER"
+        )
+        errors, _w, _c = validate_phase1c_candidate_input(spec, self._cand())
+        assert any(
+            "ChannelProjectionRecord.publication_key" in e
+            and "no column mapping" in e
+            for e in errors
+        ), errors
+
+    def test_rejects_duplicate_publication_key_mapping(self):
+        spec = self._spec_with_duplicate_field(
+            "ChannelProjectionRecord", "publication_key"
+        )
+        errors, _w, _c = validate_phase1c_candidate_input(spec, self._cand())
+        assert any(
+            "ChannelProjectionRecord.publication_key" in e
+            and "mapping entries" in e
+            for e in errors
+        ), errors
+
+    # --- BlockerRecord ---
+
+    def test_rejects_missing_blocked_channels_mapping(self):
+        spec = self._spec_without_field("BlockerRecord", "blocked_channels")
+        errors, _w, _c = validate_phase1c_candidate_input(spec, self._cand())
+        assert any(
+            "BlockerRecord.blocked_channels" in e
+            and "no column mapping" in e
+            for e in errors
+        ), errors
+
+    def test_rejects_missing_blocks_phase_1c_content_loading_mapping(self):
+        spec = self._spec_without_field(
+            "BlockerRecord", "blocks_phase_1c_content_loading"
+        )
+        errors, _w, _c = validate_phase1c_candidate_input(spec, self._cand())
+        assert any(
+            "BlockerRecord.blocks_phase_1c_content_loading" in e
+            and "no column mapping" in e
+            for e in errors
+        ), errors
+
+    # --- ReleaseRecord ---
+
+    def test_rejects_missing_qa_evidence_mapping_on_release(self):
+        spec = self._spec_without_field("ReleaseRecord", "qa_evidence")
+        errors, _w, _c = validate_phase1c_candidate_input(spec, self._cand())
+        assert any(
+            "ReleaseRecord.qa_evidence" in e and "no column mapping" in e
+            for e in errors
+        ), errors
+
+    # --- ChannelReleaseActivationRecord ---
+
+    def test_rejects_missing_qa_evidence_mapping_on_activation(self):
+        spec = self._spec_without_field(
+            "ChannelReleaseActivationRecord", "qa_evidence"
+        )
+        errors, _w, _c = validate_phase1c_candidate_input(spec, self._cand())
+        assert any(
+            "ChannelReleaseActivationRecord.qa_evidence" in e
+            and "no column mapping" in e
+            for e in errors
+        ), errors
+
+    def test_rejects_missing_supersedes_activation_id_mapping(self):
+        spec = self._spec_without_field(
+            "ChannelReleaseActivationRecord", "supersedes_activation_id"
+        )
+        errors, _w, _c = validate_phase1c_candidate_input(spec, self._cand())
+        assert any(
+            "ChannelReleaseActivationRecord.supersedes_activation_id" in e
+            and "no column mapping" in e
+            for e in errors
+        ), errors
+
+    def test_rejects_wrong_tab_for_activation_qa_evidence(self):
+        spec = self._spec_with_wrong_tab(
+            "ChannelReleaseActivationRecord",
+            "qa_evidence",
+            "03_RULE_REGISTER_MASTER",
+        )
+        errors, _w, _c = validate_phase1c_candidate_input(spec, self._cand())
+        assert any(
+            "ChannelReleaseActivationRecord.qa_evidence" in e
+            and "no column mapping" in e
+            for e in errors
+        ), errors

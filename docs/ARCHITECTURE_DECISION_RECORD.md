@@ -380,25 +380,50 @@ release does not govern.
 
 ### Status
 
-Accepted - Phase 1B.5B.
+Implemented but Rejected for Phase Advancement — Phase 1B.5C-R Remediation Required.
+
+Phase 1B.5B introduced a `--mode/-m {production-intake,partial-fixture}` CLI option and a
+`validation_mode` parameter on `validate_phase1c_candidate_input`.  This bypass was
+subsequently rejected as a governance violation (see `docs/PHASE_1B_5B_ACCEPTANCE_BLOCKERS.md`).
+Phase 1B.5C-R removed the bypass entirely.  The completeness and workbook-destination contracts
+described below remain in force; the two-mode design does not.
 
 ### Context
 
-Phase 1B.5A delivered a non-mutating Phase 1C candidate intake gate `validate-phase1c-input` and `validate_phase1c_candidate_input`.  The audit at HEAD bfad6bc identified that the original gate accepted incomplete payloads (e.g. a `rules`-only candidate with no evidence, blockers, projections, releases, or activations) and did not require every projected output channel to already have a paired DRAFT activation row.  It also did not validate the candidate against the frozen workbook destination register (`config/column_mappings.yaml`) or the canonical `rule_category` validation list.
+Phase 1B.5A delivered a non-mutating Phase 1C candidate intake gate `validate-phase1c-input` and
+`validate_phase1c_candidate_input`.  The audit at HEAD bfad6bc identified that the original gate
+accepted incomplete payloads (e.g. a `rules`-only candidate with no evidence, blockers,
+projections, releases, or activations) and did not require every projected output channel to
+already have a paired DRAFT activation row.  It also did not validate the candidate against the
+frozen workbook destination register (`config/column_mappings.yaml`) or the canonical
+`rule_category` validation list.
 
-### Decision
+### Decision (as originally implemented in Phase 1B.5B — superseded by Phase 1B.5C-R)
 
-The Phase 1C intake gate now operates in one of two named validation modes:
+The Phase 1C intake gate enforces a complete DRAFT commercial governance payload.  All six record
+families (`rules`, `evidence_records`, `blocker_records`, `channel_projection_records`,
+`release_records`, `channel_release_activations`) must be non-empty.  Exactly one DRAFT
+`ReleaseRecord` shell must be present.  Every distinct `ChannelProjectionRecord.channel` must have
+exactly one `ChannelReleaseActivationRecord` row on the same channel (no missing, no duplicate).
+No activation may reference a channel that has no projection.  Every required governance field for
+each source model must have exactly one column mapping entry in `config/column_mappings.yaml`
+pointing to the model's authorized destination tab, and that column_header must exist in the
+frozen tab definition.  Every `RuleRow.rule_category` value must be in the canonical
+`rule_category` validation list.
 
-* `production_intake` (default, used by every real candidate submission) enforces a complete DRAFT commercial governance payload.  All six record families (`rules`, `evidence_records`, `blocker_records`, `channel_projection_records`, `release_records`, `channel_release_activations`) must be non-empty.  Every distinct `ChannelProjectionRecord.channel` must have at least one `ChannelReleaseActivationRecord` row on the same channel (every projected output channel ships with a DRAFT implementation-control row).  Every record-family's source_model must be addressable against the frozen workbook destinations: each `(source_model, destination_tab)` referenced by candidate records must exist in `spec.column_mappings` AND `destination_tab` must be a real tab in `spec.governance_workbook.tabs`.  Every `RuleRow.rule_category` value must be in the canonical `rule_category` validation list.
-* `partial_fixture` is reserved exclusively for synthetic isolated-rejection-branch test fixtures.  It skips completeness, channel-activation, workbook-destination, and canonical-rule_category checks while still running every other check (DRAFT-only state, FK integrity, duplicate IDs, strict-schema, restricted-PII, structural blocker gate, parse errors).  It MUST NOT be used for any real candidate submission.
-
-The CLI exposes this via `--mode/-m {production-intake,partial-fixture}` with default `production-intake`.  Unknown mode values are rejected with exit 1.
+The `partial_fixture` bypass mode introduced in Phase 1B.5B was removed in Phase 1B.5C-R.
+The CLI `validate-phase1c-input` command does not accept `--mode` or `-m`; all validation checks
+run unconditionally on every invocation.
 
 ### Consequences
 
-* Every real Phase 1C candidate that proceeds past the intake gate is now a complete DRAFT commercial governance payload with every projected channel pre-paired to a DRAFT implementation-control row and every record addressable to a real workbook tab.
-* Synthetic test fixtures that intentionally isolate a single rejection branch are admissible only under the explicit `partial-fixture` mode, eliminating silent admission of partial payloads through the default code path.
-* The intake gate remains non-mutating: no writes to `config/`, no Google API or OAuth activity, no website / Ads / chatbot / Google-asset activation, `provision --apply` remains BLOCKED.
-* Direct test coverage now exists for every duplicate-ID branch (6 families), every FK branch (8 references), and every strict-schema unknown-field branch (6 record types), plus the new completeness, channel-pairing, workbook-destination, canonical-rule_category, and CLI `--mode` wiring branches.
+* Every Phase 1C candidate that proceeds past the intake gate is a complete DRAFT commercial
+  governance payload: all six families non-empty, exactly one DRAFT release, exactly one DRAFT
+  activation per projected channel, every required field mapped to the authorized workbook tab.
+* The intake gate is non-mutating: no writes to `config/`, no Google API or OAuth activity, no
+  website / Ads / chatbot / Google-asset activation, `provision --apply` remains BLOCKED.
+* Direct test coverage exists for every duplicate-ID branch (6 families), every FK branch
+  (8 references), every strict-schema unknown-field branch (6 record types), exact projection
+  ↔ activation coverage (5 branches), exactly-one-release (3 branches), field-to-column
+  mapping compatibility (11 branches), and CLI surface (3 branches).
 

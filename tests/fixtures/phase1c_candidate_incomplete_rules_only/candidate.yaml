@@ -1,0 +1,16 @@
+# Synthetic test-only DRAFT Phase 1C candidate dataset — incomplete (rules only).
+# Used solely by tests/test_phase1c_candidate_input.py (Phase 1B.5C-R).
+# Contains NO real HFLA pricing, policy text, customer data, or PII.
+#
+# Only the `rules` key is populated.  All other five governance register
+# families are absent.  This fixture MUST be rejected by the intake gate
+# because a real Phase 1C candidate dataset must contain all six DRAFT
+# governance register families.
+
+rules:
+  - rule_id: "SYNTH-RULE-001"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Synthetic test-only DRAFT rule (no real policy)"
+    status: "DRAFT"
+    draft_recommendation: "synthetic-draft-only"
+    channel_visibility: "INTERNAL_ONLY"

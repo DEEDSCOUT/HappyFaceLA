@@ -113,7 +113,7 @@ Phase 1D acceptances are mandatory.
    `status: DRAFT`).  Loads complete source evidence records.  No live
    Google action.  No APPROVED rules.
 
-   **Phase 1C intake gate (Phase 1B.5A / 1B.5B).** Any external Phase 1C
+   **Phase 1C intake gate (Phase 1B.5A / 1B.5B / 1B.5C-R).** Any external Phase 1C
    candidate dataset must first pass the non-mutating intake gate:
    `hfla-control-room validate-phase1c-input -c <config-dir> -i <candidate-path>`.
    This is the only command authorised to validate candidate content
@@ -125,22 +125,26 @@ Phase 1D acceptances are mandatory.
    establishes eligibility only; actual loading requires a separate
    controller authorisation.
 
-   The intake gate runs in one of two named modes via `--mode/-m`:
-   - `production-intake` (default — used by every real candidate
-     submission) enforces a **complete DRAFT commercial governance
-     payload**.  All six record families (`rules`, `evidence_records`,
-     `blocker_records`, `channel_projection_records`, `release_records`,
-     `channel_release_activations`) must be non-empty; every distinct
-     projected output channel must already have a paired DRAFT
-     `channel_release_activation` row; every record-family source_model
-     must be addressable against the frozen workbook destinations in
-     `config/column_mappings.yaml` and `governance_workbook.tabs`; and
-     every `rule_category` must come from the canonical
+   The intake gate enforces a single unconditional completeness contract — there is
+   no `--mode` option and no bypass path.  The candidate must satisfy all of the
+   following simultaneously:
+   - All six record families (`rules`, `evidence_records`, `blocker_records`,
+     `channel_projection_records`, `release_records`, `channel_release_activations`)
+     must be non-empty.
+   - Exactly one DRAFT `ReleaseRecord` shell must be present.
+   - Every distinct projected output channel must have exactly one DRAFT
+     `ChannelReleaseActivationRecord` row; no channel may have zero or more than one.
+   - No activation may reference a channel that has no `ChannelProjectionRecord`.
+   - Every required governance field for each source model must have exactly one
+     column mapping entry in `config/column_mappings.yaml` pointing to that model's
+     authorized destination tab, and the `column_header` must exist in the frozen tab
+     definition.
+   - Every `RuleRow.rule_category` value must come from the canonical
      `rule_category` validation list.
-   - `partial-fixture` is reserved exclusively for synthetic
-     isolated-rejection-branch **test fixtures**.  It skips the four
-     completeness checks above while still running every other check.
-     It MUST NOT be used for any real candidate submission.
+
+   The `partial-fixture` mode that was briefly present in Phase 1B.5B was removed
+   in Phase 1B.5C-R as a governance violation.  See
+   `docs/PHASE_1B_5B_ACCEPTANCE_BLOCKERS.md` for details.
 3. **Phase 1D — Idempotency contract validation.**  Exercise the
    manifest / Google-side idempotency contract — deterministic keys,
    search-before-create, fail-closed on multiple Drive matches,

@@ -142,3 +142,19 @@ tests/test_phase1c_candidate_input.py
 * Baseline scaffold `BLK-DRAFT-*` placeholder blockers continue to
   NOT contaminate the candidate effective state.
 * Prior commit `bfad6bc` is preserved unamended.
+
+---
+
+## 6. Post-closure: Phase 1B.5B Rejected for Phase Advancement
+
+**Added by Phase 1B.5C-R.**
+
+The --mode/-m {production-intake,partial-fixture} CLI option and the alidation_mode
+parameter on alidate_phase1c_candidate_input introduced in Phase 1B.5B were subsequently
+rejected as a governance violation.  An operator-accessible bypass that skips completeness,
+channel-activation-pairing, workbook-destination, and canonical-rule_category validation
+is structurally incompatible with the integrity requirements for Phase 1C content loading.
+
+Phase 1B.5C-R removed the bypass entirely.  See docs/PHASE_1B_5B_ACCEPTANCE_BLOCKERS.md
+for the full enumeration of blockers and docs/PHASE_1B_5C_R_CLOSURE_REPORT.md for the
+remediation closure report.

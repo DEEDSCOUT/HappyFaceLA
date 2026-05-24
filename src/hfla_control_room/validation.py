@@ -1077,31 +1077,10 @@ _RESTRICTED_VISIBILITY_FOR_INTAKE: frozenset = frozenset(
     {ChannelVisibility.RESTRICTED_PII}
 )
 
-# Phase 1B.5B - candidate-intake validation modes.
-#
-# ``production_intake`` (default) is the contract enforced on every REAL
-# commercial governance payload submitted for Phase 1C content loading.  It
-# requires the candidate to be a COMPLETE DRAFT commercial governance
-# payload (all six record families non-empty), every projected output
-# channel to already have a DRAFT activation row, and every used
-# source_model to be addressable against the frozen workbook destinations.
-#
-# ``partial_fixture`` is reserved exclusively for synthetic, isolated
-# test fixtures that intentionally exercise a single rejection branch.  It
-# skips the completeness, channel-activation, and workbook-destination
-# checks so that a minimal synthetic fixture can isolate one failure mode
-# without dragging in unrelated structural errors.  It MUST NOT be used
-# for any real candidate submission.
-_VALIDATION_MODE_PRODUCTION_INTAKE = "production_intake"
-_VALIDATION_MODE_PARTIAL_FIXTURE = "partial_fixture"
-_VALIDATION_MODES: frozenset[str] = frozenset(
-    {_VALIDATION_MODE_PRODUCTION_INTAKE, _VALIDATION_MODE_PARTIAL_FIXTURE}
-)
-
 # Maps each candidate record-family key to the Pydantic source_model class
 # name used in the frozen column-mapping register
 # (``config/column_mappings.yaml``).  Used by the workbook-destination
-# structural-compatibility check.
+# structural-compatibility and field-mapping checks.
 _CANDIDATE_SOURCE_MODELS: tuple[tuple[str, str], ...] = (
     ("rules", "RuleRow"),
     ("evidence_records", "EvidenceRecord"),
@@ -1110,6 +1089,54 @@ _CANDIDATE_SOURCE_MODELS: tuple[tuple[str, str], ...] = (
     ("release_records", "ReleaseRecord"),
     ("channel_release_activations", "ChannelReleaseActivationRecord"),
 )
+
+# Each source model must map only to its authorized destination tab in the
+# frozen 15-tab governance workbook.  Any mapping to a different tab is a
+# critical configuration divergence that blocks intake.
+_AUTHORIZED_DESTINATION_TABS: dict[str, str] = {
+    "RuleRow": "03_RULE_REGISTER_MASTER",
+    "EvidenceRecord": "12_SOURCE_EVIDENCE",
+    "BlockerRecord": "02_OPEN_BLOCKERS",
+    "ChannelProjectionRecord": "10_CHANNEL_PROJECTION_REGISTER",
+    "ReleaseRecord": "13_RELEASE_CHANGELOG",
+    "ChannelReleaseActivationRecord": "09_CHANNEL_IMPLEMENTATION_MAP",
+}
+
+# Required persisted governance fields for each source model.  Every field in
+# this set must have exactly one ColumnMappingRecord entry in
+# ``config/column_mappings.yaml`` that maps to the model's authorized
+# destination tab.  These are the governance-critical fields whose mapping
+# correctness is a hard precondition for safe candidate intake.
+_REQUIRED_PERSISTED_FIELDS: dict[str, frozenset[str]] = {
+    "RuleRow": frozenset({
+        "rule_id", "rule_category", "rule_title", "status",
+        "draft_recommendation", "policy_version",
+    }),
+    "EvidenceRecord": frozenset({
+        "evidence_id", "related_rule_ids", "source_category",
+        "verified_fact", "source_locator", "status",
+    }),
+    "BlockerRecord": frozenset({
+        "blocker_id", "category", "decision_required", "priority",
+        "status", "related_rule_ids", "related_evidence_ids",
+        "blocked_channels", "blocks_live_provisioning",
+        "blocks_phase_1c_content_loading",
+    }),
+    "ChannelProjectionRecord": frozenset({
+        "projection_id", "publication_key", "related_rule_ids",
+        "channel", "content_type", "draft_channel_text",
+        "approved_channel_text", "release_status",
+    }),
+    "ReleaseRecord": frozenset({
+        "release_id", "release_version", "release_title", "status",
+        "ceo_decision", "authorized_channels", "related_rule_ids",
+        "related_projection_ids", "qa_evidence",
+    }),
+    "ChannelReleaseActivationRecord": frozenset({
+        "activation_id", "release_id", "channel", "activation_status",
+        "supersedes_activation_id", "qa_evidence",
+    }),
+}
 
 
 def load_phase1c_candidate_records(
@@ -1194,8 +1221,6 @@ def load_phase1c_candidate_records(
 def validate_phase1c_candidate_input(
     spec: FullConfigSpec,
     candidate: dict[str, list[dict]],
-    *,
-    validation_mode: str = _VALIDATION_MODE_PRODUCTION_INTAKE,
 ) -> tuple[list[str], list[str], dict[str, int]]:
     """Validate a candidate Phase 1C DRAFT dataset for safe intake.
 
@@ -1204,14 +1229,16 @@ def validate_phase1c_candidate_input(
     * ``errors`` is non-empty if intake MUST be refused.  Refusal causes
       include: any APPROVED/RELEASED/ACTIVE business state, any non-empty
       ``approved_channel_text``, any restricted-PII visibility classification,
-      any OPEN structural blocker
-      (``blocks_phase_1c_content_loading=True``), broken foreign keys,
-      duplicate identifiers, or Pydantic schema errors (unknown / missing /
-      misspelled fields).  In ``production_intake`` mode additional refusal
-      causes are: missing required record families, projected output
-      channels without a DRAFT activation row, candidate source_models
-      that are not addressable against the frozen workbook destinations,
-      and rule categories not in the canonical ``rule_category`` list.
+      any OPEN structural blocker (``blocks_phase_1c_content_loading=True``),
+      broken foreign keys, duplicate identifiers, Pydantic schema errors
+      (unknown / missing / misspelled fields), missing required record
+      families, not exactly one DRAFT ReleaseRecord shell, projected output
+      channels that do not have exactly one corresponding DRAFT activation row,
+      activations referencing a channel not present in the projections,
+      candidate source_models not addressable against the frozen workbook
+      destinations, required governance fields lacking exactly one column
+      mapping to the authorized destination tab, and rule categories not in
+      the canonical ``rule_category`` list.
     * ``warnings`` reports unresolved non-structural OPEN business blockers
       (``blocks_phase_1c_content_loading=False``).  They do NOT block intake.
     * ``counts`` reports per-record-type intake counts for operator review.
@@ -1223,21 +1250,11 @@ def validate_phase1c_candidate_input(
     candidate
         Raw candidate records (not Pydantic-validated) keyed by
         :data:`_CANDIDATE_RECORD_KEYS`.
-    validation_mode
-        ``"production_intake"`` (default) for real candidate submissions;
-        ``"partial_fixture"`` for synthetic isolated-rejection-branch test
-        fixtures only.  ``"partial_fixture"`` skips completeness,
-        channel-activation, and workbook-destination checks.
 
     The validator is in-memory only.  It does not write to ``config/`` or
     any tracked artifact, does not call any Google API, and does not trigger
     OAuth.
     """
-    if validation_mode not in _VALIDATION_MODES:
-        raise ValueError(
-            f"validation_mode must be one of {sorted(_VALIDATION_MODES)}; "
-            f"got {validation_mode!r}."
-        )
 
     # Local imports to keep the module's import-time surface minimal and to
     # avoid coupling the validator to any Google or networking module.
@@ -1509,55 +1526,99 @@ def validate_phase1c_candidate_input(
                 "configuration appears corrupt."
             )
 
-    # 8. Production-intake completeness contract (Phase 1B.5B).
-    #
-    #    A real candidate Phase 1C commercial governance payload MUST
-    #    contain all six record families.  A `rules`-only or partial
-    #    payload MUST be refused.  Synthetic test fixtures that
-    #    intentionally isolate a single rejection branch are admitted
-    #    under validation_mode="partial_fixture" only.
-    if validation_mode == _VALIDATION_MODE_PRODUCTION_INTAKE:
-        for key in _CANDIDATE_RECORD_KEYS:
-            if counts[key] == 0:
+    # 8. Completeness contract — every Phase 1C candidate payload MUST
+    #    contain all six record families.  A rules-only or partial payload
+    #    MUST be refused; there is no operator bypass.
+    for key in _CANDIDATE_RECORD_KEYS:
+        if counts[key] == 0:
+            errors.append(
+                f"Candidate intake is missing required record family "
+                f"'{key}' — a Phase 1C candidate dataset must contain all "
+                "six DRAFT governance registers (rules, evidence_records, "
+                "blocker_records, channel_projection_records, "
+                "release_records, channel_release_activations)."
+            )
+
+    # 8b. Exactly one DRAFT ReleaseRecord shell must be present.  The
+    #     candidate represents a single coordinated release event; multiple
+    #     or zero DRAFT release shells violate the single-release invariant.
+    if len(releases) != 1:
+        errors.append(
+            f"Candidate must contain exactly one DRAFT ReleaseRecord shell; "
+            f"found {len(releases)} release record(s)."
+        )
+
+    # 8c. Exact projection ↔ activation coverage.  Every distinct non-PII
+    #     channel appearing in channel_projection_records must have EXACTLY
+    #     ONE corresponding DRAFT ChannelReleaseActivationRecord, and every
+    #     activation must target a channel that is present in the projections
+    #     (no orphan activations).  Multiple DRAFT activation shells for the
+    #     same channel are prohibited.
+    projected_channels: dict[str, list[str]] = {}  # channel.value → [projection_id, ...]
+    for proj in projections:
+        projected_channels.setdefault(proj.channel.value, []).append(proj.projection_id)
+
+    activation_channel_counts: dict[str, int] = {}
+    for act in activations:
+        activation_channel_counts[act.channel.value] = (
+            activation_channel_counts.get(act.channel.value, 0) + 1
+        )
+
+    for ch_val, proj_ids in projected_channels.items():
+        act_count = activation_channel_counts.get(ch_val, 0)
+        if act_count == 0:
+            errors.append(
+                f"Candidate projection(s) {proj_ids} target channel "
+                f"'{ch_val}' but no DRAFT channel_release_activation row "
+                "exists for that channel — every projected output channel "
+                "must have exactly one DRAFT implementation-control row in "
+                "the same candidate payload."
+            )
+        elif act_count > 1:
+            errors.append(
+                f"Channel '{ch_val}' has {act_count} DRAFT activation "
+                "shells — exactly one DRAFT activation per projected channel "
+                "is required."
+            )
+
+    for ch_val in activation_channel_counts:
+        if ch_val not in projected_channels:
+            errors.append(
+                f"Candidate activation targets channel '{ch_val}' but no "
+                "channel_projection_record exists for that channel — every "
+                "activation must correspond to a projected output channel."
+            )
+
+    # 8d. Every activation must reference the candidate's single DRAFT
+    #     release.  Checked only when exactly one release is present
+    #     (multi-release / zero-release already caught above).
+    if len(releases) == 1:
+        the_release_id = releases[0].release_id
+        for act in activations:
+            if act.release_id != the_release_id:
                 errors.append(
-                    f"Candidate intake (production_intake) is missing "
-                    f"required record family '{key}' - a real Phase 1C "
-                    "candidate dataset must contain all six DRAFT "
-                    "governance registers (rules, evidence_records, "
-                    "blocker_records, channel_projection_records, "
-                    "release_records, channel_release_activations)."
+                    f"Candidate activation '{act.activation_id}' references "
+                    f"release_id='{act.release_id}' but the candidate's only "
+                    f"DRAFT release is '{the_release_id}' — all activations "
+                    "must reference the single DRAFT release shell."
                 )
 
-        # 8b. Every projected output channel must already have a DRAFT
-        #     activation row on that channel.  This prevents admitting
-        #     a candidate that proposes output on a channel without the
-        #     corresponding DRAFT implementation-control scaffolding.
-        activation_channels = {a.channel for a in activations}
-        for proj in projections:
-            if proj.channel not in activation_channels:
-                errors.append(
-                    f"Candidate projection '{proj.projection_id}' targets "
-                    f"channel '{proj.channel.value}' but no DRAFT "
-                    "channel_release_activation row exists for that "
-                    "channel - every projected output channel must have "
-                    "a DRAFT implementation-control row in the same "
-                    "candidate payload."
-                )
-
-    # 9. Frozen workbook destination compatibility (Phase 1B.5B).
+    # 9. Frozen workbook destination compatibility.
     #
     #    Every record family present in the candidate must have at least
     #    one column mapping into the frozen governance workbook, and every
     #    such mapping's destination_tab must exist in
-    #    spec.governance_workbook.tabs.  Rule categories must come from
-    #    the canonical `rule_category` validation list.  These checks
-    #    apply only in production_intake mode - synthetic test fixtures
-    #    are allowed to use non-canonical category labels.
-    if (
-        validation_mode == _VALIDATION_MODE_PRODUCTION_INTAKE
-        and spec is not None
-    ):
+    #    spec.governance_workbook.tabs.
+    #
+    #    Additionally, every required persisted governance field must have
+    #    EXACTLY ONE column mapping entry pointing to the model's
+    #    authorized destination tab, and the mapped column_header must
+    #    exist in that tab's column_headers list.
+    #
+    #    Rule categories must come from the canonical rule_category list.
+    if spec is not None:
         tab_titles = {t.title for t in spec.governance_workbook.tabs}
+        tabs_by_title = {t.title: t for t in spec.governance_workbook.tabs}
         mappings_by_model: dict[str, list] = {}
         for m in spec.column_mappings:
             mappings_by_model.setdefault(m.source_model, []).append(m)
@@ -1570,7 +1631,7 @@ def validate_phase1c_candidate_input(
                     f"Candidate record family '{key}' "
                     f"(source_model='{source_model}') has no column "
                     "mappings in the frozen workbook destination "
-                    "register - the candidate cannot be admitted because "
+                    "register — the candidate cannot be admitted because "
                     "its records have no addressable destination tab."
                 )
                 continue
@@ -1580,12 +1641,67 @@ def validate_phase1c_candidate_input(
                 errors.append(
                     f"Candidate record family '{key}' references "
                     f"destination tabs {sorted(unknown_tabs)} that do "
-                    "not exist in the frozen governance workbook - "
+                    "not exist in the frozen governance workbook — "
                     "baseline workbook architecture and column mappings "
                     "have diverged."
                 )
 
-        # 9b. Canonical rule_category check.
+            # 9b. Per-field required mapping compatibility (Phase 1B.5C-R).
+            #
+            #     Each required governance field must have EXACTLY ONE
+            #     column mapping entry whose destination_tab equals the
+            #     model's authorized destination tab, and the column_header
+            #     must appear in the tab's column_headers.
+            authorized_tab = _AUTHORIZED_DESTINATION_TABS.get(source_model)
+            required_fields = _REQUIRED_PERSISTED_FIELDS.get(source_model, frozenset())
+            if authorized_tab:
+                # Group mappings for this model by (source_field, destination_tab)
+                field_mappings: dict[str, list] = {}
+                for m in present:
+                    field_mappings.setdefault(m.source_field, []).append(m)
+
+                for field in sorted(required_fields):
+                    field_entries = field_mappings.get(field, [])
+                    # Filter to only entries that point to the authorized tab
+                    authorized_entries = [
+                        m for m in field_entries
+                        if m.destination_tab == authorized_tab
+                    ]
+                    if len(authorized_entries) == 0:
+                        errors.append(
+                            f"Required field '{source_model}.{field}' has no "
+                            f"column mapping to the authorized destination tab "
+                            f"'{authorized_tab}' — every required governance "
+                            "field must have exactly one mapping to its "
+                            "authorized destination tab."
+                        )
+                    elif len(authorized_entries) > 1:
+                        errors.append(
+                            f"Required field '{source_model}.{field}' has "
+                            f"{len(authorized_entries)} column mapping entries "
+                            f"for tab '{authorized_tab}' — exactly one mapping "
+                            "per field is required."
+                        )
+                    else:
+                        # Exactly one authorized entry — verify column_header
+                        # exists in the tab's column_headers.
+                        m = authorized_entries[0]
+                        tab_spec = tabs_by_title.get(authorized_tab)
+                        if (
+                            tab_spec is not None
+                            and tab_spec.column_headers
+                            and m.column_header not in tab_spec.column_headers
+                        ):
+                            errors.append(
+                                f"Required field '{source_model}.{field}' "
+                                f"maps to column_header '{m.column_header}' "
+                                f"in tab '{authorized_tab}' but that header "
+                                "does not exist in the frozen tab definition — "
+                                "column mapping and workbook schema have "
+                                "diverged."
+                            )
+
+        # 9c. Canonical rule_category check.
         canonical_categories: set[str] | None = None
         for vl in spec.validation_lists.lists:
             if vl.list_name == "rule_category":

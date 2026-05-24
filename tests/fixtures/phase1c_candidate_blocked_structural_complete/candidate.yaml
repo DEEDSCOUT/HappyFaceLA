@@ -1,0 +1,72 @@
+# Synthetic test-only DRAFT Phase 1C candidate dataset — structurally blocked, complete.
+# Used solely by tests/test_phase1c_candidate_input.py (Phase 1B.5C-R).
+# Contains NO real HFLA pricing, policy text, customer data, or PII.
+#
+# All six governance register families are present.  One OPEN structural
+# blocker has blocks_phase_1c_content_loading=true, which MUST cause intake
+# to be refused.  One ordinary non-structural blocker is also present.
+
+rules:
+  - rule_id: "SYNTH-RULE-001"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Synthetic test-only DRAFT rule (no real policy)"
+    status: "DRAFT"
+    draft_recommendation: "synthetic-draft-only"
+    channel_visibility: "INTERNAL_ONLY"
+
+evidence_records:
+  - evidence_id: "SYNTH-EVD-001"
+    source_category: "SYNTHETIC_TEST"
+    source_name: "synthetic-source"
+    source_locator: "synthetic://test-fixture"
+    verified_fact: "synthetic test-only evidence"
+    related_rule_ids: ["SYNTH-RULE-001"]
+    status: "DRAFT"
+
+blocker_records:
+  - blocker_id: "SYNTH-BLK-STRUCTURAL-001"
+    category: "LEGAL_REVIEW_REQUIRED"
+    decision_required: "Synthetic structural decision blocking Phase 1C (test-only)."
+    why_it_matters: "Test fixture only — not a real legal risk."
+    risk_if_missing: "Test fixture only."
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["SYNTH-RULE-001"]
+    blocked_channels: ["WEBSITE_PUBLIC"]
+    blocks_live_provisioning: true
+    blocks_phase_1c_content_loading: true
+  - blocker_id: "SYNTH-BLK-ORDINARY-001"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: "Synthetic ordinary business decision (test-only)."
+    why_it_matters: "Test fixture only — not a real decision."
+    risk_if_missing: "Test fixture only."
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["SYNTH-RULE-001"]
+    blocked_channels: []
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+channel_projection_records:
+  - projection_id: "SYNTH-PROJ-001"
+    publication_key: "synth.test.draft_only"
+    related_rule_ids: ["SYNTH-RULE-001"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "SYNTHETIC_TEST"
+    draft_channel_text: "synthetic draft — not real content"
+    approved_channel_text: ""
+    release_status: "DRAFT"
+
+release_records:
+  - release_id: "SYNTH-REL-001"
+    release_version: ""
+    release_title: "Synthetic DRAFT release shell"
+    status: "DRAFT"
+    related_rule_ids: ["SYNTH-RULE-001"]
+    related_projection_ids: ["SYNTH-PROJ-001"]
+
+channel_release_activations:
+  - activation_id: "SYNTH-ACT-001"
+    release_id: "SYNTH-REL-001"
+    channel: "WEBSITE_PUBLIC"
+    activation_status: "DRAFT"
