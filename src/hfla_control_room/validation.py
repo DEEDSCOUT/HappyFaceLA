@@ -1077,6 +1077,40 @@ _RESTRICTED_VISIBILITY_FOR_INTAKE: frozenset = frozenset(
     {ChannelVisibility.RESTRICTED_PII}
 )
 
+# Phase 1B.5B - candidate-intake validation modes.
+#
+# ``production_intake`` (default) is the contract enforced on every REAL
+# commercial governance payload submitted for Phase 1C content loading.  It
+# requires the candidate to be a COMPLETE DRAFT commercial governance
+# payload (all six record families non-empty), every projected output
+# channel to already have a DRAFT activation row, and every used
+# source_model to be addressable against the frozen workbook destinations.
+#
+# ``partial_fixture`` is reserved exclusively for synthetic, isolated
+# test fixtures that intentionally exercise a single rejection branch.  It
+# skips the completeness, channel-activation, and workbook-destination
+# checks so that a minimal synthetic fixture can isolate one failure mode
+# without dragging in unrelated structural errors.  It MUST NOT be used
+# for any real candidate submission.
+_VALIDATION_MODE_PRODUCTION_INTAKE = "production_intake"
+_VALIDATION_MODE_PARTIAL_FIXTURE = "partial_fixture"
+_VALIDATION_MODES: frozenset[str] = frozenset(
+    {_VALIDATION_MODE_PRODUCTION_INTAKE, _VALIDATION_MODE_PARTIAL_FIXTURE}
+)
+
+# Maps each candidate record-family key to the Pydantic source_model class
+# name used in the frozen column-mapping register
+# (``config/column_mappings.yaml``).  Used by the workbook-destination
+# structural-compatibility check.
+_CANDIDATE_SOURCE_MODELS: tuple[tuple[str, str], ...] = (
+    ("rules", "RuleRow"),
+    ("evidence_records", "EvidenceRecord"),
+    ("blocker_records", "BlockerRecord"),
+    ("channel_projection_records", "ChannelProjectionRecord"),
+    ("release_records", "ReleaseRecord"),
+    ("channel_release_activations", "ChannelReleaseActivationRecord"),
+)
+
 
 def load_phase1c_candidate_records(
     input_path: Path,
@@ -1160,6 +1194,8 @@ def load_phase1c_candidate_records(
 def validate_phase1c_candidate_input(
     spec: FullConfigSpec,
     candidate: dict[str, list[dict]],
+    *,
+    validation_mode: str = _VALIDATION_MODE_PRODUCTION_INTAKE,
 ) -> tuple[list[str], list[str], dict[str, int]]:
     """Validate a candidate Phase 1C DRAFT dataset for safe intake.
 
@@ -1171,17 +1207,38 @@ def validate_phase1c_candidate_input(
       any OPEN structural blocker
       (``blocks_phase_1c_content_loading=True``), broken foreign keys,
       duplicate identifiers, or Pydantic schema errors (unknown / missing /
-      misspelled fields).
+      misspelled fields).  In ``production_intake`` mode additional refusal
+      causes are: missing required record families, projected output
+      channels without a DRAFT activation row, candidate source_models
+      that are not addressable against the frozen workbook destinations,
+      and rule categories not in the canonical ``rule_category`` list.
     * ``warnings`` reports unresolved non-structural OPEN business blockers
       (``blocks_phase_1c_content_loading=False``).  They do NOT block intake.
     * ``counts`` reports per-record-type intake counts for operator review.
 
+    Parameters
+    ----------
+    spec
+        The baseline frozen workbook / mapping configuration.  Read-only.
+    candidate
+        Raw candidate records (not Pydantic-validated) keyed by
+        :data:`_CANDIDATE_RECORD_KEYS`.
+    validation_mode
+        ``"production_intake"`` (default) for real candidate submissions;
+        ``"partial_fixture"`` for synthetic isolated-rejection-branch test
+        fixtures only.  ``"partial_fixture"`` skips completeness,
+        channel-activation, and workbook-destination checks.
+
     The validator is in-memory only.  It does not write to ``config/`` or
     any tracked artifact, does not call any Google API, and does not trigger
-    OAuth.  Baseline ``spec`` is used solely for structural workbook /
-    mapping checks (its scaffold business records are NOT carried into the
-    candidate effective state).
+    OAuth.
     """
+    if validation_mode not in _VALIDATION_MODES:
+        raise ValueError(
+            f"validation_mode must be one of {sorted(_VALIDATION_MODES)}; "
+            f"got {validation_mode!r}."
+        )
+
     # Local imports to keep the module's import-time surface minimal and to
     # avoid coupling the validator to any Google or networking module.
     from pydantic import ValidationError
@@ -1451,6 +1508,98 @@ def validate_phase1c_candidate_input(
                 "Baseline governance workbook has no tabs - structural "
                 "configuration appears corrupt."
             )
+
+    # 8. Production-intake completeness contract (Phase 1B.5B).
+    #
+    #    A real candidate Phase 1C commercial governance payload MUST
+    #    contain all six record families.  A `rules`-only or partial
+    #    payload MUST be refused.  Synthetic test fixtures that
+    #    intentionally isolate a single rejection branch are admitted
+    #    under validation_mode="partial_fixture" only.
+    if validation_mode == _VALIDATION_MODE_PRODUCTION_INTAKE:
+        for key in _CANDIDATE_RECORD_KEYS:
+            if counts[key] == 0:
+                errors.append(
+                    f"Candidate intake (production_intake) is missing "
+                    f"required record family '{key}' - a real Phase 1C "
+                    "candidate dataset must contain all six DRAFT "
+                    "governance registers (rules, evidence_records, "
+                    "blocker_records, channel_projection_records, "
+                    "release_records, channel_release_activations)."
+                )
+
+        # 8b. Every projected output channel must already have a DRAFT
+        #     activation row on that channel.  This prevents admitting
+        #     a candidate that proposes output on a channel without the
+        #     corresponding DRAFT implementation-control scaffolding.
+        activation_channels = {a.channel for a in activations}
+        for proj in projections:
+            if proj.channel not in activation_channels:
+                errors.append(
+                    f"Candidate projection '{proj.projection_id}' targets "
+                    f"channel '{proj.channel.value}' but no DRAFT "
+                    "channel_release_activation row exists for that "
+                    "channel - every projected output channel must have "
+                    "a DRAFT implementation-control row in the same "
+                    "candidate payload."
+                )
+
+    # 9. Frozen workbook destination compatibility (Phase 1B.5B).
+    #
+    #    Every record family present in the candidate must have at least
+    #    one column mapping into the frozen governance workbook, and every
+    #    such mapping's destination_tab must exist in
+    #    spec.governance_workbook.tabs.  Rule categories must come from
+    #    the canonical `rule_category` validation list.  These checks
+    #    apply only in production_intake mode - synthetic test fixtures
+    #    are allowed to use non-canonical category labels.
+    if (
+        validation_mode == _VALIDATION_MODE_PRODUCTION_INTAKE
+        and spec is not None
+    ):
+        tab_titles = {t.title for t in spec.governance_workbook.tabs}
+        mappings_by_model: dict[str, list] = {}
+        for m in spec.column_mappings:
+            mappings_by_model.setdefault(m.source_model, []).append(m)
+        for key, source_model in _CANDIDATE_SOURCE_MODELS:
+            if counts[key] == 0:
+                continue
+            present = mappings_by_model.get(source_model, [])
+            if not present:
+                errors.append(
+                    f"Candidate record family '{key}' "
+                    f"(source_model='{source_model}') has no column "
+                    "mappings in the frozen workbook destination "
+                    "register - the candidate cannot be admitted because "
+                    "its records have no addressable destination tab."
+                )
+                continue
+            dests = {m.destination_tab for m in present}
+            unknown_tabs = dests - tab_titles
+            if unknown_tabs:
+                errors.append(
+                    f"Candidate record family '{key}' references "
+                    f"destination tabs {sorted(unknown_tabs)} that do "
+                    "not exist in the frozen governance workbook - "
+                    "baseline workbook architecture and column mappings "
+                    "have diverged."
+                )
+
+        # 9b. Canonical rule_category check.
+        canonical_categories: set[str] | None = None
+        for vl in spec.validation_lists.lists:
+            if vl.list_name == "rule_category":
+                canonical_categories = set(vl.values)
+                break
+        if canonical_categories is not None:
+            for rule in rules:
+                if rule.rule_category not in canonical_categories:
+                    errors.append(
+                        f"Candidate rule '{rule.rule_id}' has "
+                        f"rule_category='{rule.rule_category}' which is "
+                        "not in the canonical rule_category validation "
+                        f"list {sorted(canonical_categories)}."
+                    )
 
     return errors, warnings, counts
 

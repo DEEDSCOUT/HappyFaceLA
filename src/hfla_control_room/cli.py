@@ -285,8 +285,21 @@ def validate_phase1c_input(
         ),
         exists=True,
     ),
+    mode: str = typer.Option(  # noqa: B008
+        "production-intake",
+        "--mode",
+        "-m",
+        help=(
+            "Validation mode.  'production-intake' (default) enforces a "
+            "complete DRAFT commercial governance payload (all six record "
+            "families, channel<->activation completeness, frozen workbook "
+            "destinations).  'partial-fixture' is reserved for synthetic "
+            "test fixtures and skips those completeness checks; it MUST "
+            "NOT be used for any real candidate submission."
+        ),
+    ),
 ) -> None:
-    """Non-mutating Phase 1C candidate-input intake gate (Phase 1B.5A).
+    """Non-mutating Phase 1C candidate-input intake gate (Phase 1B.5A/5B).
 
     Validates an EXTERNAL candidate Phase 1C DRAFT dataset supplied via
     ``--input`` against the baseline schema/workbook configuration in
@@ -294,6 +307,14 @@ def validate_phase1c_input(
     business-data payload: baseline scaffold ``BLK-DRAFT-*`` placeholder
     blockers are NOT carried into the candidate effective state, so they
     cannot permanently block a controlled candidate replacement path.
+
+    In the default ``production-intake`` mode the candidate must be a
+    COMPLETE DRAFT commercial governance payload: all six record families
+    must be non-empty, every projected output channel must already have a
+    DRAFT activation row in the same payload, and every used source_model
+    must be addressable against the frozen workbook destinations.  Rule
+    categories must come from the canonical ``rule_category`` validation
+    list.
 
     The command writes nothing to disk and performs no Google API or OAuth
     activity.  It returns exit 0 with the PASS line below ONLY if the
@@ -317,12 +338,31 @@ def validate_phase1c_input(
         validate_phase1c_candidate_input,
     )
 
+    # Normalise CLI ``--mode`` value (kebab-case) to the validator's
+    # snake_case mode identifier.
+    cli_to_validator_mode = {
+        "production-intake": "production_intake",
+        "partial-fixture": "partial_fixture",
+    }
+    if mode not in cli_to_validator_mode:
+        typer.secho(
+            f"BLOCKED \u2014 unknown --mode '{mode}'.  Allowed: "
+            f"{sorted(cli_to_validator_mode)}.",
+            fg=typer.colors.RED,
+            bold=True,
+        )
+        raise typer.Exit(code=1)
+    validator_mode = cli_to_validator_mode[mode]
+
     typer.echo(f"Loading baseline schema from: {config.resolve()}")
     spec = load_full_spec(config)
     typer.echo(f"Loading candidate Phase 1C input from: {input.resolve()}")
+    typer.echo(f"Validation mode: {mode}")
 
     candidate, parse_errors = load_phase1c_candidate_records(input)
-    errors, warnings, counts = validate_phase1c_candidate_input(spec, candidate)
+    errors, warnings, counts = validate_phase1c_candidate_input(
+        spec, candidate, validation_mode=validator_mode
+    )
     errors = list(parse_errors) + list(errors)
 
     if errors:

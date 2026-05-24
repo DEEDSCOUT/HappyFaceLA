@@ -4,7 +4,7 @@
 
 rules:
   - rule_id: "SYNTH-RULE-001"
-    rule_category: "SYNTHETIC_TEST_CATEGORY"
+    rule_category: "PUBLIC_PRICING"
     rule_title: "Synthetic test-only DRAFT rule (no real policy)"
     status: "DRAFT"
     draft_recommendation: "synthetic-draft-only"
