@@ -694,7 +694,7 @@ channel_projection_records:
     related_rule_ids: ["HFLA-RULE-PP-005", "HFLA-RULE-QT-002"]
     channel: "GOOGLE_ADS_PUBLIC"
     content_type: "RSA_DESCRIPTION"
-    draft_channel_text: "Face painting services in LA. Share your ZIP or city for availability, travel needs and final pricing."
+    draft_channel_text: "Face painting in LA. Share your ZIP or city for availability, travel needs and quote."
     approved_channel_text: ""
     release_status: "DRAFT"
     source_evidence_ids: ["HFLA-EVD-006"]

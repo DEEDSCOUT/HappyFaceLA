@@ -4,8 +4,8 @@ status: DRAFT_ONLY
 replaces_rejected_commit: c94970df19c2fc60606f5c96f79921ea1263f4eb
 command: python -m hfla_control_room.cli validate-phase1c-input -c config -i candidates/phase1c/hfla_commercial_draft_v4
 exit_code: 0
-candidate_sha256: eb1f8d35d35acd43a8ad905f3323c6b68663f6ffdc0e578d9a1ca057974a6f2d
-candidate_size_bytes: 46305
+candidate_sha256: 8b017698faa357e8078e814b230ee52df5e83b92933702dedbbfba0d818e6641
+candidate_size_bytes: 46288
 --- stdout ---
 Loading baseline schema from: C:\Dev\happyfacesla-commercial-control-room\config
 Loading candidate Phase 1C input from: C:\Dev\happyfacesla-commercial-control-room\candidates\phase1c\hfla_commercial_draft_v4
@@ -31,6 +31,6 @@ PHASE 1C INPUT VALIDATION PASSED � DRAFT CONTENT MAY BE LOADED ONLY AFTER SEPA
   ! Candidate blocker 'HFLA-BLK-012' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Set overtime hourly rate for 30-minute increment billing.
 
 --- stderr ---
-2026-05-24T11:24:02  INFO      hfla_control_room.spec_loader � Loading config from: C:\Dev\happyfacesla-commercial-control-room\config
-2026-05-24T11:24:02  INFO      hfla_control_room.spec_loader � Config loaded and validated successfully.
+2026-05-24T11:29:13  INFO      hfla_control_room.spec_loader � Loading config from: C:\Dev\happyfacesla-commercial-control-room\config
+2026-05-24T11:29:13  INFO      hfla_control_room.spec_loader � Config loaded and validated successfully.
 
