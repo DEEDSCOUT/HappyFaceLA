@@ -3,6 +3,11 @@ research_access_date: 2026-05-24
 status: DRAFT_ONLY
 replaces_rejected_commit: c94970df19c2fc60606f5c96f79921ea1263f4eb
 candidate_path: candidates/phase1c/hfla_commercial_draft_v4/candidate.yaml
-sha256: 8b017698faa357e8078e814b230ee52df5e83b92933702dedbbfba0d818e6641
-size_bytes: 46288
-hash_method: python hashlib.sha256(open(path, 'rb').read()).hexdigest()
+canonical_commit: e1963b2a8cf15eea1d391b999f280421b9c81075
+canonical_authority: committed Git-blob bytes
+canonical_git_blob_sha256: 506ef804ec58924306851a3932caeb394e7911dc78e9516acd300780c31cd5f4
+canonical_git_blob_size_bytes: 45298
+prior_rejected_working_tree_sha256: 8b017698faa357e8078e814b230ee52df5e83b92933702dedbbfba0d818e6641
+prior_rejected_working_tree_size_bytes: 46288
+rejection_reason: Prior receipt hashed working-tree bytes and did not identify committed repository blob bytes.
+candidate_yaml_modified_during_correction: false
