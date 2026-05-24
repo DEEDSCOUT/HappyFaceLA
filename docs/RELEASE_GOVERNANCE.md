@@ -206,3 +206,44 @@ enforces this invariant at construction time.
 All Phase 1 release records are DRAFT placeholders.  No release is
 RELEASED.  The release exporter therefore returns an empty approved set
 for every consumer channel.  This is the correct Phase 1 state.
+
+
+---
+
+## Addendum — Phase 1B.4 (2026-05-23)
+
+### Blocker scope independence
+
+`BlockerRecord` has three orthogonal scope signals; each is consulted by a
+dedicated check and never substitutes for another:
+
+| Field                             | Governance scope                          | Check function                                |
+| --------------------------------- | ----------------------------------------- | --------------------------------------------- |
+| `blocked_channels`                | Publication to a specific channel         | `_channel_has_open_export_blocker`            |
+| `blocks_live_provisioning`        | Live provider-state mutation              | `validate_no_live_provisioning_blockers`      |
+| `blocks_phase_1c_content_loading` | Entry to Phase 1C content loading         | `validate_no_phase_1c_loading_blockers`       |
+
+### Channel release activations
+
+`ChannelReleaseActivationRecord` is the sole authority for "what is currently
+on this channel?". At most one `ACTIVE` activation may exist per channel.
+Supersession is explicit via `supersedes_activation_id`. `ACTIVE` requires the
+cited release to be `RELEASED` and to authorise the channel, plus
+`qa_status=VERIFIED_PASS`, non-empty `qa_evidence`, an `effective_date`, and
+`snapshot_mode=FULL_CHANNEL_SNAPSHOT`. Restricted channels (per
+`CHANNEL_RESTRICTION` policy) cannot host activations. Phase 1 ships only
+`DRAFT` activations; `ACTIVE` rows are rejected by the validation pipeline
+when read from seed YAML.
+
+### Publication-slot uniqueness
+
+Each `ChannelProjectionRecord` carries a required `publication_key`. The
+projection register and the release-gate exporter are both fail-closed against
+duplicate `(channel, publication_key)`. Two `RELEASED` projections cannot
+occupy the same publication slot on the same channel.
+
+### Governing-rule subset
+
+A projection may not cite a rule that the release does not govern;
+`validate_release_integrity` and `export_for_channel` both enforce
+`set(projection.related_rule_ids) ⊆ set(release.related_rule_ids)`.

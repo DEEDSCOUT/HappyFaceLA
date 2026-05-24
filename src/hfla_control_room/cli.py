@@ -133,34 +133,129 @@ def validate_release(
         ..., "--input", "-i", help="Path to a release export JSON file to validate.", exists=True
     ),
 ) -> None:
-    """Validate a future approved-rules export payload at INPUT."""
+    """Validate a future approved-rules export payload at INPUT.
+
+    Phase 1B.4 contract: a release export payload is authoritative only if
+    every link in the chain is intact and the channel is not blocked at
+    the publication scope:
+
+        rules \u2192 projections \u2192 release \u2192 activation \u2192
+        per-channel-publication-blocker check.
+
+    Accepted payload shape::
+
+        {
+          "rules":        [RuleRow, ...],
+          "projections":  [ChannelProjectionRecord, ...],
+          "releases":     [ReleaseRecord, ...],
+          "activations":  [ChannelReleaseActivationRecord, ...],
+          "blockers":     [BlockerRecord, ...]
+        }
+
+    Validation fails (exit 1) when:
+
+      - the payload contains only ``rules`` (no projections);
+      - the payload contains projections but no release;
+      - the payload contains a release but no activation;
+      - the channel has any OPEN blocker listing it in ``blocked_channels``;
+      - any rule, projection, release, or activation invariant fails.
+    """
     assert_authorized_workspace()
 
-    from hfla_control_room.models import RuleRow
+    from hfla_control_room.models import (
+        BlockerRecord,
+        ChannelProjectionRecord,
+        ChannelReleaseActivationRecord,
+        ReleaseRecord,
+        RuleRow,
+    )
+    from hfla_control_room.release_exporter import (
+        channel_publication_blockers_for_channel,
+    )
     from hfla_control_room.validation import (
+        validate_channel_activation_integrity,
+        validate_channel_projection_integrity,
         validate_no_pii_in_export,
+        validate_no_pii_in_projection_export,
+        validate_release_integrity,
         validate_rules_batch,
     )
 
     raw = json.loads(input.read_text(encoding="utf-8"))
     rules_raw = raw.get("rules", raw.get("approved_rules", []))
+    projections_raw = raw.get("projections", [])
+    releases_raw = raw.get("releases", [])
+    activations_raw = raw.get("activations", [])
+    blockers_raw = raw.get("blockers", [])
+
     rules = [RuleRow.model_validate(r) for r in rules_raw]
+    projections = [ChannelProjectionRecord.model_validate(p) for p in projections_raw]
+    releases = [ReleaseRecord.model_validate(r) for r in releases_raw]
+    activations = [
+        ChannelReleaseActivationRecord.model_validate(a) for a in activations_raw
+    ]
+    blockers = [BlockerRecord.model_validate(b) for b in blockers_raw]
 
-    errors = validate_rules_batch(rules)
+    errors_by_rule = validate_rules_batch(rules)
     pii_violations = validate_no_pii_in_export(rules)
+    chain_errors: list[str] = []
 
-    all_ok = not errors and not pii_violations
+    if rules and not projections:
+        chain_errors.append(
+            "Payload contains rules but no projections \u2014 rules alone "
+            "cannot authorise a channel publication."
+        )
+    if projections and not releases:
+        chain_errors.append(
+            "Payload contains projections but no release \u2014 a "
+            "ReleaseRecord is required to authorise publication."
+        )
+    if releases and not activations:
+        chain_errors.append(
+            "Payload contains release(s) but no activation \u2014 a "
+            "ChannelReleaseActivationRecord is required to declare the "
+            "current channel output."
+        )
+
+    chain_errors.extend(
+        validate_channel_projection_integrity(projections, rules, None)
+    )
+    chain_errors.extend(validate_no_pii_in_projection_export(projections))
+    chain_errors.extend(
+        validate_release_integrity(releases, rules, projections, blockers)
+    )
+    chain_errors.extend(
+        validate_channel_activation_integrity(activations, releases, projections)
+    )
+
+    # Per-channel publication blocker check across every activation channel.
+    for act in activations:
+        pub_blockers = channel_publication_blockers_for_channel(act.channel, blockers)
+        if pub_blockers:
+            chain_errors.append(
+                f"Channel '{act.channel.value}' (activation "
+                f"'{act.activation_id}') has open publication blockers: "
+                f"{sorted(b.blocker_id for b in pub_blockers)}."
+            )
+
+    all_ok = not errors_by_rule and not pii_violations and not chain_errors
     if not all_ok:
         typer.secho("RELEASE VALIDATION FAILED:", fg=typer.colors.RED, bold=True)
-        for rule_id, errs in errors.items():
+        for rule_id, errs in errors_by_rule.items():
             for err in errs:
-                typer.secho(f"  ✗ [{rule_id}] {err}", fg=typer.colors.RED)
+                typer.secho(f"  X [{rule_id}] {err}", fg=typer.colors.RED)
         for v in pii_violations:
-            typer.secho(f"  ✗ [PII] {v}", fg=typer.colors.RED)
+            typer.secho(f"  X [PII] {v}", fg=typer.colors.RED)
+        for v in chain_errors:
+            typer.secho(f"  X [CHAIN] {v}", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
     typer.secho("RELEASE VALIDATION PASSED.", fg=typer.colors.GREEN, bold=True)
-    typer.echo(f"  Rules validated: {len(rules)}")
+    typer.echo(f"  Rules:        {len(rules)}")
+    typer.echo(f"  Projections:  {len(projections)}")
+    typer.echo(f"  Releases:     {len(releases)}")
+    typer.echo(f"  Activations:  {len(activations)}")
+    typer.echo(f"  Blockers:     {len(blockers)}")
     typer.echo("  PII violations: 0")
 
 

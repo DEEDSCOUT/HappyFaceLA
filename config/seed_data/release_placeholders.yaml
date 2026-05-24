@@ -20,6 +20,7 @@ release_records:
     resolved_blocker_ids: []
     implementation_status: NOT_STARTED
     qa_status: NOT_VERIFIED
+    qa_evidence: ""
     rollback_plan: ""
     release_notes: "DRAFT placeholder.  No active publication is authorised."
     notes_internal_only: >

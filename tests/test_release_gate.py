@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from hfla_control_room.constants import (
+    ActivationStatus,
     BlockerPriority,
     BlockerStatus,
     BlockerType,
@@ -21,10 +22,12 @@ from hfla_control_room.constants import (
     QAStatus,
     ReleaseStatus,
     RuleStatus,
+    SnapshotMode,
 )
 from hfla_control_room.models import (
     BlockerRecord,
     ChannelProjectionRecord,
+    ChannelReleaseActivationRecord,
     ReleaseRecord,
     RuleRow,
 )
@@ -81,9 +84,11 @@ def _released_projection(
     channel: ConsumerChannel = ConsumerChannel.WEBSITE_PUBLIC,
     related_rule_ids: list[str] | None = None,
     text: str = "Publicly safe approved text.",
+    publication_key: str = "website.pricing.disclosure",
 ) -> ChannelProjectionRecord:
     return ChannelProjectionRecord(
         projection_id=projection_id,
+        publication_key=publication_key,
         related_rule_ids=related_rule_ids or ["RULE-APPROVED-001"],
         channel=channel,
         content_type="POLICY_STATEMENT",
@@ -123,6 +128,7 @@ def _released_release(
         resolved_blocker_ids=[],
         implementation_status=ImplementationStatus.IMPLEMENTED,
         qa_status=QAStatus.VERIFIED_PASS,
+        qa_evidence="qa-evidence://signed-off",
         rollback_plan="Revert release on incident.",
         release_notes="Initial release.",
         notes_internal_only="",
@@ -150,6 +156,26 @@ def _open_blocker(channels: list[ConsumerChannel]) -> BlockerRecord:
     )
 
 
+def _active_activation(
+    activation_id: str = "ACT-001",
+    release_id: str = "REL-2026-001",
+    channel: ConsumerChannel = ConsumerChannel.WEBSITE_PUBLIC,
+) -> ChannelReleaseActivationRecord:
+    return ChannelReleaseActivationRecord(
+        activation_id=activation_id,
+        release_id=release_id,
+        channel=channel,
+        activation_status=ActivationStatus.ACTIVE,
+        supersedes_activation_id="",
+        effective_date="2026-06-01",
+        implementation_status=ImplementationStatus.IMPLEMENTED,
+        qa_status=QAStatus.VERIFIED_PASS,
+        qa_evidence="qa-evidence://signed-off",
+        snapshot_mode=SnapshotMode.FULL_CHANNEL_SNAPSHOT,
+        notes_internal_only="",
+    )
+
+
 class TestReleaseGate:
     def test_seed_data_yields_empty_export_every_channel(self):
         """Phase 1: no RELEASED releases exist; every channel returns []."""
@@ -163,6 +189,7 @@ class TestReleaseGate:
                         rules=spec.seed_rules,
                         releases=spec.release_records,
                         blockers=spec.blocker_records,
+                        activations=spec.channel_release_activations,
                     )
                 continue
             exported = export_for_channel(
@@ -171,6 +198,7 @@ class TestReleaseGate:
                 rules=spec.seed_rules,
                 releases=spec.release_records,
                 blockers=spec.blocker_records,
+                activations=spec.channel_release_activations,
             )
             assert exported == []
 
@@ -178,16 +206,20 @@ class TestReleaseGate:
         rule = _approved_rule()
         projection = _released_projection(related_rule_ids=[rule.rule_id])
         release = _released_release(projection_ids=[projection.projection_id])
+        activation = _active_activation(release_id=release.release_id)
         exported = export_for_channel(
             ConsumerChannel.WEBSITE_PUBLIC,
             projections=[projection],
             rules=[rule],
             releases=[release],
             blockers=[],
+            activations=[activation],
         )
         assert len(exported) == 1
         assert exported[0].projection_id == projection.projection_id
         assert exported[0].release_id == release.release_id
+        assert exported[0].activation_id == activation.activation_id
+        assert exported[0].publication_key == projection.publication_key
 
     def test_draft_projection_rejected(self):
         rule = _approved_rule()
@@ -195,6 +227,7 @@ class TestReleaseGate:
         # Build a DRAFT projection (model would reject RELEASED + empty text).
         projection = ChannelProjectionRecord(
             projection_id=projection.projection_id,
+            publication_key=projection.publication_key,
             related_rule_ids=projection.related_rule_ids,
             channel=projection.channel,
             content_type=projection.content_type,
@@ -213,6 +246,7 @@ class TestReleaseGate:
             rules=[rule],
             releases=[release],
             blockers=[],
+            activations=[],
         )
         assert exported == []
 
@@ -225,6 +259,7 @@ class TestReleaseGate:
             rules=[rule],
             releases=[],
             blockers=[],
+            activations=[],
         )
         assert exported == []
 
@@ -241,6 +276,7 @@ class TestReleaseGate:
             rules=[rule],
             releases=[release],
             blockers=[],
+            activations=[],
         )
         assert exported == []
 
@@ -254,6 +290,7 @@ class TestReleaseGate:
             rules=[rule],
             releases=[release],
             blockers=[],
+            activations=[],
         )
         assert exported == []
 
@@ -270,6 +307,7 @@ class TestReleaseGate:
             rules=[rule],
             releases=[release],
             blockers=[],
+            activations=[],
         )
         assert exported == []
 
@@ -286,6 +324,7 @@ class TestReleaseGate:
             rules=[rule],
             releases=[release],
             blockers=[],
+            activations=[],
         )
         assert exported == []
 
@@ -300,6 +339,7 @@ class TestReleaseGate:
             rules=[rule],
             releases=[release],
             blockers=[],
+            activations=[],
         )
         assert exported == []
 
@@ -314,6 +354,7 @@ class TestReleaseGate:
             rules=[rule],
             releases=[release],
             blockers=[blocker],
+            activations=[],
         )
         assert exported == []
 
@@ -325,6 +366,7 @@ class TestReleaseGate:
                 rules=[],
                 releases=[],
                 blockers=[],
+                activations=[],
             )
 
     def test_empty_approved_text_rejected(self):
@@ -333,6 +375,7 @@ class TestReleaseGate:
         # to bypass the model validator and verify the exporter still rejects.
         projection = ChannelProjectionRecord.model_construct(
             projection_id="PROJ-001",
+            publication_key="website.pricing.disclosure",
             related_rule_ids=[rule.rule_id],
             channel=ConsumerChannel.WEBSITE_PUBLIC,
             content_type="POLICY_STATEMENT",
@@ -356,5 +399,6 @@ class TestReleaseGate:
             rules=[rule],
             releases=[release],
             blockers=[],
+            activations=[],
         )
         assert exported == []

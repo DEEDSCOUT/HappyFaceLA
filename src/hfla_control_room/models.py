@@ -7,11 +7,13 @@ All models enforce the governance constraints described in ARCHITECTURE_DECISION
 
 from __future__ import annotations
 
+import re as _re
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from hfla_control_room.constants import (
+    ActivationStatus,
     AdsReviewStatus,
     AssetType,
     BannerSeverity,
@@ -33,6 +35,7 @@ from hfla_control_room.constants import (
     ReleaseStatus,
     RuleStatus,
     SensitivityClassification,
+    SnapshotMode,
 )
 
 # ---------------------------------------------------------------------------
@@ -247,18 +250,11 @@ class RuleRegister(StrictControlledModel):
 
 
 class ApprovedProjectionExport(StrictControlledModel):
-    """Channel-safe export record (Phase 1B.3).
+    """Channel-safe export record (Phase 1B.4).
 
     Serialises a single :class:`ChannelProjectionRecord` after it has been
-    gated by:
-
-    1. ``release_status == RELEASED`` on the projection itself.
-    2. A :class:`ReleaseRecord` with ``status == RELEASED`` that authorises
-       the same channel and lists the projection in
-       ``related_projection_ids``.
-    3. The governing rule(s) carry an APPROVED status and a CEO decision.
-    4. No open :class:`BlockerRecord` blocks the channel and live
-       provisioning.
+    gated by the full Phase 1B.4 authority chain (see
+    :func:`hfla_control_room.release_exporter.export_for_channel`).
 
     Strips every internal-only / draft / CEO-private field; the only
     content payload is ``approved_channel_text`` (separately reviewed for
@@ -266,6 +262,7 @@ class ApprovedProjectionExport(StrictControlledModel):
     """
 
     projection_id: str
+    publication_key: str
     related_rule_ids: list[str]
     channel: ConsumerChannel
     content_type: str
@@ -274,17 +271,22 @@ class ApprovedProjectionExport(StrictControlledModel):
     release_version: str
     policy_version: str
     effective_date: str
+    activation_id: str
+    requires_human_escalation: bool = False
+    escalation_reason: str = ""
 
     @model_validator(mode="after")
     def validate_required_fields_populated(self) -> ApprovedProjectionExport:
         empty = [
             f
             for f in (
+                "publication_key",
                 "approved_channel_text",
                 "release_id",
                 "release_version",
                 "policy_version",
                 "effective_date",
+                "activation_id",
             )
             if not getattr(self, f).strip()
         ]
@@ -292,6 +294,11 @@ class ApprovedProjectionExport(StrictControlledModel):
             raise ValueError(
                 f"Projection '{self.projection_id}' export is missing "
                 f"required fields: {empty}"
+            )
+        if self.requires_human_escalation and not self.escalation_reason.strip():
+            raise ValueError(
+                f"Projection '{self.projection_id}' requires_human_escalation "
+                "but escalation_reason is empty."
             )
         return self
 
@@ -411,6 +418,9 @@ class FullConfigSpec(StrictControlledModel):
     blocker_records: list[BlockerRecord] = Field(default_factory=list)
     channel_projection_records: list[ChannelProjectionRecord] = Field(default_factory=list)
     release_records: list[ReleaseRecord] = Field(default_factory=list)
+    channel_release_activations: list[ChannelReleaseActivationRecord] = Field(
+        default_factory=list
+    )
     column_mappings: list[ColumnMappingRecord] = Field(default_factory=list)
     raw: dict[str, Any] = Field(default_factory=dict, exclude=True)
 
@@ -490,6 +500,7 @@ class ChannelProjectionRecord(StrictControlledModel):
     """
 
     projection_id: str
+    publication_key: str
     related_rule_ids: list[str] = Field(default_factory=list)
     channel: ConsumerChannel
     content_type: str
@@ -511,6 +522,19 @@ class ChannelProjectionRecord(StrictControlledModel):
     def projection_id_not_empty(cls, v: str) -> str:
         if not v.strip():
             raise ValueError("projection_id must not be empty.")
+        return v
+
+    @field_validator("publication_key")
+    @classmethod
+    def publication_key_valid(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("publication_key must not be empty.")
+        if not _re.match(r"^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+$", v):
+            raise ValueError(
+                f"publication_key '{v}' is not a safe identifier; "
+                "expected lowercase dot-separated tokens "
+                r"matching ^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+$"
+            )
         return v
 
     @model_validator(mode="after")
@@ -553,6 +577,31 @@ class ChannelProjectionRegister(StrictControlledModel):
             raise ValueError(f"Duplicate projection IDs: {dupes}")
         return self
 
+    @model_validator(mode="after")
+    def validate_publication_key_uniqueness(self) -> ChannelProjectionRegister:
+        # Within RELEASED + APPROVED_FOR_RELEASE projections, (channel,
+        # publication_key) must be globally unique \u2014 two distinct
+        # projections may not claim the same publication slot on the same
+        # channel.  DRAFT records may freely reuse keys (drafts are not
+        # publishable).
+        published_status = (
+            ProjectionReleaseStatus.APPROVED_FOR_RELEASE,
+            ProjectionReleaseStatus.RELEASED,
+        )
+        seen: dict[tuple[ConsumerChannel, str], str] = {}
+        for r in self.records:
+            if r.release_status not in published_status:
+                continue
+            key = (r.channel, r.publication_key)
+            if key in seen:
+                raise ValueError(
+                    f"Duplicate (channel, publication_key) on "
+                    f"channel={r.channel.value} key='{r.publication_key}': "
+                    f"projections '{seen[key]}' and '{r.projection_id}'."
+                )
+            seen[key] = r.projection_id
+        return self
+
 # ---------------------------------------------------------------------------
 # Release register (Phase 1B.3)
 # ---------------------------------------------------------------------------
@@ -586,6 +635,7 @@ class ReleaseRecord(StrictControlledModel):
     resolved_blocker_ids: list[str] = Field(default_factory=list)
     implementation_status: ImplementationStatus = ImplementationStatus.NOT_STARTED
     qa_status: QAStatus = QAStatus.NOT_VERIFIED
+    qa_evidence: str = ""
     rollback_plan: str = ""
     release_notes: str = ""
     notes_internal_only: str = ""
@@ -634,6 +684,16 @@ class ReleaseRecord(StrictControlledModel):
                     f"Release '{self.release_id}' status=RELEASED requires "
                     f"ceo_decision in {[d.value for d in approved_decisions]}, "
                     f"got '{self.ceo_decision.value}'."
+                )
+            if self.qa_status != QAStatus.VERIFIED_PASS:
+                raise ValueError(
+                    f"Release '{self.release_id}' status=RELEASED requires "
+                    f"qa_status=VERIFIED_PASS, got '{self.qa_status.value}'."
+                )
+            if not self.qa_evidence.strip():
+                raise ValueError(
+                    f"Release '{self.release_id}' status=RELEASED requires "
+                    "non-empty qa_evidence."
                 )
         return self
 
@@ -699,6 +759,157 @@ class ColumnMappingRegister(StrictControlledModel):
             seen.add(key)
         if dupes:
             raise ValueError(f"Duplicate column mappings: {dupes}")
+        return self
+
+
+# ---------------------------------------------------------------------------
+# Channel release activation register (Phase 1B.4)
+# ---------------------------------------------------------------------------
+
+
+class ChannelReleaseActivationRecord(StrictControlledModel):
+    """Per-channel current-output authority pointer (Phase 1B.4).
+
+    A ``ReleaseRecord`` (status=RELEASED) declares *which* projections the
+    CEO has approved for publication; a ``ChannelReleaseActivationRecord``
+    declares *which one* of those releases is the current authoritative
+    output on a given channel right now.  Exactly one ``ACTIVE`` activation
+    may exist per channel.
+
+    Supersession is explicit: a new activation that replaces an existing
+    ACTIVE one MUST list the prior activation\u2019s id in
+    ``supersedes_activation_id``; flipping the prior record to
+    ``SUPERSEDED`` is enforced separately (the prior record is immutable
+    for audit but its status must move out of ACTIVE).
+    """
+
+    activation_id: str
+    release_id: str
+    channel: ConsumerChannel
+    activation_status: ActivationStatus = ActivationStatus.DRAFT
+    supersedes_activation_id: str = ""
+    effective_date: str = ""
+    implementation_status: ImplementationStatus = ImplementationStatus.NOT_STARTED
+    qa_status: QAStatus = QAStatus.NOT_VERIFIED
+    qa_evidence: str = ""
+    snapshot_mode: SnapshotMode = SnapshotMode.FULL_CHANNEL_SNAPSHOT
+    notes_internal_only: str = ""
+
+    @field_validator("activation_id")
+    @classmethod
+    def activation_id_not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("activation_id must not be empty.")
+        return v
+
+    @field_validator("release_id")
+    @classmethod
+    def release_id_not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("activation.release_id must not be empty.")
+        return v
+
+    @model_validator(mode="after")
+    def validate_restricted_channel_forbidden(self) -> ChannelReleaseActivationRecord:
+        if self.channel == ConsumerChannel.RESTRICTED_OPERATIONS_PII:
+            raise ValueError(
+                f"Activation '{self.activation_id}' targets "
+                "RESTRICTED_OPERATIONS_PII \u2014 no automated activation "
+                "path exists for restricted operations channels."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_active_requires_full_snapshot(self) -> ChannelReleaseActivationRecord:
+        if (
+            self.activation_status == ActivationStatus.ACTIVE
+            and self.snapshot_mode != SnapshotMode.FULL_CHANNEL_SNAPSHOT
+        ):
+            raise ValueError(
+                f"Activation '{self.activation_id}' is ACTIVE but "
+                f"snapshot_mode='{self.snapshot_mode.value}' \u2014 only "
+                "FULL_CHANNEL_SNAPSHOT may be ACTIVE in Phase 1B.4."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_active_requires_qa_and_effective_date(
+        self,
+    ) -> ChannelReleaseActivationRecord:
+        if self.activation_status == ActivationStatus.ACTIVE:
+            if self.qa_status != QAStatus.VERIFIED_PASS:
+                raise ValueError(
+                    f"Activation '{self.activation_id}' is ACTIVE but "
+                    f"qa_status='{self.qa_status.value}' \u2014 must be "
+                    "VERIFIED_PASS."
+                )
+            if not self.qa_evidence.strip():
+                raise ValueError(
+                    f"Activation '{self.activation_id}' is ACTIVE but "
+                    "qa_evidence is empty."
+                )
+            if not self.effective_date.strip():
+                raise ValueError(
+                    f"Activation '{self.activation_id}' is ACTIVE but "
+                    "effective_date is empty."
+                )
+        return self
+
+    @model_validator(mode="after")
+    def validate_draft_has_no_qa_or_supersession(
+        self,
+    ) -> ChannelReleaseActivationRecord:
+        if self.activation_status == ActivationStatus.DRAFT:
+            if self.qa_status == QAStatus.VERIFIED_PASS:
+                raise ValueError(
+                    f"Activation '{self.activation_id}' is DRAFT but "
+                    "already carries qa_status=VERIFIED_PASS \u2014 forbidden."
+                )
+        return self
+
+
+class ChannelReleaseActivationRegister(StrictControlledModel):
+    records: list[ChannelReleaseActivationRecord] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_unique_activation_ids(self) -> ChannelReleaseActivationRegister:
+        ids = [r.activation_id for r in self.records]
+        if len(ids) != len(set(ids)):
+            seen: set[str] = set()
+            dupes = [i for i in ids if i in seen or seen.add(i)]  # type: ignore[func-returns-value]
+            raise ValueError(f"Duplicate activation IDs: {dupes}")
+        return self
+
+    @model_validator(mode="after")
+    def validate_at_most_one_active_per_channel(
+        self,
+    ) -> ChannelReleaseActivationRegister:
+        actives: dict[ConsumerChannel, str] = {}
+        for r in self.records:
+            if r.activation_status != ActivationStatus.ACTIVE:
+                continue
+            if r.channel in actives:
+                raise ValueError(
+                    f"More than one ACTIVE activation for channel "
+                    f"{r.channel.value}: '{actives[r.channel]}' and "
+                    f"'{r.activation_id}'."
+                )
+            actives[r.channel] = r.activation_id
+        return self
+
+    @model_validator(mode="after")
+    def validate_supersedes_fk(self) -> ChannelReleaseActivationRegister:
+        known = {r.activation_id for r in self.records}
+        for r in self.records:
+            if r.supersedes_activation_id and r.supersedes_activation_id not in known:
+                raise ValueError(
+                    f"Activation '{r.activation_id}' supersedes unknown "
+                    f"activation_id '{r.supersedes_activation_id}'."
+                )
+            if r.supersedes_activation_id == r.activation_id:
+                raise ValueError(
+                    f"Activation '{r.activation_id}' cannot supersede itself."
+                )
         return self
 
 

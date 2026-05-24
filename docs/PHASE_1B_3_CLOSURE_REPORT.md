@@ -272,3 +272,24 @@ architecture documented in ADR-003.  All Phase 1 invariants
 plan, no PII in any channel-safe output) hold.
 
 Phase 1B.3 is **READY FOR CEO ACCEPTANCE**.
+
+---
+
+## 15. Post-Audit Correction (Phase 1B.4)
+
+This closure report originally claimed completion of release-conflict control.
+The Phase 1B.3 final acceptance audit (see `docs/PHASE_1B_3_FINAL_ACCEPTANCE_AUDIT.md`)
+identified two governance defects:
+
+- **R1** — Blocker scope independence: the release-gate exporter coupled the
+  publication decision to `blocks_live_provisioning`; the three blocker scopes
+  are now decided independently.
+- **R2** — Current-release authority and supersession: `RELEASED` plus channel
+  authorisation was insufficient to identify the active output for a channel;
+  a first-class `ChannelReleaseActivationRecord` was introduced with
+  at-most-one-ACTIVE-per-channel and explicit `supersedes_activation_id`.
+
+Final acceptance of Phase 1B.3 was therefore withheld pending the Phase 1B.4
+remediation. See `docs/PHASE_1B_4_CLOSURE_REPORT.md` for the closure that
+actually delivered conflict control. The `5 files added` accounting in this
+report is superseded by the file accounting in the Phase 1B.4 report.

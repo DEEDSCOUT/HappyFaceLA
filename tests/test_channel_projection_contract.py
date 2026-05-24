@@ -29,9 +29,11 @@ def _make_projection(
     effective_date: str = "",
     related_rule_ids: list[str] | None = None,
     source_evidence_ids: list[str] | None = None,
+    publication_key: str = "website.test.key",
 ) -> ChannelProjectionRecord:
     return ChannelProjectionRecord(
         projection_id=projection_id,
+        publication_key=publication_key,
         channel=channel,
         content_type="website_copy",
         draft_channel_text="draft text",

@@ -198,3 +198,29 @@ The column-mapping contract has moved from a Python constant into
 `config/column_mappings.yaml`.  Any change to a column-to-tab mapping
 now flips the deterministic `spec_fingerprint` and surfaces as plan
 drift, closing a previously silent governance hole.
+
+
+---
+
+## Addendum — Phase 1B.4 (2026-05-23)
+
+* The release-gate exporter no longer reads `blocks_live_provisioning` for the
+  publication decision. Channel publication is blocked **only** by an open
+  blocker that lists the channel in `blocked_channels`. The live-provisioning
+  and Phase-1C content-loading scopes are decided by dedicated checks
+  (`validate_no_live_provisioning_blockers`,
+  `validate_no_phase_1c_loading_blockers`) and never substitute for the
+  publication gate.
+* Channel output authority is now established by an explicit
+  `ChannelReleaseActivationRecord` (at most one `ACTIVE` per channel,
+  `supersedes_activation_id` for explicit supersession, restricted channels
+  forbidden). `RELEASED` status alone no longer authorises a channel export.
+* Every `ChannelProjectionRecord` carries a required `publication_key`. The
+  register and the exporter are both fail-closed against duplicate
+  `(channel, publication_key)`. Two RELEASED projections can no longer occupy
+  the same publication slot on the same channel.
+* `ApprovedProjectionExport` records now carry `publication_key`, `release_id`,
+  `release_version`, `policy_version`, `effective_date`, and `activation_id`
+  as required fields; PII / internal-only signals remain mandatory.
+* No Phase 1 boundary changes: live Google API calls remain blocked;
+  `provision --apply` still exits 1 with the verbatim block message.

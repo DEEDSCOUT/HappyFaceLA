@@ -204,3 +204,16 @@ lists:
       - "BELOW"
       - "ON_TARGET"
       - "ABOVE"
+
+  - list_name: "activation_status"
+    values:
+      - "DRAFT"
+      - "READY_FOR_QA"
+      - "ACTIVE"
+      - "SUPERSEDED"
+      - "ROLLED_BACK"
+      - "BLOCKED"
+
+  - list_name: "snapshot_mode"
+    values:
+      - "FULL_CHANNEL_SNAPSHOT"

@@ -34,6 +34,7 @@ def _valid_released(**overrides) -> ReleaseRecord:
         related_projection_ids=["PROJ-001"],
         implementation_status=ImplementationStatus.IMPLEMENTED,
         qa_status=QAStatus.VERIFIED_PASS,
+        qa_evidence="qa-evidence://signed-off",
     )
     base.update(overrides)
     return ReleaseRecord(**base)

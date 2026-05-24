@@ -1,9 +1,10 @@
-"""Phase 1B.3 — release_exporter authority gates.
+"""Phase 1B.4 — release_exporter authority gates.
 
 Complementary to ``tests/test_release_gate.py``.  Asserts the structural
 authority contract: only RELEASED ReleaseRecords with the requested channel
 in ``authorized_channels`` AND the projection in ``related_projection_ids``
-may authorise a channel export.
+PLUS an ACTIVE ChannelReleaseActivationRecord chained to that release may
+authorise a channel export.
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ from __future__ import annotations
 import pytest
 
 from hfla_control_room.constants import (
+    ActivationStatus,
     CEOReleaseDecision,
     ChannelVisibility,
     ConsumerChannel,
@@ -20,9 +22,11 @@ from hfla_control_room.constants import (
     QAStatus,
     ReleaseStatus,
     RuleStatus,
+    SnapshotMode,
 )
 from hfla_control_room.models import (
     ChannelProjectionRecord,
+    ChannelReleaseActivationRecord,
     ReleaseRecord,
     RuleRow,
 )
@@ -50,6 +54,7 @@ def _rule() -> RuleRow:
 def _projection() -> ChannelProjectionRecord:
     return ChannelProjectionRecord(
         projection_id="PROJ-001",
+        publication_key="website.pricing.disclosure",
         related_rule_ids=["RULE-001"],
         channel=ConsumerChannel.WEBSITE_PUBLIC,
         content_type="POLICY_STATEMENT",
@@ -76,9 +81,28 @@ def _release(**overrides) -> ReleaseRecord:
         related_projection_ids=["PROJ-001"],
         implementation_status=ImplementationStatus.IMPLEMENTED,
         qa_status=QAStatus.VERIFIED_PASS,
+        qa_evidence="qa-evidence://signed-off",
     )
     base.update(overrides)
     return ReleaseRecord(**base)
+
+
+def _activation(**overrides) -> ChannelReleaseActivationRecord:
+    base = dict(
+        activation_id="ACT-001",
+        release_id="REL-001",
+        channel=ConsumerChannel.WEBSITE_PUBLIC,
+        activation_status=ActivationStatus.ACTIVE,
+        supersedes_activation_id="",
+        effective_date="2026-06-15",
+        implementation_status=ImplementationStatus.IMPLEMENTED,
+        qa_status=QAStatus.VERIFIED_PASS,
+        qa_evidence="qa-evidence://signed-off",
+        snapshot_mode=SnapshotMode.FULL_CHANNEL_SNAPSHOT,
+        notes_internal_only="",
+    )
+    base.update(overrides)
+    return ChannelReleaseActivationRecord(**base)
 
 
 class TestReleaseExporterAuthority:
@@ -90,18 +114,23 @@ class TestReleaseExporterAuthority:
                 rules=[],
                 releases=[],
                 blockers=[],
+                activations=[],
             )
 
     def test_release_not_authorising_channel_rejected(self):
+        # Activation channel must match release.authorized_channels; if the
+        # release does not authorise the channel, the activation chain
+        # raises a ValueError per Phase 1B.4 contract.
         release = _release(authorized_channels=[ConsumerChannel.GOOGLE_ADS_PUBLIC])
-        exported = export_for_channel(
-            ConsumerChannel.WEBSITE_PUBLIC,
-            projections=[_projection()],
-            rules=[_rule()],
-            releases=[release],
-            blockers=[],
-        )
-        assert exported == []
+        with pytest.raises(ValueError):
+            export_for_channel(
+                ConsumerChannel.WEBSITE_PUBLIC,
+                projections=[_projection()],
+                rules=[_rule()],
+                releases=[release],
+                blockers=[],
+                activations=[_activation()],
+            )
 
     def test_release_not_listing_projection_rejected(self):
         release = _release(related_projection_ids=["PROJ-OTHER"])
@@ -111,16 +140,20 @@ class TestReleaseExporterAuthority:
             rules=[_rule()],
             releases=[release],
             blockers=[],
+            activations=[_activation()],
         )
         assert exported == []
 
     def test_no_releases_rejects_everything(self):
+        # Without any release and without any activation, the exporter
+        # returns the empty set (Phase 1 default).
         exported = export_for_channel(
             ConsumerChannel.WEBSITE_PUBLIC,
             projections=[_projection()],
             rules=[_rule()],
             releases=[],
             blockers=[],
+            activations=[],
         )
         assert exported == []
 
@@ -131,6 +164,7 @@ class TestReleaseExporterAuthority:
             rules=[_rule()],
             releases=[_release()],
             blockers=[],
+            activations=[_activation()],
         )
         assert len(exported) == 1
         out = exported[0]
@@ -138,3 +172,5 @@ class TestReleaseExporterAuthority:
         assert out.channel == ConsumerChannel.WEBSITE_PUBLIC
         assert out.release_id == "REL-001"
         assert out.approved_channel_text == "public-safe text"
+        assert out.activation_id == "ACT-001"
+        assert out.publication_key == "website.pricing.disclosure"

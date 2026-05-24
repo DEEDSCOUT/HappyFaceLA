@@ -606,6 +606,17 @@ tabs:
       - "Release Version"
       - "Developer Owner"
       - "QA Status"
+      - "Activation ID"
+      - "Activation Release ID"
+      - "Activation Consumer Channel"
+      - "Activation Status"
+      - "Supersedes Activation ID"
+      - "Activation Effective Date"
+      - "Activation Implementation Status"
+      - "Activation QA Status"
+      - "Activation QA Evidence"
+      - "Activation Snapshot Mode"
+      - "Activation Notes (Internal Only)"
     frozen_row_count: 1
     filter_enabled: true
     editable_columns:
@@ -669,6 +680,7 @@ tabs:
     sensitivity: INTERNAL_CONTROLLED
     column_headers:
       - "Projection ID"
+      - "Publication Key"
       - "Related Rule IDs"
       - "Consumer Channel"
       - "Content Type"
@@ -906,6 +918,7 @@ tabs:
       - "Resolved Blocker IDs"
       - "Implementation Status"
       - "QA Status"
+      - "QA Evidence"
       - "Rollback Plan"
       - "Release Notes"
       - "Notes (Internal Only)"

@@ -50,6 +50,7 @@ PLAN_OPERATION_TYPES: frozenset[str] = frozenset(
         "POPULATE_OPEN_BLOCKERS",
         "POPULATE_CHANNEL_PROJECTION_REGISTER",
         "POPULATE_RELEASE_CHANGELOG",
+        "POPULATE_CHANNEL_IMPLEMENTATION_MAP",
         "DERIVE_ACTIVE_RULES_EXPORT",
         "DERIVE_PUBLIC_PRICING_PACKAGES",
         "DERIVE_CUSTOMER_CHATBOT_RESPONSE_MATRIX",
@@ -64,6 +65,7 @@ _POPULATE_OPS: frozenset[str] = frozenset(
         "POPULATE_OPEN_BLOCKERS",
         "POPULATE_CHANNEL_PROJECTION_REGISTER",
         "POPULATE_RELEASE_CHANGELOG",
+        "POPULATE_CHANNEL_IMPLEMENTATION_MAP",
     }
 )
 
@@ -302,6 +304,25 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
         }
     )
 
+    operations.append(
+        {
+            "op": "POPULATE_CHANNEL_IMPLEMENTATION_MAP",
+            "asset_type": AssetType.SHEET.value,
+            "name": governance_sheet_name,
+            "target_tab": "09_CHANNEL_IMPLEMENTATION_MAP",
+            "source": (
+                "config/seed_data/channel_activation_placeholders.yaml "
+                "(channel_release_activations)"
+            ),
+            "record_count": len(spec.channel_release_activations),
+            "activation_ids": sorted(
+                a.activation_id for a in spec.channel_release_activations
+            ),
+            "is_derived_view": False,
+            "live_action": False,
+        }
+    )
+
     # --- Derived-view operations ---
     #
     # Derived tabs are populated by formula / query / filter logic from
@@ -406,6 +427,9 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
                 "blocker_record_count": len(spec.blocker_records),
                 "channel_projection_record_count": len(spec.channel_projection_records),
                 "release_record_count": len(spec.release_records),
+                "channel_activation_record_count": len(
+                    spec.channel_release_activations
+                ),
             },
             "authorized_workspace": r"C:\Dev\happyfacesla-commercial-control-room",
         },

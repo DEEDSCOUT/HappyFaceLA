@@ -468,3 +468,29 @@ commit `7779834`; defects D1–D7).  Net architectural change:
 - `provision --apply` continues to exit 1 with the verbatim Phase 1
   block message `BLOCKED — LIVE GOOGLE PROVISIONING NOT AUTHORIZED IN
   PHASE 1.`
+
+
+---
+
+## Addendum — Phase 1B.4 (2026-05-23)
+
+* Plan operation count: **32** (was 31). The new operation is
+  `POPULATE_CHANNEL_IMPLEMENTATION_MAP` targeting workbook tab
+  `09_CHANNEL_IMPLEMENTATION_MAP` from `channel_activation_placeholders.yaml`.
+* Tab inventory: **unchanged** at 15 governance tabs + 9 restricted tabs.
+* Workbook column changes:
+  * `09_CHANNEL_IMPLEMENTATION_MAP` — 11 activation columns appended
+    (Activation ID, Activation Release ID, Activation Consumer Channel,
+    Activation Status, Supersedes Activation ID, Activation Effective Date,
+    Activation Implementation Status, Activation QA Status,
+    Activation QA Evidence, Activation Snapshot Mode,
+    Activation Notes (Internal Only)).
+  * `10_CHANNEL_PROJECTION_REGISTER` — `Publication Key` added as the second
+    column.
+  * `13_RELEASE_CHANGELOG` — `QA Evidence` inserted between `QA Status` and
+    `Rollback Plan`.
+* New `FullConfigSpec` field: `channel_release_activations`.
+* New seed file: `config/seed_data/channel_activation_placeholders.yaml`
+  (one `DRAFT` activation, ACT-2026-001 → REL-2026-001 → `WEBSITE_PUBLIC`).
+* Phase 1 boundaries unchanged: no live Google API calls;
+  `provision --apply` exits 1 with the verbatim block message.

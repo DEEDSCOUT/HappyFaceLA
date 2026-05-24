@@ -287,6 +287,13 @@ records:
     required: true
     visibility: INTERNAL_CONTROLLED
   - source_model: ChannelProjectionRecord
+    source_field: publication_key
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Publication Key
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
     source_field: related_rule_ids
     destination_tab: 10_CHANNEL_PROJECTION_REGISTER
     column_header: Related Rule IDs
@@ -479,6 +486,13 @@ records:
     editable_by_ceo: true
     visibility: INTERNAL_CONTROLLED
   - source_model: ReleaseRecord
+    source_field: qa_evidence
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: QA Evidence
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
     source_field: rollback_plan
     destination_tab: 13_RELEASE_CHANGELOG
     column_header: Rollback Plan
@@ -497,3 +511,76 @@ records:
     editable_by_ceo: true
     visibility: INTERNAL_CONTROLLED
 
+  # ---- ChannelReleaseActivationRecord -> 09_CHANNEL_IMPLEMENTATION_MAP --
+  - source_model: ChannelReleaseActivationRecord
+    source_field: activation_id
+    destination_tab: 09_CHANNEL_IMPLEMENTATION_MAP
+    column_header: Activation ID
+    required: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelReleaseActivationRecord
+    source_field: release_id
+    destination_tab: 09_CHANNEL_IMPLEMENTATION_MAP
+    column_header: Activation Release ID
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelReleaseActivationRecord
+    source_field: channel
+    destination_tab: 09_CHANNEL_IMPLEMENTATION_MAP
+    column_header: Activation Consumer Channel
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelReleaseActivationRecord
+    source_field: activation_status
+    destination_tab: 09_CHANNEL_IMPLEMENTATION_MAP
+    column_header: Activation Status
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelReleaseActivationRecord
+    source_field: supersedes_activation_id
+    destination_tab: 09_CHANNEL_IMPLEMENTATION_MAP
+    column_header: Supersedes Activation ID
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelReleaseActivationRecord
+    source_field: effective_date
+    destination_tab: 09_CHANNEL_IMPLEMENTATION_MAP
+    column_header: Activation Effective Date
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelReleaseActivationRecord
+    source_field: implementation_status
+    destination_tab: 09_CHANNEL_IMPLEMENTATION_MAP
+    column_header: Activation Implementation Status
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelReleaseActivationRecord
+    source_field: qa_status
+    destination_tab: 09_CHANNEL_IMPLEMENTATION_MAP
+    column_header: Activation QA Status
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelReleaseActivationRecord
+    source_field: qa_evidence
+    destination_tab: 09_CHANNEL_IMPLEMENTATION_MAP
+    column_header: Activation QA Evidence
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelReleaseActivationRecord
+    source_field: snapshot_mode
+    destination_tab: 09_CHANNEL_IMPLEMENTATION_MAP
+    column_header: Activation Snapshot Mode
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelReleaseActivationRecord
+    source_field: notes_internal_only
+    destination_tab: 09_CHANNEL_IMPLEMENTATION_MAP
+    column_header: Activation Notes (Internal Only)
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED

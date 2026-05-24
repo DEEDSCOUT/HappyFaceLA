@@ -17,6 +17,8 @@ from hfla_control_room.models import (
     BlockerRegister,
     ChannelProjectionRecord,
     ChannelProjectionRegister,
+    ChannelReleaseActivationRecord,
+    ChannelReleaseActivationRegister,
     ColumnMappingRecord,
     ColumnMappingRegister,
     DocumentSpec,
@@ -72,6 +74,7 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
     blocker_records: list[BlockerRecord] = []
     channel_projection_records: list[ChannelProjectionRecord] = []
     release_records: list[ReleaseRecord] = []
+    channel_activation_records: list[ChannelReleaseActivationRecord] = []
     for seed_file in sorted(seed_dir.glob("*.yaml")):
         seed_data = yaml.safe_load(seed_file.read_text(encoding="utf-8"))
         if not seed_data:
@@ -94,6 +97,11 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
             if "release_records" in seed_data:
                 for raw_rel in seed_data["release_records"]:
                     release_records.append(ReleaseRecord.model_validate(raw_rel))
+            if "channel_release_activations" in seed_data:
+                for raw_act in seed_data["channel_release_activations"]:
+                    channel_activation_records.append(
+                        ChannelReleaseActivationRecord.model_validate(raw_act)
+                    )
 
     # Validate rule-ID uniqueness across all seed files
     RuleRegister(rules=seed_rules)
@@ -109,6 +117,10 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
 
     # Validate release-ID uniqueness across all seed files
     ReleaseRegister(records=release_records)
+
+    # Validate activation-ID uniqueness + at-most-one-ACTIVE-per-channel
+    # + supersedes-FK across all seed files (Phase 1B.4).
+    ChannelReleaseActivationRegister(records=channel_activation_records)
 
     # Column mappings (Phase 1B.3 — moved from constants.py into governed YAML)
     column_mapping_records = [
@@ -139,6 +151,7 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
         blocker_records=blocker_records,
         channel_projection_records=channel_projection_records,
         release_records=release_records,
+        channel_release_activations=channel_activation_records,
         column_mappings=column_mapping_records,
         raw={
             "drive": drive_raw,

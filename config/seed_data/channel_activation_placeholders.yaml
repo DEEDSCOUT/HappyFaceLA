@@ -1,0 +1,30 @@
+# Happy Faces LA — Commercial Control Room
+# Channel release activation register (Phase 1B.4).
+#
+# Phase 1 contract: ALL activation records are DRAFT.  No activation may
+# carry activation_status=ACTIVE until the CEO records both a release
+# decision (status=RELEASED on the linked ReleaseRecord) AND a per-channel
+# activation decision in 09_CHANNEL_IMPLEMENTATION_MAP.
+#
+# Supersession contract: a new activation that replaces the current ACTIVE
+# activation MUST list the prior activation's id in
+# supersedes_activation_id.  The register enforces at most one ACTIVE
+# activation per channel; flipping a prior ACTIVE record to SUPERSEDED is
+# the only way to free the slot for a successor.
+
+channel_release_activations:
+  - activation_id: ACT-2026-001
+    release_id: REL-2026-001
+    channel: WEBSITE_PUBLIC
+    activation_status: DRAFT
+    supersedes_activation_id: ""
+    effective_date: ""
+    implementation_status: NOT_STARTED
+    qa_status: NOT_VERIFIED
+    qa_evidence: ""
+    snapshot_mode: FULL_CHANNEL_SNAPSHOT
+    notes_internal_only: >
+      Phase 1B.4 seed: this placeholder exists only to anchor the activation
+      register schema and exercise plan + fingerprint coverage.  No channel
+      may serve content from this activation until activation_status=ACTIVE
+      is recorded AND the linked ReleaseRecord carries status=RELEASED.

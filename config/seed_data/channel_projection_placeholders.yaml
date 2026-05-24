@@ -9,6 +9,7 @@
 channel_projection_records:
 
   - projection_id: "PROJ-DRAFT-001"
+    publication_key: "placeholder.website.pricing_disclosure"
     related_rule_ids: []
     channel: "WEBSITE_PUBLIC"
     content_type: "PLACEHOLDER_PRICING_DISCLOSURE"
@@ -28,6 +29,7 @@ channel_projection_records:
     notes_internal_only: "Phase 1B.2 placeholder; replaced by real website copy in Phase 1C."
 
   - projection_id: "PROJ-DRAFT-002"
+    publication_key: "placeholder.chatbot.intent.starting_price"
     related_rule_ids: []
     channel: "CUSTOMER_CHATBOT_PUBLIC"
     content_type: "PLACEHOLDER_CHATBOT_RESPONSE"
@@ -48,6 +50,7 @@ channel_projection_records:
     notes_internal_only: "Phase 1B.2 placeholder; replaced by real chatbot copy in Phase 1C."
 
   - projection_id: "PROJ-DRAFT-003"
+    publication_key: "placeholder.copilot.guidance.starting"
     related_rule_ids: []
     channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
     content_type: "PLACEHOLDER_INTERNAL_GUIDANCE"

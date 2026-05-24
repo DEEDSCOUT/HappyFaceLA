@@ -325,6 +325,19 @@
       "target_tab": "13_RELEASE_CHANGELOG"
     },
     {
+      "activation_ids": [
+        "ACT-2026-001"
+      ],
+      "asset_type": "sheet",
+      "is_derived_view": false,
+      "live_action": false,
+      "name": "HF-LA Commercial Policy & Channel Governance Master",
+      "op": "POPULATE_CHANNEL_IMPLEMENTATION_MAP",
+      "record_count": 1,
+      "source": "config/seed_data/channel_activation_placeholders.yaml (channel_release_activations)",
+      "target_tab": "09_CHANNEL_IMPLEMENTATION_MAP"
+    },
+    {
       "asset_type": "sheet",
       "derivation": "FILTER where status in (APPROVED_AS_RECOMMENDED, APPROVED_WITH_CONDITIONS) AND ceo_decision is non-empty",
       "is_derived_view": true,
@@ -369,6 +382,7 @@
     "authorized_workspace": "C:\\Dev\\happyfacesla-commercial-control-room",
     "data_population": {
       "blocker_record_count": 3,
+      "channel_activation_record_count": 1,
       "channel_projection_record_count": 3,
       "evidence_record_count": 3,
       "release_record_count": 1,
@@ -379,12 +393,12 @@
     "document_configuration_count": 2,
     "folder_count": 14,
     "live_google_calls": false,
-    "operation_count": 31,
+    "operation_count": 32,
     "phase": "PHASE_1_DRY_RUN",
     "plan_schema_version": "1.2.0",
-    "populate_operation_count": 5,
+    "populate_operation_count": 6,
     "sheet_configuration_count": 2,
-    "spec_fingerprint": "76a5eff8e00f316edfbc3eadcdedbce3e05611cea458bc259a9d40c3a3621056",
+    "spec_fingerprint": "c466dd7cea43893af054adddd1145942c53f26de91c4f111b7709be85b048599",
     "spec_fingerprint_algorithm": "SHA-256",
     "spreadsheet_asset_count": 2
   }

@@ -212,6 +212,34 @@ class QAStatus(StrEnum):
     VERIFIED_FAIL = "VERIFIED_FAIL"
 
 
+class ActivationStatus(StrEnum):
+    """Lifecycle of a :class:`ChannelReleaseActivationRecord` (Phase 1B.4).
+
+    A ``ChannelReleaseActivationRecord`` is the per-channel current-output
+    pointer.  Only one ``ACTIVE`` activation may exist per channel at any
+    time.  A new activation explicitly supersedes its predecessor; the
+    superseded record remains immutable for audit.
+    """
+
+    DRAFT = "DRAFT"
+    READY_FOR_QA = "READY_FOR_QA"
+    ACTIVE = "ACTIVE"
+    SUPERSEDED = "SUPERSEDED"
+    ROLLED_BACK = "ROLLED_BACK"
+    BLOCKED = "BLOCKED"
+
+
+class SnapshotMode(StrEnum):
+    """Activation snapshot mode (Phase 1B.4).
+
+    Phase 1B.4 supports a single mode: the activation publishes the entire
+    set of projections that the underlying RELEASED ReleaseRecord
+    authorises for the channel.  Partial / delta snapshots are deferred.
+    """
+
+    FULL_CHANNEL_SNAPSHOT = "FULL_CHANNEL_SNAPSHOT"
+
+
 class EvidenceStatus(StrEnum):
     DRAFT = "DRAFT"
     PENDING_VERIFICATION = "PENDING_VERIFICATION"

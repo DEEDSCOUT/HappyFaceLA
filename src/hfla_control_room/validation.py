@@ -19,6 +19,7 @@ from hfla_control_room.constants import (
     PII_FIELD_NAMES,
     PUBLIC_CONSUMER_CHANNELS,
     RESTRICTED_CONSUMER_CHANNELS,
+    ActivationStatus,
     AdsReviewStatus,
     BlockerStatus,
     CEOReleaseDecision,
@@ -35,6 +36,7 @@ from hfla_control_room.constants import (
 from hfla_control_room.models import (
     BlockerRecord,
     ChannelProjectionRecord,
+    ChannelReleaseActivationRecord,
     ColumnMappingRecord,
     EvidenceRecord,
     FullConfigSpec,
@@ -423,6 +425,23 @@ def validate_full_spec(spec: FullConfigSpec) -> list[str]:
         )
     )
 
+    # Channel-release activation integrity (Phase 1B.4)
+    errors.extend(
+        validate_channel_activation_integrity(
+            spec.channel_release_activations,
+            spec.release_records,
+            spec.channel_projection_records,
+        )
+    )
+
+    # Phase 1: no activation may be ACTIVE in seed data.
+    for act in spec.channel_release_activations:
+        if act.activation_status == ActivationStatus.ACTIVE:
+            errors.append(
+                f"Seed activation '{act.activation_id}' is marked ACTIVE \u2014 "
+                "no ACTIVE activations are permitted in Phase 1 seed data."
+            )
+
     return errors
 
 
@@ -469,12 +488,29 @@ def validate_release_integrity(
 
     if projection_records is not None:
         known_proj_ids = {p.projection_id for p in projection_records}
+        projections_by_id = {p.projection_id: p for p in projection_records}
         for record in release_records:
             for pid in record.related_projection_ids:
                 if pid and pid not in known_proj_ids:
                     errors.append(
                         f"Release '{record.release_id}' references unknown "
                         f"projection ID '{pid}'."
+                    )
+            # Phase 1B.4: every governing rule the projection cites MUST
+            # appear in the release's related_rule_ids.
+            release_rule_set = set(record.related_rule_ids)
+            for pid in record.related_projection_ids:
+                proj = projections_by_id.get(pid)
+                if proj is None:
+                    continue
+                missing_rules = sorted(
+                    set(proj.related_rule_ids) - release_rule_set
+                )
+                if missing_rules:
+                    errors.append(
+                        f"Release '{record.release_id}' lists projection "
+                        f"'{pid}' whose related_rule_ids are not all governed "
+                        f"by the release: missing {missing_rules}."
                     )
 
     if blocker_records is not None:
@@ -740,6 +776,113 @@ def validate_channel_projection_integrity(
                     f"Projection '{record.projection_id}' release_status="
                     f"{record.release_status.value} requires non-empty effective_date."
                 )
+
+    return errors
+
+
+# ---------------------------------------------------------------------------
+# Channel release activation integrity (Phase 1B.4)
+# ---------------------------------------------------------------------------
+
+
+def validate_channel_activation_integrity(
+    activation_records: list[ChannelReleaseActivationRecord],
+    release_records: list[ReleaseRecord] | None = None,
+    projection_records: list[ChannelProjectionRecord] | None = None,
+) -> list[str]:
+    """Validate :class:`ChannelReleaseActivationRecord` integrity (Phase 1B.4).
+
+    Checks:
+    - activation_id uniqueness.
+    - At most one ACTIVE activation per channel.
+    - ``supersedes_activation_id`` resolves to a known activation (and not
+      self).
+    - ``release_id`` resolves to a known release.
+    - ACTIVE activations chain to a RELEASED release whose
+      ``authorized_channels`` lists the activation's channel.
+    """
+    errors: list[str] = []
+
+    seen_ids: set[str] = set()
+    for r in activation_records:
+        if r.activation_id in seen_ids:
+            errors.append(f"Duplicate activation ID: '{r.activation_id}'.")
+        seen_ids.add(r.activation_id)
+
+    actives_by_channel: dict[ConsumerChannel, list[str]] = {}
+    for r in activation_records:
+        if r.activation_status == ActivationStatus.ACTIVE:
+            actives_by_channel.setdefault(r.channel, []).append(r.activation_id)
+    for channel, ids in actives_by_channel.items():
+        if len(ids) > 1:
+            errors.append(
+                f"Channel '{channel.value}' has multiple ACTIVE activations: "
+                f"{sorted(ids)}."
+            )
+
+    known_activation_ids = {r.activation_id for r in activation_records}
+    for r in activation_records:
+        if r.supersedes_activation_id:
+            if r.supersedes_activation_id == r.activation_id:
+                errors.append(
+                    f"Activation '{r.activation_id}' cannot supersede itself."
+                )
+            elif r.supersedes_activation_id not in known_activation_ids:
+                errors.append(
+                    f"Activation '{r.activation_id}' supersedes unknown "
+                    f"activation_id '{r.supersedes_activation_id}'."
+                )
+
+    if release_records is not None:
+        releases_by_id = {rel.release_id: rel for rel in release_records}
+        for r in activation_records:
+            release = releases_by_id.get(r.release_id)
+            if release is None:
+                errors.append(
+                    f"Activation '{r.activation_id}' references unknown "
+                    f"release_id '{r.release_id}'."
+                )
+                continue
+            if r.activation_status == ActivationStatus.ACTIVE:
+                if release.status != ReleaseStatus.RELEASED:
+                    errors.append(
+                        f"Activation '{r.activation_id}' is ACTIVE but its "
+                        f"release '{r.release_id}' has status "
+                        f"'{release.status.value}'."
+                    )
+                if r.channel not in release.authorized_channels:
+                    errors.append(
+                        f"Activation '{r.activation_id}' is ACTIVE on "
+                        f"channel '{r.channel.value}' but release "
+                        f"'{r.release_id}' does not authorise that channel."
+                    )
+
+    if projection_records is not None and release_records is not None:
+        # ACTIVE activation: the release's related_projection_ids set must
+        # have unique (channel, publication_key) within those targeting the
+        # activation's channel.
+        projections_by_id = {p.projection_id: p for p in projection_records}
+        releases_by_id = {rel.release_id: rel for rel in release_records}
+        for r in activation_records:
+            if r.activation_status != ActivationStatus.ACTIVE:
+                continue
+            release = releases_by_id.get(r.release_id)
+            if release is None:
+                continue
+            seen_keys: dict[str, str] = {}
+            for pid in release.related_projection_ids:
+                p = projections_by_id.get(pid)
+                if p is None or p.channel != r.channel:
+                    continue
+                if p.publication_key in seen_keys:
+                    errors.append(
+                        f"Activation '{r.activation_id}' would publish "
+                        f"duplicate publication_key '{p.publication_key}' on "
+                        f"channel '{r.channel.value}' (projections "
+                        f"'{seen_keys[p.publication_key]}' and '{pid}')."
+                    )
+                else:
+                    seen_keys[p.publication_key] = pid
 
     return errors
 

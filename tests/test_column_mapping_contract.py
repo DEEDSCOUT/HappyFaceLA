@@ -20,6 +20,7 @@ from hfla_control_room.constants import GOVERNANCE_DESTINATION_TABS
 from hfla_control_room.models import (
     BlockerRecord,
     ChannelProjectionRecord,
+    ChannelReleaseActivationRecord,
     EvidenceRecord,
     ReleaseRecord,
     RuleRow,
@@ -35,6 +36,7 @@ MODEL_MAP = {
     "BlockerRecord": BlockerRecord,
     "ChannelProjectionRecord": ChannelProjectionRecord,
     "ReleaseRecord": ReleaseRecord,
+    "ChannelReleaseActivationRecord": ChannelReleaseActivationRecord,
 }
 
 

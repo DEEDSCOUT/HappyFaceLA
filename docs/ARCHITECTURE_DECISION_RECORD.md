@@ -247,3 +247,105 @@ The column-mapping contract was moved out of `constants.py` into
   register.
 - All Phase 1 releases remain DRAFT.  The exporter therefore returns an
   empty approved set for every channel.  This is correct.
+
+
+---
+
+## ADR-004 — Blocker scope independence, current-release authority, and supersession
+
+**Date:** 2026-05-23
+**Status:** ACCEPTED — Phase 1B.4
+
+### Context
+
+The Phase 1B.3 final acceptance audit identified two governance defects that
+ADR-003 did not constrain tightly enough:
+
+1. The release-gate exporter conflated the *publication* decision with the
+   operational flag `blocks_live_provisioning`, collapsing three independent
+   blocker scopes into one and producing a fail-open posture when a blocker
+   listed a channel but did not also assert live-provisioning impact.
+2. "Which release is currently the output for a given channel?" was inferred
+   from `ReleaseRecord.status == RELEASED` plus channel authorisation. Two
+   consecutive RELEASED records that both authorised the same channel could
+   both be considered active, with no first-class supersession link and no
+   single-current-output invariant. Two RELEASED projections could also
+   occupy the same publication slot for the same channel.
+
+### Decision
+
+#### Blocker scopes are independent
+
+Three governance scopes are now decided independently in the release-gate
+exporter:
+
+* **Publication scope** (`blocked_channels`) decides whether a channel may
+  publish today. Consulted by `_channel_has_open_export_blocker` and reported
+  by `channel_publication_blockers_for_channel`. This is the *only* signal
+  used for the publication gate (gate A) of `export_for_channel`.
+* **Live-provisioning scope** (`blocks_live_provisioning`) decides whether
+  the platform may mutate live provider state. Consulted only by
+  `validate_no_live_provisioning_blockers`.
+* **Phase-1C content-loading scope** (`blocks_phase_1c_content_loading`)
+  decides whether the content-loading phase may begin. Consulted only by
+  `validate_no_phase_1c_loading_blockers`.
+
+These three checks never substitute for each other.
+
+#### Current-channel output authority via ChannelReleaseActivationRecord
+
+A first-class authority record now answers the question
+"what is currently the output on this channel?":
+
+* `ChannelReleaseActivationRecord` carries `activation_id`, `release_id`,
+  `channel`, `activation_status` (`DRAFT`/`READY_FOR_QA`/`ACTIVE`/
+  `SUPERSEDED`/`ROLLED_BACK`/`BLOCKED`), `supersedes_activation_id`,
+  `effective_date`, `implementation_status`, `qa_status`, `qa_evidence`,
+  `snapshot_mode` (only `FULL_CHANNEL_SNAPSHOT`), and `notes_internal_only`.
+* `ChannelReleaseActivationRegister` enforces unique `activation_id`,
+  at most one `ACTIVE` activation per channel, and that any
+  `supersedes_activation_id` references an existing activation row.
+* `ACTIVE` requires the cited release to be `RELEASED` and to authorise the
+  activation's channel, plus `qa_status=VERIFIED_PASS`, non-empty
+  `qa_evidence`, an `effective_date`, and `snapshot_mode=FULL_CHANNEL_SNAPSHOT`.
+* Restricted channels (per `CHANNEL_RESTRICTION` policy) cannot host
+  activations.
+* Supersession is *explicit* via the foreign key — never inferred from
+  effective-date ordering.
+* `export_for_channel` requires an `ACTIVE` activation for the channel; the
+  release behind that activation is the sole release used for the export.
+
+#### Publication-key uniqueness on the active channel
+
+Each `ChannelProjectionRecord` carries a required `publication_key`
+matching `^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+$`:
+
+* The projection register rejects duplicate publication keys among
+  `APPROVED_FOR_RELEASE` and `RELEASED` rows.
+* The release-gate exporter is fail-closed on duplicate
+  `(channel, publication_key)` and raises `ValueError("duplicate publication_key ...")`
+  even when `model_construct` is used to bypass the register.
+* The validation layer further enforces per-channel uniqueness of
+  publication keys among projections governed by the channel's `ACTIVE`
+  release.
+
+#### Governing-rule subset
+
+`validate_release_integrity` and `export_for_channel` both enforce that
+`set(projection.related_rule_ids) ⊆ set(release.related_rule_ids)` for every
+projection associated with the release: a projection may not cite a rule the
+release does not govern.
+
+### Consequences
+
+* `ApprovedProjectionExport` now requires non-empty `publication_key`,
+  `release_id`, `release_version`, `policy_version`, `effective_date`, and
+  `activation_id` on every record, and `requires_human_escalation=True`
+  requires a non-empty `escalation_reason`.
+* `FullConfigSpec` gains `channel_release_activations` and the validation
+  pipeline appends activation-integrity checks plus a Phase 1 rejection of
+  any `ACTIVE` activations seeded in config (Phase 1 ships DRAFT only).
+* Workbook tab 09 (`CHANNEL_IMPLEMENTATION_MAP`) is the worksheet projection
+  of the activation register. Tab inventory remains frozen at 15.
+* The plan now contains 32 operations (was 31) with
+  `POPULATE_CHANNEL_IMPLEMENTATION_MAP` added.
