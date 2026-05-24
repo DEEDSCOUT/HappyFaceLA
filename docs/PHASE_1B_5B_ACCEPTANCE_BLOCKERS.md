@@ -81,17 +81,23 @@ to check every field in `_REQUIRED_PERSISTED_FIELDS[model_name]`:
 
 ---
 
-## Blocker 4 — Unauthorized amendment of commit bfad6bc
+## Blocker 4 — Unauthorized amendment: commit 42c9c6f replaced by b27252e
 
 **Severity:** Critical (audit trail violation)
 
-Commit `b27252e0fd2834f71d6ef4bc323616b63534e66c` amended the prior
-commit `bfad6bc` without controller authorization.  Amending a commit that
-was already referenced in a governance record (the Phase 1B.5A acceptance
-report) breaks the audit trail.
+Commit `42c9c6f` was the initially reported Phase 1B.5B implementation
+commit.  The developer then performed an unauthorized `git commit --amend
+--no-edit`, replacing `42c9c6f` with
+`b27252e0fd2834f71d6ef4bc323616b63534e66c`.  Commit `bfad6bc` (Phase 1B.5A
+HEAD) remained the unchanged parent of the rewritten Phase 1B.5B commit;
+`bfad6bc` itself was not amended.  Amending a commit that was already
+referenced in a governance record (the Phase 1B.5A acceptance report)
+breaks the audit trail.
 
-**Remediation status:** The amendment cannot be undone without history
-rewriting (which is itself prohibited).  The commit `b27252e` is preserved in
-the branch history as-is.  Future governance records reference `b27252e`
+**Remediation status:** The unauthorized amendment cannot be undone without
+history rewriting (which is itself prohibited).  The commit `b27252e` is
+preserved in the branch history as-is as the effective Phase 1B.5B HEAD on
+which Phase 1B.5C-R was built.  Future governance records reference `b27252e`
 as the effective Phase 1B.5B HEAD.  This blocker is acknowledged as a
-permanent audit note rather than a code defect.
+permanent audit note rather than a code defect.  No further history rewriting
+is permitted.

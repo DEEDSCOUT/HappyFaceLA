@@ -141,6 +141,14 @@ Phase 1D acceptances are mandatory.
      definition.
    - Every `RuleRow.rule_category` value must come from the canonical
      `rule_category` validation list.
+   - Any OPEN candidate `BlockerRecord` with `blocks_phase_1c_content_loading =
+     true` causes immediate rejection.  The structural loading decision is
+     evaluated from the candidate's own `blocker_records` directly, independent
+     of any channel activation or release reference.  Ordinary unresolved
+     CEO/compliance/business blockers (`blocks_phase_1c_content_loading = false`)
+     are admitted as DRAFT records and do not block intake — Phase 1C exists
+     precisely to load such DRAFT decisions for CEO review; it does not require
+     ordinary business blockers to be resolved before intake.
 
    The `partial-fixture` mode that was briefly present in Phase 1B.5B was removed
    in Phase 1B.5C-R as a governance violation.  See
