@@ -20,23 +20,25 @@ from hfla_control_room.constants import (
     PUBLIC_CONSUMER_CHANNELS,
     RESTRICTED_CONSUMER_CHANNELS,
     AdsReviewStatus,
-    AIReviewStatus,
     BlockerStatus,
+    CEOReleaseDecision,
     ChannelVisibility,
     ChatbotResponseReviewStatus,
     ConsumerChannel,
     CopilotInternalReviewStatus,
-    ExportChannel,
     ProjectionReleaseStatus,
     PublicSafeReviewStatus,
     QuoteOperatorReviewStatus,
+    ReleaseStatus,
     RuleStatus,
 )
 from hfla_control_room.models import (
     BlockerRecord,
     ChannelProjectionRecord,
+    ColumnMappingRecord,
     EvidenceRecord,
     FullConfigSpec,
+    ReleaseRecord,
     RuleRow,
     WorkbookSpec,
 )
@@ -90,12 +92,6 @@ def validate_rule_for_export(rule: RuleRow) -> list[str]:
         errors.append(f"Rule '{rule.rule_id}' has no CEO decision recorded.")
     if not rule.final_effective_rule.strip():
         errors.append(f"Rule '{rule.rule_id}' has no Final Effective Rule.")
-    if not rule.approved_export_text.strip():
-        errors.append(f"Rule '{rule.rule_id}' has no approved export text (approved_export_text).")
-    if not rule.release_version.strip():
-        errors.append(f"Rule '{rule.rule_id}' has no release version.")
-    if not rule.effective_date.strip():
-        errors.append(f"Rule '{rule.rule_id}' has no effective date.")
     if not rule.policy_version.strip():
         errors.append(f"Rule '{rule.rule_id}' has no policy version.")
     return errors
@@ -128,13 +124,18 @@ def validate_rules_batch(rules: list[RuleRow]) -> dict[str, list[str]]:
 
 def validate_no_pii_in_export(rules: list[RuleRow]) -> list[str]:
     """Return violation messages if any rule exposes PII field names in
-    visible text fields destined for channel-safe exports.
+    visible internal text fields.
+
+    Phase 1B.3: ``RuleRow`` no longer carries channel-safe export text.
+    This scan is now applied only to internal text fields and is intended
+    to flag stray PII tokens at policy-authoring time.  Channel-safe
+    export text lives only on :class:`ChannelProjectionRecord` and is
+    scanned by :func:`validate_no_pii_in_projection_export`.
     """
     violations: list[str] = []
     for rule in rules:
         combined = " ".join(
             [
-                rule.approved_export_text,
                 rule.final_effective_rule,
                 rule.draft_recommendation,
                 rule.rule_title,
@@ -153,6 +154,32 @@ def validate_no_pii_in_export(rules: list[RuleRow]) -> list[str]:
     return violations
 
 
+def validate_no_pii_in_projection_export(
+    projections: list[ChannelProjectionRecord],
+) -> list[str]:
+    """Scan ``approved_channel_text`` on every projection for PII / internal
+    field-name tokens that must never appear in a channel-safe export.
+    """
+    violations: list[str] = []
+    for proj in projections:
+        text = proj.approved_channel_text.lower()
+        if not text:
+            continue
+        for pii_field in PII_FIELD_NAMES:
+            if pii_field in text:
+                violations.append(
+                    f"Projection '{proj.projection_id}' approved_channel_text "
+                    f"contains PII field reference '{pii_field}'."
+                )
+        for internal_field in INTERNAL_ONLY_FIELD_NAMES:
+            if internal_field in text:
+                violations.append(
+                    f"Projection '{proj.projection_id}' approved_channel_text "
+                    f"contains internal-only field '{internal_field}'."
+                )
+    return violations
+
+
 # ---------------------------------------------------------------------------
 # Channel-specific export safety validation
 # ---------------------------------------------------------------------------
@@ -160,93 +187,6 @@ def validate_no_pii_in_export(rules: list[RuleRow]) -> list[str]:
 _CHANNEL_VISIBILITY_BLOCKED: frozenset[ChannelVisibility] = frozenset(
     {ChannelVisibility.INTERNAL_ONLY, ChannelVisibility.RESTRICTED_PII}
 )
-
-# Legacy (ExportChannel) public set — retained for back-compat callers.
-_PUBLIC_CHANNELS: frozenset[ExportChannel] = frozenset(
-    {ExportChannel.WEBSITE, ExportChannel.GOOGLE_ADS, ExportChannel.CHATBOT}
-)
-
-
-def validate_channel_export_safety(
-    rule: RuleRow, channel: ExportChannel
-) -> list[str]:
-    """Return violation messages for a specific channel export request
-    (legacy :class:`ExportChannel` API).
-
-    Phase 1B.2 fixes the customer-chatbot / Copilot conflation: the chatbot
-    branch now requires :class:`ChatbotResponseReviewStatus` and the Copilot
-    branch requires :class:`CopilotInternalReviewStatus`.  Approval on one
-    channel does NOT grant approval on the other.
-    """
-    errors: list[str] = []
-
-    if rule.channel_visibility in _CHANNEL_VISIBILITY_BLOCKED:
-        errors.append(
-            f"Rule '{rule.rule_id}' has visibility '{rule.channel_visibility.value}' — "
-            f"cannot be exported to any channel."
-        )
-        return errors  # No point checking further
-
-    if rule.contains_pii:
-        errors.append(
-            f"Rule '{rule.rule_id}' is flagged contains_pii=True — cannot be exported."
-        )
-
-    if rule.contains_internal_only_logic and channel in _PUBLIC_CHANNELS:
-        errors.append(
-            f"Rule '{rule.rule_id}' is flagged contains_internal_only_logic=True — "
-            f"cannot be exported to public channel '{channel.value}'."
-        )
-
-    if channel in _PUBLIC_CHANNELS:
-        if rule.public_safe_review_status != PublicSafeReviewStatus.APPROVED_PUBLIC_SAFE:
-            errors.append(
-                f"Rule '{rule.rule_id}' public_safe_review_status is "
-                f"'{rule.public_safe_review_status.value}' — "
-                f"must be APPROVED_PUBLIC_SAFE for channel '{channel.value}'."
-            )
-
-    if channel == ExportChannel.GOOGLE_ADS:
-        if rule.ads_claim_review_status != AdsReviewStatus.APPROVED_FOR_ADS:
-            errors.append(
-                f"Rule '{rule.rule_id}' ads_claim_review_status is "
-                f"'{rule.ads_claim_review_status.value}' — "
-                f"must be APPROVED_FOR_ADS for google_ads channel."
-            )
-
-    # Customer-chatbot is a PUBLIC channel and now has its OWN review gate.
-    if channel == ExportChannel.CHATBOT:
-        if (
-            rule.customer_chatbot_review_status
-            != ChatbotResponseReviewStatus.APPROVED_FOR_CUSTOMER_CHATBOT
-        ):
-            errors.append(
-                f"Rule '{rule.rule_id}' customer_chatbot_review_status is "
-                f"'{rule.customer_chatbot_review_status.value}' — "
-                f"must be APPROVED_FOR_CUSTOMER_CHATBOT for chatbot channel. "
-                f"Copilot or generic AI approval does NOT grant chatbot eligibility."
-            )
-
-    # Internal Copilot has its OWN review gate; chatbot approval does NOT apply.
-    if channel == ExportChannel.AI_COPILOT:
-        if (
-            rule.copilot_internal_review_status
-            != CopilotInternalReviewStatus.APPROVED_FOR_COPILOT_INTERNAL
-        ):
-            errors.append(
-                f"Rule '{rule.rule_id}' copilot_internal_review_status is "
-                f"'{rule.copilot_internal_review_status.value}' — "
-                f"must be APPROVED_FOR_COPILOT_INTERNAL for ai_copilot channel. "
-                f"Chatbot approval does NOT grant Copilot eligibility."
-            )
-        eligible = (ChannelVisibility.CHANNEL_SAFE, ChannelVisibility.INTERNAL_APPROVED)
-        if rule.channel_visibility not in eligible:
-            errors.append(
-                f"Rule '{rule.rule_id}' visibility '{rule.channel_visibility.value}' — "
-                f"not eligible for ai_copilot channel."
-            )
-
-    return errors
 
 
 # ---------------------------------------------------------------------------
@@ -354,7 +294,7 @@ def validate_consumer_channel_export_safety(
 
 
 # Silence unused-import warnings for symbols re-exported only for type-context.
-_ = (AIReviewStatus, INTERNAL_CONSUMER_CHANNELS, GOVERNANCE_DESTINATION_TABS)
+_ = (INTERNAL_CONSUMER_CHANNELS,)
 
 
 # ---------------------------------------------------------------------------
@@ -458,9 +398,195 @@ def validate_full_spec(spec: FullConfigSpec) -> list[str]:
         )
     )
 
+    # Release register integrity (Phase 1B.3)
+    errors.extend(
+        validate_release_integrity(
+            spec.release_records,
+            spec.seed_rules,
+            spec.channel_projection_records,
+            spec.blocker_records,
+        )
+    )
+
+    # Phase 1: no release may carry status=RELEASED in seed data.
+    for release in spec.release_records:
+        if release.status == ReleaseStatus.RELEASED:
+            errors.append(
+                f"Seed release '{release.release_id}' is marked RELEASED \u2014 "
+                "no CEO-approved releases are permitted in Phase 1 seed data."
+            )
+
+    # Column mapping integrity (Phase 1B.3 \u2014 mappings governed by YAML)
+    errors.extend(
+        validate_column_mapping_integrity(
+            spec.column_mappings, spec.governance_workbook
+        )
+    )
+
     return errors
 
 
+# ---------------------------------------------------------------------------
+# Release register integrity (Phase 1B.3)
+# ---------------------------------------------------------------------------
+
+
+def validate_release_integrity(
+    release_records: list[ReleaseRecord],
+    seed_rules: list[RuleRow] | None = None,
+    projection_records: list[ChannelProjectionRecord] | None = None,
+    blocker_records: list[BlockerRecord] | None = None,
+) -> list[str]:
+    """Validate release record integrity (Phase 1B.3).
+
+    Checks:
+    - Release IDs are unique.
+    - related_rule_ids resolve to known rule IDs.
+    - related_projection_ids resolve to known projection IDs.
+    - resolved_blocker_ids resolve to known blocker IDs.
+    - status=RELEASED requires authorized_channels non-empty AND
+      ceo_decision in APPROVED_AS_RECOMMENDED / APPROVED_WITH_CONDITIONS.
+    - DRAFT records must not list authorized_channels.
+    - status=RELEASED must not list any blocker that is still OPEN.
+    """
+    errors: list[str] = []
+
+    seen_ids: set[str] = set()
+    for record in release_records:
+        if record.release_id in seen_ids:
+            errors.append(f"Duplicate release ID: '{record.release_id}'.")
+        seen_ids.add(record.release_id)
+
+    if seed_rules is not None:
+        known_rule_ids = {r.rule_id for r in seed_rules}
+        for record in release_records:
+            for rid in record.related_rule_ids:
+                if rid and rid not in known_rule_ids:
+                    errors.append(
+                        f"Release '{record.release_id}' references unknown "
+                        f"rule ID '{rid}'."
+                    )
+
+    if projection_records is not None:
+        known_proj_ids = {p.projection_id for p in projection_records}
+        for record in release_records:
+            for pid in record.related_projection_ids:
+                if pid and pid not in known_proj_ids:
+                    errors.append(
+                        f"Release '{record.release_id}' references unknown "
+                        f"projection ID '{pid}'."
+                    )
+
+    if blocker_records is not None:
+        known_blocker_ids = {b.blocker_id for b in blocker_records}
+        blockers_by_id = {b.blocker_id: b for b in blocker_records}
+        _open = (
+            BlockerStatus.OPEN_CEO_INPUT_REQUIRED,
+            BlockerStatus.OPEN_COMPLIANCE_REVIEW_REQUIRED,
+            BlockerStatus.OPEN_EVIDENCE_REQUIRED,
+        )
+        for record in release_records:
+            for bid in record.resolved_blocker_ids:
+                if bid and bid not in known_blocker_ids:
+                    errors.append(
+                        f"Release '{record.release_id}' references unknown "
+                        f"blocker ID '{bid}'."
+                    )
+                    continue
+                if (
+                    record.status == ReleaseStatus.RELEASED
+                    and bid in blockers_by_id
+                    and blockers_by_id[bid].status in _open
+                ):
+                    errors.append(
+                        f"Release '{record.release_id}' is RELEASED but lists "
+                        f"blocker '{bid}' as resolved while it is still OPEN."
+                    )
+
+    for record in release_records:
+        if record.status == ReleaseStatus.RELEASED:
+            if record.ceo_decision not in (
+                CEOReleaseDecision.APPROVED_AS_RECOMMENDED,
+                CEOReleaseDecision.APPROVED_WITH_CONDITIONS,
+            ):
+                errors.append(
+                    f"Release '{record.release_id}' status=RELEASED but "
+                    f"ceo_decision='{record.ceo_decision.value}'."
+                )
+
+    return errors
+
+
+# ---------------------------------------------------------------------------
+# Column mapping integrity (Phase 1B.3)
+# ---------------------------------------------------------------------------
+
+
+def validate_column_mapping_integrity(
+    mappings: list[ColumnMappingRecord],
+    governance_workbook: WorkbookSpec,
+) -> list[str]:
+    """Validate column mapping contract integrity (Phase 1B.3).
+
+    Checks:
+    - Every destination_tab appears in GOVERNANCE_DESTINATION_TABS.
+    - Every (source_model, destination_tab, column_header) triple is unique.
+    - Every column_header is present in the destination tab's
+      column_headers list in the governance workbook spec.
+    - Every source_field exists as a field on the named source model.
+    """
+    from hfla_control_room import models as _models
+
+    errors: list[str] = []
+
+    headers_by_tab: dict[str, set[str]] = {
+        tab.title: set(tab.column_headers) for tab in governance_workbook.tabs
+    }
+
+    seen: set[tuple[str, str, str]] = set()
+    for m in mappings:
+        if m.destination_tab not in GOVERNANCE_DESTINATION_TABS:
+            errors.append(
+                f"Column mapping '{m.source_model}.{m.source_field}' targets "
+                f"unknown governance tab '{m.destination_tab}'."
+            )
+            continue
+
+        key = (m.source_model, m.destination_tab, m.column_header)
+        if key in seen:
+            errors.append(f"Duplicate column mapping: {key}.")
+        seen.add(key)
+
+        tab_headers = headers_by_tab.get(m.destination_tab)
+        if tab_headers is None:
+            errors.append(
+                f"Column mapping '{m.source_model}.{m.source_field}' "
+                f"references tab '{m.destination_tab}' which is not in the "
+                "governance workbook spec."
+            )
+            continue
+
+        if m.column_header not in tab_headers:
+            errors.append(
+                f"Column mapping '{m.source_model}.{m.source_field}' "
+                f"targets unknown column '{m.column_header}' in tab "
+                f"'{m.destination_tab}'."
+            )
+
+        model_cls = getattr(_models, m.source_model, None)
+        if model_cls is None:
+            errors.append(
+                f"Column mapping source_model '{m.source_model}' is not a "
+                "known model class."
+            )
+            continue
+        if m.source_field not in model_cls.model_fields:
+            errors.append(
+                f"Column mapping '{m.source_model}.{m.source_field}' "
+                f"references unknown model field."
+            )
+
+    return errors
 # ---------------------------------------------------------------------------
 # Blocker integrity (Phase 1B.2)
 # ---------------------------------------------------------------------------

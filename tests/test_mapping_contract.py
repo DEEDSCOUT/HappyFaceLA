@@ -83,6 +83,13 @@ class TestMappingContract:
         assert ops[0]["target_tab"] == "10_CHANNEL_PROJECTION_REGISTER"
         assert ops[0]["is_derived_view"] is False
 
+    def test_release_changelog_is_populated(self, plan):
+        ops = _ops(plan, "POPULATE_RELEASE_CHANGELOG")
+        assert len(ops) == 1
+        assert ops[0]["target_tab"] == "13_RELEASE_CHANGELOG"
+        assert ops[0]["is_derived_view"] is False
+        assert "release_records" in ops[0]["source"]
+
     def test_active_rules_export_is_a_derived_view(self, plan):
         ops = _ops(plan, "DERIVE_ACTIVE_RULES_EXPORT")
         assert len(ops) == 1

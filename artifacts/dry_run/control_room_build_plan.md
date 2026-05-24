@@ -1,9 +1,9 @@
 # Happy Faces LA — Commercial Control Room Dry-Run Build Plan
 
 **Phase:** PHASE_1_DRY_RUN  
-**Spec fingerprint (SHA-256):** `4e6704bdb7aed66d6b556683738944433c5356716e8db178afe0294da7f017cf`  
+**Spec fingerprint (SHA-256):** `76a5eff8e00f316edfbc3eadcdedbce3e05611cea458bc259a9d40c3a3621056`  
 **Live Google API calls:** False  
-**Total operations:** 30  
+**Total operations:** 31  
 
 > This file is a deterministic snapshot.  The same configuration always
 > produces a byte-identical file.  Run-time timestamps and receipts are
@@ -18,7 +18,7 @@
 | CREATE_DOCUMENT_FILE | 2 |
 | CONFIGURE_SPREADSHEET | 2 |
 | CONFIGURE_DOCUMENT | 2 |
-| POPULATE_* | 4 |
+| POPULATE_* | 5 |
 | DERIVE_* | 4 |
 
 ## Operations
@@ -223,16 +223,26 @@
 - **source:** config/seed_data/channel_projection_placeholders.yaml (channel_projection_records)
 - **target_tab:** 10_CHANNEL_PROJECTION_REGISTER
 
-### 27. `DERIVE_ACTIVE_RULES_EXPORT` — HF-LA Commercial Policy & Channel Governance Master
+### 27. `POPULATE_RELEASE_CHANGELOG` — HF-LA Commercial Policy & Channel Governance Master
 
 - **asset_type:** sheet
-- **derivation:** FILTER where status in (APPROVED_AS_RECOMMENDED, APPROVED_WITH_CONDITIONS) AND approved_export_text is non-empty
+- **is_derived_view:** False
+- **live_action:** False
+- **record_count:** 1
+- **release_ids:** REL-2026-001
+- **source:** config/seed_data/release_placeholders.yaml (release_records)
+- **target_tab:** 13_RELEASE_CHANGELOG
+
+### 28. `DERIVE_ACTIVE_RULES_EXPORT` — HF-LA Commercial Policy & Channel Governance Master
+
+- **asset_type:** sheet
+- **derivation:** FILTER where status in (APPROVED_AS_RECOMMENDED, APPROVED_WITH_CONDITIONS) AND ceo_decision is non-empty
 - **is_derived_view:** True
 - **live_action:** False
 - **source_tab:** 03_RULE_REGISTER_MASTER
 - **target_tab:** 04_ACTIVE_RULES_EXPORT
 
-### 28. `DERIVE_PUBLIC_PRICING_PACKAGES` — HF-LA Commercial Policy & Channel Governance Master
+### 29. `DERIVE_PUBLIC_PRICING_PACKAGES` — HF-LA Commercial Policy & Channel Governance Master
 
 - **asset_type:** sheet
 - **derivation:** FILTER where rule_category=PUBLIC_PRICING AND public_safe_review_status=APPROVED_PUBLIC_SAFE
@@ -241,7 +251,7 @@
 - **source_tab:** 03_RULE_REGISTER_MASTER
 - **target_tab:** 05_PUBLIC_PRICING_PACKAGES
 
-### 29. `DERIVE_CUSTOMER_CHATBOT_RESPONSE_MATRIX` — HF-LA Commercial Policy & Channel Governance Master
+### 30. `DERIVE_CUSTOMER_CHATBOT_RESPONSE_MATRIX` — HF-LA Commercial Policy & Channel Governance Master
 
 - **asset_type:** sheet
 - **derivation:** FILTER where channel=CUSTOMER_CHATBOT_PUBLIC AND release_status=APPROVED_FOR_RELEASE
@@ -250,7 +260,7 @@
 - **source_tab:** 10_CHANNEL_PROJECTION_REGISTER
 - **target_tab:** 11_AI_CUSTOMER_RESPONSE_MATRIX
 
-### 30. `DERIVE_COPILOT_INTERNAL_GUIDANCE_EXPORT` — HF-LA Commercial Policy & Channel Governance Master
+### 31. `DERIVE_COPILOT_INTERNAL_GUIDANCE_EXPORT` — HF-LA Commercial Policy & Channel Governance Master
 
 - **asset_type:** sheet
 - **derivation:** FILTER where channel=COPILOT_INTERNAL_DECISION_SUPPORT AND release_status=APPROVED_FOR_RELEASE

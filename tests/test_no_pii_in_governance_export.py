@@ -34,7 +34,6 @@ def _make_rule_with_text(
         release_version="",
         effective_date="",
         policy_version="",
-        export_channels=[],
         blockers=["CEO_INPUT_REQUIRED"],
         internal_notes="",
         ceo_notes="",

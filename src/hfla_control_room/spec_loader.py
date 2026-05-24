@@ -17,11 +17,15 @@ from hfla_control_room.models import (
     BlockerRegister,
     ChannelProjectionRecord,
     ChannelProjectionRegister,
+    ColumnMappingRecord,
+    ColumnMappingRegister,
     DocumentSpec,
     DriveStructureSpec,
     EvidenceRecord,
     EvidenceRegister,
     FullConfigSpec,
+    ReleaseRecord,
+    ReleaseRegister,
     RuleRegister,
     RuleRow,
     RuleSchema,
@@ -59,6 +63,7 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
     documents_raw = _load_yaml(config_dir / "documents.yaml")
     validation_lists_raw = _load_yaml(config_dir / "validation_lists.yaml")
     rule_schema_raw = _load_yaml(config_dir / "rule_schema.yaml")
+    column_mappings_raw = _load_yaml(config_dir / "column_mappings.yaml")
 
     # Load seed data (DRAFT — no CEO-approved content in Phase 1)
     seed_dir = config_dir / "seed_data"
@@ -66,6 +71,7 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
     evidence_records: list[EvidenceRecord] = []
     blocker_records: list[BlockerRecord] = []
     channel_projection_records: list[ChannelProjectionRecord] = []
+    release_records: list[ReleaseRecord] = []
     for seed_file in sorted(seed_dir.glob("*.yaml")):
         seed_data = yaml.safe_load(seed_file.read_text(encoding="utf-8"))
         if not seed_data:
@@ -85,6 +91,9 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
                     channel_projection_records.append(
                         ChannelProjectionRecord.model_validate(raw_proj)
                     )
+            if "release_records" in seed_data:
+                for raw_rel in seed_data["release_records"]:
+                    release_records.append(ReleaseRecord.model_validate(raw_rel))
 
     # Validate rule-ID uniqueness across all seed files
     RuleRegister(rules=seed_rules)
@@ -97,6 +106,16 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
 
     # Validate channel-projection-ID uniqueness across all seed files
     ChannelProjectionRegister(records=channel_projection_records)
+
+    # Validate release-ID uniqueness across all seed files
+    ReleaseRegister(records=release_records)
+
+    # Column mappings (Phase 1B.3 — moved from constants.py into governed YAML)
+    column_mapping_records = [
+        ColumnMappingRecord.model_validate(r)
+        for r in (column_mappings_raw.get("records") or [])
+    ]
+    ColumnMappingRegister(records=column_mapping_records)
 
     drive_spec = DriveStructureSpec.model_validate(drive_raw)
     governance_spec = WorkbookSpec.model_validate(governance_raw)
@@ -119,6 +138,8 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
         evidence_records=evidence_records,
         blocker_records=blocker_records,
         channel_projection_records=channel_projection_records,
+        release_records=release_records,
+        column_mappings=column_mapping_records,
         raw={
             "drive": drive_raw,
             "governance": governance_raw,
@@ -126,6 +147,7 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
             "documents": documents_raw,
             "validation_lists": validation_lists_raw,
             "rule_schema": rule_schema_raw,
+            "column_mappings": column_mappings_raw,
         },
     )
     logger.info("Config loaded and validated successfully.")

@@ -22,7 +22,6 @@ rules:
     release_version: ""
     effective_date: ""
     policy_version: ""
-    export_channels: []
     blockers:
       - "CEO_INPUT_REQUIRED"
       - "DATA_MISSING"
@@ -42,7 +41,6 @@ rules:
     release_version: ""
     effective_date: ""
     policy_version: ""
-    export_channels: []
     blockers:
       - "CEO_INPUT_REQUIRED"
       - "DATA_MISSING"
@@ -64,7 +62,6 @@ rules:
     release_version: ""
     effective_date: ""
     policy_version: ""
-    export_channels: []
     blockers:
       - "CEO_INPUT_REQUIRED"
       - "COMPLIANCE_REVIEW_REQUIRED"
@@ -84,7 +81,6 @@ rules:
     release_version: ""
     effective_date: ""
     policy_version: ""
-    export_channels: []
     blockers:
       - "CEO_INPUT_REQUIRED"
       - "COMPLIANCE_REVIEW_REQUIRED"
@@ -106,7 +102,6 @@ rules:
     release_version: ""
     effective_date: ""
     policy_version: ""
-    export_channels: []
     blockers:
       - "CEO_INPUT_REQUIRED"
       - "DATA_MISSING"

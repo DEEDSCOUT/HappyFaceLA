@@ -313,7 +313,20 @@
     },
     {
       "asset_type": "sheet",
-      "derivation": "FILTER where status in (APPROVED_AS_RECOMMENDED, APPROVED_WITH_CONDITIONS) AND approved_export_text is non-empty",
+      "is_derived_view": false,
+      "live_action": false,
+      "name": "HF-LA Commercial Policy & Channel Governance Master",
+      "op": "POPULATE_RELEASE_CHANGELOG",
+      "record_count": 1,
+      "release_ids": [
+        "REL-2026-001"
+      ],
+      "source": "config/seed_data/release_placeholders.yaml (release_records)",
+      "target_tab": "13_RELEASE_CHANGELOG"
+    },
+    {
+      "asset_type": "sheet",
+      "derivation": "FILTER where status in (APPROVED_AS_RECOMMENDED, APPROVED_WITH_CONDITIONS) AND ceo_decision is non-empty",
       "is_derived_view": true,
       "live_action": false,
       "name": "HF-LA Commercial Policy & Channel Governance Master",
@@ -358,6 +371,7 @@
       "blocker_record_count": 3,
       "channel_projection_record_count": 3,
       "evidence_record_count": 3,
+      "release_record_count": 1,
       "rule_record_count": 19
     },
     "derive_operation_count": 4,
@@ -365,12 +379,12 @@
     "document_configuration_count": 2,
     "folder_count": 14,
     "live_google_calls": false,
-    "operation_count": 30,
+    "operation_count": 31,
     "phase": "PHASE_1_DRY_RUN",
-    "plan_schema_version": "1.1.0",
-    "populate_operation_count": 4,
+    "plan_schema_version": "1.2.0",
+    "populate_operation_count": 5,
     "sheet_configuration_count": 2,
-    "spec_fingerprint": "4e6704bdb7aed66d6b556683738944433c5356716e8db178afe0294da7f017cf",
+    "spec_fingerprint": "76a5eff8e00f316edfbc3eadcdedbce3e05611cea458bc259a9d40c3a3621056",
     "spec_fingerprint_algorithm": "SHA-256",
     "spreadsheet_asset_count": 2
   }

@@ -49,6 +49,7 @@ PLAN_OPERATION_TYPES: frozenset[str] = frozenset(
         "POPULATE_SOURCE_EVIDENCE",
         "POPULATE_OPEN_BLOCKERS",
         "POPULATE_CHANNEL_PROJECTION_REGISTER",
+        "POPULATE_RELEASE_CHANGELOG",
         "DERIVE_ACTIVE_RULES_EXPORT",
         "DERIVE_PUBLIC_PRICING_PACKAGES",
         "DERIVE_CUSTOMER_CHATBOT_RESPONSE_MATRIX",
@@ -62,6 +63,7 @@ _POPULATE_OPS: frozenset[str] = frozenset(
         "POPULATE_SOURCE_EVIDENCE",
         "POPULATE_OPEN_BLOCKERS",
         "POPULATE_CHANNEL_PROJECTION_REGISTER",
+        "POPULATE_RELEASE_CHANGELOG",
     }
 )
 
@@ -284,6 +286,22 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
         }
     )
 
+    operations.append(
+        {
+            "op": "POPULATE_RELEASE_CHANGELOG",
+            "asset_type": AssetType.SHEET.value,
+            "name": governance_sheet_name,
+            "target_tab": "13_RELEASE_CHANGELOG",
+            "source": (
+                "config/seed_data/release_placeholders.yaml (release_records)"
+            ),
+            "record_count": len(spec.release_records),
+            "release_ids": sorted(r.release_id for r in spec.release_records),
+            "is_derived_view": False,
+            "live_action": False,
+        }
+    )
+
     # --- Derived-view operations ---
     #
     # Derived tabs are populated by formula / query / filter logic from
@@ -301,7 +319,7 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
             "source_tab": "03_RULE_REGISTER_MASTER",
             "derivation": (
                 "FILTER where status in (APPROVED_AS_RECOMMENDED,"
-                " APPROVED_WITH_CONDITIONS) AND approved_export_text is non-empty"
+                " APPROVED_WITH_CONDITIONS) AND ceo_decision is non-empty"
             ),
             "is_derived_view": True,
             "live_action": False,
@@ -387,6 +405,7 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
                 "evidence_record_count": len(spec.evidence_records),
                 "blocker_record_count": len(spec.blocker_records),
                 "channel_projection_record_count": len(spec.channel_projection_records),
+                "release_record_count": len(spec.release_records),
             },
             "authorized_workspace": r"C:\Dev\happyfacesla-commercial-control-room",
         },

@@ -65,6 +65,23 @@ class TestFingerprintCoverage:
         first_field.description = (first_field.description or "") + " [mutated]"
         assert _fp(base_spec) != original
 
+    def test_mutating_release_record_flips_fingerprint(self, base_spec):
+        original = _fp(base_spec)
+        base_spec.release_records[0].release_notes += " [mutated]"
+        assert _fp(base_spec) != original
+
+    def test_mutating_column_mapping_flips_fingerprint(self, base_spec):
+        original = _fp(base_spec)
+        base_spec.column_mappings[0].column_header = (
+            base_spec.column_mappings[0].column_header + " (mutated)"
+        )
+        assert _fp(base_spec) != original
+
+    def test_mutating_validation_list_value_flips_fingerprint(self, base_spec):
+        original = _fp(base_spec)
+        base_spec.validation_lists.lists[0].values.append("MUTATED_SENTINEL")
+        assert _fp(base_spec) != original
+
     def test_operation_count_stable_across_text_mutations(self, base_spec):
         # Mutating text must not add or remove operations.
         plan1 = build_plan(base_spec)

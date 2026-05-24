@@ -2,6 +2,13 @@
 # Rule Schema Specification
 # Defines the canonical field schema for rule rows in the register and exports.
 # Phase 1 — Local spec only.
+#
+# Phase 1B.3 NOTE — Approved channel-safe text NO LONGER lives on RuleRow.
+# Per-channel approved text is owned by ChannelProjectionRecord (tab
+# 09_AI_CHANNEL_RESPONSE_REGISTER) and gated by ReleaseRecord (tab
+# 13_RELEASE_CHANGELOG).  The following legacy fields have been REMOVED
+# from the rule schema: export_channels, approved_export_text,
+# ai_response_review_status.
 
 fields:
 
@@ -95,19 +102,6 @@ fields:
     pii: false
     internal_only: false
     description: "The policy document version referencing this rule."
-
-  - name: "export_channels"
-    field_type: "list"
-    required: false
-    pii: false
-    internal_only: false
-    allowed_values:
-      - "website"
-      - "google_ads"
-      - "ai_copilot"
-      - "chatbot"
-      - "internal"
-    description: "List of channels to which this rule is eligible for export."
 
   - name: "blockers"
     field_type: "list"

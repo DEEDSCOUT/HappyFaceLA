@@ -1,27 +1,67 @@
 """
-Tests for the release export gate.
-
-The release exporter must reject DRAFT rules and rules with missing required fields.
-Only fully CEO-approved rules with all required fields populated may be exported.
+Tests for the projection-based release export gate (Phase 1B.3).
 """
 
+from __future__ import annotations
 
 from pathlib import Path
 
-from hfla_control_room.constants import RuleStatus
-from hfla_control_room.models import RuleRow
-from hfla_control_room.release_exporter import export_approved_rules
+import pytest
+
+from hfla_control_room.constants import (
+    BlockerPriority,
+    BlockerStatus,
+    BlockerType,
+    CEOReleaseDecision,
+    ChannelVisibility,
+    ConsumerChannel,
+    ImplementationStatus,
+    ProjectionReleaseStatus,
+    PublicSafeReviewStatus,
+    QAStatus,
+    ReleaseStatus,
+    RuleStatus,
+)
+from hfla_control_room.models import (
+    BlockerRecord,
+    ChannelProjectionRecord,
+    ReleaseRecord,
+    RuleRow,
+)
+from hfla_control_room.release_exporter import export_for_channel
 from hfla_control_room.spec_loader import load_full_spec
-from hfla_control_room.validation import validate_rule_for_export, validate_rules_batch
 
 CONFIG_DIR = Path(__file__).parent.parent / "config"
 
 
-def _make_draft_rule(rule_id: str = "RULE-TEST-001") -> RuleRow:
+def _approved_rule(rule_id: str = "RULE-APPROVED-001") -> RuleRow:
     return RuleRow(
         rule_id=rule_id,
-        rule_category="TEST",
-        rule_title="Test rule",
+        rule_category="PUBLIC_PRICING",
+        rule_title="Approved test rule",
+        status=RuleStatus.APPROVED_AS_RECOMMENDED,
+        draft_recommendation="Recommend approval.",
+        ceo_decision="Approved as recommended on 2026-05-23.",
+        final_effective_rule="The approved effective rule text.",
+        release_version="v1.0.0",
+        effective_date="2026-06-01",
+        policy_version="POL-2026-001",
+        channel_visibility=ChannelVisibility.CHANNEL_SAFE,
+        public_safe_review_status=PublicSafeReviewStatus.APPROVED_PUBLIC_SAFE,
+        contains_pii=False,
+        contains_internal_only_logic=False,
+        blockers=[],
+        internal_notes="",
+        ceo_notes="",
+        source_evidence_ref="EV-2026-001",
+    )
+
+
+def _draft_rule(rule_id: str = "RULE-DRAFT-001") -> RuleRow:
+    return RuleRow(
+        rule_id=rule_id,
+        rule_category="PUBLIC_PRICING",
+        rule_title="Draft test rule",
         status=RuleStatus.DRAFT,
         draft_recommendation="CEO_INPUT_REQUIRED — placeholder.",
         ceo_decision="",
@@ -29,7 +69,6 @@ def _make_draft_rule(rule_id: str = "RULE-TEST-001") -> RuleRow:
         release_version="",
         effective_date="",
         policy_version="",
-        export_channels=[],
         blockers=["CEO_INPUT_REQUIRED"],
         internal_notes="",
         ceo_notes="",
@@ -37,126 +76,285 @@ def _make_draft_rule(rule_id: str = "RULE-TEST-001") -> RuleRow:
     )
 
 
-def _make_approved_rule(rule_id: str = "RULE-TEST-001") -> RuleRow:
-    return RuleRow(
-        rule_id=rule_id,
-        rule_category="TEST",
-        rule_title="Approved test rule",
-        status=RuleStatus.APPROVED_AS_RECOMMENDED,
-        draft_recommendation="CEO_INPUT_REQUIRED — placeholder.",
-        ceo_decision="Approved as recommended on 2026-05-23.",
-        final_effective_rule="The approved effective rule text.",
-        approved_export_text="The approved channel-safe export text for this rule.",
+def _released_projection(
+    projection_id: str = "PROJ-001",
+    channel: ConsumerChannel = ConsumerChannel.WEBSITE_PUBLIC,
+    related_rule_ids: list[str] | None = None,
+    text: str = "Publicly safe approved text.",
+) -> ChannelProjectionRecord:
+    return ChannelProjectionRecord(
+        projection_id=projection_id,
+        related_rule_ids=related_rule_ids or ["RULE-APPROVED-001"],
+        channel=channel,
+        content_type="POLICY_STATEMENT",
+        draft_channel_text="Draft channel text.",
+        approved_channel_text=text,
+        review_status="APPROVED_FOR_RELEASE",
+        release_status=ProjectionReleaseStatus.RELEASED,
+        policy_version="POL-2026-001",
+        effective_date="2026-06-01",
+        requires_human_escalation=False,
+        escalation_reason="",
+        source_evidence_ids=["EV-2026-001"],
+        contains_pii=False,
+        contains_internal_only_logic=False,
+        notes_internal_only="",
+    )
+
+
+def _released_release(
+    release_id: str = "REL-2026-001",
+    channels: list[ConsumerChannel] | None = None,
+    projection_ids: list[str] | None = None,
+    rule_ids: list[str] | None = None,
+) -> ReleaseRecord:
+    return ReleaseRecord(
+        release_id=release_id,
         release_version="v1.0.0",
+        release_title="Test release",
+        status=ReleaseStatus.RELEASED,
+        ceo_decision=CEOReleaseDecision.APPROVED_AS_RECOMMENDED,
+        ceo_decision_date="2026-05-23",
         effective_date="2026-06-01",
         policy_version="POL-2026-001",
-        export_channels=["website"],
-        channel_visibility="CHANNEL_SAFE",
-        public_safe_review_status="APPROVED_PUBLIC_SAFE",
-        ai_response_review_status="NOT_REVIEWED",
-        ads_claim_review_status="NOT_REVIEWED",
-        blockers=[],
-        internal_notes="",
-        ceo_notes="",
-        source_evidence_ref="",
+        authorized_channels=channels or [ConsumerChannel.WEBSITE_PUBLIC],
+        related_rule_ids=rule_ids or ["RULE-APPROVED-001"],
+        related_projection_ids=projection_ids or ["PROJ-001"],
+        resolved_blocker_ids=[],
+        implementation_status=ImplementationStatus.IMPLEMENTED,
+        qa_status=QAStatus.VERIFIED_PASS,
+        rollback_plan="Revert release on incident.",
+        release_notes="Initial release.",
+        notes_internal_only="",
+    )
+
+
+def _open_blocker(channels: list[ConsumerChannel]) -> BlockerRecord:
+    return BlockerRecord(
+        blocker_id="BLK-001",
+        category=BlockerType.COMPLIANCE_REVIEW_REQUIRED,
+        decision_required="Compliance sign-off required.",
+        why_it_matters="Live provisioning is gated on this decision.",
+        risk_if_missing="Channel may publish unapproved content.",
+        priority=BlockerPriority.HIGH,
+        ceo_input_final_answer="",
+        status=BlockerStatus.OPEN_COMPLIANCE_REVIEW_REQUIRED,
+        related_rule_ids=["RULE-APPROVED-001"],
+        related_evidence_ids=[],
+        blocked_channels=channels,
+        blocks_live_provisioning=True,
+        blocks_phase_1c_content_loading=True,
+        responsible_owner="CEO",
+        resolution_evidence="",
+        notes_internal_only="",
     )
 
 
 class TestReleaseGate:
-    def test_draft_rule_fails_validation(self):
-        """A DRAFT rule must produce validation errors."""
-        rule = _make_draft_rule()
-        errors = validate_rule_for_export(rule)
-        assert len(errors) > 0
-
-    def test_draft_rule_rejected_from_export(self):
-        """export_approved_rules must return empty list for all-DRAFT input."""
-        rules = [_make_draft_rule(f"RULE-TEST-{i:03d}") for i in range(1, 4)]
-        approved = export_approved_rules(rules)
-        assert approved == [], f"Expected empty export but got: {approved}"
-
-    def test_approved_rule_passes_validation(self):
-        """A fully approved rule must produce no validation errors."""
-        rule = _make_approved_rule()
-        errors = validate_rule_for_export(rule)
-        assert errors == []
-
-    def test_approved_rule_included_in_export(self):
-        """export_approved_rules must include fully approved rules."""
-        rules = [_make_approved_rule("RULE-APPROVED-001")]
-        approved = export_approved_rules(rules)
-        assert len(approved) == 1
-        assert approved[0].rule_id == "RULE-APPROVED-001"
-
-    def test_missing_ceo_decision_fails(self):
-        """A rule with empty ceo_decision must fail validation."""
-        rule = _make_approved_rule()
-        rule.ceo_decision = ""
-        errors = validate_rule_for_export(rule)
-        assert any("CEO decision" in e for e in errors)
-
-    def test_missing_final_rule_fails(self):
-        """A rule with empty final_effective_rule must fail validation."""
-        rule = _make_approved_rule()
-        rule.final_effective_rule = ""
-        errors = validate_rule_for_export(rule)
-        assert any("Final Effective Rule" in e for e in errors)
-
-    def test_missing_release_version_fails(self):
-        """A rule with empty release_version must fail validation."""
-        rule = _make_approved_rule()
-        rule.release_version = ""
-        errors = validate_rule_for_export(rule)
-        assert any("release version" in e for e in errors)
-
-    def test_missing_effective_date_fails(self):
-        """A rule with empty effective_date must fail validation."""
-        rule = _make_approved_rule()
-        rule.effective_date = ""
-        errors = validate_rule_for_export(rule)
-        assert any("effective date" in e for e in errors)
-
-    def test_missing_policy_version_fails(self):
-        """A rule with empty policy_version must fail validation."""
-        rule = _make_approved_rule()
-        rule.policy_version = ""
-        errors = validate_rule_for_export(rule)
-        assert any("policy version" in e for e in errors)
-
-    def test_batch_validation_identifies_all_drafts(self):
-        """validate_rules_batch must flag all DRAFT rules in a batch."""
-        rules = [_make_draft_rule(f"RULE-TEST-{i:03d}") for i in range(1, 4)]
-        result = validate_rules_batch(rules)
-        # All 3 rules must appear in the error dict
-        assert len(result) == 3
-
-    def test_all_seed_rules_rejected_from_export(self):
-        """All Phase 1 seed rules must be rejected from export (all DRAFT)."""
+    def test_seed_data_yields_empty_export_every_channel(self):
+        """Phase 1: no RELEASED releases exist; every channel returns []."""
         spec = load_full_spec(CONFIG_DIR)
-        approved = export_approved_rules(spec.seed_rules)
-        assert approved == [], (
-            f"Expected no seed rules to pass export gate, but got: "
-            f"{[r.get('rule_id') for r in approved]}"
-        )
+        for channel in ConsumerChannel:
+            if channel.name.startswith("RESTRICTED"):
+                with pytest.raises(ValueError):
+                    export_for_channel(
+                        channel,
+                        projections=spec.channel_projection_records,
+                        rules=spec.seed_rules,
+                        releases=spec.release_records,
+                        blockers=spec.blocker_records,
+                    )
+                continue
+            exported = export_for_channel(
+                channel,
+                projections=spec.channel_projection_records,
+                rules=spec.seed_rules,
+                releases=spec.release_records,
+                blockers=spec.blocker_records,
+            )
+            assert exported == []
 
-    def test_missing_approved_export_text_fails(self):
-        """A rule with empty approved_export_text must fail validation."""
-        rule = _make_approved_rule()
-        rule.approved_export_text = ""
-        errors = validate_rule_for_export(rule)
-        assert any("approved_export_text" in e for e in errors), (
-            f"Expected error about approved_export_text, got: {errors}"
+    def test_fully_authorised_projection_is_exported(self):
+        rule = _approved_rule()
+        projection = _released_projection(related_rule_ids=[rule.rule_id])
+        release = _released_release(projection_ids=[projection.projection_id])
+        exported = export_for_channel(
+            ConsumerChannel.WEBSITE_PUBLIC,
+            projections=[projection],
+            rules=[rule],
+            releases=[release],
+            blockers=[],
         )
+        assert len(exported) == 1
+        assert exported[0].projection_id == projection.projection_id
+        assert exported[0].release_id == release.release_id
 
-    def test_approved_export_text_used_in_export(self):
-        """export_approved_rules must use approved_export_text, not final_effective_rule."""
-        rule = _make_approved_rule("RULE-EXPORT-001")
-        rule.approved_export_text = "Publicly safe export text."
-        rule.final_effective_rule = "INTERNAL CEO NOTES — DO NOT EXPORT."
-        approved = export_approved_rules([rule])
-        assert len(approved) == 1
-        assert approved[0].approved_export_text == "Publicly safe export text."
-        # Confirm final_effective_rule is not present in the export model
-        assert not hasattr(approved[0], "final_effective_rule"), (
-            "ApprovedRuleExport must not expose final_effective_rule."
+    def test_draft_projection_rejected(self):
+        rule = _approved_rule()
+        projection = _released_projection(related_rule_ids=[rule.rule_id])
+        # Build a DRAFT projection (model would reject RELEASED + empty text).
+        projection = ChannelProjectionRecord(
+            projection_id=projection.projection_id,
+            related_rule_ids=projection.related_rule_ids,
+            channel=projection.channel,
+            content_type=projection.content_type,
+            draft_channel_text=projection.draft_channel_text,
+            approved_channel_text="",
+            review_status="NOT_REVIEWED",
+            release_status=ProjectionReleaseStatus.DRAFT,
+            policy_version=projection.policy_version,
+            effective_date=projection.effective_date,
+            source_evidence_ids=projection.source_evidence_ids,
         )
+        release = _released_release(projection_ids=[projection.projection_id])
+        exported = export_for_channel(
+            ConsumerChannel.WEBSITE_PUBLIC,
+            projections=[projection],
+            rules=[rule],
+            releases=[release],
+            blockers=[],
+        )
+        assert exported == []
+
+    def test_missing_release_record_rejected(self):
+        rule = _approved_rule()
+        projection = _released_projection(related_rule_ids=[rule.rule_id])
+        exported = export_for_channel(
+            ConsumerChannel.WEBSITE_PUBLIC,
+            projections=[projection],
+            rules=[rule],
+            releases=[],
+            blockers=[],
+        )
+        assert exported == []
+
+    def test_channel_mismatch_in_release_rejected(self):
+        rule = _approved_rule()
+        projection = _released_projection(related_rule_ids=[rule.rule_id])
+        release = _released_release(
+            projection_ids=[projection.projection_id],
+            channels=[ConsumerChannel.GOOGLE_ADS_PUBLIC],
+        )
+        exported = export_for_channel(
+            ConsumerChannel.WEBSITE_PUBLIC,
+            projections=[projection],
+            rules=[rule],
+            releases=[release],
+            blockers=[],
+        )
+        assert exported == []
+
+    def test_projection_not_in_release_rejected(self):
+        rule = _approved_rule()
+        projection = _released_projection(related_rule_ids=[rule.rule_id])
+        release = _released_release(projection_ids=["PROJ-OTHER-999"])
+        exported = export_for_channel(
+            ConsumerChannel.WEBSITE_PUBLIC,
+            projections=[projection],
+            rules=[rule],
+            releases=[release],
+            blockers=[],
+        )
+        assert exported == []
+
+    def test_release_not_released_rejected(self):
+        rule = _approved_rule()
+        projection = _released_projection(related_rule_ids=[rule.rule_id])
+        release = _released_release(projection_ids=[projection.projection_id])
+        release.status = ReleaseStatus.DRAFT
+        release.ceo_decision = CEOReleaseDecision.PENDING_CEO_REVIEW
+        release.authorized_channels = []
+        exported = export_for_channel(
+            ConsumerChannel.WEBSITE_PUBLIC,
+            projections=[projection],
+            rules=[rule],
+            releases=[release],
+            blockers=[],
+        )
+        assert exported == []
+
+    def test_unapproved_rule_rejects_projection(self):
+        rule = _draft_rule("RULE-DRAFT-001")
+        projection = _released_projection(related_rule_ids=[rule.rule_id])
+        release = _released_release(
+            projection_ids=[projection.projection_id],
+            rule_ids=[rule.rule_id],
+        )
+        exported = export_for_channel(
+            ConsumerChannel.WEBSITE_PUBLIC,
+            projections=[projection],
+            rules=[rule],
+            releases=[release],
+            blockers=[],
+        )
+        assert exported == []
+
+    def test_missing_ceo_decision_rejects_projection(self):
+        rule = _approved_rule()
+        rule.ceo_decision = ""
+        projection = _released_projection(related_rule_ids=[rule.rule_id])
+        release = _released_release(projection_ids=[projection.projection_id])
+        exported = export_for_channel(
+            ConsumerChannel.WEBSITE_PUBLIC,
+            projections=[projection],
+            rules=[rule],
+            releases=[release],
+            blockers=[],
+        )
+        assert exported == []
+
+    def test_open_provisioning_blocker_short_circuits_channel(self):
+        rule = _approved_rule()
+        projection = _released_projection(related_rule_ids=[rule.rule_id])
+        release = _released_release(projection_ids=[projection.projection_id])
+        blocker = _open_blocker([ConsumerChannel.WEBSITE_PUBLIC])
+        exported = export_for_channel(
+            ConsumerChannel.WEBSITE_PUBLIC,
+            projections=[projection],
+            rules=[rule],
+            releases=[release],
+            blockers=[blocker],
+        )
+        assert exported == []
+
+    def test_restricted_operations_channel_rejected(self):
+        with pytest.raises(ValueError):
+            export_for_channel(
+                ConsumerChannel.RESTRICTED_OPERATIONS_PII,
+                projections=[],
+                rules=[],
+                releases=[],
+                blockers=[],
+            )
+
+    def test_empty_approved_text_rejected(self):
+        rule = _approved_rule()
+        # Model normally forbids RELEASED + empty text; use model_construct
+        # to bypass the model validator and verify the exporter still rejects.
+        projection = ChannelProjectionRecord.model_construct(
+            projection_id="PROJ-001",
+            related_rule_ids=[rule.rule_id],
+            channel=ConsumerChannel.WEBSITE_PUBLIC,
+            content_type="POLICY_STATEMENT",
+            draft_channel_text="draft",
+            approved_channel_text="   ",
+            review_status="APPROVED_FOR_RELEASE",
+            release_status=ProjectionReleaseStatus.RELEASED,
+            policy_version="POL-2026-001",
+            effective_date="2026-06-01",
+            requires_human_escalation=False,
+            escalation_reason="",
+            source_evidence_ids=[],
+            contains_pii=False,
+            contains_internal_only_logic=False,
+            notes_internal_only="",
+        )
+        release = _released_release(projection_ids=[projection.projection_id])
+        exported = export_for_channel(
+            ConsumerChannel.WEBSITE_PUBLIC,
+            projections=[projection],
+            rules=[rule],
+            releases=[release],
+            blockers=[],
+        )
+        assert exported == []

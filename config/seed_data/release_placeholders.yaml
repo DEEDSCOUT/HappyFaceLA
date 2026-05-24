@@ -1,0 +1,28 @@
+# Happy Faces LA — Commercial Control Room
+# Release register seed data (Phase 1B.3).
+#
+# Phase 1 contract: ALL release records are DRAFT.  No release may carry
+# status=RELEASED or list any authorized_channels until the CEO records a
+# release decision in 13_RELEASE_CHANGELOG.
+
+release_records:
+  - release_id: REL-2026-001
+    release_version: ""
+    release_title: "INITIAL RELEASE PLACEHOLDER — AWAITING CEO RELEASE DECISION"
+    status: DRAFT
+    ceo_decision: PENDING_CEO_REVIEW
+    ceo_decision_date: ""
+    effective_date: ""
+    policy_version: ""
+    authorized_channels: []
+    related_rule_ids: []
+    related_projection_ids: []
+    resolved_blocker_ids: []
+    implementation_status: NOT_STARTED
+    qa_status: NOT_VERIFIED
+    rollback_plan: ""
+    release_notes: "DRAFT placeholder.  No active publication is authorised."
+    notes_internal_only: >
+      Phase 1B.3 seed: this placeholder exists only to anchor the register
+      schema.  No channel may serve content from this release until a CEO
+      release decision is recorded and status flips to RELEASED.

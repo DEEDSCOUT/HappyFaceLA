@@ -63,19 +63,6 @@ class BannerSeverity(StrEnum):
     RESTRICTED = "RESTRICTED"
 
 
-class ExportChannel(StrEnum):
-    # DEPRECATED in Phase 1B.2 — use :class:`ConsumerChannel` instead.
-    # Retained only as a backward-compatible migration alias for the existing
-    # ``RuleRow.export_channels`` column.  New code (validators, projection
-    # records, blocker records, plan operations) MUST use
-    # :class:`ConsumerChannel`.
-    WEBSITE = "website"
-    GOOGLE_ADS = "google_ads"
-    AI_COPILOT = "ai_copilot"
-    CHATBOT = "chatbot"
-    INTERNAL = "internal"
-
-
 class ConsumerChannel(StrEnum):
     """Controlled consumer-channel vocabulary (Phase 1B.2).
 
@@ -140,16 +127,6 @@ class AdsReviewStatus(StrEnum):
     REJECTED = "REJECTED"
 
 
-class AIReviewStatus(StrEnum):
-    # DEPRECATED in Phase 1B.2 — split into ``ChatbotResponseReviewStatus``
-    # (customer-facing) and ``CopilotInternalReviewStatus`` (internal
-    # decision support).  Retained only on legacy ``RuleRow`` for migration.
-    NOT_REVIEWED = "NOT_REVIEWED"
-    UNDER_REVIEW = "UNDER_REVIEW"
-    APPROVED_FOR_AI = "APPROVED_FOR_AI"
-    REJECTED = "REJECTED"
-
-
 class ChatbotResponseReviewStatus(StrEnum):
     """Review gate for ``CUSTOMER_CHATBOT_PUBLIC`` content only."""
 
@@ -189,6 +166,50 @@ class ProjectionReleaseStatus(StrEnum):
     APPROVED_FOR_RELEASE = "APPROVED_FOR_RELEASE"
     RELEASED = "RELEASED"
     SUPERSEDED = "SUPERSEDED"
+
+
+class ReleaseStatus(StrEnum):
+    """Lifecycle of a :class:`ReleaseRecord` (Phase 1B.3).
+
+    Only ``RELEASED`` records may feed active website / Ads / Copilot /
+    customer-chatbot / quote-operator output.  ``APPROVED_FOR_IMPLEMENTATION``
+    is NOT sufficient to publish content.
+    """
+
+    DRAFT = "DRAFT"
+    READY_FOR_CEO_REVIEW = "READY_FOR_CEO_REVIEW"
+    APPROVED_FOR_IMPLEMENTATION = "APPROVED_FOR_IMPLEMENTATION"
+    RELEASED = "RELEASED"
+    SUPERSEDED = "SUPERSEDED"
+    REJECTED = "REJECTED"
+
+
+class CEOReleaseDecision(StrEnum):
+    """CEO decision recorded on a :class:`ReleaseRecord`."""
+
+    PENDING_CEO_REVIEW = "PENDING_CEO_REVIEW"
+    APPROVED_AS_RECOMMENDED = "APPROVED_AS_RECOMMENDED"
+    APPROVED_WITH_CONDITIONS = "APPROVED_WITH_CONDITIONS"
+    REJECTED_REPLACE_RELEASE = "REJECTED_REPLACE_RELEASE"
+    DEFERRED_NEED_MORE_EVIDENCE = "DEFERRED_NEED_MORE_EVIDENCE"
+
+
+class ImplementationStatus(StrEnum):
+    """Implementation status for a channel surface (website / Ads / etc.)."""
+
+    NOT_STARTED = "NOT_STARTED"
+    IN_PROGRESS = "IN_PROGRESS"
+    IMPLEMENTED = "IMPLEMENTED"
+    SUSPENDED = "SUSPENDED"
+
+
+class QAStatus(StrEnum):
+    """Quality-assurance verification status for an active release."""
+
+    NOT_VERIFIED = "NOT_VERIFIED"
+    IN_VERIFICATION = "IN_VERIFICATION"
+    VERIFIED_PASS = "VERIFIED_PASS"  # noqa: S105 - QA status, not a credential
+    VERIFIED_FAIL = "VERIFIED_FAIL"
 
 
 class EvidenceStatus(StrEnum):
@@ -286,7 +307,7 @@ GOVERNANCE_TAB_COUNT = 15
 # Plan schema version — bump on any structural change to the tracked plan.
 # Independent from the deterministic ``spec_fingerprint``; this version is
 # embedded in tracked plan output for generator-drift detection.
-PLAN_SCHEMA_VERSION = "1.1.0"
+PLAN_SCHEMA_VERSION = "1.2.0"
 SPEC_FINGERPRINT_ALGORITHM = "SHA-256"
 
 # Restricted operations workbook — required tab count
@@ -319,93 +340,3 @@ LAST_PLAN_RUN_PATH = RUNTIME_DIR / "audit" / "last_plan_run.json"
 PRIVATE_EXPORT_DIR = _WORKSPACE_ROOT / ".exports" / "private"
 
 
-# ---------------------------------------------------------------------------
-# Column-level data-to-sheet mapping contracts (Phase 1B.2)
-# ---------------------------------------------------------------------------
-#
-# Each entry maps a structured controlled source record to a deterministic
-# destination governance tab and column header.  The contract is enforced by
-# `tests/test_column_mapping_contract.py`; required source fields must
-# resolve to known destination columns in the governance workbook spec.
-#
-# Schema for each mapping entry:
-#   - source_field:    Python attribute on the source model
-#   - destination_tab: governance tab title (must appear in
-#                      GOVERNANCE_DESTINATION_TABS)
-#   - column_header:   exact column header text in the destination tab
-#   - required:        True if the field MUST be present in the destination
-#   - editable_by_ceo: True if the destination column is CEO-editable
-#   - formula_derived: True if the destination column is formula-derived
-#   - exportable:      True if the field is allowed to flow to channel-safe
-#                      exports
-#   - visibility:      INTERNAL_ONLY | INTERNAL_CONTROLLED | CHANNEL_SAFE_AFTER_RELEASE
-COLUMN_MAPPING_CONTRACTS: dict[str, list[dict[str, object]]] = {
-    # RuleRow -> 03_RULE_REGISTER_MASTER
-    "RuleRow": [
-        {"source_field": "rule_id",                       "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Rule ID",               "required": True,  "editable_by_ceo": False, "formula_derived": False, "exportable": True,  "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "rule_category",                 "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Rule Category",         "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": True,  "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "rule_title",                    "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Rule Title",            "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": True,  "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "status",                        "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Status",                "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "draft_recommendation",          "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Draft Recommendation",  "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "ceo_decision",                  "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "CEO Decision",          "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "final_effective_rule",          "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Final Effective Rule",  "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "release_version",               "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Release Version",       "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": True,  "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "effective_date",                "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Effective Date",        "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": True,  "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "policy_version",                "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Policy Version",        "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": True,  "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "export_channels",               "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Export Channels",       "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "source_evidence_ref",           "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Source Evidence Ref",   "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "blockers",                      "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Blockers",              "required": False, "editable_by_ceo": False, "formula_derived": True,  "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "internal_notes",                "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "Internal Notes",        "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "ceo_notes",                     "destination_tab": "03_RULE_REGISTER_MASTER", "column_header": "CEO Notes",             "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-    ],
-    # EvidenceRecord -> 12_SOURCE_EVIDENCE (renumbered in Phase 1B.2)
-    "EvidenceRecord": [
-        {"source_field": "evidence_id",       "destination_tab": "12_SOURCE_EVIDENCE", "column_header": "Evidence ID",            "required": True,  "editable_by_ceo": False, "formula_derived": True,  "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "related_rule_ids",  "destination_tab": "12_SOURCE_EVIDENCE", "column_header": "Linked Rule ID",         "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "source_category",   "destination_tab": "12_SOURCE_EVIDENCE", "column_header": "Evidence Type",          "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "verified_fact",     "destination_tab": "12_SOURCE_EVIDENCE", "column_header": "Description",            "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "source_locator",    "destination_tab": "12_SOURCE_EVIDENCE", "column_header": "Source URL / Location",  "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "source_name",       "destination_tab": "12_SOURCE_EVIDENCE", "column_header": "Captured By",            "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "reliability_tier",  "destination_tab": "12_SOURCE_EVIDENCE", "column_header": "Reliability Tier",       "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "status",            "destination_tab": "12_SOURCE_EVIDENCE", "column_header": "Status",                 "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "notes",             "destination_tab": "12_SOURCE_EVIDENCE", "column_header": "Notes",                  "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-    ],
-    # BlockerRecord -> 02_OPEN_BLOCKERS
-    "BlockerRecord": [
-        {"source_field": "blocker_id",                       "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Blocker ID",                       "required": True,  "editable_by_ceo": False, "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "category",                         "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Category",                         "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "decision_required",                "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Decision Required",                "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "why_it_matters",                   "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Why It Matters",                   "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "risk_if_missing",                  "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Risk if Missing",                  "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "priority",                         "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Priority",                         "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "ceo_input_final_answer",           "destination_tab": "02_OPEN_BLOCKERS", "column_header": "CEO Input / Final Answer",         "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "status",                           "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Status",                           "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "related_rule_ids",                 "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Related Rule IDs",                 "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "related_evidence_ids",             "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Related Evidence IDs",             "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "blocked_channels",                 "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Blocked Channels",                 "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "blocks_live_provisioning",         "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Blocks Live Provisioning",         "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "blocks_phase_1c_content_loading",  "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Blocks Phase 1C Content Loading",  "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "responsible_owner",                "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Responsible Owner",                "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "resolution_evidence",              "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Resolution Evidence",              "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "notes_internal_only",              "destination_tab": "02_OPEN_BLOCKERS", "column_header": "Notes (Internal Only)",            "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-    ],
-    # ChannelProjectionRecord -> 10_CHANNEL_PROJECTION_REGISTER
-    "ChannelProjectionRecord": [
-        {"source_field": "projection_id",                "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Projection ID",                "required": True,  "editable_by_ceo": False, "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "related_rule_ids",             "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Related Rule IDs",             "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "channel",                      "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Consumer Channel",             "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "content_type",                 "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Content Type",                 "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "draft_channel_text",           "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Draft Channel Text",           "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-        {"source_field": "approved_channel_text",        "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Approved Channel Text",        "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": True,  "visibility": "CHANNEL_SAFE_AFTER_RELEASE"},
-        {"source_field": "review_status",                "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Review Status",                "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "release_status",               "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Release Status",               "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "policy_version",               "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Policy Version",               "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": True,  "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "effective_date",               "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Effective Date",               "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": True,  "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "requires_human_escalation",    "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Requires Human Escalation",    "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "escalation_reason",            "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Escalation Reason",            "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "source_evidence_ids",          "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Source Evidence IDs",          "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "contains_pii",                 "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Contains PII",                 "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "contains_internal_only_logic", "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Contains Internal Only Logic", "required": True,  "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_CONTROLLED"},
-        {"source_field": "notes_internal_only",          "destination_tab": "10_CHANNEL_PROJECTION_REGISTER", "column_header": "Notes (Internal Only)",        "required": False, "editable_by_ceo": True,  "formula_derived": False, "exportable": False, "visibility": "INTERNAL_ONLY"},
-    ],
-}

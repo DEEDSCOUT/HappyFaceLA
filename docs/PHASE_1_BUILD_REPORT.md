@@ -448,3 +448,23 @@ APPROVED-rule gate withdrawn; seed rules confirmed as DRAFT scaffolding.*
 - `PLAN_SCHEMA_VERSION = '1.1.0'`.
 
 No remote, no push, no live Google calls during the Phase 1B.2 closure.
+
+
+---
+
+## Phase 1B.3 Update
+
+Phase 1B.3 closes the Phase 1B.2 Final Acceptance Audit (verdict: FAIL on
+commit `7779834`; defects D1–D7).  Net architectural change:
+
+- `RuleRow` no longer carries any channel text or channel list.
+- `ChannelProjectionRecord` owns per-channel approved text.
+- `ReleaseRecord` is the sole channel-publish authority.
+- `config/column_mappings.yaml` replaces the legacy
+  `COLUMN_MAPPING_CONTRACTS` Python constant; spec fingerprint now
+  covers column mappings.
+- Plan operations: 31 (was 30).  New operation:
+  `POPULATE_RELEASE_CHANGELOG` targeting `13_RELEASE_CHANGELOG`.
+- `provision --apply` continues to exit 1 with the verbatim Phase 1
+  block message `BLOCKED — LIVE GOOGLE PROVISIONING NOT AUTHORIZED IN
+  PHASE 1.`

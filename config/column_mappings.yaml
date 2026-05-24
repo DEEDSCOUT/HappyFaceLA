@@ -1,0 +1,499 @@
+# Happy Faces LA — Commercial Control Room
+# Column-level data-to-sheet mapping contracts (Phase 1B.3).
+#
+# Each entry maps a structured controlled source record to a deterministic
+# destination governance tab and column header.  Loaded into
+# FullConfigSpec.column_mappings; participates in the deterministic
+# spec_fingerprint.
+#
+# Schema (per record):
+#   source_model:     Python class name on the source model
+#   source_field:     attribute on the source model
+#   destination_tab:  governance tab title (must appear in
+#                     GOVERNANCE_DESTINATION_TABS)
+#   column_header:    exact column header text in the destination tab
+#   required:         True if the field MUST be present in the destination
+#   editable_by_ceo:  True if the destination column is CEO-editable
+#   formula_derived:  True if the destination column is formula-derived
+#   exportable:       True if the field is allowed to flow to channel-safe
+#                     exports
+#   visibility:       INTERNAL_ONLY | INTERNAL_CONTROLLED |
+#                     CHANNEL_SAFE_AFTER_RELEASE | RESTRICTED_PII
+
+records:
+  # ---- RuleRow -> 03_RULE_REGISTER_MASTER -------------------------------
+  - source_model: RuleRow
+    source_field: rule_id
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Rule ID
+    required: true
+    editable_by_ceo: false
+    formula_derived: false
+    exportable: false
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: rule_category
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Rule Category
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: rule_title
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Rule Title
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: status
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Status
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: draft_recommendation
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Draft Recommendation
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: ceo_decision
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: CEO Decision
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: final_effective_rule
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Final Effective Rule
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: release_version
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Release Version
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: effective_date
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Effective Date
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: policy_version
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Policy Version
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: source_evidence_ref
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Source Evidence Ref
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: blockers
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Blockers
+    formula_derived: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: internal_notes
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: Internal Notes
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: RuleRow
+    source_field: ceo_notes
+    destination_tab: 03_RULE_REGISTER_MASTER
+    column_header: CEO Notes
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+
+  # ---- EvidenceRecord -> 12_SOURCE_EVIDENCE -----------------------------
+  - source_model: EvidenceRecord
+    source_field: evidence_id
+    destination_tab: 12_SOURCE_EVIDENCE
+    column_header: Evidence ID
+    required: true
+    formula_derived: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: EvidenceRecord
+    source_field: related_rule_ids
+    destination_tab: 12_SOURCE_EVIDENCE
+    column_header: Linked Rule ID
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: EvidenceRecord
+    source_field: source_category
+    destination_tab: 12_SOURCE_EVIDENCE
+    column_header: Evidence Type
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: EvidenceRecord
+    source_field: verified_fact
+    destination_tab: 12_SOURCE_EVIDENCE
+    column_header: Description
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: EvidenceRecord
+    source_field: source_locator
+    destination_tab: 12_SOURCE_EVIDENCE
+    column_header: Source URL / Location
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: EvidenceRecord
+    source_field: source_name
+    destination_tab: 12_SOURCE_EVIDENCE
+    column_header: Captured By
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: EvidenceRecord
+    source_field: reliability_tier
+    destination_tab: 12_SOURCE_EVIDENCE
+    column_header: Reliability Tier
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: EvidenceRecord
+    source_field: status
+    destination_tab: 12_SOURCE_EVIDENCE
+    column_header: Status
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: EvidenceRecord
+    source_field: notes
+    destination_tab: 12_SOURCE_EVIDENCE
+    column_header: Notes
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+
+  # ---- BlockerRecord -> 02_OPEN_BLOCKERS --------------------------------
+  - source_model: BlockerRecord
+    source_field: blocker_id
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Blocker ID
+    required: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: category
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Category
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: decision_required
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Decision Required
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: why_it_matters
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Why It Matters
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: risk_if_missing
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Risk if Missing
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: priority
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Priority
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: ceo_input_final_answer
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: CEO Input / Final Answer
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: status
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Status
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: related_rule_ids
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Related Rule IDs
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: related_evidence_ids
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Related Evidence IDs
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: blocked_channels
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Blocked Channels
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: blocks_live_provisioning
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Blocks Live Provisioning
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: blocks_phase_1c_content_loading
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Blocks Phase 1C Content Loading
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: responsible_owner
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Responsible Owner
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: resolution_evidence
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Resolution Evidence
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: BlockerRecord
+    source_field: notes_internal_only
+    destination_tab: 02_OPEN_BLOCKERS
+    column_header: Notes (Internal Only)
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+
+  # ---- ChannelProjectionRecord -> 10_CHANNEL_PROJECTION_REGISTER --------
+  - source_model: ChannelProjectionRecord
+    source_field: projection_id
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Projection ID
+    required: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: related_rule_ids
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Related Rule IDs
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: channel
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Consumer Channel
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: content_type
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Content Type
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: draft_channel_text
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Draft Channel Text
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: approved_channel_text
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Approved Channel Text
+    editable_by_ceo: true
+    exportable: true
+    visibility: CHANNEL_SAFE_AFTER_RELEASE
+  - source_model: ChannelProjectionRecord
+    source_field: review_status
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Review Status
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: release_status
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Release Status
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: policy_version
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Policy Version
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: effective_date
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Effective Date
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: requires_human_escalation
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Requires Human Escalation
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: escalation_reason
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Escalation Reason
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: source_evidence_ids
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Source Evidence IDs
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: contains_pii
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Contains PII
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: contains_internal_only_logic
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Contains Internal Only Logic
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ChannelProjectionRecord
+    source_field: notes_internal_only
+    destination_tab: 10_CHANNEL_PROJECTION_REGISTER
+    column_header: Notes (Internal Only)
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+
+  # ---- ReleaseRecord -> 13_RELEASE_CHANGELOG ----------------------------
+  - source_model: ReleaseRecord
+    source_field: release_id
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Release ID
+    required: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: release_version
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Release Version
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: release_title
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Release Title
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: status
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Status
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: ceo_decision
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: CEO Decision
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: ceo_decision_date
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: CEO Decision Date
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: effective_date
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Effective Date
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: policy_version
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Policy Version
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: authorized_channels
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Authorized Channels
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: related_rule_ids
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Related Rule IDs
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: related_projection_ids
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Related Projection IDs
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: resolved_blocker_ids
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Resolved Blocker IDs
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: implementation_status
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Implementation Status
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: qa_status
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: QA Status
+    required: true
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: rollback_plan
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Rollback Plan
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: release_notes
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Release Notes
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+  - source_model: ReleaseRecord
+    source_field: notes_internal_only
+    destination_tab: 13_RELEASE_CHANGELOG
+    column_header: Notes (Internal Only)
+    editable_by_ceo: true
+    visibility: INTERNAL_CONTROLLED
+

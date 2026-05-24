@@ -37,16 +37,6 @@ lists:
       - "SAFETY_CARE"
       - "CHANNEL_IMPLEMENTATION"
 
-  - list_name: "export_channel"
-    values:
-      - "WEBSITE"
-      - "GOOGLE_ADS"
-      - "AI_COPILOT"
-      - "CHATBOT"
-      - "QUOTE_FORM"
-      - "CRM"
-      - "INTERNAL"
-
   - list_name: "ceo_decision"
     values:
       - "CEO_INPUT_REQUIRED"
@@ -54,6 +44,47 @@ lists:
       - "Approved with Conditions"
       - "Rejected"
       - "Needs More Information"
+
+  - list_name: "release_status"
+    values:
+      - "DRAFT"
+      - "READY_FOR_CEO_REVIEW"
+      - "APPROVED_FOR_IMPLEMENTATION"
+      - "RELEASED"
+      - "SUPERSEDED"
+      - "REJECTED"
+
+  - list_name: "ceo_release_decision"
+    values:
+      - "PENDING_CEO_REVIEW"
+      - "APPROVED_AS_RECOMMENDED"
+      - "APPROVED_WITH_CONDITIONS"
+      - "REJECTED_REPLACE_RELEASE"
+      - "DEFERRED_NEED_MORE_EVIDENCE"
+
+  - list_name: "projection_release_status"
+    values:
+      - "DRAFT"
+      - "READY_FOR_REVIEW"
+      - "APPROVED_FOR_RELEASE"
+      - "RELEASED"
+      - "SUPERSEDED"
+
+  - list_name: "consumer_channel"
+    values:
+      - "WEBSITE_PUBLIC"
+      - "GOOGLE_ADS_PUBLIC"
+      - "CUSTOMER_CHATBOT_PUBLIC"
+      - "COPILOT_INTERNAL_DECISION_SUPPORT"
+      - "QUOTE_OPERATOR_INTERNAL"
+      - "RESTRICTED_OPERATIONS_PII"
+
+  - list_name: "qa_status"
+    values:
+      - "NOT_VERIFIED"
+      - "IN_VERIFICATION"
+      - "VERIFIED_PASS"
+      - "VERIFIED_FAIL"
 
   - list_name: "event_type"
     values:
@@ -130,11 +161,10 @@ lists:
 
   - list_name: "implementation_status"
     values:
-      - "PENDING_APPROVAL"
-      - "APPROVED_PENDING_DEPLOY"
-      - "DEPLOYED"
-      - "VERIFIED"
-      - "SUPERSEDED"
+      - "NOT_STARTED"
+      - "IN_PROGRESS"
+      - "IMPLEMENTED"
+      - "SUSPENDED"
 
   - list_name: "on_time_status"
     values:

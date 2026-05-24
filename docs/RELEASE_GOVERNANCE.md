@@ -180,3 +180,29 @@ The release gate enforces, in addition to the prior rules:
 - A `DRAFT` projection that carries non-empty `approved_channel_text` is
   rejected (stale-draft guard).
 - All controlled records reject unknown YAML keys at parse time.
+
+
+---
+
+## Phase 1B.3 Addendum — ReleaseRecord Becomes the Sole Channel-Publish Authority
+
+Phase 1B.3 introduces `ReleaseRecord` as the single source of release
+authority.  A release record is the only artifact that may promote one
+or more `ChannelProjectionRecord` rows to live publication on one or
+more consumer channels.  RuleRow approval is necessary but not sufficient.
+
+A `ReleaseRecord` with `status=RELEASED` must carry:
+
+- A non-empty `release_version` (e.g. `v2026-Q3-01`).
+- A non-empty `ceo_decision_date` and `effective_date`.
+- A non-empty `policy_version` reference.
+- `ceo_decision` in {APPROVED_AS_RECOMMENDED, APPROVED_WITH_CONDITIONS}.
+- At least one `authorized_channel`.
+- At least one `related_projection_id`.
+
+DRAFT records must not list any `authorized_channels`; the model
+enforces this invariant at construction time.
+
+All Phase 1 release records are DRAFT placeholders.  No release is
+RELEASED.  The release exporter therefore returns an empty approved set
+for every consumer channel.  This is the correct Phase 1 state.

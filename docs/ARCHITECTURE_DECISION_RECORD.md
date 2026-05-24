@@ -177,3 +177,73 @@ only the plan body and not the full spec inputs.
   governance input.
 - Tab count change is intentional and is reflected in all docs, tests, and
   validations; no compatibility shim is retained for the old 14-tab count.
+
+
+---
+
+## ADR-003: Projection-Based Exports and Release Gating
+
+**Date:** 2026-05-23
+**Status:** ACCEPTED — Phase 1B.3.
+
+### Context
+
+The Phase 1B.2 closure shipped a release exporter that consumed
+`RuleRow.approved_export_text` and `RuleRow.export_channels` directly.
+That model collapses three distinct concerns into one record:
+
+1. Policy approval (CEO has decided what the rule is).
+2. Per-channel text (the channel-safe rendering, with PII removed).
+3. Release authority (a CEO authorization to publish a specific set of
+   approved projections on a specific set of channels at a specific time).
+
+When all three collapse into one record, approving the policy is implicitly
+the same as authorising publication.  There is no opportunity for an
+independent release review, no record of what was actually published when,
+and no ability to roll back a release without retroactively rewriting the
+underlying rule.
+
+### Decision
+
+Separate the three concerns into three first-class records:
+
+- `RuleRow` — governs *policy approval only*.  Carries no channel text.
+- `ChannelProjectionRecord` — owns the *per-channel approved text*,
+  linked to one or more governing rules, with its own per-channel review
+  status and a `release_status` (`DRAFT` → `READY_FOR_REVIEW` →
+  `APPROVED_FOR_RELEASE` → `RELEASED`).
+- `ReleaseRecord` — the *only* artifact that can promote one or more
+  projections to `RELEASED` on one or more consumer channels.  A
+  release record carries a CEO decision, an effective date, a policy
+  version, an explicit list of authorized channels and an explicit list
+  of related projection IDs.
+
+The release exporter checks six gates before emitting any
+`ApprovedProjectionExport` for a channel:
+
+1. `projection.channel == requested_channel`.
+2. `projection.release_status == RELEASED`.
+3. `projection.approved_channel_text` is non-empty.
+4. Every related rule is APPROVED with a non-empty CEO decision.
+5. There is a `ReleaseRecord` with `status=RELEASED` whose
+   `authorized_channels` contains the channel and whose
+   `related_projection_ids` contains the projection ID.
+6. No open `BlockerRecord` lists the channel in `blocked_channels`
+   with `blocks_live_provisioning=True`.
+
+The column-mapping contract was moved out of `constants.py` into
+`config/column_mappings.yaml` so it participates in the deterministic
+`spec_fingerprint`.
+
+### Consequences
+
+- A rule approval no longer publishes anything.  Publication requires an
+  explicit, dated, CEO-decided release authorising specific projections
+  on specific channels.
+- Rollback is a release-level operation: a new RELEASED record supersedes
+  prior releases for the same channels.
+- The 13_RELEASE_CHANGELOG tab is the durable audit trail of every
+  release decision, separate from the rule register and the projection
+  register.
+- All Phase 1 releases remain DRAFT.  The exporter therefore returns an
+  empty approved set for every channel.  This is correct.

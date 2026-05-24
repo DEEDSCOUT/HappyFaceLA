@@ -180,3 +180,21 @@ fatal for every public channel and is also enforced on every
 The 15-tab governance workbook continues to mark draft, blocker, and
 projection tabs `INTERNAL_CONTROLLED`; only `approved_channel_text`
 on a `RELEASED` projection is classified `CHANNEL_SAFE_AFTER_RELEASE`.
+
+
+---
+
+## Phase 1B.3 Addendum — Projection-Based Exports and Release Gating
+
+The `release_exporter` module no longer consumes any field on
+`RuleRow` as channel text.  Per-channel approved text lives exclusively
+on `ChannelProjectionRecord`.  Publication on a consumer channel
+requires a `ReleaseRecord` with `status=RELEASED` that authorizes
+both the channel and the projection ID.  The `RESTRICTED_OPERATIONS_PII`
+channel has no automated export path in Phase 1 and is rejected at the
+top of `export_for_channel`.
+
+The column-mapping contract has moved from a Python constant into
+`config/column_mappings.yaml`.  Any change to a column-to-tab mapping
+now flips the deterministic `spec_fingerprint` and surfaces as plan
+drift, closing a previously silent governance hole.

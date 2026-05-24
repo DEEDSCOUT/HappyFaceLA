@@ -142,13 +142,13 @@ rules. No remote, no push, no amend.
 ## 8. Governance Tab Inventory (BLK-NEW-7)
 
 15 tabs (`GOVERNANCE_TAB_COUNT = 15`):
-`01_CONTROL_PANEL`, `02_OPEN_BLOCKERS`, `03_DRAFT_COMMERCIAL_RULES`,
-`04_RULE_SCHEMA_REFERENCE`, `05_RULE_LIFECYCLE_STATES`,
-`06_LEGAL_REGULATORY_INDEX`, `07_TRAINING_OPERATIONS_INDEX`,
-`08_PRICING_QUOTE_LOGIC`, `09_CLIENT_TYPE_ENFORCEMENT`,
-`10_CHANNEL_PROJECTION_REGISTER`, `11_AI_CUSTOMER_RESPONSE_MATRIX`,
-`12_SOURCE_EVIDENCE`, `13_RELEASE_CHANGELOG`,
-`14_CHANGE_REQUEST_INTAKE`, `15_RELEASE_GATE_CHECKLIST`.
+`00_CONTROL_CENTER`, `01_CEO_APPROVAL_QUEUE`, `02_OPEN_BLOCKERS`,
+`03_RULE_REGISTER_MASTER`, `04_ACTIVE_RULES_EXPORT`,
+`05_PUBLIC_PRICING_PACKAGES`, `06_INTERNAL_QUOTE_TRAVEL_RULES`,
+`07_BOOKING_POLICY_COMPLIANCE`, `08_VENDOR_SCHOOL_CORPORATE_RULES`,
+`09_CHANNEL_IMPLEMENTATION_MAP`, `10_CHANNEL_PROJECTION_REGISTER`,
+`11_AI_CUSTOMER_RESPONSE_MATRIX`, `12_SOURCE_EVIDENCE`,
+`13_RELEASE_CHANGELOG`, `99_VALIDATION_CONFIG`.
 
 ## 9. Seed Placeholders
 
@@ -183,20 +183,25 @@ rules. No remote, no push, no amend.
 
 ## 12. Post-Commit Verification
 
-To be executed against the closure commit:
+Executed against closure commit `7779834` (Phase 1B.2 acceptance audit
+verdict superseded by Phase 1B.3 — see PHASE_1B_2_FINAL_ACCEPTANCE_AUDIT.md):
 
 ```
-git status --short
-python -m hfla_control_room.cli plan --config config --output artifacts/dry_run
-git status --short
-python -m hfla_control_room.cli validate --config config
-git status --short
-python -m hfla_control_room.cli apply --config config   # MUST exit 1 with PHASE_1_BLOCK_MESSAGE
-git status --short
+git status --short                                    # clean
+python -m hfla_control_room.cli plan -c config        # clean re-emit
+python -m hfla_control_room.cli validate -c config    # VALIDATION PASSED
+python -m hfla_control_room.cli provision --dry-run -c config  # exit 0, no live calls
+python -m hfla_control_room.cli provision --apply -c config    # exit 1
 ```
 
-All `git status --short` calls must report a clean tree; `apply` must exit
-non-zero with the Phase 1 block message and perform no live Google calls.
+The `provision --apply` invocation exited 1 with the verbatim Phase 1 block
+message:
+
+> `BLOCKED — LIVE GOOGLE PROVISIONING NOT AUTHORIZED IN PHASE 1.`
+
+No tracked-file changes, commits, OAuth actions or live Google mutations
+occurred during acceptance verification.  Git-ignored runtime receipts may
+have been written by approved local verification commands.
 
 ## 13. What Phase 1B.2 Does NOT Do
 

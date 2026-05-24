@@ -28,7 +28,6 @@ def _make_draft_rule(rule_id: str) -> RuleRow:
         release_version="",
         effective_date="",
         policy_version="",
-        export_channels=[],
         blockers=["CEO_INPUT_REQUIRED"],
         internal_notes="Test placeholder.",
         ceo_notes="",

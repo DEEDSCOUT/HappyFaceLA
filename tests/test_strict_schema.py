@@ -14,14 +14,25 @@ from hfla_control_room.constants import (
     BlockerPriority,
     BlockerStatus,
     BlockerType,
+    CEOReleaseDecision,
     ConsumerChannel,
+    ImplementationStatus,
+    QAStatus,
+    ReleaseStatus,
 )
 from hfla_control_room.manifest import ManifestEntry
 from hfla_control_room.models import (
     BlockerRecord,
     ChannelProjectionRecord,
+    ColumnMappingRecord,
+    DocSection,
+    DocumentSpec,
     EvidenceRecord,
+    FullConfigSpec,
+    ReleaseRecord,
     RuleRow,
+    TabSpec,
+    WorkbookSpec,
 )
 
 
@@ -71,4 +82,71 @@ class TestStrictSchema:
                 channel=ConsumerChannel.WEBSITE_PUBLIC,
                 content_type="X",
                 bogus_projection_field="oops",  # type: ignore[call-arg]
+            )
+
+
+class TestStrictSchemaAllInputs:
+    def test_workbook_spec_rejects_unknown_field(self):
+        with pytest.raises(ValidationError):
+            WorkbookSpec(
+                spreadsheet_name="X",
+                classification="INTERNAL_CONTROLLED",
+                bogus="oops",  # type: ignore[call-arg]
+            )
+
+    def test_tab_spec_rejects_unknown_field(self):
+        with pytest.raises(ValidationError):
+            TabSpec(
+                title="T",
+                purpose="P",
+                sensitivity="INTERNAL_CONTROLLED",
+                bogus_tab_field="oops",  # type: ignore[call-arg]
+            )
+
+    def test_document_spec_rejects_unknown_field(self):
+        with pytest.raises(ValidationError):
+            DocumentSpec(
+                document_name="D",
+                asset_type="document",
+                classification="INTERNAL_CONTROLLED",
+                initial_status="DRAFT",
+                bogus_doc_field="oops",  # type: ignore[call-arg]
+            )
+
+    def test_doc_section_rejects_unknown_field(self):
+        with pytest.raises(ValidationError):
+            DocSection(
+                heading="H",
+                level=1,
+                bogus_section_field="oops",  # type: ignore[call-arg]
+            )
+
+    def test_full_config_spec_rejects_unknown_field(self):
+        with pytest.raises(ValidationError):
+            FullConfigSpec(
+                bogus_full_config_field="oops",  # type: ignore[call-arg]
+            )
+
+    def test_release_record_rejects_unknown_field(self):
+        with pytest.raises(ValidationError):
+            ReleaseRecord(
+                release_id="REL-001",
+                release_version="v1",
+                release_title="t",
+                status=ReleaseStatus.DRAFT,
+                ceo_decision=CEOReleaseDecision.PENDING_CEO_REVIEW,
+                policy_version="POL-1",
+                implementation_status=ImplementationStatus.NOT_STARTED,
+                qa_status=QAStatus.NOT_VERIFIED,
+                bogus_release_field="oops",  # type: ignore[call-arg]
+            )
+
+    def test_column_mapping_record_rejects_unknown_field(self):
+        with pytest.raises(ValidationError):
+            ColumnMappingRecord(
+                source_model="RuleRow",
+                source_field="rule_id",
+                destination_tab="03_RULE_REGISTER_MASTER",
+                column_header="Rule ID",
+                bogus_mapping_field="oops",  # type: ignore[call-arg]
             )

@@ -885,50 +885,59 @@ tabs:
 
   - title: "13_RELEASE_CHANGELOG"
     purpose: >
-      Immutable log of every commercial rule release: version, approval date,
-      rules activated, channels deployed to, and rollback references.
-      No deletion of rows permitted after entry.
+      Immutable log of every CEO-authorised commercial release. Each row
+      is a first-class ReleaseRecord that gates which channels publish
+      which approved channel projections.  Append-only — no row deletion
+      permitted.  Only rows with Status=RELEASED authorise active
+      publication.
     sensitivity: INTERNAL_CONTROLLED
     column_headers:
+      - "Release ID"
       - "Release Version"
-      - "Release Date"
-      - "CEO Approval Date"
-      - "Rules Activated"
-      - "Rules Superseded"
-      - "Channels Deployed"
-      - "Website Pages Changed"
-      - "Google Ads Changes"
-      - "AI Rules Activated"
-      - "Rollback Reference"
-      - "Release Brief Link"
-      - "QA Verified By"
-      - "Notes"
+      - "Release Title"
+      - "Status"
+      - "CEO Decision"
+      - "CEO Decision Date"
+      - "Effective Date"
+      - "Policy Version"
+      - "Authorized Channels"
+      - "Related Rule IDs"
+      - "Related Projection IDs"
+      - "Resolved Blocker IDs"
+      - "Implementation Status"
+      - "QA Status"
+      - "Rollback Plan"
+      - "Release Notes"
+      - "Notes (Internal Only)"
     frozen_row_count: 1
     filter_enabled: true
     editable_columns:
       - "Release Version"
-      - "Release Date"
-      - "CEO Approval Date"
-      - "Rules Activated"
-      - "Rules Superseded"
-      - "Channels Deployed"
-      - "Website Pages Changed"
-      - "Google Ads Changes"
-      - "AI Rules Activated"
-      - "Rollback Reference"
-      - "Release Brief Link"
-      - "QA Verified By"
-      - "Notes"
+      - "Release Title"
+      - "Status"
+      - "CEO Decision"
+      - "CEO Decision Date"
+      - "Effective Date"
+      - "Policy Version"
+      - "Authorized Channels"
+      - "Related Rule IDs"
+      - "Related Projection IDs"
+      - "Resolved Blocker IDs"
+      - "Implementation Status"
+      - "QA Status"
+      - "Rollback Plan"
+      - "Release Notes"
+      - "Notes (Internal Only)"
     protected_formula_columns: []
     data_validation_rules:
-      - column: "Release Date"
+      - column: "CEO Decision Date"
         validation_type: date
         error_message: "Enter a valid date."
-      - column: "CEO Approval Date"
+      - column: "Effective Date"
         validation_type: date
         error_message: "Enter a valid date."
     conditional_formatting_rules: []
-    banner_content: "RELEASE CHANGELOG — APPEND ONLY — NO ROW DELETION PERMITTED"
+    banner_content: "RELEASE CHANGELOG — APPEND ONLY — ONLY STATUS=RELEASED AUTHORISES PUBLICATION"
     banner_severity: INFO
     formula_requirements: []
 

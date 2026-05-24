@@ -30,8 +30,6 @@ def _rule() -> RuleRow:
         rule_category="PUBLIC_PRICING",
         rule_title="t",
         status=RuleStatus.APPROVED_AS_RECOMMENDED,
-        approved_export_text="public-safe text",
-        export_channels=["website"],
         channel_visibility=ChannelVisibility.CHANNEL_SAFE,
         public_safe_review_status=PublicSafeReviewStatus.APPROVED_PUBLIC_SAFE,
         ads_claim_review_status=AdsReviewStatus.APPROVED_FOR_ADS,

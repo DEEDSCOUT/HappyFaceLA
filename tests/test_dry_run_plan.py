@@ -161,8 +161,8 @@ class TestDryRunPlan:
             "Category counts do not reconcile with operation_count: "
             f"{total} != {meta['operation_count']}."
         )
-        assert meta["operation_count"] == 30, (
-            f"Expected 30 total operations for Phase 1B.2 spec, got {meta['operation_count']}."
+        assert meta["operation_count"] == 31, (
+            f"Expected 31 total operations for Phase 1B.3 spec, got {meta['operation_count']}."
         )
 
     def test_exactly_14_folder_operations(self):

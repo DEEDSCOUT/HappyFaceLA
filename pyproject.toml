@@ -45,8 +45,6 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
-# COLUMN_MAPPING_CONTRACTS uses aligned dict tables that exceed 100 cols by design.
-"src/hfla_control_room/constants.py" = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
