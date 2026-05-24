@@ -151,3 +151,32 @@ The following records are append-only after initial entry:
 ---
 
 *Maintained by: Happy Faces LA Engineering and CEO/Controller*
+
+---
+
+## Phase 1B.2 Update (2026-05-23)
+
+The governance workbook now has 15 tabs (`GOVERNANCE_TAB_COUNT = 15`).
+Tab `10_CHANNEL_PROJECTION_REGISTER` is the new single source of truth
+for per-channel approved text; the AI customer-response matrix (now tab 11),
+source-evidence register (tab 12), and release changelog (tab 13) are
+renumbered downstream.
+
+Open blockers are now first-class `BlockerRecord` rows populated into
+`02_OPEN_BLOCKERS` directly, not a derived FILTER view of the rule
+register. A CRITICAL OPEN blocker that does not also assert
+`blocks_phase_1c_content_loading=True` is a validation failure.
+
+The release gate enforces, in addition to the prior rules:
+
+- A rule may be exported to a consumer channel only when the matching
+  per-channel review status is `APPROVED_FOR_<CHANNEL>`. Approval on one
+  channel does not propagate to another.
+- `RESTRICTED_OPERATIONS_PII` exports are rejected outright pending
+  explicit future authorization.
+- A projection's `release_status` of `APPROVED_FOR_RELEASE` or
+  `RELEASED` requires non-empty `approved_channel_text`, `policy_version`
+  and `effective_date`.
+- A `DRAFT` projection that carries non-empty `approved_channel_text` is
+  rejected (stale-draft guard).
+- All controlled records reject unknown YAML keys at parse time.

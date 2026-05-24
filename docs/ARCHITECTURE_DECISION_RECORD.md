@@ -12,7 +12,7 @@
 Happy Faces LA requires a structured, governed system to create and manage a Commercial Control Room in Google Drive. The system must:
 
 - Create a specific folder hierarchy in Google Drive.
-- Create two Google Sheets (governance workbook with 14 tabs; restricted operations workbook with 9 tabs) with full formatting, validation, conditional formatting, protected ranges, and banners.
+- Create two Google Sheets (governance workbook with 15 tabs after Phase 1B.2; restricted operations workbook with 9 tabs) with full formatting, validation, conditional formatting, protected ranges, and banners.
 - Create two Google Docs (policy manual and release brief template) with structured heading sections.
 - Produce sanitized, machine-readable rule exports for website, Google Ads, Copilot, and chatbot channels.
 - Enforce governance constraints: no draft rule exported, no PII in channel-safe outputs, no CEO-unapproved pricing or policy published.
@@ -120,3 +120,60 @@ Happy Faces LA requires a structured, governed system to create and manage a Com
 - Phase 1 produces a fully tested local provisioner scaffold with no live Google side effects.
 - Phase 2 will require: CEO data payload delivery, OAuth scope authorization, account selection, and explicit `--apply` authorization.
 - All commercial rules remain in DRAFT status until a CEO-approved release artifact is delivered.
+
+---
+
+## ADR-002 — Phase 1B.2: Channel Authority and Blocker Governance Hardening
+
+**Date:** 2026-05-23
+**Status:** ACCEPTED
+
+### Context
+
+The Phase 1B.1 final acceptance audit identified that the controlled channel
+vocabulary conflated public chatbot approval with internal Copilot approval,
+that open blockers lacked a first-class structured record, that per-channel
+approved text had no register of its own, and that the controlled models
+silently accepted unknown fields. The plan `spec_fingerprint` also covered
+only the plan body and not the full spec inputs.
+
+### Decision
+
+1. Introduce a `ConsumerChannel` enum with one value per real consumer
+   surface (`WEBSITE_PUBLIC`, `GOOGLE_ADS_PUBLIC`,
+   `CUSTOMER_CHATBOT_PUBLIC`, `COPILOT_INTERNAL_DECISION_SUPPORT`,
+   `QUOTE_OPERATOR_INTERNAL`, `RESTRICTED_OPERATIONS_PII`) and separate
+   per-channel review-status enums (`ChatbotResponseReviewStatus`,
+   `CopilotInternalReviewStatus`, `QuoteOperatorReviewStatus`). The
+   legacy `ExportChannel` and `AIReviewStatus` enums are retained
+   solely as backward-compatible migration aliases referenced by
+   `RuleRow.export_channels` and the legacy `ai_response_review_status`
+   field.
+2. Add a first-class `BlockerRecord` Pydantic model with 16 governance
+   fields and a dedicated YAML loader. Add `02_OPEN_BLOCKERS` as a
+   POPULATE target driven by `BlockerRecord` rows; the prior derived
+   FILTER view of the rule register is retired.
+3. Add a `10_CHANNEL_PROJECTION_REGISTER` tab and a
+   `ChannelProjectionRecord` model. All public derived views read from
+   `APPROVED_FOR_RELEASE` rows in this register; downstream tabs are
+   renumbered (`11_AI_CUSTOMER_RESPONSE_MATRIX`, `12_SOURCE_EVIDENCE`,
+   `13_RELEASE_CHANGELOG`). `GOVERNANCE_TAB_COUNT` becomes 15.
+4. Introduce `StrictControlledModel` (`extra="forbid"`) as the base
+   for every controlled record; misspelled YAML keys now fail at
+   construction time.
+5. Add `COLUMN_MAPPING_CONTRACTS` declaring every model-field-to-column
+   mapping, with a contract test that walks every entry.
+6. Make `plan_metadata.spec_fingerprint` hash the canonical JSON of
+   `{plan_schema_version, spec.model_dump(mode="json"), plan_body}` and
+   surface `PLAN_SCHEMA_VERSION` and `SPEC_FINGERPRINT_ALGORITHM` in
+   the metadata.
+
+### Consequences
+
+- The legacy single-AI approval shortcut is eliminated. A rule must obtain
+  the specific consumer-channel approval for each channel it targets.
+- Phase 1C content loading can proceed against a stable column-level
+  mapping contract and a deterministic spec fingerprint that covers every
+  governance input.
+- Tab count change is intentional and is reflected in all docs, tests, and
+  validations; no compatibility shim is retained for the old 14-tab count.

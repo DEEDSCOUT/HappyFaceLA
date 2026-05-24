@@ -426,3 +426,25 @@ APPROVED-rule gate withdrawn; seed rules confirmed as DRAFT scaffolding.*
 *Commit: `1b95eec525edd0f0b06b2e8b5ac65f5ddfb5b629`*  
 *Phase: PHASE_1_DRY_RUN*  
 *Live Google calls: FALSE*
+
+---
+
+## Phase 1B.2 Increment (2026-05-23)
+
+- Governance workbook now has 15 tabs; new `10_CHANNEL_PROJECTION_REGISTER`.
+- New first-class `BlockerRecord` and `ChannelProjectionRecord` models
+  with dedicated YAML loaders and integrity validators.
+- New `ConsumerChannel` controlled vocabulary; channel approvals split
+  into independent per-channel review-status fields.
+- `StrictControlledModel` base (`extra='forbid'`) applied to every
+  controlled record.
+- `COLUMN_MAPPING_CONTRACTS` declares model-field-to-column mapping for
+  Rule, Evidence, Blocker, and Projection records.
+- `plan_metadata.spec_fingerprint` now hashes the full canonical spec
+  plus the plan body and plan schema version.
+- Dry-run plan grows from 28 to 30 operations
+  (folders=14, spreadsheet_files=2, spreadsheet_configs=2,
+   document_files=2, document_configs=2, populate=4, derive=4).
+- `PLAN_SCHEMA_VERSION = '1.1.0'`.
+
+No remote, no push, no live Google calls during the Phase 1B.2 closure.

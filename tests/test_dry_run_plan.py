@@ -86,14 +86,13 @@ class TestDryRunPlan:
         mock_docs.assert_not_called()
 
     def test_governance_sheet_has_14_tabs_in_plan(self):
-        """The governance workbook in the plan must list 14 tab titles."""
+        """The governance workbook in the plan must list 15 tab titles (Phase 1B.2)."""
         spec = load_full_spec(CONFIG_DIR)
         plan = build_plan(spec)
         sheet_ops = [op for op in plan["operations"] if op.get("op") == "CONFIGURE_SPREADSHEET"]
-        # Find whichever sheet has 14 tabs
-        fourteen_tab_sheets = [op for op in sheet_ops if op.get("tab_count") == 14]
-        assert len(fourteen_tab_sheets) == 1, (
-            f"Expected exactly 1 sheet with 14 tabs; found {len(fourteen_tab_sheets)}."
+        fifteen_tab_sheets = [op for op in sheet_ops if op.get("tab_count") == 15]
+        assert len(fifteen_tab_sheets) == 1, (
+            f"Expected exactly 1 sheet with 15 tabs; found {len(fifteen_tab_sheets)}."
         )
 
     def test_restricted_sheet_has_9_tabs_in_plan(self):
@@ -162,8 +161,8 @@ class TestDryRunPlan:
             "Category counts do not reconcile with operation_count: "
             f"{total} != {meta['operation_count']}."
         )
-        assert meta["operation_count"] == 28, (
-            f"Expected 28 total operations for Phase 1 spec, got {meta['operation_count']}."
+        assert meta["operation_count"] == 30, (
+            f"Expected 30 total operations for Phase 1B.2 spec, got {meta['operation_count']}."
         )
 
     def test_exactly_14_folder_operations(self):

@@ -1,12 +1,13 @@
 # PHASE 1B.1 CLOSURE REPORT
 
 **Authorization executed:** `AUTHORIZED PHASE 1B.1 — CLOSE ACCEPTANCE GAPS ONLY`  
-**Closure commit:** the HEAD of `main` titled `fix(control-room): close phase-1b acceptance gaps`  
+**Closure commit:** `0b1162d50d6730c2cb3aa96d5f71d6323429f6b5` titled `fix(control-room): close phase-1b acceptance gaps`  
 **Predecessor commits preserved:** `b00fec0`, `1b95eec`  
 **Branch:** `main`  
 **Remote push:** NONE  
 **Live Google calls during remediation:** **FALSE**  
-**OAuth performed:** **FALSE**
+**OAuth performed:** **FALSE**  
+**Final acceptance status (post-audit):** **NOT FINALLY ACCEPTED** — see [PHASE_1B_1_FINAL_ACCEPTANCE_AUDIT.md](PHASE_1B_1_FINAL_ACCEPTANCE_AUDIT.md). Phase 1B.2 was authorized to close the architectural defects identified there.
 
 ---
 
@@ -15,7 +16,7 @@
 - Workspace: `C:\Dev\happyfacesla-commercial-control-room`
 - Branch: `main`
 - HEAD before Phase 1B.1: `b00fec093c5a4a40edd69017e9570f8ee7028e7a`
-- HEAD after Phase 1B.1: `ba82668` (single new commit)
+- HEAD after Phase 1B.1: `0b1162d50d6730c2cb3aa96d5f71d6323429f6b5` (single new commit; the SHA-7 `ba82668` previously printed in this report was incorrect — corrected here as an erratum). The runtime audit receipt at `.runtime/audit/last_plan_run.json` is git-ignored and records each `cli plan` invocation’s wall-clock time without polluting the tracked plan.
 - Initial `git status --short`: dirty — `artifacts/dry_run/control_room_build_plan.{json,md}` modified by the act of running `cli plan` during the Phase 1B audit.
 
 ---
@@ -35,9 +36,10 @@ After restore, `git status --short` was empty; the Phase 1B.1 remediation began 
 
 ## 3. Files Modified / Added / Removed
 
-**Added (4):**
+**Added (5):**
 
 - [docs/PHASE_1B_ACCEPTANCE_AUDIT.md](docs/PHASE_1B_ACCEPTANCE_AUDIT.md)
+- [docs/PHASE_1B_1_CLOSURE_REPORT.md](docs/PHASE_1B_1_CLOSURE_REPORT.md)
 - [tests/test_channel_safety_branches.py](tests/test_channel_safety_branches.py)
 - [tests/test_mapping_contract.py](tests/test_mapping_contract.py)
 - [tests/test_plan_determinism.py](tests/test_plan_determinism.py)

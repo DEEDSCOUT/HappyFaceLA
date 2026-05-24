@@ -15,7 +15,7 @@ CONFIG_DIR = Path(__file__).parent.parent / "config"
 
 class TestTabInventory:
     def test_governance_workbook_has_14_tabs(self):
-        """Governance workbook must have exactly 14 tabs."""
+        """Governance workbook must have exactly GOVERNANCE_TAB_COUNT tabs."""
         spec = load_full_spec(CONFIG_DIR)
         actual = len(spec.governance_workbook.tabs)
         assert actual == GOVERNANCE_TAB_COUNT, (
@@ -23,7 +23,7 @@ class TestTabInventory:
         )
 
     def test_governance_tabs_have_unique_titles(self):
-        """All 14 governance workbook tab titles must be unique."""
+        """All governance workbook tab titles must be unique."""
         spec = load_full_spec(CONFIG_DIR)
         titles = [t.title for t in spec.governance_workbook.tabs]
         assert len(titles) == len(set(titles)), (
@@ -45,9 +45,10 @@ class TestTabInventory:
             "07_BOOKING_POLICY_COMPLIANCE",
             "08_VENDOR_SCHOOL_CORPORATE_RULES",
             "09_CHANNEL_IMPLEMENTATION_MAP",
-            "10_AI_CUSTOMER_RESPONSE_MATRIX",
-            "11_SOURCE_EVIDENCE",
-            "12_RELEASE_CHANGELOG",
+            "10_CHANNEL_PROJECTION_REGISTER",
+            "11_AI_CUSTOMER_RESPONSE_MATRIX",
+            "12_SOURCE_EVIDENCE",
+            "13_RELEASE_CHANGELOG",
             "99_VALIDATION_CONFIG",
         }
         missing = expected - titles

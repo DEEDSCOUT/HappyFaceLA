@@ -152,3 +152,31 @@ If any of the following are discovered, treat as a security incident:
 5. The `--apply` command executing without explicit Phase 2+ authorization
 
 Immediate response: revoke credentials, rotate secrets, audit git history, notify CEO.
+
+---
+
+## Phase 1B.2 Addendum (2026-05-23)
+
+The Phase 1B.1 final acceptance audit identified two security-relevant
+defects that Phase 1B.2 closes:
+
+- **Channel-approval conflation.** The single `AIReviewStatus` value
+  `APPROVED_FOR_AI` previously gated both `CHATBOT` and `AI_COPILOT`
+  export channels. A rule reviewed for one consumer surface was therefore
+  silently treated as approved for the other. The export validator now
+  uses a `ConsumerChannel` enum with per-channel review-status fields
+  (`customer_chatbot_review_status`, `copilot_internal_review_status`,
+  `quote_operator_review_status`). Approval on one channel does **not**
+  grant approval on another.
+- **Restricted operations channel.** The `RESTRICTED_OPERATIONS_PII`
+  channel is rejected outright by `validate_consumer_channel_export_safety`;
+  no automated path is permitted today, even with all other gates passing.
+
+PII handling rules are unchanged: `contains_pii=True` on any rule remains
+fatal for every public channel and is also enforced on every
+`ChannelProjectionRecord` whose `channel` is in
+`PUBLIC_CONSUMER_CHANNELS`.
+
+The 15-tab governance workbook continues to mark draft, blocker, and
+projection tabs `INTERNAL_CONTROLLED`; only `approved_channel_text`
+on a `RELEASED` projection is classified `CHANNEL_SAFE_AFTER_RELEASE`.

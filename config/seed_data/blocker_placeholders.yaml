@@ -1,0 +1,83 @@
+# Happy Faces LA — Commercial Control Room
+# Phase 1B.2 — BlockerRecord PLACEHOLDERS only
+#
+# These rows demonstrate the new structured BlockerRecord schema (Phase 1B.2)
+# and exercise validation in both the spec loader and the test suite.  They
+# are DRAFT placeholders only — no real commercial blocker is being declared
+# in this commit.  Real blockers will be supplied by the CEO in Phase 1C
+# alongside the rest of the commercial dataset.
+
+blocker_records:
+
+  - blocker_id: "BLK-DRAFT-001"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      PLACEHOLDER — Phase 1C CEO will populate the exact decision required
+      (e.g. travel-rate model selection, deposit policy ratification).
+    why_it_matters: >
+      PLACEHOLDER — describes why downstream channel approvals cannot proceed
+      until this CEO decision is recorded.
+    risk_if_missing: >
+      PLACEHOLDER — describes the commercial / brand / compliance risk that
+      would materialise if this blocker were ignored and content were published.
+    priority: "HIGH"
+    ceo_input_final_answer: ""
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: []
+    related_evidence_ids: []
+    blocked_channels:
+      - "WEBSITE_PUBLIC"
+      - "GOOGLE_ADS_PUBLIC"
+      - "CUSTOMER_CHATBOT_PUBLIC"
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: true
+    responsible_owner: "CEO"
+    resolution_evidence: ""
+    notes_internal_only: "Phase 1B.2 placeholder; replaced by real CEO input in Phase 1C."
+
+  - blocker_id: "BLK-DRAFT-002"
+    category: "COMPLIANCE_REVIEW_REQUIRED"
+    decision_required: >
+      PLACEHOLDER — Phase 1C Compliance owner will populate the specific
+      compliance review required (e.g. Ads disclosure language sign-off).
+    why_it_matters: >
+      PLACEHOLDER — describes regulatory / advertising-standards reason this
+      review must complete before any ads content can be approved.
+    risk_if_missing: >
+      PLACEHOLDER — non-compliant ads claims; account suspension risk.
+    priority: "CRITICAL"
+    ceo_input_final_answer: ""
+    status: "OPEN_COMPLIANCE_REVIEW_REQUIRED"
+    related_rule_ids: []
+    related_evidence_ids: []
+    blocked_channels:
+      - "GOOGLE_ADS_PUBLIC"
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: true
+    responsible_owner: "Compliance"
+    resolution_evidence: ""
+    notes_internal_only: "Phase 1B.2 placeholder; replaced by real compliance owner in Phase 1C."
+
+  - blocker_id: "BLK-DRAFT-003"
+    category: "DATA_MISSING"
+    decision_required: >
+      PLACEHOLDER — Phase 1C operator will populate the exact missing dataset
+      reference (e.g. travel-cost table, vendor rate card snapshot).
+    why_it_matters: >
+      PLACEHOLDER — describes which derived calculations or projections cannot
+      be produced until the dataset is supplied.
+    risk_if_missing: >
+      PLACEHOLDER — quote inaccuracy; margin erosion; mispricing.
+    priority: "HIGH"
+    ceo_input_final_answer: ""
+    status: "OPEN_EVIDENCE_REQUIRED"
+    related_rule_ids: []
+    related_evidence_ids: []
+    blocked_channels:
+      - "QUOTE_OPERATOR_INTERNAL"
+      - "COPILOT_INTERNAL_DECISION_SUPPORT"
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: true
+    responsible_owner: "Operations"
+    resolution_evidence: ""
+    notes_internal_only: "Phase 1B.2 placeholder; replaced by real dataset reference in Phase 1C."

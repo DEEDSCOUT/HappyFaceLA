@@ -9,35 +9,66 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from hfla_control_room.constants import (
     AdsReviewStatus,
     AIReviewStatus,
     AssetType,
     BannerSeverity,
+    BlockerPriority,
+    BlockerStatus,
     BlockerType,
     ChannelVisibility,
+    ChatbotResponseReviewStatus,
+    ConsumerChannel,
+    CopilotInternalReviewStatus,
     EvidenceReliabilityTier,
     EvidenceStatus,
     ExportChannel,
+    ProjectionReleaseStatus,
     PublicSafeReviewStatus,
+    QuoteOperatorReviewStatus,
     RuleStatus,
     SensitivityClassification,
 )
+
+# ---------------------------------------------------------------------------
+# Strict-schema base for all controlled-data models (Phase 1B.2)
+# ---------------------------------------------------------------------------
+#
+# Every governance model that stores controlled commercial data MUST forbid
+# unknown fields.  Silently absorbing a misspelled field (e.g. ``drive_id=``
+# instead of ``google_id=``) is a confirmed defect class — it allowed
+# governance fields to be dropped at construction time without any error.
+#
+# All new and existing controlled models below inherit from
+# :class:`StrictControlledModel`.  Non-controlled helper structures (e.g.
+# loose YAML wrappers, ``raw`` payload mirrors) may use plain BaseModel.
+
+
+class StrictControlledModel(BaseModel):
+    """BaseModel that forbids unknown fields on input.
+
+    Misspelled or unknown attributes raise a Pydantic validation error at
+    construction time instead of being silently dropped.  This is a hard
+    governance requirement for every controlled-data record.
+    """
+
+    model_config = ConfigDict(extra="forbid")
 
 # ---------------------------------------------------------------------------
 # Drive structure models
 # ---------------------------------------------------------------------------
 
 
-class DriveFolder(BaseModel):
+class DriveFolder(StrictControlledModel):
     name: str
     classification: SensitivityClassification = SensitivityClassification.INTERNAL_CONTROLLED
     children: list[DriveFolder | DriveAsset] = Field(default_factory=list)
 
 
-class DriveAsset(BaseModel):
+class DriveAsset(StrictControlledModel):
     name: str
     asset_type: AssetType
     classification: SensitivityClassification = SensitivityClassification.INTERNAL_CONTROLLED
@@ -46,7 +77,7 @@ class DriveAsset(BaseModel):
 DriveFolder.model_rebuild()
 
 
-class DriveStructureSpec(BaseModel):
+class DriveStructureSpec(StrictControlledModel):
     root_folder_name: str
     children: list[DriveFolder | DriveAsset] = Field(default_factory=list)
 
@@ -56,7 +87,7 @@ class DriveStructureSpec(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class DataValidationRule(BaseModel):
+class DataValidationRule(StrictControlledModel):
     column: str
     validation_type: str  # e.g. "dropdown", "date", "number_range", "regex"
     values: list[str] | None = None
@@ -66,7 +97,7 @@ class DataValidationRule(BaseModel):
     error_message: str = ""
 
 
-class ConditionalFormattingRule(BaseModel):
+class ConditionalFormattingRule(StrictControlledModel):
     column: str
     condition: str  # e.g. "EQUALS", "TEXT_CONTAINS", "LESS_THAN"
     value: str
@@ -75,7 +106,7 @@ class ConditionalFormattingRule(BaseModel):
     bold: bool = False
 
 
-class TabSpec(BaseModel):
+class TabSpec(StrictControlledModel):
     title: str
     purpose: str
     sensitivity: SensitivityClassification
@@ -101,7 +132,7 @@ class TabSpec(BaseModel):
         return self
 
 
-class WorkbookSpec(BaseModel):
+class WorkbookSpec(StrictControlledModel):
     spreadsheet_name: str
     classification: SensitivityClassification
     tabs: list[TabSpec] = Field(default_factory=list)
@@ -134,14 +165,14 @@ class WorkbookSpec(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class DocSection(BaseModel):
+class DocSection(StrictControlledModel):
     heading: str
     level: int = 1  # heading level 1–6
     placeholder_text: str = ""
     notes: str = ""
 
 
-class DocumentSpec(BaseModel):
+class DocumentSpec(StrictControlledModel):
     document_name: str
     asset_type: AssetType
     classification: SensitivityClassification
@@ -155,7 +186,7 @@ class DocumentSpec(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class RuleRow(BaseModel):
+class RuleRow(StrictControlledModel):
     rule_id: str
     rule_category: str
     rule_title: str
@@ -174,7 +205,19 @@ class RuleRow(BaseModel):
     # Channel-safe export controls (populated in Phase 1C+ CEO data payload)
     channel_visibility: ChannelVisibility = ChannelVisibility.INTERNAL_ONLY
     public_safe_review_status: PublicSafeReviewStatus = PublicSafeReviewStatus.NOT_REVIEWED
+    # Legacy combined AI review status — retained for backward compatibility
+    # only.  New code MUST consult ``customer_chatbot_review_status`` or
+    # ``copilot_internal_review_status`` instead.
     ai_response_review_status: AIReviewStatus = AIReviewStatus.NOT_REVIEWED
+    customer_chatbot_review_status: ChatbotResponseReviewStatus = (
+        ChatbotResponseReviewStatus.NOT_REVIEWED
+    )
+    copilot_internal_review_status: CopilotInternalReviewStatus = (
+        CopilotInternalReviewStatus.NOT_REVIEWED
+    )
+    quote_operator_review_status: QuoteOperatorReviewStatus = (
+        QuoteOperatorReviewStatus.NOT_REVIEWED
+    )
     ads_claim_review_status: AdsReviewStatus = AdsReviewStatus.NOT_REVIEWED
     # Separately reviewed public-safe text; never raw CEO/internal notes
     approved_export_text: str = ""
@@ -190,7 +233,7 @@ class RuleRow(BaseModel):
         return v
 
 
-class RuleRegister(BaseModel):
+class RuleRegister(StrictControlledModel):
     rules: list[RuleRow] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -208,7 +251,7 @@ class RuleRegister(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class ApprovedRuleExport(BaseModel):
+class ApprovedRuleExport(StrictControlledModel):
     """Channel-safe export record.
 
     Serialises ONLY fields that are safe for public/AI/Ads consumption.
@@ -251,7 +294,7 @@ class ApprovedRuleExport(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class EvidenceRecord(BaseModel):
+class EvidenceRecord(StrictControlledModel):
     """A source evidence record supporting one or more governance rules.
 
     Phase 1: all records are DRAFT placeholders.
@@ -298,7 +341,7 @@ class EvidenceRecord(BaseModel):
         return self
 
 
-class EvidenceRegister(BaseModel):
+class EvidenceRegister(StrictControlledModel):
     records: list[EvidenceRecord] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -316,12 +359,12 @@ class EvidenceRegister(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class ValidationList(BaseModel):
+class ValidationList(StrictControlledModel):
     list_name: str
     values: list[str]
 
 
-class ValidationListsSpec(BaseModel):
+class ValidationListsSpec(StrictControlledModel):
     lists: list[ValidationList] = Field(default_factory=list)
 
 
@@ -330,7 +373,7 @@ class ValidationListsSpec(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class FieldSchema(BaseModel):
+class FieldSchema(StrictControlledModel):
     name: str
     field_type: str  # "string", "enum", "date", "boolean", "list"
     required: bool = False
@@ -340,7 +383,7 @@ class FieldSchema(BaseModel):
     description: str = ""
 
 
-class RuleSchema(BaseModel):
+class RuleSchema(StrictControlledModel):
     fields: list[FieldSchema] = Field(default_factory=list)
 
 
@@ -358,4 +401,148 @@ class FullConfigSpec(BaseModel):
     rule_schema: RuleSchema
     seed_rules: list[RuleRow] = Field(default_factory=list)
     evidence_records: list[EvidenceRecord] = Field(default_factory=list)
+    blocker_records: list[BlockerRecord] = Field(default_factory=list)
+    channel_projection_records: list[ChannelProjectionRecord] = Field(default_factory=list)
     raw: dict[str, Any] = Field(default_factory=dict, exclude=True)
+
+
+# ---------------------------------------------------------------------------
+# Blocker register (Phase 1B.2)
+# ---------------------------------------------------------------------------
+
+
+class BlockerRecord(StrictControlledModel):
+    """Structured commercial governance blocker.
+
+    Replaces the legacy ``RuleRow.blockers: list[BlockerType]`` 4-tag enum
+    with a first-class CEO-reviewable record.  Each open blocker carries the
+    decision required, the risk if missing, the exact channels it blocks, and
+    whether it blocks live provisioning and / or Phase 1C content loading.
+    """
+
+    blocker_id: str
+    category: BlockerType
+    decision_required: str
+    why_it_matters: str
+    risk_if_missing: str
+    priority: BlockerPriority
+    ceo_input_final_answer: str = ""
+    status: BlockerStatus
+    related_rule_ids: list[str] = Field(default_factory=list)
+    related_evidence_ids: list[str] = Field(default_factory=list)
+    blocked_channels: list[ConsumerChannel] = Field(default_factory=list)
+    blocks_live_provisioning: bool = True
+    blocks_phase_1c_content_loading: bool = True
+    responsible_owner: str = ""
+    resolution_evidence: str = ""
+    notes_internal_only: str = ""
+
+    @field_validator("blocker_id")
+    @classmethod
+    def blocker_id_not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("blocker_id must not be empty.")
+        return v
+
+    @model_validator(mode="after")
+    def validate_resolved_has_evidence(self) -> BlockerRecord:
+        if self.status == BlockerStatus.RESOLVED and not self.resolution_evidence.strip():
+            raise ValueError(
+                f"Blocker '{self.blocker_id}' is RESOLVED but has no resolution_evidence."
+            )
+        return self
+
+
+class BlockerRegister(StrictControlledModel):
+    records: list[BlockerRecord] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_unique_blocker_ids(self) -> BlockerRegister:
+        ids = [r.blocker_id for r in self.records]
+        if len(ids) != len(set(ids)):
+            seen: set[str] = set()
+            dupes = [i for i in ids if i in seen or seen.add(i)]  # type: ignore[func-returns-value]
+            raise ValueError(f"Duplicate blocker IDs: {dupes}")
+        return self
+
+
+# ---------------------------------------------------------------------------
+# Channel projection register (Phase 1B.2)
+# ---------------------------------------------------------------------------
+
+
+class ChannelProjectionRecord(StrictControlledModel):
+    """Per-channel approved-content projection of one or more rules.
+
+    The Channel Projection Register is the single source of truth for which
+    channel-specific text has been approved for which consumer surface.
+    Public derived views (e.g. customer chatbot response matrix) read from
+    APPROVED_FOR_RELEASE rows only and never duplicate policy text.
+    """
+
+    projection_id: str
+    related_rule_ids: list[str] = Field(default_factory=list)
+    channel: ConsumerChannel
+    content_type: str
+    draft_channel_text: str = ""
+    approved_channel_text: str = ""
+    review_status: str = "NOT_REVIEWED"
+    release_status: ProjectionReleaseStatus = ProjectionReleaseStatus.DRAFT
+    policy_version: str = ""
+    effective_date: str = ""
+    requires_human_escalation: bool = False
+    escalation_reason: str = ""
+    source_evidence_ids: list[str] = Field(default_factory=list)
+    contains_pii: bool = False
+    contains_internal_only_logic: bool = False
+    notes_internal_only: str = ""
+
+    @field_validator("projection_id")
+    @classmethod
+    def projection_id_not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("projection_id must not be empty.")
+        return v
+
+    @model_validator(mode="after")
+    def validate_release_has_text(self) -> ChannelProjectionRecord:
+        if (
+            self.release_status
+            in (
+                ProjectionReleaseStatus.APPROVED_FOR_RELEASE,
+                ProjectionReleaseStatus.RELEASED,
+            )
+            and not self.approved_channel_text.strip()
+        ):
+            raise ValueError(
+                f"Projection '{self.projection_id}' release_status={self.release_status.value} "
+                "requires non-empty approved_channel_text."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_no_pii_on_public_channel(self) -> ChannelProjectionRecord:
+        from hfla_control_room.constants import PUBLIC_CONSUMER_CHANNELS
+
+        if self.channel in PUBLIC_CONSUMER_CHANNELS and self.contains_pii:
+            raise ValueError(
+                f"Projection '{self.projection_id}' targets public channel "
+                f"{self.channel.value} but contains_pii=True. Forbidden."
+            )
+        return self
+
+
+class ChannelProjectionRegister(StrictControlledModel):
+    records: list[ChannelProjectionRecord] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_unique_projection_ids(self) -> ChannelProjectionRegister:
+        ids = [r.projection_id for r in self.records]
+        if len(ids) != len(set(ids)):
+            seen: set[str] = set()
+            dupes = [i for i in ids if i in seen or seen.add(i)]  # type: ignore[func-returns-value]
+            raise ValueError(f"Duplicate projection IDs: {dupes}")
+        return self
+
+FullConfigSpec.model_rebuild()
+

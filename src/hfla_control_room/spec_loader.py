@@ -13,6 +13,10 @@ from pathlib import Path
 import yaml
 
 from hfla_control_room.models import (
+    BlockerRecord,
+    BlockerRegister,
+    ChannelProjectionRecord,
+    ChannelProjectionRegister,
     DocumentSpec,
     DriveStructureSpec,
     EvidenceRecord,
@@ -60,6 +64,8 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
     seed_dir = config_dir / "seed_data"
     seed_rules: list[RuleRow] = []
     evidence_records: list[EvidenceRecord] = []
+    blocker_records: list[BlockerRecord] = []
+    channel_projection_records: list[ChannelProjectionRecord] = []
     for seed_file in sorted(seed_dir.glob("*.yaml")):
         seed_data = yaml.safe_load(seed_file.read_text(encoding="utf-8"))
         if not seed_data:
@@ -71,12 +77,26 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
             if "evidence_records" in seed_data:
                 for raw_ev in seed_data["evidence_records"]:
                     evidence_records.append(EvidenceRecord.model_validate(raw_ev))
+            if "blocker_records" in seed_data:
+                for raw_blk in seed_data["blocker_records"]:
+                    blocker_records.append(BlockerRecord.model_validate(raw_blk))
+            if "channel_projection_records" in seed_data:
+                for raw_proj in seed_data["channel_projection_records"]:
+                    channel_projection_records.append(
+                        ChannelProjectionRecord.model_validate(raw_proj)
+                    )
 
     # Validate rule-ID uniqueness across all seed files
     RuleRegister(rules=seed_rules)
 
     # Validate evidence-ID uniqueness across all seed files
     EvidenceRegister(records=evidence_records)
+
+    # Validate blocker-ID uniqueness across all seed files
+    BlockerRegister(records=blocker_records)
+
+    # Validate channel-projection-ID uniqueness across all seed files
+    ChannelProjectionRegister(records=channel_projection_records)
 
     drive_spec = DriveStructureSpec.model_validate(drive_raw)
     governance_spec = WorkbookSpec.model_validate(governance_raw)
@@ -97,6 +117,8 @@ def load_full_spec(config_dir: Path) -> FullConfigSpec:
         rule_schema=rule_schema,
         seed_rules=seed_rules,
         evidence_records=evidence_records,
+        blocker_records=blocker_records,
+        channel_projection_records=channel_projection_records,
         raw={
             "drive": drive_raw,
             "governance": governance_raw,

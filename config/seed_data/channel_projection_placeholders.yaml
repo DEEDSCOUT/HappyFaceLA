@@ -1,0 +1,69 @@
+# Happy Faces LA — Commercial Control Room
+# Phase 1B.2 — ChannelProjectionRecord PLACEHOLDERS only
+#
+# Demonstrates the new per-channel content projection schema introduced in
+# Phase 1B.2.  Each row represents one approved-text projection of a future
+# rule for a single consumer channel.  DRAFT placeholders only — no real
+# customer-facing or operator-facing copy is being declared.
+
+channel_projection_records:
+
+  - projection_id: "PROJ-DRAFT-001"
+    related_rule_ids: []
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PLACEHOLDER_PRICING_DISCLOSURE"
+    draft_channel_text: >
+      DRAFT PLACEHOLDER — Phase 1C CEO will populate the exact website pricing
+      disclosure copy.  Not for publication.
+    approved_channel_text: ""
+    review_status: "NOT_REVIEWED"
+    release_status: "DRAFT"
+    policy_version: ""
+    effective_date: ""
+    requires_human_escalation: false
+    escalation_reason: ""
+    source_evidence_ids: []
+    contains_pii: false
+    contains_internal_only_logic: false
+    notes_internal_only: "Phase 1B.2 placeholder; replaced by real website copy in Phase 1C."
+
+  - projection_id: "PROJ-DRAFT-002"
+    related_rule_ids: []
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "PLACEHOLDER_CHATBOT_RESPONSE"
+    draft_channel_text: >
+      DRAFT PLACEHOLDER — Phase 1C CEO will populate the exact customer
+      chatbot response copy.  This projection's approval is SEPARATE from
+      any internal Copilot approval.
+    approved_channel_text: ""
+    review_status: "NOT_REVIEWED"
+    release_status: "DRAFT"
+    policy_version: ""
+    effective_date: ""
+    requires_human_escalation: true
+    escalation_reason: "PLACEHOLDER — escalation reason supplied in Phase 1C."
+    source_evidence_ids: []
+    contains_pii: false
+    contains_internal_only_logic: false
+    notes_internal_only: "Phase 1B.2 placeholder; replaced by real chatbot copy in Phase 1C."
+
+  - projection_id: "PROJ-DRAFT-003"
+    related_rule_ids: []
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    content_type: "PLACEHOLDER_INTERNAL_GUIDANCE"
+    draft_channel_text: >
+      DRAFT PLACEHOLDER — Phase 1C CEO will populate the exact internal
+      Copilot decision-support guidance.  This projection's approval is
+      SEPARATE from any customer-chatbot approval; internal-only logic may
+      appear here.
+    approved_channel_text: ""
+    review_status: "NOT_REVIEWED"
+    release_status: "DRAFT"
+    policy_version: ""
+    effective_date: ""
+    requires_human_escalation: false
+    escalation_reason: ""
+    source_evidence_ids: []
+    contains_pii: false
+    contains_internal_only_logic: true
+    notes_internal_only: "Phase 1B.2 placeholder; replaced by real internal guidance in Phase 1C."

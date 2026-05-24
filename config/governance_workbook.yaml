@@ -9,7 +9,7 @@
 
 spreadsheet_name: "HF-LA Commercial Policy & Channel Governance Master"
 classification: INTERNAL_CONTROLLED
-required_tab_count: 14
+required_tab_count: 15
 global_banner: "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
 
 tabs:
@@ -49,7 +49,7 @@ tabs:
     formula_requirements:
       - "COUNTA over 01_CEO_APPROVAL_QUEUE for open-items count"
       - "COUNTA over 02_OPEN_BLOCKERS for blocker count"
-      - "MAX of 12_RELEASE_CHANGELOG release dates for last-release display"
+      - "MAX of 13_RELEASE_CHANGELOG release dates for last-release display"
 
   - title: "01_CEO_APPROVAL_QUEUE"
     purpose: >
@@ -113,63 +113,95 @@ tabs:
 
   - title: "02_OPEN_BLOCKERS"
     purpose: >
-      Active log of all unresolved governance blockers: pricing decisions pending CEO,
-      compliance reviews outstanding, data missing, and legal reviews required.
-      No rule may be exported while listed here as unresolved.
+      Structured register of all governance blockers (Phase 1B.2). Each row is a
+      first-class BlockerRecord with the decision required, why it matters, the
+      risk if missing, the channels it blocks, and whether it blocks live
+      provisioning and / or Phase 1C content loading. No rule may be exported
+      while any related blocker is OPEN.
     sensitivity: INTERNAL_CONTROLLED
     column_headers:
       - "Blocker ID"
-      - "Linked Rule ID"
-      - "Blocker Type"
-      - "Description"
-      - "Date Opened"
-      - "Owner"
+      - "Category"
+      - "Decision Required"
+      - "Why It Matters"
+      - "Risk if Missing"
+      - "Priority"
+      - "CEO Input / Final Answer"
       - "Status"
-      - "Resolution Notes"
-      - "Date Resolved"
+      - "Related Rule IDs"
+      - "Related Evidence IDs"
+      - "Blocked Channels"
+      - "Blocks Live Provisioning"
+      - "Blocks Phase 1C Content Loading"
+      - "Responsible Owner"
+      - "Resolution Evidence"
+      - "Notes (Internal Only)"
     frozen_row_count: 1
     filter_enabled: true
     editable_columns:
+      - "Category"
+      - "Decision Required"
+      - "Why It Matters"
+      - "Risk if Missing"
+      - "Priority"
+      - "CEO Input / Final Answer"
       - "Status"
-      - "Resolution Notes"
-      - "Date Resolved"
-      - "Owner"
+      - "Related Rule IDs"
+      - "Related Evidence IDs"
+      - "Blocked Channels"
+      - "Blocks Live Provisioning"
+      - "Blocks Phase 1C Content Loading"
+      - "Responsible Owner"
+      - "Resolution Evidence"
+      - "Notes (Internal Only)"
     protected_formula_columns:
       - "Blocker ID"
-      - "Linked Rule ID"
-      - "Blocker Type"
-      - "Description"
-      - "Date Opened"
     data_validation_rules:
-      - column: "Blocker Type"
+      - column: "Category"
         validation_type: dropdown
         values:
           - "CEO_INPUT_REQUIRED"
           - "COMPLIANCE_REVIEW_REQUIRED"
           - "LEGAL_REVIEW_REQUIRED"
           - "DATA_MISSING"
-        error_message: "Select a valid blocker type."
+        error_message: "Select a valid blocker category."
+      - column: "Priority"
+        validation_type: dropdown
+        values:
+          - "CRITICAL"
+          - "HIGH"
+          - "MEDIUM"
+          - "LOW"
+        error_message: "Select a valid priority."
       - column: "Status"
         validation_type: dropdown
         values:
-          - "OPEN"
-          - "IN_REVIEW"
+          - "OPEN_CEO_INPUT_REQUIRED"
+          - "OPEN_COMPLIANCE_REVIEW_REQUIRED"
+          - "OPEN_EVIDENCE_REQUIRED"
           - "RESOLVED"
-          - "SUPERSEDED"
-        error_message: "Select a valid status."
+          - "DEFERRED"
+          - "NOT_APPLICABLE"
+        error_message: "Select a valid blocker status."
     conditional_formatting_rules:
       - column: "Status"
-        condition: EQUALS
-        value: "OPEN"
+        condition: STARTS_WITH
+        value: "OPEN_"
         background_color: "#F4CCCC"
         bold: true
       - column: "Status"
         condition: EQUALS
         value: "RESOLVED"
         background_color: "#D9EAD3"
+      - column: "Priority"
+        condition: EQUALS
+        value: "CRITICAL"
+        background_color: "#EA9999"
+        bold: true
     banner_content: "OPEN BLOCKERS — RULES WITH ACTIVE BLOCKERS CANNOT BE EXPORTED"
     banner_severity: WARNING
-    formula_requirements: []
+    formula_requirements:
+      - "Blocker ID auto-generated as BLK-{SEQUENCE}"
 
   - title: "03_RULE_REGISTER_MASTER"
     purpose: >
@@ -625,7 +657,104 @@ tabs:
     formula_requirements:
       - "Rule ID must exist in 03_RULE_REGISTER_MASTER"
 
-  - title: "10_AI_CUSTOMER_RESPONSE_MATRIX"
+  - title: "10_CHANNEL_PROJECTION_REGISTER"
+    purpose: >
+      Single source of truth for channel-specific approved content projections.
+      Each row is one ChannelProjectionRecord; the consumer channel (website,
+      Google Ads, customer chatbot, internal Copilot, quote-operator-internal)
+      has its OWN review and release status here.  Public derived views
+      (e.g. 11_AI_CUSTOMER_RESPONSE_MATRIX) read from APPROVED_FOR_RELEASE rows
+      only.  Internal Copilot, customer chatbot, website and Ads MUST NOT
+      share approval rows.
+    sensitivity: INTERNAL_CONTROLLED
+    column_headers:
+      - "Projection ID"
+      - "Related Rule IDs"
+      - "Consumer Channel"
+      - "Content Type"
+      - "Draft Channel Text"
+      - "Approved Channel Text"
+      - "Review Status"
+      - "Release Status"
+      - "Policy Version"
+      - "Effective Date"
+      - "Requires Human Escalation"
+      - "Escalation Reason"
+      - "Source Evidence IDs"
+      - "Contains PII"
+      - "Contains Internal Only Logic"
+      - "Notes (Internal Only)"
+    frozen_row_count: 1
+    filter_enabled: true
+    editable_columns:
+      - "Related Rule IDs"
+      - "Consumer Channel"
+      - "Content Type"
+      - "Draft Channel Text"
+      - "Approved Channel Text"
+      - "Review Status"
+      - "Release Status"
+      - "Policy Version"
+      - "Effective Date"
+      - "Requires Human Escalation"
+      - "Escalation Reason"
+      - "Source Evidence IDs"
+      - "Contains PII"
+      - "Contains Internal Only Logic"
+      - "Notes (Internal Only)"
+    protected_formula_columns:
+      - "Projection ID"
+    data_validation_rules:
+      - column: "Consumer Channel"
+        validation_type: dropdown
+        values:
+          - "WEBSITE_PUBLIC"
+          - "GOOGLE_ADS_PUBLIC"
+          - "CUSTOMER_CHATBOT_PUBLIC"
+          - "COPILOT_INTERNAL_DECISION_SUPPORT"
+          - "QUOTE_OPERATOR_INTERNAL"
+          - "RESTRICTED_OPERATIONS_PII"
+        error_message: "Select a valid consumer channel."
+      - column: "Review Status"
+        validation_type: dropdown
+        values:
+          - "NOT_REVIEWED"
+          - "UNDER_REVIEW"
+          - "APPROVED_FOR_CUSTOMER_CHATBOT"
+          - "APPROVED_FOR_COPILOT_INTERNAL"
+          - "APPROVED_FOR_QUOTE_OPERATOR"
+          - "APPROVED_PUBLIC_SAFE"
+          - "APPROVED_FOR_ADS"
+          - "REJECTED"
+        error_message: "Select a valid review status for the chosen channel."
+      - column: "Release Status"
+        validation_type: dropdown
+        values:
+          - "DRAFT"
+          - "READY_FOR_REVIEW"
+          - "APPROVED_FOR_RELEASE"
+          - "RELEASED"
+          - "SUPERSEDED"
+        error_message: "Select a valid release status."
+    conditional_formatting_rules:
+      - column: "Release Status"
+        condition: EQUALS
+        value: "DRAFT"
+        background_color: "#FCE8B2"
+      - column: "Release Status"
+        condition: EQUALS
+        value: "APPROVED_FOR_RELEASE"
+        background_color: "#D9EAD3"
+      - column: "Release Status"
+        condition: EQUALS
+        value: "SUPERSEDED"
+        background_color: "#CFCFCF"
+    banner_content: "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
+    banner_severity: WARNING
+    formula_requirements:
+      - "Related Rule IDs must each exist in 03_RULE_REGISTER_MASTER"
+
+  - title: "11_AI_CUSTOMER_RESPONSE_MATRIX"
     purpose: >
       Defines approved AI and chatbot response rules: permitted claim boundaries,
       escalation triggers, prohibited topics, and pricing-disclosure rules.
@@ -700,7 +829,7 @@ tabs:
     formula_requirements: []
     notes: "This tab is the source for AI/Copilot channel exports. No PII fields permitted."
 
-  - title: "11_SOURCE_EVIDENCE"
+  - title: "12_SOURCE_EVIDENCE"
     purpose: >
       Registry of source evidence documents supporting each rule:
       website screenshots, competitor research, Google Ads policy citations,
@@ -714,6 +843,8 @@ tabs:
       - "Source URL / Location"
       - "Date Captured"
       - "Captured By"
+      - "Reliability Tier"
+      - "Status"
       - "Drive Folder Link"
       - "Expiry Date"
       - "Notes"
@@ -726,6 +857,8 @@ tabs:
       - "Source URL / Location"
       - "Date Captured"
       - "Captured By"
+      - "Reliability Tier"
+      - "Status"
       - "Drive Folder Link"
       - "Expiry Date"
       - "Notes"
@@ -750,7 +883,7 @@ tabs:
     formula_requirements:
       - "Evidence ID auto-generated as EVD-{SEQUENCE}"
 
-  - title: "12_RELEASE_CHANGELOG"
+  - title: "13_RELEASE_CHANGELOG"
     purpose: >
       Immutable log of every commercial rule release: version, approval date,
       rules activated, channels deployed to, and rollback references.

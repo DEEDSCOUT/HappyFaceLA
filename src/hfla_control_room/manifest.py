@@ -39,12 +39,17 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 logger = logging.getLogger(__name__)
 
 
 class ManifestEntry(BaseModel):
+    # Phase 1B.2: forbid unknown fields so misspelled inputs (e.g. ``drive_id=``
+    # instead of ``google_id=``) fail loudly at construction time instead of
+    # being silently dropped.
+    model_config = ConfigDict(extra="forbid")
+
     key: str
     asset_type: str
     name: str
@@ -55,6 +60,8 @@ class ManifestEntry(BaseModel):
 
 
 class Manifest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     phase: str = "PHASE_1_DRY_RUN"
     generated_at_utc: str = Field(
         default_factory=lambda: datetime.now(tz=UTC).isoformat(timespec="seconds")

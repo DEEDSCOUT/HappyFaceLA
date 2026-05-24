@@ -27,6 +27,8 @@ from typing import Any
 
 from hfla_control_room.constants import (
     GOVERNANCE_DESTINATION_TABS,
+    PLAN_SCHEMA_VERSION,
+    SPEC_FINGERPRINT_ALGORITHM,
     AssetType,
 )
 from hfla_control_room.models import FullConfigSpec
@@ -45,23 +47,30 @@ PLAN_OPERATION_TYPES: frozenset[str] = frozenset(
         "CONFIGURE_DOCUMENT",
         "POPULATE_RULE_REGISTER",
         "POPULATE_SOURCE_EVIDENCE",
-        "DERIVE_OPEN_BLOCKERS",
+        "POPULATE_OPEN_BLOCKERS",
+        "POPULATE_CHANNEL_PROJECTION_REGISTER",
         "DERIVE_ACTIVE_RULES_EXPORT",
         "DERIVE_PUBLIC_PRICING_PACKAGES",
-        "DERIVE_AI_RESPONSE_MATRIX",
+        "DERIVE_CUSTOMER_CHATBOT_RESPONSE_MATRIX",
+        "DERIVE_COPILOT_INTERNAL_GUIDANCE_EXPORT",
     }
 )
 
 _POPULATE_OPS: frozenset[str] = frozenset(
-    {"POPULATE_RULE_REGISTER", "POPULATE_SOURCE_EVIDENCE"}
+    {
+        "POPULATE_RULE_REGISTER",
+        "POPULATE_SOURCE_EVIDENCE",
+        "POPULATE_OPEN_BLOCKERS",
+        "POPULATE_CHANNEL_PROJECTION_REGISTER",
+    }
 )
 
 _DERIVE_OPS: frozenset[str] = frozenset(
     {
-        "DERIVE_OPEN_BLOCKERS",
         "DERIVE_ACTIVE_RULES_EXPORT",
         "DERIVE_PUBLIC_PRICING_PACKAGES",
-        "DERIVE_AI_RESPONSE_MATRIX",
+        "DERIVE_CUSTOMER_CHATBOT_RESPONSE_MATRIX",
+        "DERIVE_COPILOT_INTERNAL_GUIDANCE_EXPORT",
     }
 )
 
@@ -70,14 +79,29 @@ def _utcnow() -> str:
     return datetime.now(tz=UTC).isoformat(timespec="seconds")
 
 
-def _compute_spec_fingerprint(plan_body: dict[str, Any]) -> str:
-    """Return a deterministic SHA-256 hex digest of the canonical plan body.
+def _compute_spec_fingerprint(spec: FullConfigSpec, plan_body: dict[str, Any]) -> str:
+    """Return a deterministic SHA-256 hex digest covering BOTH the resolved
+    spec inputs and the plan body.
 
-    The fingerprint is computed over a *canonical* JSON serialisation:
-    keys are sorted, no whitespace variation, no timestamp content.
-    Identical configuration produces an identical fingerprint.
+    Phase 1B.2: the fingerprint MUST change whenever any controlled spec input
+    changes — even when the operation count is unchanged.  In particular,
+    mutating a single rule's ``draft_recommendation`` text, an evidence
+    record's ``verified_fact`` text, or any blocker / projection field MUST
+    flip the fingerprint, because those values feed Phase 1C downstream
+    consumers (CEO review, channel projection, public derived views).
+
+    The fingerprint is computed over the full Pydantic JSON dump of the
+    resolved :class:`FullConfigSpec` (excluding the loose ``raw`` mirror)
+    combined with the canonical serialised plan body.  Keys are sorted; no
+    whitespace variation; no timestamp content.
     """
-    canonical = json.dumps(plan_body, sort_keys=True, separators=(",", ":"))
+    spec_payload = spec.model_dump(mode="json")  # ``raw`` is excluded via Field(exclude=True)
+    composite = {
+        "plan_schema_version": PLAN_SCHEMA_VERSION,
+        "spec": spec_payload,
+        "plan_body": plan_body,
+    }
+    canonical = json.dumps(composite, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -218,7 +242,7 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
             "op": "POPULATE_SOURCE_EVIDENCE",
             "asset_type": AssetType.SHEET.value,
             "name": governance_sheet_name,
-            "target_tab": "11_SOURCE_EVIDENCE",
+            "target_tab": "12_SOURCE_EVIDENCE",
             "source": "config/seed_data/source_evidence.yaml (evidence_records)",
             "record_count": len(spec.evidence_records),
             "evidence_ids": sorted(e.evidence_id for e in spec.evidence_records),
@@ -227,24 +251,47 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
         }
     )
 
-    # --- Derived-view operations ---
-    #
-    # Derived tabs are populated by formula / query / filter logic from
-    # 03_RULE_REGISTER_MASTER.  They are NOT independently maintained copies
-    # of policy text; that is a governance violation (single-source-of-truth).
     operations.append(
         {
-            "op": "DERIVE_OPEN_BLOCKERS",
+            "op": "POPULATE_OPEN_BLOCKERS",
             "asset_type": AssetType.SHEET.value,
             "name": governance_sheet_name,
             "target_tab": "02_OPEN_BLOCKERS",
-            "source_tab": "03_RULE_REGISTER_MASTER",
-            "derivation": "FILTER where blockers is non-empty",
-            "is_derived_view": True,
+            "source": "config/seed_data/blocker_placeholders.yaml (blocker_records)",
+            "record_count": len(spec.blocker_records),
+            "blocker_ids": sorted(b.blocker_id for b in spec.blocker_records),
+            "is_derived_view": False,
             "live_action": False,
         }
     )
 
+    operations.append(
+        {
+            "op": "POPULATE_CHANNEL_PROJECTION_REGISTER",
+            "asset_type": AssetType.SHEET.value,
+            "name": governance_sheet_name,
+            "target_tab": "10_CHANNEL_PROJECTION_REGISTER",
+            "source": (
+                "config/seed_data/channel_projection_placeholders.yaml "
+                "(channel_projection_records)"
+            ),
+            "record_count": len(spec.channel_projection_records),
+            "projection_ids": sorted(
+                p.projection_id for p in spec.channel_projection_records
+            ),
+            "is_derived_view": False,
+            "live_action": False,
+        }
+    )
+
+    # --- Derived-view operations ---
+    #
+    # Derived tabs are populated by formula / query / filter logic from
+    # 03_RULE_REGISTER_MASTER and 10_CHANNEL_PROJECTION_REGISTER.  They are
+    # NOT independently maintained copies of policy text; that is a governance
+    # violation (single-source-of-truth).  ``02_OPEN_BLOCKERS`` is now a
+    # POPULATE target (its rows are first-class ``BlockerRecord`` data) and
+    # is no longer a DERIVE_* output.
     operations.append(
         {
             "op": "DERIVE_ACTIVE_RULES_EXPORT",
@@ -279,14 +326,30 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
 
     operations.append(
         {
-            "op": "DERIVE_AI_RESPONSE_MATRIX",
+            "op": "DERIVE_CUSTOMER_CHATBOT_RESPONSE_MATRIX",
             "asset_type": AssetType.SHEET.value,
             "name": governance_sheet_name,
-            "target_tab": "10_AI_CUSTOMER_RESPONSE_MATRIX",
-            "source_tab": "03_RULE_REGISTER_MASTER",
+            "target_tab": "11_AI_CUSTOMER_RESPONSE_MATRIX",
+            "source_tab": "10_CHANNEL_PROJECTION_REGISTER",
             "derivation": (
-                "FILTER where rule_category=AI_CUSTOMER_RESPONSE AND"
-                " ai_response_review_status=APPROVED_FOR_AI"
+                "FILTER where channel=CUSTOMER_CHATBOT_PUBLIC AND"
+                " release_status=APPROVED_FOR_RELEASE"
+            ),
+            "is_derived_view": True,
+            "live_action": False,
+        }
+    )
+
+    operations.append(
+        {
+            "op": "DERIVE_COPILOT_INTERNAL_GUIDANCE_EXPORT",
+            "asset_type": AssetType.SHEET.value,
+            "name": governance_sheet_name,
+            "target_tab": "04_ACTIVE_RULES_EXPORT",
+            "source_tab": "10_CHANNEL_PROJECTION_REGISTER",
+            "derivation": (
+                "FILTER where channel=COPILOT_INTERNAL_DECISION_SUPPORT AND"
+                " release_status=APPROVED_FOR_RELEASE"
             ),
             "is_derived_view": True,
             "live_action": False,
@@ -296,6 +359,8 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
     plan_body: dict[str, Any] = {
         "plan_metadata": {
             "phase": "PHASE_1_DRY_RUN",
+            "plan_schema_version": PLAN_SCHEMA_VERSION,
+            "spec_fingerprint_algorithm": SPEC_FINGERPRINT_ALGORITHM,
             "live_google_calls": False,
             "operation_count": len(operations),
             "folder_count": sum(1 for o in operations if o["op"] == "CREATE_FOLDER"),
@@ -320,6 +385,8 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
             "data_population": {
                 "rule_record_count": len(spec.seed_rules),
                 "evidence_record_count": len(spec.evidence_records),
+                "blocker_record_count": len(spec.blocker_records),
+                "channel_projection_record_count": len(spec.channel_projection_records),
             },
             "authorized_workspace": r"C:\Dev\happyfacesla-commercial-control-room",
         },
@@ -327,7 +394,9 @@ def build_plan(spec: FullConfigSpec) -> dict[str, Any]:
     }
 
     # Compute fingerprint AFTER plan_body is fully assembled (excluding itself).
-    plan_body["plan_metadata"]["spec_fingerprint"] = _compute_spec_fingerprint(plan_body)
+    plan_body["plan_metadata"]["spec_fingerprint"] = _compute_spec_fingerprint(
+        spec, plan_body
+    )
 
     meta = plan_body["plan_metadata"]
     logger.info(

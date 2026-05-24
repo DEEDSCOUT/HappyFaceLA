@@ -14,6 +14,8 @@ from hfla_control_room.constants import (
     AdsReviewStatus,
     AIReviewStatus,
     ChannelVisibility,
+    ChatbotResponseReviewStatus,
+    CopilotInternalReviewStatus,
     ExportChannel,
     PublicSafeReviewStatus,
     RuleStatus,
@@ -50,6 +52,8 @@ def _make_eligible_rule(
         public_safe_review_status=PublicSafeReviewStatus.APPROVED_PUBLIC_SAFE,
         ads_claim_review_status=AdsReviewStatus.APPROVED_FOR_ADS,
         ai_response_review_status=AIReviewStatus.APPROVED_FOR_AI,
+        customer_chatbot_review_status=ChatbotResponseReviewStatus.APPROVED_FOR_CUSTOMER_CHATBOT,
+        copilot_internal_review_status=CopilotInternalReviewStatus.APPROVED_FOR_COPILOT_INTERNAL,
         contains_internal_only_logic=False,
         contains_pii=False,
         blockers=[],
@@ -90,18 +94,47 @@ class TestChannelSafetyBranches:
         errors = validate_channel_export_safety(rule, ExportChannel.GOOGLE_ADS)
         assert any("ads_claim_review_status" in e for e in errors)
 
-    # --- 5. AI / chatbot without APPROVED_FOR_AI rejected --------------------------
+    # --- 5. AI / chatbot without channel-specific approval rejected ----------------
+    #
+    # Phase 1B.2: the customer-chatbot and internal-Copilot review gates are
+    # SEPARATE.  Approval on one does not grant approval on the other.
     @pytest.mark.parametrize(
         "channel",
         [ExportChannel.AI_COPILOT, ExportChannel.CHATBOT],
     )
     def test_branch_05_ai_channels_without_ai_review_rejected(self, channel):
         rule = _make_eligible_rule(channel=channel.value)
-        rule.ai_response_review_status = AIReviewStatus.NOT_REVIEWED
+        if channel == ExportChannel.CHATBOT:
+            rule.customer_chatbot_review_status = ChatbotResponseReviewStatus.NOT_REVIEWED
+            expected_field = "customer_chatbot_review_status"
+        else:
+            rule.copilot_internal_review_status = CopilotInternalReviewStatus.NOT_REVIEWED
+            expected_field = "copilot_internal_review_status"
         errors = validate_channel_export_safety(rule, channel)
-        assert any("ai_response_review_status" in e for e in errors), (
+        assert any(expected_field in e for e in errors), (
             f"channel={channel.value} errors={errors}"
         )
+
+    # --- 5b. Chatbot approval does NOT grant Copilot eligibility -------------------
+    def test_branch_05b_chatbot_approval_does_not_grant_copilot(self):
+        rule = _make_eligible_rule(channel="ai_copilot")
+        # Chatbot APPROVED, but Copilot NOT_REVIEWED
+        rule.customer_chatbot_review_status = (
+            ChatbotResponseReviewStatus.APPROVED_FOR_CUSTOMER_CHATBOT
+        )
+        rule.copilot_internal_review_status = CopilotInternalReviewStatus.NOT_REVIEWED
+        errors = validate_channel_export_safety(rule, ExportChannel.AI_COPILOT)
+        assert any("copilot_internal_review_status" in e for e in errors), errors
+
+    # --- 5c. Copilot approval does NOT grant chatbot eligibility -------------------
+    def test_branch_05c_copilot_approval_does_not_grant_chatbot(self):
+        rule = _make_eligible_rule(channel="chatbot")
+        rule.copilot_internal_review_status = (
+            CopilotInternalReviewStatus.APPROVED_FOR_COPILOT_INTERNAL
+        )
+        rule.customer_chatbot_review_status = ChatbotResponseReviewStatus.NOT_REVIEWED
+        errors = validate_channel_export_safety(rule, ExportChannel.CHATBOT)
+        assert any("customer_chatbot_review_status" in e for e in errors), errors
 
     # --- 6. contains_pii=True rejected from public ---------------------------------
     @pytest.mark.parametrize(

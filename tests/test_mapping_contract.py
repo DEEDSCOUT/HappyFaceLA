@@ -1,13 +1,15 @@
 """
 Tests for the data-to-sheet mapping contract (Phase 1B.1 closure).
 
-Mapping contract:
-  - Rule records          -> 03_RULE_REGISTER_MASTER       (single source of truth)
-  - Source evidence       -> 11_SOURCE_EVIDENCE            (single source of truth)
-  - Blockers              -> 02_OPEN_BLOCKERS              (DERIVED view)
-  - Active approved rules -> 04_ACTIVE_RULES_EXPORT        (DERIVED view)
-  - Public pricing        -> 05_PUBLIC_PRICING_PACKAGES    (DERIVED view)
-  - AI response matrix    -> 10_AI_CUSTOMER_RESPONSE_MATRIX (DERIVED view)
+Mapping contract (Phase 1B.2):
+  - Rule records          -> 03_RULE_REGISTER_MASTER           (single source of truth)
+  - Source evidence       -> 12_SOURCE_EVIDENCE                (single source of truth)
+  - Blocker records       -> 02_OPEN_BLOCKERS                  (POPULATE; first-class)
+  - Channel projections   -> 10_CHANNEL_PROJECTION_REGISTER    (POPULATE; first-class)
+  - Active approved rules -> 04_ACTIVE_RULES_EXPORT            (DERIVED view)
+  - Public pricing        -> 05_PUBLIC_PRICING_PACKAGES        (DERIVED view)
+  - Customer chatbot      -> 11_AI_CUSTOMER_RESPONSE_MATRIX    (DERIVED view)
+  - Copilot internal      -> 04_ACTIVE_RULES_EXPORT            (DERIVED view)
 
 Plan operations must encode this mapping in a controlled vocabulary, and every
 ``target_tab`` / ``source_tab`` reference must resolve to a known governance
@@ -56,7 +58,7 @@ class TestMappingContract:
     def test_source_evidence_population_targets_correct_tab(self, plan):
         ops = _ops(plan, "POPULATE_SOURCE_EVIDENCE")
         assert len(ops) == 1
-        assert ops[0]["target_tab"] == "11_SOURCE_EVIDENCE"
+        assert ops[0]["target_tab"] == "12_SOURCE_EVIDENCE"
         assert ops[0]["is_derived_view"] is False
 
     def test_source_evidence_population_record_count_matches_evidence(self, plan):
@@ -66,11 +68,20 @@ class TestMappingContract:
         assert op["evidence_ids"] == sorted(e.evidence_id for e in spec.evidence_records)
 
     def test_open_blockers_is_a_derived_view_of_rule_register(self, plan):
-        ops = _ops(plan, "DERIVE_OPEN_BLOCKERS")
+        # Phase 1B.2: 02_OPEN_BLOCKERS is now a POPULATE target carrying
+        # first-class BlockerRecord rows, not a derived FILTER view.
+        derive_ops = _ops(plan, "DERIVE_OPEN_BLOCKERS")
+        populate_ops = _ops(plan, "POPULATE_OPEN_BLOCKERS")
+        assert derive_ops == [], "DERIVE_OPEN_BLOCKERS removed in Phase 1B.2."
+        assert len(populate_ops) == 1
+        assert populate_ops[0]["target_tab"] == "02_OPEN_BLOCKERS"
+        assert populate_ops[0]["is_derived_view"] is False
+
+    def test_channel_projection_register_is_populated(self, plan):
+        ops = _ops(plan, "POPULATE_CHANNEL_PROJECTION_REGISTER")
         assert len(ops) == 1
-        assert ops[0]["target_tab"] == "02_OPEN_BLOCKERS"
-        assert ops[0]["source_tab"] == "03_RULE_REGISTER_MASTER"
-        assert ops[0]["is_derived_view"] is True
+        assert ops[0]["target_tab"] == "10_CHANNEL_PROJECTION_REGISTER"
+        assert ops[0]["is_derived_view"] is False
 
     def test_active_rules_export_is_a_derived_view(self, plan):
         ops = _ops(plan, "DERIVE_ACTIVE_RULES_EXPORT")
@@ -87,10 +98,17 @@ class TestMappingContract:
         assert ops[0]["is_derived_view"] is True
 
     def test_ai_response_matrix_is_a_derived_view(self, plan):
-        ops = _ops(plan, "DERIVE_AI_RESPONSE_MATRIX")
+        # Renamed and renumbered in Phase 1B.2.
+        ops = _ops(plan, "DERIVE_CUSTOMER_CHATBOT_RESPONSE_MATRIX")
         assert len(ops) == 1
-        assert ops[0]["target_tab"] == "10_AI_CUSTOMER_RESPONSE_MATRIX"
-        assert ops[0]["source_tab"] == "03_RULE_REGISTER_MASTER"
+        assert ops[0]["target_tab"] == "11_AI_CUSTOMER_RESPONSE_MATRIX"
+        assert ops[0]["source_tab"] == "10_CHANNEL_PROJECTION_REGISTER"
+        assert ops[0]["is_derived_view"] is True
+
+    def test_copilot_internal_guidance_is_a_derived_view(self, plan):
+        ops = _ops(plan, "DERIVE_COPILOT_INTERNAL_GUIDANCE_EXPORT")
+        assert len(ops) == 1
+        assert ops[0]["source_tab"] == "10_CHANNEL_PROJECTION_REGISTER"
         assert ops[0]["is_derived_view"] is True
 
     def test_all_target_and_source_tabs_are_in_controlled_vocabulary(self, plan):
@@ -115,7 +133,11 @@ class TestMappingContract:
 
     def test_no_derive_op_duplicates_a_populate_op_target(self, plan):
         """DERIVE_* ops must not target the same tab as a POPULATE_* op
-        (single source of truth — derived views cannot overwrite raw inputs)."""
+        (single source of truth — derived views cannot overwrite raw inputs).
+
+        Exception (Phase 1B.2): 04_ACTIVE_RULES_EXPORT is intentionally a
+        DERIVE-only output tab.  No POPULATE op writes there.
+        """
         populate_targets = {
             o["target_tab"]
             for o in plan["operations"]
@@ -143,7 +165,9 @@ class TestMappingContract:
             "03_RULE_REGISTER_MASTER",
             "04_ACTIVE_RULES_EXPORT",
             "05_PUBLIC_PRICING_PACKAGES",
-            "10_AI_CUSTOMER_RESPONSE_MATRIX",
-            "11_SOURCE_EVIDENCE",
+            "10_CHANNEL_PROJECTION_REGISTER",
+            "11_AI_CUSTOMER_RESPONSE_MATRIX",
+            "12_SOURCE_EVIDENCE",
+            "13_RELEASE_CHANGELOG",
         ):
             assert required in GOVERNANCE_DESTINATION_TABS
