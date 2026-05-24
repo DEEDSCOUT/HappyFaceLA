@@ -1,0 +1,25 @@
+# Synthetic test-only candidate dataset that ILLEGITIMATELY carries
+# externally-consumable approved content.  The intake gate must reject it.
+
+rules:
+  - rule_id: "SYNTH-RULE-001"
+    rule_category: "SYNTHETIC_TEST_CATEGORY"
+    rule_title: "Synthetic test-only rule"
+    status: "DRAFT"
+
+evidence_records: []
+blocker_records: []
+
+channel_projection_records:
+  - projection_id: "SYNTH-PROJ-001"
+    publication_key: "synth.test.illegitimate_approved"
+    related_rule_ids: ["SYNTH-RULE-001"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "SYNTHETIC_TEST"
+    draft_channel_text: "synthetic draft"
+    # ILLEGITIMATE: candidate intake must not carry approved channel text.
+    approved_channel_text: "ILLEGITIMATE \u2014 must be rejected by intake."
+    release_status: "DRAFT"
+
+release_records: []
+channel_release_activations: []

@@ -200,3 +200,127 @@ class TestBlockerScopeIndependence:
         # Publication scope (per-channel) sees nothing.
         for channel in EXPORTABLE_CHANNELS:
             assert channel_publication_blockers_for_channel(channel, [blocker]) == []
+
+
+class TestCrossChannelPublicationIsolation:
+    """Phase 1B.5A \u2014 the four-condition five-channel publication
+    blocking proof.
+
+    For every exportable consumer channel the test suite proves all four
+    of:
+
+      (a) a complete otherwise-valid synthetic export chain succeeds;
+      (b) an OPEN blocker listing that channel with
+          ``blocks_live_provisioning=False`` causes export rejection;
+      (c) a blocker listing another channel does NOT suppress this channel;
+      (d) ``RESTRICTED_OPERATIONS_PII`` may never be emitted via the
+          per-channel exporter (proved once at the bottom of the class).
+    """
+
+    @staticmethod
+    def _all_channels_approved_rule() -> RuleRow:
+        """RuleRow with every consumer-channel review status approved."""
+        from hfla_control_room.constants import (
+            AdsReviewStatus,
+            ChatbotResponseReviewStatus,
+            CopilotInternalReviewStatus,
+            QuoteOperatorReviewStatus,
+        )
+
+        return RuleRow(
+            rule_id="RULE-001",
+            rule_category="PUBLIC_PRICING",
+            rule_title="t",
+            status=RuleStatus.APPROVED_AS_RECOMMENDED,
+            ceo_decision="Approved as Recommended",
+            final_effective_rule="X",
+            release_version="v1",
+            effective_date="2026-06-15",
+            policy_version="POL-1",
+            channel_visibility=ChannelVisibility.CHANNEL_SAFE,
+            public_safe_review_status=PublicSafeReviewStatus.APPROVED_PUBLIC_SAFE,
+            customer_chatbot_review_status=(
+                ChatbotResponseReviewStatus.APPROVED_FOR_CUSTOMER_CHATBOT
+            ),
+            copilot_internal_review_status=(
+                CopilotInternalReviewStatus.APPROVED_FOR_COPILOT_INTERNAL
+            ),
+            quote_operator_review_status=(
+                QuoteOperatorReviewStatus.APPROVED_FOR_QUOTE_OPERATOR
+            ),
+            ads_claim_review_status=AdsReviewStatus.APPROVED_FOR_ADS,
+            contains_pii=False,
+            contains_internal_only_logic=False,
+        )
+
+    @pytest.mark.parametrize("channel", EXPORTABLE_CHANNELS)
+    def test_a_complete_chain_authorises_export(self, channel):
+        projection = _projection(channel)
+        release = _release(channel, projection.projection_id)
+        activation = _activation(channel)
+        exported = export_for_channel(
+            channel,
+            projections=[projection],
+            rules=[self._all_channels_approved_rule()],
+            releases=[release],
+            blockers=[],
+            activations=[activation],
+        )
+        assert len(exported) == 1
+        assert exported[0].channel == channel
+
+    @pytest.mark.parametrize("channel", EXPORTABLE_CHANNELS)
+    def test_b_open_blocker_on_this_channel_blocks_export(self, channel):
+        projection = _projection(channel)
+        release = _release(channel, projection.projection_id)
+        activation = _activation(channel)
+        blocker = _publication_only_blocker(channel)
+        exported = export_for_channel(
+            channel,
+            projections=[projection],
+            rules=[self._all_channels_approved_rule()],
+            releases=[release],
+            blockers=[blocker],
+            activations=[activation],
+        )
+        assert exported == []
+
+    @pytest.mark.parametrize("channel", EXPORTABLE_CHANNELS)
+    def test_c_blocker_on_other_channel_does_not_suppress_this_channel(
+        self, channel
+    ):
+        # Pick any other exportable channel as the foreign blocker target.
+        other_channel = next(c for c in EXPORTABLE_CHANNELS if c != channel)
+        projection = _projection(channel)
+        release = _release(channel, projection.projection_id)
+        activation = _activation(channel)
+        foreign_blocker = _publication_only_blocker(other_channel)
+        # The per-channel publication blocker scope reports nothing for
+        # *channel* given a blocker that lists a different channel.
+        assert (
+            channel_publication_blockers_for_channel(channel, [foreign_blocker])
+            == []
+        )
+        exported = export_for_channel(
+            channel,
+            projections=[projection],
+            rules=[self._all_channels_approved_rule()],
+            releases=[release],
+            blockers=[foreign_blocker],
+            activations=[activation],
+        )
+        assert len(exported) == 1
+        assert exported[0].channel == channel
+
+    def test_d_restricted_operations_pii_channel_cannot_be_emitted(self):
+        from hfla_control_room.constants import ConsumerChannel as _CC
+
+        with pytest.raises(ValueError):
+            export_for_channel(
+                _CC.RESTRICTED_OPERATIONS_PII,
+                projections=[],
+                rules=[],
+                releases=[],
+                blockers=[],
+                activations=[],
+            )

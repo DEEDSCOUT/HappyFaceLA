@@ -1038,6 +1038,424 @@ def validate_phase1c_preload_readiness(spec: FullConfigSpec) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# Phase 1C candidate-input intake validation (Phase 1B.5A)
+# ---------------------------------------------------------------------------
+#
+# `validate_phase1c_preload_readiness` is a scaffold/baseline diagnostic that
+# only inspects the currently loaded `FullConfigSpec`.  It cannot validate a
+# proposed external candidate Phase 1C dataset before that dataset is loaded
+# into tracked seed_data.
+#
+# Phase 1B.5A wires the required intake surface:
+#
+#   load_phase1c_candidate_records()       - read candidate YAML(s) from disk
+#   validate_phase1c_candidate_input()     - full non-mutating intake gate
+#
+# Effective-state model (Phase 1B.5A, option 1):
+#   The candidate dataset is treated as a FULL REPLACEMENT business-data
+#   payload.  Baseline `config/` provides only schema/workbook/mapping/
+#   document/validation-list structure; the candidate provides 100% of the
+#   effective business records (rules / evidence / blockers / projections /
+#   releases / activations).  Scaffold `BLK-DRAFT-*` placeholder blockers
+#   in `config/seed_data` are NOT carried into the candidate effective
+#   state, so they do not block candidate intake on their own.
+
+_CANDIDATE_RECORD_KEYS: tuple[str, ...] = (
+    "rules",
+    "evidence_records",
+    "blocker_records",
+    "channel_projection_records",
+    "release_records",
+    "channel_release_activations",
+)
+
+# Channel-visibility categories that may NEVER appear in the
+# governance/public Phase 1C draft intake.  Restricted-PII content is routed
+# through a separate restricted-operations surface and is not part of the
+# Phase 1C public/governance candidate payload at all.
+_RESTRICTED_VISIBILITY_FOR_INTAKE: frozenset = frozenset(
+    {ChannelVisibility.RESTRICTED_PII}
+)
+
+
+def load_phase1c_candidate_records(
+    input_path: Path,
+) -> tuple[dict[str, list[dict]], list[str]]:
+    """Read candidate Phase 1C records from a file or directory.
+
+    Returns ``(records_by_key, parse_errors)``.  Records are returned as raw
+    dicts (NOT Pydantic-validated) so the intake validator can report Pydantic
+    errors as candidate-level intake violations rather than crash.
+
+    Accepts:
+      - A single YAML file containing a mapping with one or more of the
+        keys in :data:`_CANDIDATE_RECORD_KEYS` at the top level.
+      - A directory containing one or more ``*.yaml`` / ``*.yml`` files,
+        each with the same shape.  All files are merged.
+    """
+    import yaml
+
+    records: dict[str, list[dict]] = {k: [] for k in _CANDIDATE_RECORD_KEYS}
+    errors: list[str] = []
+
+    if not input_path.exists():
+        return records, [f"Candidate input path does not exist: {input_path}"]
+
+    files: list[Path]
+    if input_path.is_file():
+        files = [input_path]
+    else:
+        files = sorted(
+            list(input_path.glob("*.yaml")) + list(input_path.glob("*.yml"))
+        )
+        if not files:
+            return records, [
+                f"Candidate input directory '{input_path}' contains no "
+                "*.yaml or *.yml files."
+            ]
+
+    for path in files:
+        try:
+            raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+        except yaml.YAMLError as exc:
+            errors.append(f"YAML parse error in '{path}': {exc}")
+            continue
+        if raw is None:
+            continue
+        if not isinstance(raw, dict):
+            errors.append(
+                f"Candidate file '{path}' top-level is "
+                f"{type(raw).__name__}, expected a mapping."
+            )
+            continue
+        unknown = set(raw.keys()) - set(_CANDIDATE_RECORD_KEYS)
+        if unknown:
+            errors.append(
+                f"Candidate file '{path}' contains unknown top-level "
+                f"keys: {sorted(unknown)} (expected subset of "
+                f"{list(_CANDIDATE_RECORD_KEYS)})."
+            )
+        for key in _CANDIDATE_RECORD_KEYS:
+            section = raw.get(key)
+            if section is None:
+                continue
+            if not isinstance(section, list):
+                errors.append(
+                    f"Candidate file '{path}' key '{key}' is "
+                    f"{type(section).__name__}, expected a list."
+                )
+                continue
+            for idx, entry in enumerate(section):
+                if not isinstance(entry, dict):
+                    errors.append(
+                        f"Candidate file '{path}' key '{key}' entry #{idx} "
+                        f"is {type(entry).__name__}, expected a mapping."
+                    )
+                    continue
+                records[key].append(entry)
+
+    return records, errors
+
+
+def validate_phase1c_candidate_input(
+    spec: FullConfigSpec,
+    candidate: dict[str, list[dict]],
+) -> tuple[list[str], list[str], dict[str, int]]:
+    """Validate a candidate Phase 1C DRAFT dataset for safe intake.
+
+    Returns ``(errors, warnings, counts)``.
+
+    * ``errors`` is non-empty if intake MUST be refused.  Refusal causes
+      include: any APPROVED/RELEASED/ACTIVE business state, any non-empty
+      ``approved_channel_text``, any restricted-PII visibility classification,
+      any OPEN structural blocker
+      (``blocks_phase_1c_content_loading=True``), broken foreign keys,
+      duplicate identifiers, or Pydantic schema errors (unknown / missing /
+      misspelled fields).
+    * ``warnings`` reports unresolved non-structural OPEN business blockers
+      (``blocks_phase_1c_content_loading=False``).  They do NOT block intake.
+    * ``counts`` reports per-record-type intake counts for operator review.
+
+    The validator is in-memory only.  It does not write to ``config/`` or
+    any tracked artifact, does not call any Google API, and does not trigger
+    OAuth.  Baseline ``spec`` is used solely for structural workbook /
+    mapping checks (its scaffold business records are NOT carried into the
+    candidate effective state).
+    """
+    # Local imports to keep the module's import-time surface minimal and to
+    # avoid coupling the validator to any Google or networking module.
+    from pydantic import ValidationError
+
+    from hfla_control_room.models import (
+        BlockerRecord,
+        BlockerRegister,
+        ChannelProjectionRecord,
+        ChannelProjectionRegister,
+        ChannelReleaseActivationRecord,
+        ChannelReleaseActivationRegister,
+        EvidenceRecord,
+        EvidenceRegister,
+        ReleaseRecord,
+        ReleaseRegister,
+        RuleRegister,
+        RuleRow,
+    )
+
+    errors: list[str] = []
+    warnings: list[str] = []
+    counts: dict[str, int] = {k: 0 for k in _CANDIDATE_RECORD_KEYS}
+
+    # 1. Per-record strict Pydantic validation (rejects unknown / misspelled
+    #    fields, missing required fields, enum violations, foreign-key
+    #    shape).  Failures here are reported as intake errors, NOT as crashes.
+    rules: list[RuleRow] = []
+    evidence: list[EvidenceRecord] = []
+    blockers: list[BlockerRecord] = []
+    projections: list[ChannelProjectionRecord] = []
+    releases: list[ReleaseRecord] = []
+    activations: list[ChannelReleaseActivationRecord] = []
+
+    _record_specs: tuple[tuple[str, type, list], ...] = (
+        ("rules", RuleRow, rules),
+        ("evidence_records", EvidenceRecord, evidence),
+        ("blocker_records", BlockerRecord, blockers),
+        ("channel_projection_records", ChannelProjectionRecord, projections),
+        ("release_records", ReleaseRecord, releases),
+        ("channel_release_activations", ChannelReleaseActivationRecord, activations),
+    )
+
+    for key, model_cls, sink in _record_specs:
+        for idx, raw in enumerate(candidate.get(key, [])):
+            try:
+                sink.append(model_cls.model_validate(raw))
+            except ValidationError as exc:
+                # Surface Pydantic errors as intake-level rejection reasons.
+                rec_id = (
+                    raw.get("rule_id")
+                    or raw.get("evidence_id")
+                    or raw.get("blocker_id")
+                    or raw.get("projection_id")
+                    or raw.get("release_id")
+                    or raw.get("activation_id")
+                    or f"<{key}[{idx}]>"
+                )
+                for err in exc.errors():
+                    loc = ".".join(str(p) for p in err.get("loc", ()))
+                    errors.append(
+                        f"Candidate {key} '{rec_id}' field '{loc}': "
+                        f"{err.get('msg', 'invalid')}"
+                    )
+
+    counts["rules"] = len(rules)
+    counts["evidence_records"] = len(evidence)
+    counts["blocker_records"] = len(blockers)
+    counts["channel_projection_records"] = len(projections)
+    counts["release_records"] = len(releases)
+    counts["channel_release_activations"] = len(activations)
+
+    # 2. Register-level uniqueness checks (duplicate IDs, duplicate
+    #    publication slots, at-most-one-ACTIVE).
+    _register_checks: tuple[tuple[str, type, dict], ...] = (
+        ("rules", RuleRegister, {"rules": rules}),
+        ("evidence_records", EvidenceRegister, {"records": evidence}),
+        ("blocker_records", BlockerRegister, {"records": blockers}),
+        ("channel_projection_records", ChannelProjectionRegister, {"records": projections}),
+        ("release_records", ReleaseRegister, {"records": releases}),
+        (
+            "channel_release_activations",
+            ChannelReleaseActivationRegister,
+            {"records": activations},
+        ),
+    )
+    for key, register_cls, kwargs in _register_checks:
+        try:
+            register_cls(**kwargs)
+        except ValidationError as exc:
+            for err in exc.errors():
+                errors.append(
+                    f"Candidate {key} register integrity: "
+                    f"{err.get('msg', 'invalid')}"
+                )
+
+    # 3. DRAFT-only business state checks (the candidate intake is a DRAFT
+    #    payload only - no approved / released / active state is permitted).
+    for rule in rules:
+        if _is_exportable_approved(rule):
+            errors.append(
+                f"Candidate rule '{rule.rule_id}' has status="
+                f"{rule.status.value} - intake permits only DRAFT rules."
+            )
+        if rule.channel_visibility in _RESTRICTED_VISIBILITY_FOR_INTAKE:
+            errors.append(
+                f"Candidate rule '{rule.rule_id}' has channel_visibility="
+                f"{rule.channel_visibility.value} - restricted-PII content "
+                "must not be routed through Phase 1C public/governance "
+                "candidate intake."
+            )
+
+    for proj in projections:
+        if proj.approved_channel_text.strip():
+            errors.append(
+                f"Candidate projection '{proj.projection_id}' carries non-"
+                "empty approved_channel_text - intake permits only DRAFT "
+                "projection content (approved_channel_text must be empty)."
+            )
+        if proj.release_status != ProjectionReleaseStatus.DRAFT:
+            errors.append(
+                f"Candidate projection '{proj.projection_id}' has "
+                f"release_status={proj.release_status.value} - intake "
+                "permits only release_status=DRAFT."
+            )
+
+    for release in releases:
+        if release.status != ReleaseStatus.DRAFT:
+            errors.append(
+                f"Candidate release '{release.release_id}' has status="
+                f"{release.status.value} - intake permits only DRAFT "
+                "ReleaseRecord shells."
+            )
+        if release.authorized_channels:
+            errors.append(
+                f"Candidate release '{release.release_id}' lists "
+                "authorized_channels - DRAFT release shells must not "
+                "authorize any channel."
+            )
+        if release.ceo_decision != CEOReleaseDecision.PENDING_CEO_REVIEW:
+            errors.append(
+                f"Candidate release '{release.release_id}' has ceo_decision="
+                f"{release.ceo_decision.value} - DRAFT release shells must "
+                "carry ceo_decision=PENDING_CEO_REVIEW."
+            )
+        if release.qa_evidence.strip():
+            errors.append(
+                f"Candidate release '{release.release_id}' carries "
+                "qa_evidence - DRAFT release shells must have no QA "
+                "evidence."
+            )
+
+    for act in activations:
+        if act.activation_status != ActivationStatus.DRAFT:
+            errors.append(
+                f"Candidate activation '{act.activation_id}' has "
+                f"activation_status={act.activation_status.value} - intake "
+                "permits only DRAFT activation shells."
+            )
+        if act.qa_evidence.strip():
+            errors.append(
+                f"Candidate activation '{act.activation_id}' carries "
+                "qa_evidence - DRAFT activation shells must have no QA "
+                "evidence."
+            )
+
+    # 4. Foreign-key integrity within the candidate effective state.
+    rule_ids = {r.rule_id for r in rules}
+    evidence_ids = {e.evidence_id for e in evidence}
+    projection_ids = {p.projection_id for p in projections}
+    release_ids = {r.release_id for r in releases}
+
+    for proj in projections:
+        for rid in proj.related_rule_ids:
+            if rid and rid not in rule_ids:
+                errors.append(
+                    f"Candidate projection '{proj.projection_id}' "
+                    f"related_rule_ids references unknown rule '{rid}'."
+                )
+        for eid in proj.source_evidence_ids:
+            if eid and eid not in evidence_ids:
+                errors.append(
+                    f"Candidate projection '{proj.projection_id}' "
+                    f"source_evidence_ids references unknown evidence "
+                    f"'{eid}'."
+                )
+
+    for blk in blockers:
+        for rid in blk.related_rule_ids:
+            if rid and rid not in rule_ids:
+                errors.append(
+                    f"Candidate blocker '{blk.blocker_id}' "
+                    f"related_rule_ids references unknown rule '{rid}'."
+                )
+        for eid in blk.related_evidence_ids:
+            if eid and eid not in evidence_ids:
+                errors.append(
+                    f"Candidate blocker '{blk.blocker_id}' "
+                    f"related_evidence_ids references unknown evidence "
+                    f"'{eid}'."
+                )
+
+    for ev in evidence:
+        for rid in ev.related_rule_ids:
+            if rid and rid not in rule_ids:
+                errors.append(
+                    f"Candidate evidence '{ev.evidence_id}' "
+                    f"related_rule_ids references unknown rule '{rid}'."
+                )
+
+    for release in releases:
+        for rid in release.related_rule_ids:
+            if rid and rid not in rule_ids:
+                errors.append(
+                    f"Candidate release '{release.release_id}' "
+                    f"related_rule_ids references unknown rule '{rid}'."
+                )
+        for pid in release.related_projection_ids:
+            if pid and pid not in projection_ids:
+                errors.append(
+                    f"Candidate release '{release.release_id}' "
+                    f"related_projection_ids references unknown projection "
+                    f"'{pid}'."
+                )
+
+    for act in activations:
+        if act.release_id and act.release_id not in release_ids:
+            errors.append(
+                f"Candidate activation '{act.activation_id}' release_id "
+                f"references unknown release '{act.release_id}'."
+            )
+
+    # 5. Structural Phase-1C blocker gate against the CANDIDATE effective
+    #    state.  Scaffold placeholder blockers from `spec.blocker_records`
+    #    are deliberately NOT carried in; only the candidate's own blockers
+    #    can block its own intake.
+    for b in validate_no_phase_1c_loading_blockers(blockers):
+        errors.append(
+            f"Candidate blocker '{b.blocker_id}' is OPEN with "
+            f"blocks_phase_1c_content_loading=True (status="
+            f"{b.status.value}, priority={b.priority.value}): "
+            f"{b.decision_required}"
+        )
+
+    # 6. Ordinary OPEN business blockers are reported as warnings only.
+    for b in blockers:
+        if (
+            b.status in _OPEN_BLOCKER_STATUSES
+            and not b.blocks_phase_1c_content_loading
+        ):
+            warnings.append(
+                f"Candidate blocker '{b.blocker_id}' is OPEN (status="
+                f"{b.status.value}, priority={b.priority.value}) but does "
+                "not block Phase 1C intake "
+                "(blocks_phase_1c_content_loading=False): "
+                f"{b.decision_required}"
+            )
+
+    # 7. Baseline structural sanity - the candidate intake only validates
+    #    when the baseline workbook structure is intact.  This is an
+    #    in-memory read of `spec`; it does not mutate anything.
+    if spec is not None:
+        # Defence in depth: ensure the baseline workbook architecture has
+        # not been altered.  We do NOT re-run the full spec validator here
+        # (that would re-flag scaffold placeholder blockers).
+        if not spec.governance_workbook.tabs:
+            errors.append(
+                "Baseline governance workbook has no tabs - structural "
+                "configuration appears corrupt."
+            )
+
+    return errors, warnings, counts
+
+
+# ---------------------------------------------------------------------------
 # Secrets / tracked-file safety check
 # ---------------------------------------------------------------------------
 

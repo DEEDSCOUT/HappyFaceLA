@@ -1,0 +1,27 @@
+# Synthetic test-only candidate dataset carrying an OPEN structural blocker.
+# Used solely by tests/test_phase1c_candidate_input.py.
+
+rules:
+  - rule_id: "SYNTH-RULE-001"
+    rule_category: "SYNTHETIC_TEST_CATEGORY"
+    rule_title: "Synthetic test-only DRAFT rule"
+    status: "DRAFT"
+
+evidence_records: []
+
+blocker_records:
+  - blocker_id: "SYNTH-BLK-STRUCTURAL-001"
+    category: "DATA_MISSING"
+    decision_required: "Synthetic structural source-data dependency (test-only)."
+    why_it_matters: "Test fixture \u2014 simulates a Phase-1C-blocking dependency."
+    risk_if_missing: "Test fixture only."
+    priority: "HIGH"
+    status: "OPEN_EVIDENCE_REQUIRED"
+    related_rule_ids: ["SYNTH-RULE-001"]
+    blocked_channels: []
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: true
+
+channel_projection_records: []
+release_records: []
+channel_release_activations: []

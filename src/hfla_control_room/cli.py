@@ -3,12 +3,17 @@ Happy Faces LA — Commercial Control Room
 CLI entry point (Typer).
 
 Commands:
-  validate            Validate all YAML configuration specs.
-  plan                Generate a dry-run build plan.
-  validate-release    Validate a future approved export payload.
-  check-phase1c-gate  Check the Phase 1C content-loading pre-load gate.
-  provision           Provision scaffold (dry-run only in Phase 1;
-                      --apply is BLOCKED).
+  validate               Validate all YAML configuration specs.
+  plan                   Generate a dry-run build plan.
+  validate-release       Validate a future approved export payload.
+  validate-phase1c-input Non-mutating intake gate for an EXTERNAL
+                         candidate Phase 1C DRAFT dataset (Phase 1B.5A).
+  check-phase1c-gate     Scaffold/baseline diagnostic only — verifies
+                         the currently loaded scaffold remains pre-load
+                         safe.  Does NOT validate any external candidate
+                         dataset; use ``validate-phase1c-input`` for that.
+  provision              Provision scaffold (dry-run only in Phase 1;
+                         --apply is BLOCKED).
 """
 
 from __future__ import annotations
@@ -260,15 +265,126 @@ def validate_release(
     typer.echo("  PII violations: 0")
 
 
+@app.command(name="validate-phase1c-input")
+def validate_phase1c_input(
+    config: Path = typer.Option(  # noqa: B008
+        ...,
+        "--config",
+        "-c",
+        help="Path to the baseline config/ directory (schema source only).",
+        exists=True,
+        file_okay=False,
+    ),
+    input: Path = typer.Option(  # noqa: B008
+        ...,
+        "--input",
+        "-i",
+        help=(
+            "Path to a candidate Phase 1C DRAFT dataset (YAML file or "
+            "directory of *.yaml files)."
+        ),
+        exists=True,
+    ),
+) -> None:
+    """Non-mutating Phase 1C candidate-input intake gate (Phase 1B.5A).
+
+    Validates an EXTERNAL candidate Phase 1C DRAFT dataset supplied via
+    ``--input`` against the baseline schema/workbook configuration in
+    ``--config``.  The candidate dataset is treated as a FULL REPLACEMENT
+    business-data payload: baseline scaffold ``BLK-DRAFT-*`` placeholder
+    blockers are NOT carried into the candidate effective state, so they
+    cannot permanently block a controlled candidate replacement path.
+
+    The command writes nothing to disk and performs no Google API or OAuth
+    activity.  It returns exit 0 with the PASS line below ONLY if the
+    candidate is safe to load into draft seed storage under separate
+    controller authorization; otherwise exit 1.
+
+    On success::
+
+        PHASE 1C INPUT VALIDATION PASSED \u2014 DRAFT CONTENT MAY BE LOADED
+        ONLY AFTER SEPARATE CONTROLLER AUTHORIZATION.
+
+    On failure::
+
+        BLOCKED \u2014 PHASE 1C INPUT VALIDATION FAILED
+    """
+    assert_authorized_workspace()
+
+    from hfla_control_room.spec_loader import load_full_spec
+    from hfla_control_room.validation import (
+        load_phase1c_candidate_records,
+        validate_phase1c_candidate_input,
+    )
+
+    typer.echo(f"Loading baseline schema from: {config.resolve()}")
+    spec = load_full_spec(config)
+    typer.echo(f"Loading candidate Phase 1C input from: {input.resolve()}")
+
+    candidate, parse_errors = load_phase1c_candidate_records(input)
+    errors, warnings, counts = validate_phase1c_candidate_input(spec, candidate)
+    errors = list(parse_errors) + list(errors)
+
+    if errors:
+        typer.secho(
+            "BLOCKED \u2014 PHASE 1C INPUT VALIDATION FAILED",
+            fg=typer.colors.RED,
+            bold=True,
+        )
+        for err in errors:
+            typer.secho(f"  X {err}", fg=typer.colors.RED)
+        if warnings:
+            typer.secho(
+                "  (unresolved non-structural warnings also present:)",
+                fg=typer.colors.YELLOW,
+            )
+            for w in warnings:
+                typer.secho(f"  ! {w}", fg=typer.colors.YELLOW)
+        raise typer.Exit(code=1)
+
+    typer.secho(
+        "PHASE 1C INPUT VALIDATION PASSED \u2014 DRAFT CONTENT MAY BE "
+        "LOADED ONLY AFTER SEPARATE CONTROLLER AUTHORIZATION.",
+        fg=typer.colors.GREEN,
+        bold=True,
+    )
+    typer.echo(f"  Candidate rules:        {counts['rules']}")
+    typer.echo(f"  Candidate evidence:     {counts['evidence_records']}")
+    typer.echo(f"  Candidate blockers:     {counts['blocker_records']}")
+    typer.echo(
+        f"  Candidate projections:  {counts['channel_projection_records']}"
+    )
+    typer.echo(f"  Candidate releases:     {counts['release_records']}")
+    typer.echo(
+        f"  Candidate activations:  {counts['channel_release_activations']}"
+    )
+    if warnings:
+        typer.secho(
+            f"  Unresolved non-structural blocker decisions: {len(warnings)}",
+            fg=typer.colors.YELLOW,
+        )
+        for w in warnings:
+            typer.secho(f"  ! {w}", fg=typer.colors.YELLOW)
+    else:
+        typer.echo("  Unresolved non-structural blocker decisions: 0")
+
+
 @app.command(name="check-phase1c-gate")
 def check_phase1c_gate(
     config: Path = typer.Option(  # noqa: B008
         ..., "--config", "-c", help="Path to the config/ directory.", exists=True, file_okay=False
     ),
 ) -> None:
-    """Check the Phase 1C content-loading pre-load gate against CONFIG.
+    """Scaffold / baseline diagnostic for the Phase 1C pre-load gate.
 
-    Verifies that the dataset is safe for Phase 1C content loading:
+    THIS COMMAND VALIDATES THE CURRENTLY LOADED SCAFFOLD ONLY.  It does NOT
+    validate any external candidate Phase 1C dataset.  Phase 1B.5A wires
+    ``validate-phase1c-input`` as the non-mutating intake gate for an
+    external candidate dataset; use that command before any Phase 1C
+    content loading.
+
+    Verifies that the currently loaded scaffold dataset is safe for Phase 1C
+    content loading:
 
     1. No structural blocker (``blocks_phase_1c_content_loading=True``) is OPEN.
     2. No CEO-approved rules exist (all must be DRAFT).

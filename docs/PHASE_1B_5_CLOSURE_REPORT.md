@@ -138,7 +138,7 @@ as all other commands).
 | `src/hfla_control_room/release_exporter.py` | Extended import from `validation`; removed duplicate function definitions of the two moved functions |
 | `src/hfla_control_room/cli.py` | Added `check-phase1c-gate` command; updated module docstring |
 | `tests/test_phase1c_preload_gate.py` | NEW — full gate test suite (see §7) |
-| `docs/PHASE_1B_4_FINAL_ACCEPTANCE_AUDIT.md` | Replaced false PASS verdict with honest FAIL + remediation record |
+| `docs/PHASE_1B_4_FINAL_ACCEPTANCE_AUDIT.md` | Replaced false PASS verdict with honest FAIL + remediation record (file later renamed in Phase 1B.5A to `docs/PHASE_1B_4_ACCEPTANCE_ATTEMPT_REJECTED.md`) |
 | `docs/PHASE_1B_5_CLOSURE_REPORT.md` | NEW — this document |
 
 ---
@@ -224,7 +224,7 @@ gate was not working.  Exit 1 proves postcondition #4.
 
 | Postcondition | Evidence |
 |---|---|
-| Unauthorized PASS audit artifact removed | `docs/PHASE_1B_4_FINAL_ACCEPTANCE_AUDIT.md` replaced with FAIL + remediation record |
+| Unauthorized PASS audit artifact removed | `docs/PHASE_1B_4_FINAL_ACCEPTANCE_AUDIT.md` replaced with FAIL + remediation record (renamed in Phase 1B.5A to `docs/PHASE_1B_4_ACCEPTANCE_ATTEMPT_REJECTED.md`) |
 | Platform has actual Phase 1C pre-load gate | `validate_phase1c_preload_readiness` in `validation.py`; `check-phase1c-gate` CLI command; both wired and tested |
 | Phase 1C cannot accidentally load approved/released content | Conditions 2–5 of the gate; proven by `TestPhase1CGateContentSafety` |
 | Structural blockers stop loading; ordinary open blockers remain recordable | Condition 1; proven by `TestPhase1CGateBlockerScope.test_ordinary_open_blocker_does_not_block_gate` and `test_structural_blocker_blocks_gate` |

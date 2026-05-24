@@ -292,6 +292,32 @@ exporter:
 
 These three checks never substitute for each other.
 
+#### Phase 1C intake gating distinguishes scaffold from candidate (Phase 1B.5A)
+
+Two CLI commands govern Phase 1C readiness and intake; they are not
+interchangeable:
+
+* `hfla-control-room check-phase1c-gate -c <config-dir>` is a
+  **scaffold / baseline diagnostic** only. It validates the YAML
+  scaffold currently loaded from the workspace config directory. It
+  does NOT validate any external candidate Phase 1C dataset and must
+  not be relied on as the intake gate for new content.
+* `hfla-control-room validate-phase1c-input -c <config-dir>
+  -i <candidate-path>` is the **non-mutating Phase 1C intake gate**.
+  It loads an external candidate dataset (single YAML file or a
+  directory of `*.yaml`/`*.yml`), runs strict per-record schema
+  validation, register-level uniqueness, DRAFT-only state checks
+  (rules, projections, releases, activations), FK integrity, the
+  candidate's own structural blocker gate, and rejects
+  `RESTRICTED_OPERATIONS_PII`. It writes nothing, performs no
+  Google API calls, and emits an exact PASS or FAIL banner. A
+  PASS authorises *eligibility for separate controller
+  authorisation only*; it does not authorise actual loading.
+
+Phase 1C content loading remains blocked until both a passing
+`validate-phase1c-input` run and an independent read-only acceptance
+of the Phase 1B.5A remediation have occurred.
+
 #### Current-channel output authority via ChannelReleaseActivationRecord
 
 A first-class authority record now answers the question

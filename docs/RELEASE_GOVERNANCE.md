@@ -112,6 +112,18 @@ Phase 1D acceptances are mandatory.
    replaces them with the complete controlled CEO draft content (still
    `status: DRAFT`).  Loads complete source evidence records.  No live
    Google action.  No APPROVED rules.
+
+   **Phase 1C intake gate (Phase 1B.5A).** Any external Phase 1C
+   candidate dataset must first pass the non-mutating intake gate:
+   `hfla-control-room validate-phase1c-input -c <config-dir> -i <candidate-path>`.
+   This is the only command authorised to validate candidate content
+   before loading; it performs no writes and no Google API calls. The
+   separate command `hfla-control-room check-phase1c-gate -c <config-dir>`
+   is a scaffold/baseline diagnostic only — it inspects the workspace
+   scaffold currently on disk and must not be used as the intake gate
+   for new candidate content. A PASS from `validate-phase1c-input`
+   establishes eligibility only; actual loading requires a separate
+   controller authorisation.
 3. **Phase 1D — Idempotency contract validation.**  Exercise the
    manifest / Google-side idempotency contract — deterministic keys,
    search-before-create, fail-closed on multiple Drive matches,
