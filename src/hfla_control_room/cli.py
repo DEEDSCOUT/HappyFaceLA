@@ -3,11 +3,12 @@ Happy Faces LA — Commercial Control Room
 CLI entry point (Typer).
 
 Commands:
-  validate           Validate all YAML configuration specs.
-  plan               Generate a dry-run build plan.
-  validate-release   Validate a future approved export payload.
-  provision          Provision scaffold (dry-run only in Phase 1;
-                     --apply is BLOCKED).
+  validate            Validate all YAML configuration specs.
+  plan                Generate a dry-run build plan.
+  validate-release    Validate a future approved export payload.
+  check-phase1c-gate  Check the Phase 1C content-loading pre-load gate.
+  provision           Provision scaffold (dry-run only in Phase 1;
+                      --apply is BLOCKED).
 """
 
 from __future__ import annotations
@@ -257,6 +258,61 @@ def validate_release(
     typer.echo(f"  Activations:  {len(activations)}")
     typer.echo(f"  Blockers:     {len(blockers)}")
     typer.echo("  PII violations: 0")
+
+
+@app.command(name="check-phase1c-gate")
+def check_phase1c_gate(
+    config: Path = typer.Option(  # noqa: B008
+        ..., "--config", "-c", help="Path to the config/ directory.", exists=True, file_okay=False
+    ),
+) -> None:
+    """Check the Phase 1C content-loading pre-load gate against CONFIG.
+
+    Verifies that the dataset is safe for Phase 1C content loading:
+
+    1. No structural blocker (``blocks_phase_1c_content_loading=True``) is OPEN.
+    2. No CEO-approved rules exist (all must be DRAFT).
+    3. No RELEASED releases exist in the dataset.
+    4. No ACTIVE channel activations exist in the dataset.
+    5. No projection carries approved/released status with non-empty
+       ``approved_channel_text``.
+
+    Ordinary open CEO / business-decision blockers
+    (``blocks_phase_1c_content_loading=False``) are NOT gate conditions and
+    remain recordable in the draft workbook without blocking dataset loading.
+
+    Exits 0 if all checks pass (PHASE 1C GATE: CLEAR).
+    Exits 1 if any check fails (PHASE 1C GATE: BLOCKED).
+    """
+    assert_authorized_workspace()
+
+    from hfla_control_room.spec_loader import load_full_spec
+    from hfla_control_room.validation import validate_phase1c_preload_readiness
+
+    typer.echo(f"Loading configuration from: {config.resolve()}")
+    spec = load_full_spec(config)
+    errors = validate_phase1c_preload_readiness(spec)
+
+    if errors:
+        typer.secho("PHASE 1C GATE: BLOCKED.", fg=typer.colors.RED, bold=True)
+        for err in errors:
+            typer.secho(f"  X {err}", fg=typer.colors.RED)
+        raise typer.Exit(code=1)
+
+    typer.secho("PHASE 1C GATE: CLEAR.", fg=typer.colors.GREEN, bold=True)
+    n_structural = sum(
+        1
+        for b in spec.blocker_records
+        if b.blocks_phase_1c_content_loading
+    )
+    typer.echo(f"  Structural blockers:  0 open ({n_structural} total in dataset)")
+    typer.echo(f"  Rules:                {len(spec.seed_rules)} (all DRAFT)")
+    typer.echo(f"  Releases:             {len(spec.release_records)} (none RELEASED)")
+    typer.echo(f"  Activations:          {len(spec.channel_release_activations)} (none ACTIVE)")
+    typer.echo(
+        f"  Projections:          {len(spec.channel_projection_records)}"
+        " (none with approved content)"
+    )
 
 
 @app.command()

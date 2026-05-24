@@ -888,6 +888,156 @@ def validate_channel_activation_integrity(
 
 
 # ---------------------------------------------------------------------------
+# Blocker scope utilities (Phase 1B.4 — moved here in Phase 1B.5 to wire
+# validate_phase1c_preload_readiness without creating a circular import with
+# release_exporter.py, which already imports from this module).
+# release_exporter re-exports both names for backward compatibility.
+# ---------------------------------------------------------------------------
+
+_OPEN_BLOCKER_STATUSES: frozenset[BlockerStatus] = frozenset(
+    {
+        BlockerStatus.OPEN_CEO_INPUT_REQUIRED,
+        BlockerStatus.OPEN_COMPLIANCE_REVIEW_REQUIRED,
+        BlockerStatus.OPEN_EVIDENCE_REQUIRED,
+    }
+)
+
+
+def validate_no_live_provisioning_blockers(
+    blockers: list[BlockerRecord],
+) -> list[BlockerRecord]:
+    """Return OPEN blockers with ``blocks_live_provisioning=True``.
+
+    Independent of channel.  Live-Google-provisioning is a workspace-level
+    operation; any open blocker asserting it blocks live provisioning vetoes
+    the live apply path until resolved.
+
+    Moved from ``release_exporter`` to ``validation`` in Phase 1B.5.
+    ``release_exporter`` re-exports this name for backward compatibility.
+    """
+    return [
+        b for b in blockers if b.status in _OPEN_BLOCKER_STATUSES and b.blocks_live_provisioning
+    ]
+
+
+def validate_no_phase_1c_loading_blockers(
+    blockers: list[BlockerRecord],
+) -> list[BlockerRecord]:
+    """Return OPEN blockers with ``blocks_phase_1c_content_loading=True``.
+
+    Structural blockers asserting ``blocks_phase_1c_content_loading=True``
+    must be resolved before Phase 1C content loading begins.  Ordinary open
+    CEO / business-decision blockers with
+    ``blocks_phase_1c_content_loading=False`` do NOT appear here and remain
+    recordable in the draft workbook without blocking dataset loading.
+
+    Moved from ``release_exporter`` to ``validation`` in Phase 1B.5.
+    ``release_exporter`` re-exports this name for backward compatibility.
+    """
+    return [
+        b
+        for b in blockers
+        if b.status in _OPEN_BLOCKER_STATUSES and b.blocks_phase_1c_content_loading
+    ]
+
+
+# ---------------------------------------------------------------------------
+# Phase 1C content-loading pre-load gate (Phase 1B.5)
+# ---------------------------------------------------------------------------
+
+
+def validate_phase1c_preload_readiness(spec: FullConfigSpec) -> list[str]:
+    """Pre-load gate: must return an empty list before Phase 1C content
+    loading begins.
+
+    Verifies five independent conditions; every violation is reported:
+
+    1. **Structural blocker gate** — no OPEN blocker has
+       ``blocks_phase_1c_content_loading=True``.  Ordinary OPEN blockers
+       (CEO / business decisions) with
+       ``blocks_phase_1c_content_loading=False`` are NOT a gate condition;
+       they remain recordable in the draft workbook without blocking dataset
+       loading.
+
+    2. **No CEO-approved rules** — every rule must carry ``status=DRAFT``.
+       Externally-consumable rules must not exist before Phase 1C loads.
+
+    3. **No RELEASED releases** — no release record may carry
+       ``status=RELEASED``.  Released content must not pre-exist before
+       Phase 1C loads.
+
+    4. **No ACTIVE activations** — no channel-release activation may carry
+       ``activation_status=ACTIVE``.  Live channel activations must not
+       exist before Phase 1C loads.
+
+    5. **No approved/released projection content** — no projection may carry
+       ``release_status`` in ``{APPROVED_FOR_RELEASE, RELEASED}`` combined
+       with non-empty ``approved_channel_text``.  Externally-consumable
+       projection text must not pre-exist in the loading dataset.
+    """
+    errors: list[str] = []
+
+    # 1. Structural blocker gate.
+    for b in validate_no_phase_1c_loading_blockers(spec.blocker_records):
+        errors.append(
+            f"Phase 1C content loading blocked by structural blocker "
+            f"'{b.blocker_id}' (status={b.status.value}, "
+            f"priority={b.priority.value}): {b.decision_required}"
+        )
+
+    # 2. No CEO-approved rules.
+    _approved_rule_statuses = (
+        RuleStatus.APPROVED_AS_RECOMMENDED,
+        RuleStatus.APPROVED_WITH_CONDITIONS,
+    )
+    for rule in spec.seed_rules:
+        if rule.status in _approved_rule_statuses:
+            errors.append(
+                f"Rule '{rule.rule_id}' has status={rule.status.value} — "
+                "externally-consumable rules must not exist before Phase 1C "
+                "content loading."
+            )
+
+    # 3. No RELEASED releases.
+    for release in spec.release_records:
+        if release.status == ReleaseStatus.RELEASED:
+            errors.append(
+                f"Release '{release.release_id}' has status=RELEASED — "
+                "no released content may exist in the dataset before Phase 1C "
+                "content loading."
+            )
+
+    # 4. No ACTIVE activations.
+    for act in spec.channel_release_activations:
+        if act.activation_status == ActivationStatus.ACTIVE:
+            errors.append(
+                f"Channel activation '{act.activation_id}' has "
+                f"activation_status=ACTIVE — no live channel activations may "
+                "exist before Phase 1C content loading."
+            )
+
+    # 5. No approved/released projection content.
+    _releasable_proj_statuses = (
+        ProjectionReleaseStatus.APPROVED_FOR_RELEASE,
+        ProjectionReleaseStatus.RELEASED,
+    )
+    for proj in spec.channel_projection_records:
+        if (
+            proj.release_status in _releasable_proj_statuses
+            and proj.approved_channel_text.strip()
+        ):
+            errors.append(
+                f"Projection '{proj.projection_id}' "
+                f"(release_status={proj.release_status.value}) carries "
+                "non-empty approved_channel_text — externally-consumable "
+                "projection content must not exist before Phase 1C content "
+                "loading."
+            )
+
+    return errors
+
+
+# ---------------------------------------------------------------------------
 # Secrets / tracked-file safety check
 # ---------------------------------------------------------------------------
 

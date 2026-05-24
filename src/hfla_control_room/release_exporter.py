@@ -80,6 +80,8 @@ from hfla_control_room.models import (
 from hfla_control_room.validation import (
     validate_channel_projection_integrity,
     validate_consumer_channel_export_safety,
+    validate_no_live_provisioning_blockers,  # noqa: F401  re-exported for backward compat
+    validate_no_phase_1c_loading_blockers,  # noqa: F401  re-exported for backward compat
 )
 
 logger = logging.getLogger(__name__)
@@ -135,33 +137,6 @@ def channel_publication_blockers_for_channel(
         b
         for b in blockers
         if b.status in _OPEN_BLOCKER_STATUSES and channel in b.blocked_channels
-    ]
-
-
-def validate_no_live_provisioning_blockers(
-    blockers: list[BlockerRecord],
-) -> list[BlockerRecord]:
-    """Return OPEN blockers with ``blocks_live_provisioning=True``.
-
-    Independent of channel.  Live-Google-provisioning is a workspace-level
-    operation; any open blocker that asserts it blocks live provisioning
-    vetoes the live apply path until resolved.
-    """
-    return [
-        b
-        for b in blockers
-        if b.status in _OPEN_BLOCKER_STATUSES and b.blocks_live_provisioning
-    ]
-
-
-def validate_no_phase_1c_loading_blockers(
-    blockers: list[BlockerRecord],
-) -> list[BlockerRecord]:
-    """Return OPEN blockers with ``blocks_phase_1c_content_loading=True``."""
-    return [
-        b
-        for b in blockers
-        if b.status in _OPEN_BLOCKER_STATUSES and b.blocks_phase_1c_content_loading
     ]
 
 
