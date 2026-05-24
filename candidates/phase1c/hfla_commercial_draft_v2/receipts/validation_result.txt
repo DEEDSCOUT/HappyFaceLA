@@ -1,0 +1,53 @@
+PHASE 1C-A.1 CORRECTED COMMERCIAL CANDIDATE — VALIDATION RESULT RECEIPT
+Candidate: candidates/phase1c/hfla_commercial_draft_v2/candidate.yaml
+SHA-256:   c995d72a116c1941716d65ea536f0e3ec69eca9211739c31e4a29d54e38189f8
+Run date:  2026-05-24
+
+Gate sequence (all run in this order, all returned PASS / expected blocked-apply):
+
+1.  ruff check .                                               -> PASS  ("All checks passed!")
+2.  pytest -q                                                  -> PASS  (353 passed)
+3.  hfla_control_room.cli validate -c config                   -> PASS
+4.  hfla_control_room.cli plan -c config -o artifacts/dry_run  -> PASS
+        Operations: 32  (folders=14, spreadsheet_files=2,
+        spreadsheet_configs=2, document_files=2, document_configs=2,
+        populate=6, derive=4)
+        Spec fingerprint:
+        c466dd7cea43893af054adddd1145942c53f26de91c4f111b7709be85b048599
+5.  hfla_control_room.cli validate-phase1c-input -c config
+        -i candidates/phase1c/hfla_commercial_draft_v2          -> PASS
+        Candidate counts:  rules=22  evidence=13  blockers=20
+                           projections=10  releases=1  activations=5
+        Unresolved non-structural blocker decisions = 20
+        (all blocks_phase_1c_content_loading=False — ordinary CEO
+         business decisions, none block intake).
+6.  hfla_control_room.cli provision --dry-run -c config        -> PASS
+        Live Google API calls: FALSE
+7.  hfla_control_room.cli provision --apply -c config          -> BLOCKED (exit 1)
+        "BLOCKED — LIVE GOOGLE PROVISIONING NOT AUTHORIZED IN PHASE 1."
+        Expected behaviour: Phase 1 must NEVER mutate Google assets.
+
+Strict-schema confirmation (Pydantic v2, extra="forbid"):
+  No unknown / missing / misspelled fields detected in any record.
+  All ConsumerChannel values resolve to non-RESTRICTED_OPERATIONS_PII.
+  All publication_key values match regex ^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+$.
+  rule_category values are within the canonical seven (PUBLIC_PRICING,
+  BOOKING_POLICY, QUOTE_TRAVEL, VENDOR_SCHOOL_CORPORATE, SAFETY_CARE,
+  AI_CUSTOMER_RESPONSE, CHANNEL_IMPLEMENTATION).
+
+Lifecycle confirmation:
+  - All 22 rules:                 status = DRAFT
+  - All 13 evidence records:      status = DRAFT
+  - All 20 blocker records:       blocks_phase_1c_content_loading = False
+  - All 10 projections:           release_status = DRAFT, approved_channel_text = ""
+  - Exactly 1 release record:     status = DRAFT, ceo_decision = PENDING_CEO_REVIEW,
+                                  authorized_channels = [], qa_evidence = ""
+  - Exactly 5 activations:        activation_status = DRAFT,
+                                  snapshot_mode = FULL_CHANNEL_SNAPSHOT,
+                                  qa_evidence = "" (one per projected channel)
+
+No external mutation:
+  No OAuth performed.  No Google Drive / Docs / Sheets / Ads / website
+  endpoint contacted.  No write to config/, src/, tests/, or seed_data.
+  Only writes during this run: this candidate directory + the docs/phase1c
+  v1 rejection record + this receipts directory.
