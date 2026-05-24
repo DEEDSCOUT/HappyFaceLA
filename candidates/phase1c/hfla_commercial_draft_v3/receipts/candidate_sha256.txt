@@ -1,0 +1,5 @@
+candidate_path: candidates/phase1c/hfla_commercial_draft_v3/candidate.yaml
+sha256: f84832a7d7f8137c45fa1b3eb87d465a934a9f45e6b93098e00f913eaf882f5f
+size_bytes: 131554
+hash_method: python hashlib.sha256(open(path, 'rb').read()).hexdigest()
+computed_after: intake validator returned PASS, no subsequent edit to candidate.yaml

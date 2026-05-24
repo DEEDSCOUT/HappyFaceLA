@@ -1,0 +1,97 @@
+command: python -m hfla_control_room.cli validate-phase1c-input -c config -i candidates/phase1c/hfla_commercial_draft_v3
+exit_code: 0
+candidate_sha256: f84832a7d7f8137c45fa1b3eb87d465a934a9f45e6b93098e00f913eaf882f5f
+candidate_size_bytes: 131554
+--- stdout ---
+Loading baseline schema from: C:\Dev\happyfacesla-commercial-control-room\config
+Loading candidate Phase 1C input from: C:\Dev\happyfacesla-commercial-control-room\candidates\phase1c\hfla_commercial_draft_v3
+PHASE 1C INPUT VALIDATION PASSED � DRAFT CONTENT MAY BE LOADED ONLY AFTER SEPARATE CONTROLLER AUTHORIZATION.
+  Candidate rules:        33
+  Candidate evidence:     15
+  Candidate blockers:     33
+  Candidate projections:  30
+  Candidate releases:     1
+  Candidate activations:  5
+  Unresolved non-structural blocker decisions: 33
+  ! Candidate blocker 'HFLA-BLK-001' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm 'Face Painting Parties from $150' as the public headline price-floor wording across the website, Google Ads landing copy, and chatbot pricing intro.
+
+  ! Candidate blocker 'HFLA-BLK-002' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm that the proposed two-tier package ladder (Color Pop at $150 / Birthday Favorite at $275) replaces the current single-anchor 'Bookings start at $150' framing on every public surface, and confirm the live-baseline transition sequence (homepage update first, pricing page next, Google Ads landing aligned before campaign launches).
+
+  ! Candidate blocker 'HFLA-BLK-003' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm the customer-facing deposit-confirmation wording and the payment methods accepted for the deposit (Venmo, Zelle, card, cash).  Confirm that both deposit tiers (HFLA-RULE-PP-008) remain non-refundable and apply toward the final balance.
+
+  ! Candidate blocker 'HFLA-BLK-004' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Choose the travel fee calculation method: (A) flat per zone / city, (B) mileage rate from a home base, (C) tiered flat fee by county, or (D) hybrid (LA base included, OC and Ventura premium).  Confirm the public ZIP-request wording.
+
+  ! Candidate blocker 'HFLA-BLK-005' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Set specific travel premium amounts for Orange County and Ventura County events, separate from the LA base zone.
+
+  ! Candidate blocker 'HFLA-BLK-006' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Decide whether to publish a starting price for combined face painting + balloon twisting bookings, or maintain 'Balloon twisting by quote' wording only.  If a starting price is published, set the amount.
+
+  ! Candidate blocker 'HFLA-BLK-007' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Decide whether to publish a starting price for the Glitter + Gems enhancement, or maintain 'Enhancements by quote' wording.  If a starting price is published, set the amount.
+
+  ! Candidate blocker 'HFLA-BLK-008' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Set the minimum booking fee for school carnivals, fundraisers and festival booths, and confirm the standard per-additional-artist hourly rate for multi-artist school / festival setups.
+
+  ! Candidate blocker 'HFLA-BLK-009' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Set the invoice payment terms for corporate clients: net payment window (e.g. net 7 or net 14), deposit structure for corporate accounts, and whether a corporate minimum booking size applies.
+
+  ! Candidate blocker 'HFLA-BLK-010' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Set the overtime hourly rate charged when a client requests and the lead artist approves additional time beyond the scheduled end.  This rate underlies the 30-minute increment in HFLA-RULE-BP-005.
+
+  ! Candidate blocker 'HFLA-BLK-011' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=LOW) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Decide whether to implement a holiday or peak-demand surcharge (Halloween, Christmas, July 4, school year end) and set the trigger dates and surcharge amount.
+
+  ! Candidate blocker 'HFLA-BLK-012' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=LOW) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Decide whether to implement a last-minute booking surcharge, and if so set the trigger window (e.g. less than 48 hours) and the surcharge amount or percentage.
+
+  ! Candidate blocker 'HFLA-BLK-013' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Define the cancellation notice window in days -- the number of days before the event by which a cancellation must be received for any consideration of deposit credit toward a future booking.
+
+  ! Candidate blocker 'HFLA-BLK-014' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm the one-time-only deposit transfer cap and set the minimum advance notice required for a reschedule transfer to be approved.
+
+  ! Candidate blocker 'HFLA-BLK-015' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Define the weather cancellation policy: if unsafe outdoor conditions prevent service from starting and the event cannot move indoors, does the client receive a deposit credit, a partial refund or no refund?
+
+  ! Candidate blocker 'HFLA-BLK-016' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=CRITICAL) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Authorise the Google Ads campaign: confirm campaign budget, geographic targeting (LA County only or all three counties), target keywords, and the specific RSA headline / description / path content.  Confirm that every candidate headline is <=30 characters, every description is <=90 characters, and every path field is <=15 characters per HFLA-EVD-006 RSA spec. Confirm landing-page parity (HFLA-RULE-CI-001).
+
+  ! Candidate blocker 'HFLA-BLK-017' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Define the chatbot authority limit for pricing: exactly what pricing information the chatbot may state without human escalation (e.g. starting price + Color Pop + Birthday Favorite only, or full pricing overview). Approve the specific escalation message template.
+
+  ! Candidate blocker 'HFLA-BLK-018' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Decide whether to publish a specific quote response SLA on the website (e.g. 'Response within 2 business hours' or 'Same business day').  If yes, set the commitment window and the channels on which it appears.
+
+  ! Candidate blocker 'HFLA-BLK-019' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Choose the pricing-model presentation: (A) flat-package only (current state -- HFLA-RULE-PP-002, HFLA-RULE-PP-003); (B) packages plus an explicit per-hour rate with a two-hour minimum aligned with the LA per-hour norm (HFLA-EVD-008 Paint On Your Face $120/hr, 2-hr min); (C) hybrid (packages + published per-hour overage rate). If (B) or (C), set the per-hour rate.
+
+  ! Candidate blocker 'HFLA-BLK-020' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm the approved safety-marketing language for all public channels.  Recommended language: 'cosmetic-grade, FDA color-additive compliant'.  Confirm the unqualified term 'hypoallergenic' is BANNED from website, ad copy, chatbot replies and operator scripts (per FDA guidance HFLA-EVD-007).  Optionally approve an allergy- sensitivity prompt on the quote intake form.
+
+  ! Candidate blocker 'HFLA-BLK-021' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=CRITICAL) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Authorise the two named public packages -- 'Color Pop Face Painting' ($150 / 1 hour / 1 artist / up to 10 children) and 'Birthday Favorite' ($275 / 2 hours / 1 artist / up to 18 children) -- for publication on the website, Google Ads landing destinations, and chatbot replies.  Confirm package names, prices, duration, artist count, and child-count framing.
+
+  ! Candidate blocker 'HFLA-BLK-022' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm the tiered deposit policy: $50 flat for quotes below $300; 30 percent (rounded up to nearest dollar) for quotes at or above $300.  Confirm the $300 threshold, the 30 percent rate, and that both tiers remain non-refundable and apply toward final balance.
+
+  ! Candidate blocker 'HFLA-BLK-023' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Authorise the vendor / community pilot parameters: (a) maximum 10 sponsored designs; (b) HFLA-only-provider exclusivity during the pilot; (c) visible sponsorship identification on every
+    customer-facing surface;
+(d) continuation of paid services; (e) sponsor-family attendance at each sponsored event; (f) case-by-case CEO approval per booking. Approve specific sponsor partners (if any).
+
+  ! Candidate blocker 'HFLA-BLK-024' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm general-liability insurance carrier and limits; confirm whether the policy supports per-event additional-insured endorsements for venues / hosts; set the COI-issuance SLA when a school or corporate client requests one; decide whether COI issuance is bundled with the booking fee or carries a separate service charge.
+
+  ! Candidate blocker 'HFLA-BLK-025' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm the PII-redaction workflow for Copilot-internal decision-support inputs: which fields must be redacted (canonical PII set: customer_name, customer_email, customer_phone, event_address, billing_address, client_name, contact_email, contact_phone, lead_name, quote_recipient, booking_contact), at what point in the operator workflow redaction occurs, and operator training acknowledgement that no PII may be pasted into Copilot inputs.
+
+  ! Candidate blocker 'HFLA-BLK-026' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm the $100 cumulative paid-ad spend gate: (a) the $100 cap is correct for the initial campaign window; (b) the campaign is paused at the Google Ads account level the moment cumulative spend reaches $100; (c) the workflow for the CEO to authorise the next spend tranche in writing; (d) who at Google Ads account level is authorised to pause and resume the campaign.
+
+  ! Candidate blocker 'HFLA-BLK-027' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm the artist dispatch / scheduling model: (A) single dispatcher; (B) round-robin pool; (C) artist self-claim with dispatcher backup.  Confirm the source-of-truth scheduling system and how scheduling conflicts are escalated.
+
+  ! Candidate blocker 'HFLA-BLK-028' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Set the same-day and same-weekend concurrent-booking capacity caps: maximum number of confirmed bookings per day and per weekend, conditional on artist roster size.  Define the rule the operator applies when an incoming inquiry exceeds capacity (waitlist, decline, refer to partner, etc.).
+
+  ! Candidate blocker 'HFLA-BLK-029' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm customer-facing tax / fee disclosure: (a) whether any tax or surcharge appears on the customer invoice; (b) exact disclosure wording on the website pricing page and in booking confirmation; (c) 1099-NEC reporting workflow for contracted artists; (d) W-9 collection workflow for corporate clients.
+
+  ! Candidate blocker 'HFLA-BLK-030' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm the recommended 30-minute overtime increment (HFLA-RULE-BP-005) and confirm the half-hour overtime rate.  Half-hour rate must be consistent with the per-hour rate set under HFLA-BLK-010.
+
+  ! Candidate blocker 'HFLA-BLK-031' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm photo / video / privacy-consent governance for face-painted customers at HFLA events: (a) explicit ban on unconsented photography by HFLA
+    artists, partners, and sponsor representatives;
+(b) opt-in mechanism (checkbox at booking
+    confirmation);
+(c) parent / guardian consent requirement for any
+    identifiable depiction of a minor;
+(d) booking-policy page text describing what HFLA
+    may and may not publish;
+(e) internal-only event-coverage exception (private
+    operator review, COI claim documentation, QA).
+
+  ! Candidate blocker 'HFLA-BLK-032' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm the explicit interaction between the travel fee policy (HFLA-RULE-QT-003) and the two-hour minimum (if adopted under HFLA-RULE-PP-007 option B or C): (a) does the two-hour minimum apply only to the LA base zone or to every event regardless of zone? (b) is the travel fee additive to the two-hour minimum, or is the two-hour minimum waived above a travel-fee threshold? (c) for events outside the approved local service zone, does the two-hour minimum become a three-hour minimum?
+
+  ! Candidate blocker 'HFLA-BLK-033' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm the quote-operator prohibited-promise list (HFLA-RULE-CI-004): (a) operators must follow the CEO-approved quote-operator scripts and (b) must NOT make unapproved discounts, unpublished-package prices, named-artist commitments, weather / parking guarantees, COI SLAs not authorised under HFLA-BLK-024, or sponsor / pilot commitments. Confirm the operator-side escalation workflow when a customer asks for an off-script commitment.
+
+
+--- stderr ---
+2026-05-24T10:43:50  INFO      hfla_control_room.spec_loader � Loading config from: C:\Dev\happyfacesla-commercial-control-room\config
+2026-05-24T10:43:50  INFO      hfla_control_room.spec_loader � Config loaded and validated successfully.
+

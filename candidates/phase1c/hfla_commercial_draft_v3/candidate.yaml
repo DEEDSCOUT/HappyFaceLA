@@ -1,0 +1,2893 @@
+# Happy Faces LA -- Phase 1C Commercial Candidate Package
+# Version: DRAFT v3
+# Purpose: CEO-review commercial candidate -- pricing, booking, channel,
+#          safety, privacy and AI-response governance rules for the
+#          commercial website and paid-channel launch.
+# Status: DRAFT -- NO RECORDS ARE APPROVED, RELEASED OR ACTIVE.
+# Intake gate: validate-phase1c-input -c config -i candidates/phase1c/hfla_commercial_draft_v3
+#
+# Authored: 2026-05-24 (research date).
+#
+# Defects corrected since v2 (commit 869f419a, rejected -- see
+# docs/phase1c/PHASE_1C_A_V2_CONTENT_AUDIT_REJECTED.md):
+#   * V2 receipts were stale (asserted a 22-rule pre-expansion hash); v3
+#     follows the receipt generation order in section 10 of the controller
+#     authorisation to prevent stale receipts.
+#   * V2 had fewer than six qualifying LA / nearby Southern-California
+#     market-reference records once Wikipedia and the national Thumbtack
+#     cost guide were excluded; v3 supplies six qualifying LA / SoCal
+#     provider or LA-marketplace observations, with supplementary national
+#     and encyclopedia context segregated and explicitly labelled.
+#   * V2 contained miscited evidence references inside several rule
+#     narratives (e.g. citing HFLA-EVD-005 "Paint On Your Face" when
+#     EVD-005 was actually a Google Ads policy page); v3 narratives cite
+#     the correct IDs.
+#   * V2 compressed thirty independent CEO publication decisions into
+#     ten projection slots; v3 supplies thirty projection records, each
+#     governing exactly one statement or operational instruction.
+#   * V2 had no rule for a 30-minute overtime increment; v3 adds
+#     HFLA-RULE-BP-005.
+#   * V2 had no rule or blocker for photo / video / privacy consent at
+#     customer events; v3 adds HFLA-RULE-SC-005 and HFLA-BLK-031.
+#   * V2 had no explicit interaction between the travel-fee policy and
+#     the proposed two-hour minimum; v3 adds HFLA-RULE-QT-004 and
+#     HFLA-BLK-032.
+#   * V2 had no rule explicitly forbidding quote-operator off-script
+#     promises; v3 adds HFLA-RULE-CI-004 and HFLA-BLK-033.
+#
+# All seven canonical rule categories are present.  Five projected
+# consumer channels each have exactly one corresponding DRAFT activation.
+# Exactly one DRAFT ReleaseRecord shell is present.  Every blocker has
+# blocks_phase_1c_content_loading=false (ordinary CEO business
+# decisions, none block intake).
+
+# ===========================================================================
+# 1. RULES -- 33 DRAFT governance rules across all 7 canonical categories
+# ===========================================================================
+rules:
+
+  # ---- PUBLIC_PRICING (9 rules) -------------------------------------------
+  - rule_id: "HFLA-RULE-PP-001"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Public headline price floor -- Face Painting Parties from $150"
+    status: "DRAFT"
+    draft_recommendation: >
+      Adopt 'Face Painting Parties from $150' as the public headline
+      price-floor statement across the website, Google Ads landing copy,
+      and chatbot pricing intro.  The $150 figure matches the live
+      homepage and pricing-page statement ('Bookings start at $150',
+      HFLA-EVD-001 and HFLA-EVD-003, verified 2026-05-24).  LA per-hour
+      comparator HFLA-EVD-008 (Paint On Your Face, $120/hr face painting
+      with a 2-hour minimum, ~$240 effective minimum) places HFLA's
+      $150 entry tier deliberately below the LA per-hour effective
+      minimum for shorter parties, supporting the Color Pop entry tier
+      defined in HFLA-RULE-PP-007.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-001"
+    internal_notes: >
+      CEO decision required: confirm $150 public headline floor and
+      'Face Painting Parties from $150' wording.  Decision captured in
+      HFLA-BLK-001.
+
+  - rule_id: "HFLA-RULE-PP-002"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Color Pop Face Painting -- public entry-tier package, from $150"
+    status: "DRAFT"
+    draft_recommendation: >
+      Publish a named entry-tier public package -- 'Color Pop Face
+      Painting' -- at a starting price of $150 for: 1 face-painting
+      artist, 1 hour of service, intended for up to 10 children (subject
+      to confirmation in the quote), compact event-menu designs
+      (cheek art and small full-face designs).  This package matches
+      the live homepage / pricing-page 'Bookings start at $150' anchor
+      (HFLA-EVD-001, HFLA-EVD-003).  LA per-hour comparator
+      HFLA-EVD-008 (Paint On Your Face $120/hr face + 2-hr minimum,
+      ~$240 effective minimum) places the Color Pop 1-hour price at a
+      deliberate accessibility premium for shorter parties.  All public
+      channels (website, ads, chatbot, operator scripts) reference
+      Color Pop as the entry anchor.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: >
+      CEO decision required: authorise the Color Pop package name, the
+      $150 entry price, the 1-hour / 1-artist parameters, and the
+      'up to 10 children, subject to confirmation' framing.  Decision
+      captured in HFLA-BLK-021.
+
+  - rule_id: "HFLA-RULE-PP-003"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Birthday Favorite -- public mid-tier package, from $275"
+    status: "DRAFT"
+    draft_recommendation: >
+      Publish a named mid-tier public package -- 'Birthday Favorite' --
+      at a starting price of $275 for: 1 face-painting artist, 2 hours
+      of service, intended for up to 18 children (subject to
+      confirmation in the quote), party-menu designs (full-face designs,
+      cheek art, mini-balloon add-ons optional).  $275 / 2-hour
+      positioning sits below Paint On Your Face's $120/hr × 2-hr
+      minimum = $240 base plus typical travel uplift (HFLA-EVD-008),
+      and slightly above the Thumbtack national typical fixed price
+      of ~$269 (HFLA-EVD-S-001 supplementary national context).  This
+      mid-tier converts the most common LA birthday-party booking
+      shape (~2 hours, ~15-18 kids) without sending the customer to
+      a full quote conversation, and forms a clear ladder above
+      Color Pop (HFLA-RULE-PP-002).
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: >
+      CEO decision required: authorise the Birthday Favorite package
+      name, the $275 mid-tier price, the 2-hour / 1-artist parameters,
+      and the 'up to 18 children, subject to confirmation' framing.
+      Decision captured in HFLA-BLK-021.
+
+  - rule_id: "HFLA-RULE-PP-004"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Enhancements by quote -- glitter tattoos and face gems"
+    status: "DRAFT"
+    draft_recommendation: >
+      Glitter tattoos and face-gem enhancements are offered as add-ons
+      to any primary service booking.  Currently listed as
+      'Request a quote' on the live pricing page (HFLA-EVD-003,
+      verified 2026-05-24).  Public-channel and chatbot wording must
+      use 'Enhancements by quote' rather than implying a fixed
+      add-on price.  CEO must decide whether to publish a specific
+      add-on starting price or maintain quote-only.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: >
+      CEO decision required.  Decision in HFLA-BLK-007.
+
+  - rule_id: "HFLA-RULE-PP-005"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Balloon twisting by quote -- standalone and combination"
+    status: "DRAFT"
+    draft_recommendation: >
+      Balloon twisting (standalone) and face painting + balloon
+      twisting (combined) are offered by custom quote.  Currently
+      listed on the live pricing page as 'Face Painting + Balloons
+      Package -- Request a quote' (HFLA-EVD-003).  LA comparator
+      HFLA-EVD-008 (Paint On Your Face) publishes $130/hour for
+      balloon twisting with a 2-hour minimum.  Public channels must
+      use 'Balloon twisting by quote' wording.  CEO must decide
+      whether to publish a combined-package starting price (e.g.
+      $250) or maintain quote-only.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: >
+      CEO decision required.  Decision in HFLA-BLK-006.
+
+  - rule_id: "HFLA-RULE-PP-006"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Schools, festivals, corporate and high-volume events -- custom quote"
+    status: "DRAFT"
+    draft_recommendation: >
+      Schools, school carnivals, fundraisers, festivals, camps,
+      corporate events, mall activations, and any high-volume event
+      are served by custom quote with multiple artists available
+      (live pricing page, HFLA-EVD-003).  Public wording on website,
+      ads, chatbot and operator scripts must use 'Custom quote for
+      schools, festivals and corporate events.'  No fixed public
+      price for these segments.  Premium-tier comparator HFLA-EVD-010
+      (Face Painting LA, serving Paramount, Casamigos, NFL Network,
+      Sephora, Wet n Wild) demonstrates that quote-only corporate
+      positioning is a defensible LA-market norm.  Marketplace
+      breadth HFLA-EVD-011 (Thumbtack LA directory) shows 17+ active
+      face-painter pros routinely staffing school events; HFLA must
+      defend margin via a minimum booking fee.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: >
+      CEO decision required: confirm the wording and set minimum
+      booking fees for school/festival/corporate.  Decisions in
+      HFLA-BLK-008 (school/festival minimum), HFLA-BLK-009
+      (corporate invoice terms).
+
+  - rule_id: "HFLA-RULE-PP-007"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Hourly rate stance -- flat package vs published per-hour rate"
+    status: "DRAFT"
+    draft_recommendation: >
+      LA-area direct comparators publish per-hour starting rates
+      with a two-hour minimum (HFLA-EVD-008 Paint On Your Face
+      $120/hr face, $130/hr balloon, 2-hour minimum).  HFLA today
+      publishes flat package pricing only.  CEO must decide whether
+      to (A) keep the flat-package model defined by HFLA-RULE-PP-002
+      and HFLA-RULE-PP-003, (B) add an explicit per-hour rate with
+      a two-hour minimum to match LA discoverability norms, or
+      (C) hybrid: published package prices plus a published per-hour
+      overage rate beyond the package duration.  This decision
+      cascades into HFLA-RULE-QT-004 (travel × two-hour interaction)
+      and into ad copy / chatbot replies.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-008"
+    internal_notes: >
+      CEO decision required.  Decision captured in HFLA-BLK-019.
+
+  - rule_id: "HFLA-RULE-PP-008"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Tiered deposit policy -- $50 below $300, 30 percent at or above $300"
+    status: "DRAFT"
+    draft_recommendation: >
+      Adopt a tiered deposit policy: for total quoted booking value
+      below $300, collect a flat $50 non-refundable deposit; for
+      total quoted booking value at or above $300, collect a 30
+      percent non-refundable deposit (rounded up to the nearest
+      whole dollar).  Both tiers remain non-refundable and apply
+      toward the final balance.  This replaces the current flat $50
+      deposit (HFLA-EVD-002 live booking-policy page).  Rationale:
+      as multi-service, multi-artist, school, festival and corporate
+      bookings raise ticket size above $300, a flat $50 hold becomes
+      disproportionately small relative to the artist-time
+      commitment; 30 percent aligns with entertainment-booking norms
+      and protects against late-cancellation losses on larger
+      events.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required: confirm the tiered structure, the $300
+      threshold, the 30 percent rate, and that both tiers remain
+      non-refundable.  Decision captured in HFLA-BLK-022.
+
+  - rule_id: "HFLA-RULE-PP-009"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Balance due timing -- full payment day-of before services begin"
+    status: "DRAFT"
+    draft_recommendation: >
+      The remaining balance (quoted total minus deposit) is due on
+      the event day before the artist begins services (live
+      booking-policy page, HFLA-EVD-002, verified 2026-05-24).  This
+      timing must be disclosed in booking confirmation, in quote
+      communication, and on the public booking-policy page.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      No new CEO blocker -- payment timing is current practice and
+      already publicly disclosed.  Confirm wording consistency under
+      HFLA-BLK-003 (deposit confirmation).
+
+  # ---- BOOKING_POLICY (5 rules) -------------------------------------------
+  - rule_id: "HFLA-RULE-BP-001"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Cancellation policy -- deposit forfeiture and notice window"
+    status: "DRAFT"
+    draft_recommendation: >
+      The deposit (HFLA-RULE-PP-008 tier) is non-refundable upon
+      cancellation.  The cancellation notice window (number of days
+      advance notice required for any consideration of deposit
+      credit toward a future booking) must be defined and published.
+      The live booking-policy page (HFLA-EVD-002) states the
+      deposit is non-refundable but does not currently state the
+      cancellation notice window.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required: cancellation window in days.  Decision
+      in HFLA-BLK-013.
+
+  - rule_id: "HFLA-RULE-BP-002"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Rescheduling policy -- one-time deposit transfer subject to availability"
+    status: "DRAFT"
+    draft_recommendation: >
+      The deposit may be transferred one time to a new event date
+      with advance notice, subject to artist availability (live
+      booking-policy page, HFLA-EVD-002, verified 2026-05-24).
+      CEO must confirm the minimum advance notice required for a
+      reschedule transfer and confirm the one-transfer cap.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required.  Decision in HFLA-BLK-014.
+
+  - rule_id: "HFLA-RULE-BP-003"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Overtime protocol -- pre-approval required before scheduled end"
+    status: "DRAFT"
+    draft_recommendation: >
+      Overtime must be requested by the client and approved by the
+      lead artist before the scheduled end time (live booking-policy
+      page, HFLA-EVD-002).  If approved, overtime is added to the
+      final balance at the operator-set overtime rate.  See
+      HFLA-RULE-BP-005 for the recommended billing increment.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required: overtime rate per hour.  Decision in
+      HFLA-BLK-010.
+
+  - rule_id: "HFLA-RULE-BP-004"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Weather and outdoor-conditions policy -- safe-conditions requirement"
+    status: "DRAFT"
+    draft_recommendation: >
+      Outdoor events require a shaded, protected setup area away
+      from direct sun, rain, strong wind, sprinklers, smoke, dust
+      and unsafe heat (live booking-policy language, HFLA-EVD-002).
+      If conditions are unsafe, services may need to move indoors,
+      pause or be adjusted for safety.  The weather cancellation
+      and partial-refund policy must be defined.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required: weather cancellation client credit /
+      refund policy.  Decision in HFLA-BLK-015.
+
+  - rule_id: "HFLA-RULE-BP-005"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Overtime billing increment -- 30-minute half-hour blocks"
+    status: "DRAFT"
+    draft_recommendation: >
+      Recommendation: additional time beyond the scheduled end,
+      when artist availability permits and client and artist
+      agree before the scheduled end time, is billed in 30-minute
+      increments using the applicable half-hour rate.  Half-hour
+      rate is derived from the per-hour rate set under HFLA-BLK-010
+      (overtime hourly rate).  Rationale: a half-hour minimum
+      respects family-event pacing (an extra block is typically a
+      15- to 45-minute extension rather than a full hour) and
+      reduces friction in the end-of-event approval conversation.
+      Exact half-hour amount remains a CEO decision pending
+      confirmation of the underlying overtime hourly rate.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required: confirm 30-minute increment and the
+      half-hour rate (derived from the HFLA-BLK-010 hourly rate).
+      Decision captured in HFLA-BLK-030.
+
+  # ---- QUOTE_TRAVEL (4 rules) ---------------------------------------------
+  - rule_id: "HFLA-RULE-QT-001"
+    rule_category: "QUOTE_TRAVEL"
+    rule_title: "Approved local service zone -- three-county coverage"
+    status: "DRAFT"
+    draft_recommendation: >
+      Happy Faces LA serves Los Angeles County, Orange County, and
+      Ventura County (live homepage and booking-policy page,
+      HFLA-EVD-001 and HFLA-EVD-002, verified 2026-05-24).  Public
+      wording must list these three counties as the approved local
+      service zone.  Outside this zone, bookings are accepted only
+      on case-by-case CEO approval with a custom travel quote.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      No CEO blocker on coverage area -- current published practice.
+      Confirm under HFLA-BLK-027 (dispatch model).
+
+  - rule_id: "HFLA-RULE-QT-002"
+    rule_category: "QUOTE_TRAVEL"
+    rule_title: "Public ZIP / event-location request wording on quote intake"
+    status: "DRAFT"
+    draft_recommendation: >
+      Every public quote intake surface (website contact form,
+      Google Ads landing page, chatbot intake) must request the
+      event ZIP code or city and the event street address before
+      a quote is returned.  Public wording: 'Please share your
+      event ZIP or city so we can confirm coverage and any
+      travel fee.'  This wording supports the travel-fee
+      calculation method governed by HFLA-RULE-QT-003 and the
+      travel × two-hour interaction governed by HFLA-RULE-QT-004.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required: confirm public wording.  Decision in
+      HFLA-BLK-004.
+
+  - rule_id: "HFLA-RULE-QT-003"
+    rule_category: "QUOTE_TRAVEL"
+    rule_title: "Travel fee calculation method -- zone or mileage"
+    status: "DRAFT"
+    draft_recommendation: >
+      Travel may be included or added depending on event location,
+      distance, traffic, parking, and total booking size (live
+      booking-policy language, HFLA-EVD-002).  CEO must select the
+      calculation method: (A) flat per-zone (e.g. LA-base /
+      OC-premium / Ventura-premium), (B) per-mile mileage rate
+      from a home base, (C) by-city flat fee, or (D) hybrid (flat
+      LA base, premiums for OC and Ventura).  Method must be
+      documented for operator use; whether the method is
+      additionally publicly disclosed is a separate decision.
+      LA market context: HFLA-EVD-S-001 (Thumbtack national cost
+      guide, supplementary) notes competitors commonly charge a
+      separate travel fee or impose a minimum-hours requirement
+      for distant events.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required: travel fee method + per-zone amounts.
+      Decisions in HFLA-BLK-004 (method) and HFLA-BLK-005
+      (per-county premiums).
+
+  - rule_id: "HFLA-RULE-QT-004"
+    rule_category: "QUOTE_TRAVEL"
+    rule_title: "Travel fee × two-hour minimum interaction"
+    status: "DRAFT"
+    draft_recommendation: >
+      If CEO authorises an explicit two-hour minimum under
+      HFLA-RULE-PP-007 option (B) or (C), the interaction with
+      travel fees must be governed explicitly: (a) does the
+      two-hour minimum apply only to the LA base zone or to
+      every event regardless of zone? (b) is the travel fee
+      additive to the two-hour minimum (e.g. $X travel + 2-hour
+      package), or is the two-hour minimum waived when the
+      travel fee exceeds a threshold? (c) for events outside
+      the approved local service zone (HFLA-RULE-QT-001), does
+      the two-hour minimum become a three-hour minimum?  Without
+      explicit interaction rules, operators will quote
+      inconsistently for OC and Ventura events that travel
+      farther but commit less time on-site.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-008"
+    internal_notes: >
+      CEO decision required: interaction rules.  Decision captured
+      in HFLA-BLK-032.  Resolves only after HFLA-BLK-019
+      (hourly stance) and HFLA-BLK-004 / HFLA-BLK-005 (travel
+      method) are decided.
+
+  # ---- VENDOR_SCHOOL_CORPORATE (3 rules) ----------------------------------
+  - rule_id: "HFLA-RULE-VS-001"
+    rule_category: "VENDOR_SCHOOL_CORPORATE"
+    rule_title: "School and festival booth pricing -- minimum fee and multi-artist rate"
+    status: "DRAFT"
+    draft_recommendation: >
+      School carnivals, fundraisers, festivals and camps are
+      served with a high-throughput booth setup (live pricing
+      page, HFLA-EVD-003).  Multiple artists are available.  No
+      public minimum is currently stated.  LA marketplace
+      breadth HFLA-EVD-011 (Thumbtack LA directory, 17+ active
+      face-painter pros) and observed high-volume LA pros
+      HFLA-EVD-012 (Tammy P, 629 hires) and HFLA-EVD-013
+      (Funtastic Faces, 439 hires) confirm institutional events
+      are a competitive segment requiring a defended minimum.
+      CEO must authorise a minimum booking fee for school /
+      festival engagements and the standard per-additional-artist
+      hourly rate.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: >
+      CEO decision required.  Decision in HFLA-BLK-008.
+
+  - rule_id: "HFLA-RULE-VS-002"
+    rule_category: "VENDOR_SCHOOL_CORPORATE"
+    rule_title: "Corporate and company event pricing -- invoice terms"
+    status: "DRAFT"
+    draft_recommendation: >
+      Corporate bookings (company picnics, city events, malls,
+      brand activations) receive a custom setup, professional
+      invoice and full-service entertainment station (live
+      pricing page, HFLA-EVD-003).  Premium-tier comparator
+      HFLA-EVD-010 (Face Painting LA -- Paramount, Casamigos,
+      NFL Network, Sephora, Wet n Wild) operates a quote-only
+      corporate model with an explicit retainer-fee payment
+      flow.  CEO must authorise: corporate invoice payment
+      window (e.g. net 7 or net 14), deposit structure for
+      corporate accounts, and whether a corporate minimum
+      booking size applies.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: >
+      CEO decision required.  Decision in HFLA-BLK-009.
+
+  - rule_id: "HFLA-RULE-VS-003"
+    rule_category: "VENDOR_SCHOOL_CORPORATE"
+    rule_title: "Vendor / community pilot program -- sponsored-design parameters"
+    status: "DRAFT"
+    draft_recommendation: >
+      Authorise a controlled vendor / community pilot program
+      with the following parameters:
+        (a) Sponsored-design catalogue: a maximum of ten (10)
+            sponsored face-paint designs may be offered to a
+            vendor / community partner at any given time.
+        (b) Exclusivity: while the pilot is active, HFLA is the
+            HFLA-only-provider for the sponsored-design
+            catalogue (no other face-paint operator may use the
+            same sponsored designs in HFLA's three-county
+            service area for the pilot duration).
+        (c) Sponsorship disclosure: every customer-facing surface
+            where a sponsored design appears must visibly
+            identify the sponsorship (e.g. 'Sponsored by ...') --
+            required for FTC endorsement-disclosure alignment
+            and Google Ads Misrepresentation-policy compliance
+            (HFLA-EVD-004).
+        (d) Continuity of paid services: paid face-painting
+            bookings continue uninterrupted during the pilot --
+            the pilot is additive, not a free-only operating
+            mode.
+        (e) Family attendance: a member of the sponsor's family
+            or a designated brand-side representative is
+            expected to attend each sponsored-design event for
+            brand-fit oversight.
+        (f) Case-by-case CEO approval: each sponsored-design
+            booking request is reviewed and approved
+            individually by the CEO before confirmation -- no
+            general pre-approval is granted.
+      The pilot is INTERNAL until CEO approves all six
+      parameters and authorises specific sponsor partners.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-004"
+    internal_notes: >
+      CEO decision required.  Decision captured in HFLA-BLK-023.
+      No customer-facing content for this pilot is generated
+      until CEO confirms parameters.
+
+  # ---- SAFETY_CARE (5 rules) -----------------------------------------------
+  - rule_id: "HFLA-RULE-SC-001"
+    rule_category: "SAFETY_CARE"
+    rule_title: "Product safety -- cosmetic-grade, FDA color-additive-compliant materials"
+    status: "DRAFT"
+    draft_recommendation: >
+      Face painting, glitter tattoo and face-gem products must
+      meet cosmetic-grade safety standards and use only color
+      additives permitted by the U.S. FDA for skin application
+      (per the FDA color-additive status list referenced
+      in HFLA-EVD-007 'Hypoallergenic Cosmetics' and in
+      HFLA-EVD-S-002 supplementary context).  California
+      Proposition 65 lead-limit requirements on cosmetic
+      additives must also be met.  CEO must confirm the brand
+      list HFLA artists may use and confirm whether an
+      allergy / sensitivity prompt is added to the public
+      booking-policy page and to the operator quote intake form.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-007"
+    internal_notes: >
+      CEO decision required: approved brand list and allergy
+      prompt wording.  Decision in HFLA-BLK-020.
+
+  - rule_id: "HFLA-RULE-SC-002"
+    rule_category: "SAFETY_CARE"
+    rule_title: "Safety marketing claim -- do not publish unqualified 'hypoallergenic'"
+    status: "DRAFT"
+    draft_recommendation: >
+      Per the U.S. FDA ('Hypoallergenic Cosmetics', content
+      current as of 2022-02-25, HFLA-EVD-007), there are no
+      federal standards or definitions governing the term
+      'hypoallergenic' for cosmetics; the term 'has no real
+      meaning in the marketplace.'  HFLA channel copy (website,
+      ads, chatbot, operator scripts) must NOT use the
+      unqualified claim 'hypoallergenic' for face paint, glitter
+      or gem products.  Preferred customer-facing language:
+      'cosmetic-grade, FDA color-additive compliant'.  LA
+      comparator HFLA-EVD-009 (BubbleMania & Co.) publishes the
+      unqualified 'hypoallergenic' claim -- HFLA must
+      deliberately differentiate by using more accurate
+      language.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-007"
+    internal_notes: >
+      CEO decision required: confirm preferred safety language
+      across all public channels.  Decision in HFLA-BLK-020.
+
+  - rule_id: "HFLA-RULE-SC-003"
+    rule_category: "SAFETY_CARE"
+    rule_title: "Insurance and certificate-of-insurance issuance"
+    status: "DRAFT"
+    draft_recommendation: >
+      HFLA must maintain general-liability insurance covering
+      bodily injury, property damage and product / completed
+      operations for face-painting and balloon-twisting services.
+      School, festival and corporate clients commonly require a
+      Certificate of Insurance (COI) naming the venue or host
+      organisation as additional insured.  CEO must confirm:
+      (a) active general-liability carrier and limits;
+      (b) whether HFLA's policy supports adding venues / hosts
+      as additional insured on a per-event basis;
+      (c) the turnaround SLA for issuing a COI when a school or
+      corporate client requests one;
+      (d) whether COI issuance is included in the base booking
+      fee or carries a service charge.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required.  Decision captured in HFLA-BLK-024.
+
+  - rule_id: "HFLA-RULE-SC-004"
+    rule_category: "SAFETY_CARE"
+    rule_title: "Customer-facing tax and fee disclosure"
+    status: "DRAFT"
+    draft_recommendation: >
+      Customer-facing quote and invoice surfaces must disclose
+      whether any tax or surcharge is added to the quoted
+      package price.  Per California Department of Tax and Fee
+      Administration guidance, service-only labor is generally
+      not subject to sales tax in California; however
+      operator-side invoice templates must be consistent with
+      the chosen treatment.  CEO must confirm: (a) whether any
+      tax / surcharge appears on the customer invoice; (b) the
+      exact disclosure wording on the website pricing page and
+      in the booking confirmation; (c) 1099-NEC reporting
+      workflow for face-paint artists treated as independent
+      contractors; (d) W-9 collection workflow for corporate
+      clients.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required.  Decision captured in HFLA-BLK-029.
+
+  - rule_id: "HFLA-RULE-SC-005"
+    rule_category: "SAFETY_CARE"
+    rule_title: "Photo, video and customer-image privacy consent at events"
+    status: "DRAFT"
+    draft_recommendation: >
+      At customer events HFLA artists, partners, and any
+      sponsor representatives must NOT photograph or video
+      face-painted guests (children or adults) for any HFLA or
+      partner use (social media post, website portfolio,
+      marketing material, Google Ads asset, vendor pilot
+      promotional surface) without prior explicit written
+      consent from the booking customer or the parent /
+      guardian of any depicted minor.  Internal-only event
+      coverage (private operator review, COI claim
+      documentation, internal QA) is permitted but must remain
+      internal-only and unpublished.  The booking confirmation
+      and the live booking-policy page must include a clear
+      'Photo / video consent' section describing what HFLA may
+      and may not publish, and providing the customer the
+      option to opt out by checking a box at booking
+      confirmation.  This rule covers a v2 governance gap (v2
+      contained no photo-consent rule despite HFLA's primary
+      service producing identifiable depictions of children).
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required: confirm consent wording, opt-out
+      mechanism, and the explicit ban on unconsented
+      sponsor-side photography.  Decision captured in
+      HFLA-BLK-031.  Interacts with HFLA-RULE-VS-003 (vendor
+      pilot) and HFLA-RULE-CI-004 (operator no-unapproved
+      promises).
+
+  # ---- AI_CUSTOMER_RESPONSE (3 rules) -------------------------------------
+  - rule_id: "HFLA-RULE-AR-001"
+    rule_category: "AI_CUSTOMER_RESPONSE"
+    rule_title: "Chatbot pricing disclosure -- scope and accuracy limits"
+    status: "DRAFT"
+    draft_recommendation: >
+      The customer-facing chatbot may state the public
+      'Face Painting Parties from $150' starting price
+      (HFLA-RULE-PP-001), the Color Pop and Birthday Favorite
+      package names and starting prices (HFLA-RULE-PP-002 and
+      HFLA-RULE-PP-003), and direct the customer to the quote
+      form for any specific event price.  The chatbot must
+      NOT quote a final price for a specific event because
+      pricing depends on guest count, travel, and service mix.
+      CEO must approve the precise pricing-disclosure language.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-001"
+    internal_notes: >
+      CEO decision required.  Decision in HFLA-BLK-017.
+
+  - rule_id: "HFLA-RULE-AR-002"
+    rule_category: "AI_CUSTOMER_RESPONSE"
+    rule_title: "Chatbot escalation -- human-quote and prohibited-promises guardrail"
+    status: "DRAFT"
+    draft_recommendation: >
+      When a chatbot user requests a specific final price,
+      service customisation, school / festival / corporate
+      quote, multi-artist booking, COI issuance, sponsorship,
+      or any commitment beyond the published Color Pop or
+      Birthday Favorite package, the chatbot must escalate to
+      the human quote form (happyfacesla.com/contact/) or to
+      the phone number 818-619-5506 rather than attempting to
+      provide a binding answer.  Prohibited chatbot promises
+      include: discounts, guaranteed pricing for non-published
+      packages, COI issuance commitments, specific artist
+      assignment, weather guarantees, and any partner / sponsor
+      commitment.  Escalation language must be CEO-approved.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-001"
+    internal_notes: >
+      CEO decision required.  Decision in HFLA-BLK-017.
+
+  - rule_id: "HFLA-RULE-AR-003"
+    rule_category: "AI_CUSTOMER_RESPONSE"
+    rule_title: "Copilot internal decision-support -- DRAFT-not-policy and PII boundary"
+    status: "DRAFT"
+    draft_recommendation: >
+      The COPILOT_INTERNAL_DECISION_SUPPORT channel MUST
+      present all governance content as DRAFT recommendations,
+      not approved policy, until CEO releases a specific rule
+      or projection.  Copilot internal projections, prompts
+      and operator-facing decision aids MUST NOT contain
+      customer personally identifiable information: customer
+      name, customer email, customer phone, event address,
+      billing address, client name, contact email, contact
+      phone, lead name, quote recipient, or booking contact
+      (canonical PII-field set already enforced by the
+      validator's PII_FIELD_NAMES gate).  PII may continue to
+      flow through the operator's quote workflow and through
+      the restricted operations workbook but MUST be redacted
+      before any content is presented to or generated by
+      Copilot.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-005"
+    internal_notes: >
+      CEO decision required: confirm PII-redaction workflow
+      and operator training acknowledgement.  Decision
+      captured in HFLA-BLK-025.
+
+  # ---- CHANNEL_IMPLEMENTATION (4 rules) -----------------------------------
+  - rule_id: "HFLA-RULE-CI-001"
+    rule_category: "CHANNEL_IMPLEMENTATION"
+    rule_title: "Google Ads landing-page parity and eligibility"
+    status: "DRAFT"
+    draft_recommendation: >
+      Every price or package claim in a Google Ads headline,
+      description, or sitelink (e.g. 'Face Painting Parties
+      from $150', 'Color Pop from $150', 'Birthday Favorite
+      from $275') must exactly match the price and package
+      wording on the ad's landing page.  Per the Google Ads
+      Misrepresentation policy (HFLA-EVD-004), ads must not
+      omit pricing conditions, must not use dishonest pricing
+      practices, and must not promise products / services /
+      promotional offers that are unavailable on the
+      destination page.  Landing page must be functional,
+      useful and easy to navigate per Google Ads editorial
+      requirements (HFLA-EVD-005).  All ad copy must be
+      CEO-approved before the campaign launches.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-004"
+    internal_notes: >
+      CEO decision required: Google Ads campaign
+      authorisation.  Decision in HFLA-BLK-016.
+
+  - rule_id: "HFLA-RULE-CI-002"
+    rule_category: "CHANNEL_IMPLEMENTATION"
+    rule_title: "Google Responsive Search Ad spec compliance -- character limits"
+    status: "DRAFT"
+    draft_recommendation: >
+      Any Google Ads responsive search ad authored for HFLA
+      must conform to the Google Ads RSA specification
+      (HFLA-EVD-006):
+        - Headlines: up to 30 characters each, 3 minimum / 15
+          maximum per ad.
+        - Descriptions: up to 90 characters each, 2 minimum /
+          4 maximum per ad.
+        - Display path: up to 15 characters per path field.
+      Every candidate headline (HFLA-PROJ-ADS-001 through
+      HFLA-PROJ-ADS-003) and description (HFLA-PROJ-ADS-004
+      and HFLA-PROJ-ADS-005) has been pre-checked against
+      these limits.  CEO / operator must re-verify any
+      revised wording against the limits before pasting into
+      Google Ads.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-006"
+    internal_notes: >
+      No standalone CEO blocker -- this rule is a hard
+      technical compliance requirement, not a business
+      choice.  Reviewed jointly under HFLA-BLK-016.
+
+  - rule_id: "HFLA-RULE-CI-003"
+    rule_category: "CHANNEL_IMPLEMENTATION"
+    rule_title: "Paid-ad spend gate -- $100 cumulative cap requires CEO re-authorisation"
+    status: "DRAFT"
+    draft_recommendation: >
+      No Google Ads campaign authored under this governance
+      package may exceed one hundred US dollars ($100) of
+      cumulative paid-ad spend without explicit CEO
+      re-authorisation.  When cumulative spend on the active
+      campaign reaches $100, the campaign must be paused at
+      the Google Ads account level until the CEO approves a
+      new spend tranche (or a budgeted weekly / monthly
+      amount) in writing.  Pairs with HFLA-RULE-CI-001
+      (claim accuracy) and HFLA-RULE-CI-002 (RSA spec
+      compliance).
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-005"
+    internal_notes: >
+      CEO decision required: confirm the $100 cap and the
+      pause / re-authorise workflow.  Decision captured in
+      HFLA-BLK-026.
+
+  - rule_id: "HFLA-RULE-CI-004"
+    rule_category: "CHANNEL_IMPLEMENTATION"
+    rule_title: "Quote operator -- no unapproved promises and approved-script discipline"
+    status: "DRAFT"
+    draft_recommendation: >
+      Quote operators handling phone, text and email
+      inquiries must follow the CEO-approved quote-operator
+      script (governed by HFLA-PROJ-QOP-001 through
+      HFLA-PROJ-QOP-005) and MUST NOT make any
+      customer-facing promise outside that script.
+      Prohibited operator promises include:
+      (a) discounts not pre-approved;
+      (b) prices for unpublished packages;
+      (c) commitments to a specific artist by name;
+      (d) COI turnaround SLAs not authorised under
+          HFLA-BLK-024;
+      (e) weather, parking or venue guarantees;
+      (f) sponsor / pilot commitments;
+      (g) any promise the operator could not personally
+          deliver if the booking were confirmed today.
+      Any deviation from the approved script must be
+      escalated to the CEO before being communicated to
+      the customer.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: >
+      CEO decision required: confirm the prohibited-promise
+      list and the operator-side escalation workflow.
+      Decision captured in HFLA-BLK-033.
+
+# ===========================================================================
+# 2. EVIDENCE RECORDS -- 15 records (6 qualifying LA / SoCal market,
+#    3 HFLA primary, 4 official policy, 2 supplementary national /
+#    encyclopedia clearly labelled NOT counted toward the six-source
+#    LA market-reference minimum).
+# ===========================================================================
+evidence_records:
+
+  # ---- VERIFIED_CURRENT_FACT (3 HFLA primary surfaces) -------------------
+  - evidence_id: "HFLA-EVD-001"
+    source_category: "VERIFIED_CURRENT_FACT"
+    source_name: "Happy Faces LA -- homepage (happyfacesla.com)"
+    source_locator: "https://happyfacesla.com/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Homepage states 'Bookings start at $150. A $50 deposit reserves
+      your date. Final quote depends on city, guest count, services,
+      and event length.'  Phone number listed as 818-619-5506.  Four
+      services offered: face painting, balloon twisting, glitter
+      tattoos, face gems & jewelry.  Footer copyright reads
+      'Copyright 2026 Happy Faces LA. All rights reserved.'
+    related_rule_ids:
+      - "HFLA-RULE-PP-001"
+      - "HFLA-RULE-PP-002"
+      - "HFLA-RULE-AR-001"
+      - "HFLA-RULE-AR-002"
+      - "HFLA-RULE-QT-001"
+    reliability_tier: "TIER_1_PRIMARY"
+    status: "DRAFT"
+    notes: "Direct observation of live HFLA homepage on research date."
+
+  - evidence_id: "HFLA-EVD-002"
+    source_category: "VERIFIED_CURRENT_FACT"
+    source_name: "Happy Faces LA -- booking policy (happyfacesla.com/booking-policy/)"
+    source_locator: "https://happyfacesla.com/booking-policy/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Booking policy page states: (1) $50 deposit required,
+      non-refundable, applied to final balance; (2) deposit may be
+      transferred one time to a new event date with advance notice,
+      subject to artist availability; (3) remaining balance due
+      day-of before services begin; (4) service area is Los Angeles
+      County, Orange County, Ventura County; (5) travel may be
+      included or added depending on event location, distance,
+      parking and booking size; (6) overtime must be requested and
+      approved before the scheduled end time and is added to the
+      final balance; (7) outdoor events require shaded, protected
+      setup area away from direct sun, rain, strong wind,
+      sprinklers, smoke, dust, unsafe heat; (8) client responsible
+      for safe nearby parking or parking fees; difficult parking,
+      valet-only, gated access, stairs or long walks may affect
+      setup time.
+    related_rule_ids:
+      - "HFLA-RULE-PP-008"
+      - "HFLA-RULE-PP-009"
+      - "HFLA-RULE-BP-001"
+      - "HFLA-RULE-BP-002"
+      - "HFLA-RULE-BP-003"
+      - "HFLA-RULE-BP-004"
+      - "HFLA-RULE-BP-005"
+      - "HFLA-RULE-QT-001"
+      - "HFLA-RULE-QT-002"
+      - "HFLA-RULE-QT-003"
+      - "HFLA-RULE-SC-003"
+      - "HFLA-RULE-SC-004"
+      - "HFLA-RULE-SC-005"
+      - "HFLA-RULE-CI-004"
+    reliability_tier: "TIER_1_PRIMARY"
+    status: "DRAFT"
+    notes: "Direct observation of live booking-policy page on research date."
+
+  - evidence_id: "HFLA-EVD-003"
+    source_category: "VERIFIED_CURRENT_FACT"
+    source_name: "Happy Faces LA -- pricing and packages (happyfacesla.com/pricing/)"
+    source_locator: "https://happyfacesla.com/pricing/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Pricing page lists five package options: (1) Birthday Party
+      Package -- face painting or balloon twisting, 1 artist,
+      'Bookings start at $150'; (2) Face Painting + Balloons
+      Package -- 'Request a quote'; (3) Glitter + Gems Add-On --
+      'Request a quote'; (4) School / Festival Booth -- 'Quote
+      required'; (5) Corporate Family Event Booth -- 'Quote
+      required'.  Stated price factors: event date / time demand,
+      city and travel distance, guest count and service speed,
+      add-ons, extra artists, and overtime.  Page states 'Final
+      pricing depends on location, guest count, services
+      requested, event duration, and number of artists needed.'
+    related_rule_ids:
+      - "HFLA-RULE-PP-001"
+      - "HFLA-RULE-PP-002"
+      - "HFLA-RULE-PP-003"
+      - "HFLA-RULE-PP-004"
+      - "HFLA-RULE-PP-005"
+      - "HFLA-RULE-PP-006"
+      - "HFLA-RULE-VS-001"
+      - "HFLA-RULE-VS-002"
+    reliability_tier: "TIER_1_PRIMARY"
+    status: "DRAFT"
+    notes: "Direct observation of live pricing page on research date."
+
+  # ---- OFFICIAL_POLICY (4 records) ---------------------------------------
+  - evidence_id: "HFLA-EVD-004"
+    source_category: "OFFICIAL_POLICY"
+    source_name: "Google Ads -- Misrepresentation policy"
+    source_locator: "https://support.google.com/adspolicy/answer/6020955"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Google Ads Misrepresentation policy prohibits, among other
+      things: 'Failure to clearly and conspicuously disclose the
+      payment model or full expense that a user will bear before
+      and after purchase' (Dishonest pricing practices); 'Making
+      misleading statements, obscuring, or omitting material
+      information about your identity, affiliations, or
+      qualifications' (Misleading representation); 'Promising
+      products, services, or promotional offers in the ad that
+      are unavailable or aren't easily found from the
+      destination' (Unavailable offers); 'Making inaccurate
+      claims or claims that entice the user with an improbable
+      result' (Unreliable claims).  Account suspension without
+      prior warning is the stated enforcement action for
+      egregious violations.
+    related_rule_ids:
+      - "HFLA-RULE-CI-001"
+      - "HFLA-RULE-VS-003"
+    reliability_tier: "TIER_1_PRIMARY"
+    status: "DRAFT"
+    notes: "Official Google Ads policy page accessed on research date."
+
+  - evidence_id: "HFLA-EVD-005"
+    source_category: "OFFICIAL_POLICY"
+    source_name: "Google Ads -- Editorial and policy overview"
+    source_locator: "https://support.google.com/adspolicy/answer/6008942"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Google Ads policy center overview lists four broad policy
+      areas (prohibited content, prohibited practices,
+      restricted content, editorial / technical requirements).
+      Editorial requirements state: 'Google Ads only allows ads,
+      assets, and destinations that are clear, easy to interact
+      with, and relevant to users.'  Destination requirements:
+      ad destinations 'must offer unique value to users and be
+      functional, useful, and easy to navigate.'  Display URLs
+      must accurately reflect the landing-page URL.
+    related_rule_ids:
+      - "HFLA-RULE-CI-001"
+      - "HFLA-RULE-CI-003"
+      - "HFLA-RULE-AR-003"
+    reliability_tier: "TIER_1_PRIMARY"
+    status: "DRAFT"
+    notes: "Official Google Ads policy overview accessed on research date."
+
+  - evidence_id: "HFLA-EVD-006"
+    source_category: "OFFICIAL_POLICY"
+    source_name: "Google Ads -- About responsive search ads (RSA character limits)"
+    source_locator: "https://support.google.com/google-ads/answer/7684791"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Google Ads help page states verbatim: 'The headline fields
+      for responsive search ads support up to 30 characters.  The
+      description fields support up to 90 characters each, and
+      the path fields support up to 15 each.'  Minimums: 3
+      headlines and 2 descriptions; maximums: 15 headlines and 4
+      descriptions per ad.  Pinning to Headline position 1, 2 or
+      Description position 1 is the only way to guarantee an
+      asset shows in every served ad.
+    related_rule_ids:
+      - "HFLA-RULE-CI-002"
+      - "HFLA-RULE-CI-001"
+    reliability_tier: "TIER_1_PRIMARY"
+    status: "DRAFT"
+    notes: "Official Google Ads RSA specification accessed on research date."
+
+  - evidence_id: "HFLA-EVD-007"
+    source_category: "OFFICIAL_POLICY"
+    source_name: "U.S. Food and Drug Administration -- 'Hypoallergenic' Cosmetics"
+    source_locator: "https://www.fda.gov/cosmetics/cosmetics-labeling-claims/hypoallergenic-cosmetics"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      FDA page (content current as of 2022-02-25) states
+      verbatim: 'There are no Federal standards or definitions
+      that govern the use of the term "hypoallergenic." The term
+      means whatever a particular company wants it to mean.
+      Manufacturers of cosmetics labeled as hypoallergenic are
+      not required to submit substantiation of their
+      hypoallergenicity claims to FDA.'  Page further notes the
+      term 'has very little meaning' to dermatologists and that
+      a federal court ruled FDA's 1975 hypoallergenic regulation
+      invalid in 1978.  FDA position: consumers have no
+      assurance such claims are valid.
+    related_rule_ids:
+      - "HFLA-RULE-SC-001"
+      - "HFLA-RULE-SC-002"
+    reliability_tier: "TIER_1_PRIMARY"
+    status: "DRAFT"
+    notes: "Official FDA page accessed on research date."
+
+  # ---- MARKET_REFERENCE (6 qualifying LA / SoCal records) ----------------
+  # Each record is a directly observed LA / nearby Southern California
+  # provider page or LA marketplace listing observation made on
+  # 2026-05-24.  These six records together satisfy the controller's
+  # six-source LA-market reference minimum.
+
+  - evidence_id: "HFLA-EVD-008"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Paint On Your Face -- Los Angeles / Long Beach face-painting provider"
+    source_locator: "https://paintonyourface.com/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Direct LA-area face-painting provider page (paintonyourface.com).
+      Pricing page states: 'FACE PAINTING -- Starting at $120 per
+      hour'; 'BALLOON TWISTING -- Starting at $130 per hour';
+      'CARICATURES -- Starting at $135 per hour.'  Stated minimum:
+      'Most events have a 2 hour minimum, and longer events get
+      the best value.'  Service area: Los Angeles, Long Beach,
+      Orange County, San Fernando Valley, San Gabriel Valley,
+      South Bay.  Established 2007 by a Disneyland Face Painter.
+      Service mix overlaps HFLA's: face painting, balloon
+      twisting, caricatures, festival hair, airbrush, henna,
+      glitter.  Geography: LA primary.  Service observed: face
+      painting + balloon twisting + caricatures with explicit
+      hourly rates and 2-hour minimum.  Public price /
+      minimum statement present.  Limitation: per-hour-only
+      published model; no fixed-package public pricing.
+    related_rule_ids:
+      - "HFLA-RULE-PP-001"
+      - "HFLA-RULE-PP-002"
+      - "HFLA-RULE-PP-003"
+      - "HFLA-RULE-PP-005"
+      - "HFLA-RULE-PP-007"
+      - "HFLA-RULE-QT-004"
+    reliability_tier: "TIER_1_PRIMARY"
+    status: "DRAFT"
+    notes: >
+      Strongest single LA-market pricing comparator: published
+      per-hour rates plus explicit 2-hour minimum, direct
+      service-mix overlap with HFLA.
+
+  - evidence_id: "HFLA-EVD-009"
+    source_category: "MARKET_REFERENCE"
+    source_name: "BubbleMania & Co. -- Southern California multi-service competitor"
+    source_locator: "https://www.bubblemaniaandco.com/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Direct Southern California multi-service entertainment
+      provider page (bubblemaniaandco.com).  Service mix: face
+      painting, balloon twisting, glitter tattoos, bubble shows,
+      juggling, music, hair extensions.  Stated SoCal service
+      area: San Diego, Orange County, Los Angeles County (overlap
+      with HFLA), Sacramento, Bay Area, Denver / Boulder.  SoCal
+      contact 310-446-6115.  Public claims include 'highest
+      quality, hypo allergenic, professional grade face paint.'
+      No public per-hour or per-package pricing -- explicit
+      public non-disclosure model ('all bookings via call /
+      email').  Geography: SoCal including LA County.  Service
+      observed: face painting + balloon twisting + glitter
+      tattoos.  Limitation: quote-only model means specific
+      price observations are unavailable; the published
+      'hypoallergenic' claim is the specific HFLA-relevant
+      negative comparator that motivates HFLA-RULE-SC-002.
+    related_rule_ids:
+      - "HFLA-RULE-PP-004"
+      - "HFLA-RULE-PP-005"
+      - "HFLA-RULE-SC-002"
+    reliability_tier: "TIER_1_PRIMARY"
+    status: "DRAFT"
+    notes: >
+      Qualifies under controller criterion 'publicly accessible
+      LA / nearby SoCal provider page with explicit public
+      non-disclosure pricing'; explicit non-disclosure is
+      documented in the verified_fact.
+
+  - evidence_id: "HFLA-EVD-010"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Face Painting LA / Karina Konupek (facepaintingla.com) -- premium LA provider"
+    source_locator: "https://www.facepaintingla.com/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Direct premium-tier Los Angeles face-painting and
+      body-painting provider page (facepaintingla.com).  Public
+      client list explicitly names Paramount, Archdiocese of Los
+      Angeles, Casamigos Tequila, PopSugar, Rolls-Royce, San
+      Diego Zoo, Sephora, Virgin Records, NFL Network, Wet n
+      Wild.  Services listed: face painting, glitter & glam,
+      custom temporary tattoos (including UV blacklight), window
+      painting, belly painting, henna, body painting.
+      Service-area cities listed: Agoura Hills, Arleta, Burbank,
+      Beverly Hills, Canoga Park, Chatsworth, Encino, Echo Park,
+      Glendale, Granada Hills, Hollywood, Los Angeles, Malibu,
+      Mission Hills, North Hollywood, Northridge, Pacoima,
+      Panorama City, Pasadena, Reseda, Santa Clarita, San
+      Fernando, Santa Monica.  No public per-hour or per-package
+      pricing; entire booking flow is quote-only via contact
+      form with explicit 'retainer fee' payment link
+      (explicit public non-disclosure).  Site footer reads
+      '©2024 KARINA KONUPEK'.  Geography: LA core.  Service
+      observed: face painting + corporate/brand activation
+      positioning.  Limitation: premium quote-only model means
+      specific price observations are unavailable; explicit
+      non-disclosure documented.
+    related_rule_ids:
+      - "HFLA-RULE-PP-006"
+      - "HFLA-RULE-VS-002"
+    reliability_tier: "TIER_1_PRIMARY"
+    status: "DRAFT"
+    notes: >
+      Qualifies under controller criterion 'LA provider page
+      with explicit public non-disclosure pricing'; corporate
+      client list demonstrates LA premium-tier quote-only
+      positioning is commercially viable.
+
+  - evidence_id: "HFLA-EVD-011"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Thumbtack -- Los Angeles face-painter directory"
+    source_locator: "https://www.thumbtack.com/ca/los-angeles/face-painting/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Directly observed Los Angeles marketplace listing page on
+      Thumbtack covering the 'Face Painting' service category in
+      Los Angeles.  Page lists 17+ active face-painter pros
+      serving Los Angeles including: Tammy P face painting and
+      balloon twisting (629 hires, 4.9 / 221 reviews); Miemi
+      Design (115 hires, 5.0 / 81); Doodling Faces -- Face
+      Painting (36 hires, 5.0 / 21); Bella's Creative Crew (388
+      hires, 4.9 / 144); Funtastic Faces and Perfect Party
+      Planning (439 hires, 4.9 / 252); Shanah Design (201 hires,
+      5.0 / 147); Annabel Whalen (175 hires, 5.0 / 47); My Happy
+      Balloons (173 hires, 5.0 / 109); plus Creative Faces LLC,
+      Lady Glitter Tattoos and Face Painting, Tiffany Art Party,
+      Daizy the Clown & Company, Dazzle Me Faces, Colorful
+      Kingdom Entertainment, Paint-a-Face L.A., Katrina's Party
+      Characters, TG Facepaint, Balloon art, Entertainment.
+      Page states 'There are 56 five star Face Painters in Los
+      Angeles, CA on Thumbtack.'  Coverage spans North Hills,
+      Garden Grove, Pacoima, Cerritos, San Pedro, Long Beach,
+      Van Nuys, Inglewood, Mira Loma, Arcadia, Carson plus core
+      LA neighbourhoods.  Geography: LA primary marketplace.
+      Service observed: 17+ named LA face-painter providers
+      with verified hire counts and review ratings.
+      Limitation: directory-level observation; specific
+      per-provider price points are not displayed on the
+      directory page (per-provider quotes obtained on request
+      via Thumbtack's quote-flow).
+    related_rule_ids:
+      - "HFLA-RULE-PP-001"
+      - "HFLA-RULE-VS-001"
+      - "HFLA-RULE-QT-003"
+    reliability_tier: "TIER_1_PRIMARY"
+    status: "DRAFT"
+    notes: >
+      Qualifies under controller criterion 'directly observed
+      local marketplace listing page'; provides LA-market
+      breadth observation that no single-provider page can.
+
+  - evidence_id: "HFLA-EVD-012"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Tammy P Face Painting and Balloon Twisting -- Thumbtack LA provider observation"
+    source_locator: "https://www.thumbtack.com/ca/los-angeles/face-painting/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Directly observed LA face-painter provider record on the
+      Thumbtack Los Angeles face-painting marketplace listing
+      page (same source_locator as HFLA-EVD-011).  Provider:
+      Tammy P face painting and balloon twisting.  Observed
+      metrics on 2026-05-24: 629 total hires through Thumbtack;
+      4.9-star aggregate rating from 221 customer reviews;
+      service category 'Face Painting'; LA metro coverage.
+      Geography: LA.  Service observed: face painting + balloon
+      twisting -- direct overlap with HFLA's primary services.
+      Pricing: not displayed at directory level (quote-on-request
+      via Thumbtack quote flow); explicit public non-disclosure
+      of fixed rates.  Limitation: rate-card observation requires
+      a Thumbtack quote request; absolute pricing was not
+      retrievable from the marketplace listing alone.
+    related_rule_ids:
+      - "HFLA-RULE-PP-001"
+      - "HFLA-RULE-VS-001"
+    reliability_tier: "TIER_2_SECONDARY"
+    status: "DRAFT"
+    notes: >
+      Provider-specific observation drawn from the LA
+      marketplace listing page (HFLA-EVD-011 is the directory
+      record; this record isolates the highest-hire LA face-
+      painter pro for HFLA-RULE-VS-001 calibration).
+
+  - evidence_id: "HFLA-EVD-013"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Funtastic Faces and Perfect Party Planning -- Thumbtack LA provider observation"
+    source_locator: "https://www.thumbtack.com/ca/los-angeles/face-painting/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      Directly observed LA face-painter provider record on the
+      Thumbtack Los Angeles face-painting marketplace listing
+      page (same source_locator as HFLA-EVD-011).  Provider:
+      Funtastic Faces and Perfect Party Planning.  Observed
+      metrics on 2026-05-24: 439 total hires through Thumbtack;
+      4.9-star aggregate rating from 252 customer reviews;
+      service category 'Face Painting' with multi-service party
+      planning offering.  Geography: LA.  Service observed:
+      face painting + multi-service event planning -- overlaps
+      with HFLA's school / festival / corporate VS rules.
+      Pricing: not displayed at directory level (quote-on-
+      request via Thumbtack quote flow); explicit public
+      non-disclosure of fixed rates.  Limitation: rate-card
+      observation requires a Thumbtack quote request; absolute
+      pricing was not retrievable from the marketplace listing
+      alone.
+    related_rule_ids:
+      - "HFLA-RULE-VS-001"
+      - "HFLA-RULE-VS-002"
+    reliability_tier: "TIER_2_SECONDARY"
+    status: "DRAFT"
+    notes: >
+      Provider-specific observation drawn from the LA
+      marketplace listing page (HFLA-EVD-011); calibration
+      input for HFLA-RULE-VS-001 minimum-fee CEO decision and
+      for HFLA-RULE-VS-002 corporate scope.
+
+  # ---- SUPPLEMENTARY MARKET / ENCYCLOPEDIA CONTEXT -----------------------
+  # The following two records are retained as supplementary context only.
+  # Per the controller's qualification criteria they are EXPLICITLY
+  # EXCLUDED from the six-source LA / nearby Southern California
+  # market-reference minimum.
+
+  - evidence_id: "HFLA-EVD-S-001"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Thumbtack -- national face-painting cost guide (SUPPLEMENTARY ONLY)"
+    source_locator: "https://www.thumbtack.com/p/face-painting-prices"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      SUPPLEMENTARY national context -- does NOT qualify toward
+      the six-source LA market-reference minimum.  Thumbtack-
+      published national price guide.  Headline statistics:
+      'The national average cost of hiring a face painter ranges
+      from around $208-$348, and most people pay around $269,
+      according to Thumbtack data.'  Set-rate examples: Creative
+      Smilez $70/hr within service area; Giggle Loopsy $95/hr
+      with 2-hour minimum; Spectator Party Art starts at
+      $120/hr.  Variable-rate example: Face Painting by Josie
+      $75-$125/hr depending on guest count and travel.
+      Throughput estimate: ~15 faces per hour per artist.
+      Geography: NATIONAL (not LA-specific).  Limitation:
+      national aggregator; per controller criteria national
+      cost guides without local provider observation do not
+      qualify toward the LA-market minimum.
+    related_rule_ids:
+      - "HFLA-RULE-PP-003"
+      - "HFLA-RULE-QT-003"
+    reliability_tier: "TIER_3_INDICATIVE"
+    status: "DRAFT"
+    notes: >
+      SUPPLEMENTARY ONLY -- explicitly does NOT count toward the
+      six-source LA-market reference minimum.  Retained as
+      national context for the Birthday Favorite mid-tier
+      anchoring narrative.
+
+  - evidence_id: "HFLA-EVD-S-002"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Wikipedia -- Body painting (SUPPLEMENTARY ONLY)"
+    source_locator: "https://en.wikipedia.org/wiki/Body_painting"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: >
+      SUPPLEMENTARY encyclopedia context -- does NOT qualify
+      toward the six-source LA market-reference minimum.
+      General-knowledge encyclopedia entry on body and face
+      painting.  Industry-relevant cited statements: 'certain
+      dyes are not approved by the US FDA for use around the
+      eye area' and 'More stringent regulations are in place
+      in California regarding the amount of permissible lead
+      on cosmetic additives, as part of Proposition 65.'
+      Geography: NONE (encyclopedia).  Limitation: per
+      controller criteria Wikipedia and general entertainment
+      / category articles do NOT qualify toward the LA-market
+      minimum.
+    related_rule_ids:
+      - "HFLA-RULE-SC-001"
+    reliability_tier: "TIER_3_INDICATIVE"
+    status: "DRAFT"
+    notes: >
+      SUPPLEMENTARY ONLY -- explicitly does NOT count toward the
+      six-source LA-market reference minimum.  Retained as
+      regulatory framing for HFLA-RULE-SC-001 product-safety
+      narrative.
+
+# ===========================================================================
+# 3. BLOCKER RECORDS -- 33 ordinary CEO-decision blockers.
+#    All blocks_phase_1c_content_loading: false.
+# ===========================================================================
+blocker_records:
+
+  - blocker_id: "HFLA-BLK-001"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm 'Face Painting Parties from $150' as the public
+      headline price-floor wording across the website, Google
+      Ads landing copy, and chatbot pricing intro.
+    why_it_matters: >
+      The $150 figure already appears on the live homepage and
+      pricing page (HFLA-EVD-001, HFLA-EVD-003).  Formalising
+      it as the public headline wording ensures all channels
+      communicate a consistent entry anchor.  LA per-hour
+      comparator HFLA-EVD-008 (Paint On Your Face $120/hr
+      face, 2-hour minimum, ~$240 effective minimum) places
+      HFLA's $150 entry anchor at or below the LA per-hour
+      effective floor.
+    risk_if_missing: >
+      Without an authorised public headline, ad copy / chatbot
+      replies / operator scripts may drift to inconsistent
+      starting-price language that under-performs against LA
+      competitors and produces customer-trust friction.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-001"]
+    related_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-003", "HFLA-EVD-008"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-002"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm that the proposed two-tier package ladder (Color
+      Pop at $150 / Birthday Favorite at $275) replaces the
+      current single-anchor 'Bookings start at $150' framing
+      on every public surface, and confirm the live-baseline
+      transition sequence (homepage update first, pricing page
+      next, Google Ads landing aligned before campaign
+      launches).
+    why_it_matters: >
+      The live HFLA homepage and pricing page currently expose
+      a single $150 floor only (HFLA-EVD-001, HFLA-EVD-003).
+      Migration from the single-floor framing to the two-tier
+      package ladder requires a sequenced update that keeps
+      every public surface internally consistent during the
+      transition window to avoid Google Ads landing-page
+      parity defects (HFLA-RULE-CI-001) and customer
+      confusion.
+    risk_if_missing: >
+      An uncoordinated rollout risks website / ads / chatbot
+      divergence: a Google Ads headline could promise
+      'Birthday Favorite from $275' while the landing page
+      still shows only 'Bookings start at $150', triggering
+      Google Ads Misrepresentation enforcement (HFLA-EVD-004).
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-001", "HFLA-RULE-PP-002", "HFLA-RULE-PP-003", "HFLA-RULE-CI-001"]
+    related_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-003", "HFLA-EVD-004"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-003"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm the customer-facing deposit-confirmation wording
+      and the payment methods accepted for the deposit (Venmo,
+      Zelle, card, cash).  Confirm that both deposit tiers
+      (HFLA-RULE-PP-008) remain non-refundable and apply
+      toward the final balance.
+    why_it_matters: >
+      The deposit is the first financial commitment in the
+      booking funnel.  Wording and accepted methods must be
+      consistent across the booking-policy page, the booking
+      confirmation email and the operator quote conversation.
+    risk_if_missing: >
+      Operators may collect deposits in inconsistent amounts
+      or methods, creating accounting friction and refund
+      disputes.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-008", "HFLA-RULE-PP-009"]
+    related_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-002"]
+    blocked_channels: ["WEBSITE_PUBLIC", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-004"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Choose the travel fee calculation method: (A) flat per
+      zone / city, (B) mileage rate from a home base,
+      (C) tiered flat fee by county, or (D) hybrid (LA base
+      included, OC and Ventura premium).  Confirm the public
+      ZIP-request wording.
+    why_it_matters: >
+      Travel fee consistency is a top source of customer
+      surprise charges.  The booking policy currently states
+      travel 'may be included or added depending on event
+      location' (HFLA-EVD-002).  A defined method lets the
+      quote operator provide an accurate total without
+      last-minute additions and supports HFLA-RULE-QT-002
+      public ZIP intake wording.
+    risk_if_missing: >
+      Undefined travel fees produce quote-operator
+      inconsistency and customer complaints about surprise
+      charges on the event day.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-QT-002", "HFLA-RULE-QT-003"]
+    related_evidence_ids: ["HFLA-EVD-002", "HFLA-EVD-S-001"]
+    blocked_channels: ["WEBSITE_PUBLIC", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-005"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Set specific travel premium amounts for Orange County
+      and Ventura County events, separate from the LA base
+      zone.
+    why_it_matters: >
+      Multi-county coverage is a published differentiator on
+      the website (HFLA-EVD-001).  Without specific premium
+      amounts, operators cannot quote multi-county events
+      consistently.
+    risk_if_missing: >
+      Orange County and Ventura County quotes will be
+      inconsistent across operators and repeat bookings.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-QT-003"]
+    related_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-002"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-006"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Decide whether to publish a starting price for combined
+      face painting + balloon twisting bookings, or maintain
+      'Balloon twisting by quote' wording only.  If a starting
+      price is published, set the amount.
+    why_it_matters: >
+      The 'Face Painting + Balloons Package' is listed on the
+      pricing page as 'Request a quote' (HFLA-EVD-003).  LA
+      comparator HFLA-EVD-008 (Paint On Your Face) publishes
+      $130/hr balloon twisting with a 2-hour minimum,
+      suggesting a combined-starting band roughly $250-$300
+      for a 2-hour two-service event.
+    risk_if_missing: >
+      Customers who want a quick estimate for a combined
+      booking have no public reference and may select an LA
+      competitor that publishes a starting figure.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-005"]
+    related_evidence_ids: ["HFLA-EVD-003", "HFLA-EVD-008"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-007"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Decide whether to publish a starting price for the
+      Glitter + Gems enhancement, or maintain 'Enhancements
+      by quote' wording.  If a starting price is published,
+      set the amount.
+    why_it_matters: >
+      Glitter tattoos and face gems are listed as 'Request a
+      quote' add-ons on the live pricing page (HFLA-EVD-003).
+      Publishing an enhancement starting price could help
+      customers budget before submitting a quote request.
+    risk_if_missing: >
+      Customers interested in enhancements have no pricing
+      signal, which may reduce uptake of higher-margin add-on
+      services.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-004"]
+    related_evidence_ids: ["HFLA-EVD-003"]
+    blocked_channels: ["WEBSITE_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-008"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Set the minimum booking fee for school carnivals,
+      fundraisers and festival booths, and confirm the
+      standard per-additional-artist hourly rate for
+      multi-artist school / festival setups.
+    why_it_matters: >
+      School and festival bookings require multi-artist
+      coordination and longer setup time.  A published
+      minimum protects margin on large-event commitments and
+      simplifies operator quoting.  Marketplace breadth
+      HFLA-EVD-011 and high-volume LA pros HFLA-EVD-012,
+      HFLA-EVD-013 confirm the segment is competitively
+      active.
+    risk_if_missing: >
+      Quote operators may under-price school / festival
+      bookings by treating them as single-event birthday
+      rates, creating margin pressure on high-labour events.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-VS-001", "HFLA-RULE-PP-006"]
+    related_evidence_ids: ["HFLA-EVD-003", "HFLA-EVD-011", "HFLA-EVD-012", "HFLA-EVD-013"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-009"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Set the invoice payment terms for corporate clients:
+      net payment window (e.g. net 7 or net 14), deposit
+      structure for corporate accounts, and whether a
+      corporate minimum booking size applies.
+    why_it_matters: >
+      Corporate bookings are a separate segment that may
+      require professional invoicing and different payment
+      timing than residential event bookings.  Premium-tier
+      comparator HFLA-EVD-010 (Face Painting LA serving
+      Paramount, Casamigos, NFL Network, Sephora) operates a
+      quote-only corporate model with an explicit retainer-
+      fee payment flow.
+    risk_if_missing: >
+      Corporate clients may expect net-30 terms; without a
+      policy, the business risks cash-flow gaps on large-
+      event commitments or disputes over payment timing.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-VS-002", "HFLA-RULE-PP-006"]
+    related_evidence_ids: ["HFLA-EVD-003", "HFLA-EVD-010"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-010"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Set the overtime hourly rate charged when a client
+      requests and the lead artist approves additional time
+      beyond the scheduled end.  This rate underlies the
+      30-minute increment in HFLA-RULE-BP-005.
+    why_it_matters: >
+      The live booking-policy page (HFLA-EVD-002) states
+      overtime is 'added to the final balance' without a
+      specific rate.  A defined rate lets the quote operator
+      communicate overtime costs upfront and prevents end-of-
+      event disputes.
+    risk_if_missing: >
+      Overtime charges without a pre-defined rate create
+      customer friction and disputes at the end of events.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-BP-003", "HFLA-RULE-BP-005"]
+    related_evidence_ids: ["HFLA-EVD-002"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-011"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Decide whether to implement a holiday or peak-demand
+      surcharge (Halloween, Christmas, July 4, school year
+      end) and set the trigger dates and surcharge amount.
+    why_it_matters: >
+      Holiday dates see the highest demand and often require
+      more lead time for artist scheduling.  A demand
+      surcharge lets the business capture additional margin
+      on peak dates and manage demand without turning down
+      bookings.
+    risk_if_missing: >
+      Without a peak surcharge policy, the business
+      underprices its most constrained inventory on
+      high-demand dates.
+    priority: "LOW"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-001"]
+    related_evidence_ids: ["HFLA-EVD-011"]
+    blocked_channels: []
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-012"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Decide whether to implement a last-minute booking
+      surcharge, and if so set the trigger window (e.g. less
+      than 48 hours) and the surcharge amount or percentage.
+    why_it_matters: >
+      Last-minute bookings require rapid artist confirmation
+      and may disrupt existing schedules.  A surcharge
+      compensates for this operational burden.
+    risk_if_missing: >
+      Artists may be asked to accept last-minute bookings at
+      standard rates, creating operational friction.
+    priority: "LOW"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-BP-001"]
+    related_evidence_ids: ["HFLA-EVD-002"]
+    blocked_channels: []
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-013"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Define the cancellation notice window in days -- the
+      number of days before the event by which a cancellation
+      must be received for any consideration of deposit
+      credit toward a future booking.
+    why_it_matters: >
+      The live booking-policy page (HFLA-EVD-002) states the
+      deposit is non-refundable without specifying a notice
+      window for the deposit-transfer option.
+    risk_if_missing: >
+      Customers may expect a deposit transfer regardless of
+      timing, creating disputes when cancellations occur
+      close to the event date.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-BP-001"]
+    related_evidence_ids: ["HFLA-EVD-002"]
+    blocked_channels: ["WEBSITE_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-014"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm the one-time-only deposit transfer cap and set
+      the minimum advance notice required for a reschedule
+      transfer to be approved.
+    why_it_matters: >
+      The booking policy page (HFLA-EVD-002) states the
+      deposit 'may be transferred one time to a new event
+      date with advance notice.'  The advance-notice
+      threshold is not defined.
+    risk_if_missing: >
+      Operators applying the transfer policy inconsistently
+      may grant transfers with very short notice, undermining
+      the revenue-protection purpose of the non-refundable
+      deposit.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-BP-002"]
+    related_evidence_ids: ["HFLA-EVD-002"]
+    blocked_channels: ["WEBSITE_PUBLIC", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-015"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Define the weather cancellation policy: if unsafe
+      outdoor conditions prevent service from starting and
+      the event cannot move indoors, does the client receive
+      a deposit credit, a partial refund or no refund?
+    why_it_matters: >
+      Weather cancellations are outside both parties'
+      control.  A defined policy protects the business from
+      full refund demands while being fair to clients who
+      cannot provide safe outdoor conditions.
+    risk_if_missing: >
+      Weather disputes create negative reviews and social
+      media complaints, disproportionately damaging a
+      family-oriented brand.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-BP-004"]
+    related_evidence_ids: ["HFLA-EVD-002"]
+    blocked_channels: ["WEBSITE_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-016"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Authorise the Google Ads campaign: confirm campaign
+      budget, geographic targeting (LA County only or all
+      three counties), target keywords, and the specific
+      RSA headline / description / path content.  Confirm
+      that every candidate headline is <=30 characters,
+      every description is <=90 characters, and every path
+      field is <=15 characters per HFLA-EVD-006 RSA spec.
+      Confirm landing-page parity (HFLA-RULE-CI-001).
+    why_it_matters: >
+      Google Ads requires that ad price claims match the
+      landing page (HFLA-EVD-004).  No ad copy may go live
+      without CEO review of every headline, description and
+      destination URL.
+    risk_if_missing: >
+      Unapproved or misaligned ad copy risks Google Ads
+      policy violations, ad disapprovals and account-level
+      enforcement action.
+    priority: "CRITICAL"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-CI-001", "HFLA-RULE-CI-002"]
+    related_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-005", "HFLA-EVD-006"]
+    blocked_channels: ["GOOGLE_ADS_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-017"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Define the chatbot authority limit for pricing: exactly
+      what pricing information the chatbot may state without
+      human escalation (e.g. starting price + Color Pop +
+      Birthday Favorite only, or full pricing overview).
+      Approve the specific escalation message template.
+    why_it_matters: >
+      An overly narrow chatbot creates a poor customer
+      experience; an overly broad chatbot may quote prices
+      the business cannot honour.  The approved escalation
+      message becomes the canonical customer-facing response
+      when a specific quote is needed.
+    risk_if_missing: >
+      The chatbot may either frustrate customers by refusing
+      to share the published starting price, or over-promise
+      by quoting specific event prices that cannot be
+      confirmed without operator review.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-AR-001", "HFLA-RULE-AR-002"]
+    related_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-005"]
+    blocked_channels: ["CUSTOMER_CHATBOT_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-018"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Decide whether to publish a specific quote response
+      SLA on the website (e.g. 'Response within 2 business
+      hours' or 'Same business day').  If yes, set the
+      commitment window and the channels on which it
+      appears.
+    why_it_matters: >
+      A specific response-time promise is a proven
+      conversion differentiator.  The current website
+      language ('expect a response quickly') provides no
+      measurable commitment.  Direct LA comparators
+      HFLA-EVD-008 and HFLA-EVD-010 also do not commit to a
+      numeric SLA -- HFLA could differentiate by publishing
+      one.
+    risk_if_missing: >
+      Without a stated SLA, the business cannot use response
+      time as a competitive claim in Google Ads or on the
+      pricing page.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-QT-002"]
+    related_evidence_ids: ["HFLA-EVD-003", "HFLA-EVD-008", "HFLA-EVD-010"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-019"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Choose the pricing-model presentation: (A) flat-package
+      only (current state -- HFLA-RULE-PP-002, HFLA-RULE-PP-003);
+      (B) packages plus an explicit per-hour rate with a
+      two-hour minimum aligned with the LA per-hour norm
+      (HFLA-EVD-008 Paint On Your Face $120/hr, 2-hr min);
+      (C) hybrid (packages + published per-hour overage rate).
+      If (B) or (C), set the per-hour rate.
+    why_it_matters: >
+      LA-market discoverability is hourly-rate-led.  Most
+      direct competitor pages anchor on per-hour rates.  A
+      flat-only presentation may cause LA customers to bounce
+      to a competitor with a stated hourly figure.
+    risk_if_missing: >
+      Without a per-hour stance, ad copy / chatbot / operator
+      scripts continue to default to vague 'final quote
+      depends on ...' language that under-performs in paid
+      search.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-007", "HFLA-RULE-QT-004"]
+    related_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-003", "HFLA-EVD-008"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-020"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm the approved safety-marketing language for all
+      public channels.  Recommended language: 'cosmetic-grade,
+      FDA color-additive compliant'.  Confirm the unqualified
+      term 'hypoallergenic' is BANNED from website, ad copy,
+      chatbot replies and operator scripts (per FDA guidance
+      HFLA-EVD-007).  Optionally approve an allergy-
+      sensitivity prompt on the quote intake form.
+    why_it_matters: >
+      LA comparator HFLA-EVD-009 (BubbleMania & Co.)
+      publishes the unqualified 'hypoallergenic' claim that
+      FDA explicitly states has no federal definition.  If
+      HFLA mirrors that wording, the claim is exposed to FTC
+      misleading-cosmetics scrutiny, Google Ads
+      Misrepresentation enforcement (HFLA-EVD-004), and
+      brand damage on parent-driven channels.
+    risk_if_missing: >
+      Channel copy and operator scripts may drift into
+      unsubstantiated 'hypoallergenic' claims, creating
+      regulatory and ad-account-suspension risk.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-SC-001", "HFLA-RULE-SC-002"]
+    related_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-007", "HFLA-EVD-009"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-021"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Authorise the two named public packages -- 'Color Pop
+      Face Painting' ($150 / 1 hour / 1 artist / up to 10
+      children) and 'Birthday Favorite' ($275 / 2 hours / 1
+      artist / up to 18 children) -- for publication on the
+      website, Google Ads landing destinations, and chatbot
+      replies.  Confirm package names, prices, duration,
+      artist count, and child-count framing.
+    why_it_matters: >
+      The package ladder is the central public anchor that
+      replaces the single-floor framing.  A defined ladder
+      reduces quote-form friction for the most common LA
+      birthday booking shapes and gives ads / chatbot a
+      concrete anchor to convert against LA competitors.
+    risk_if_missing: >
+      Without authorised package names, the website cannot
+      move beyond the current 'Bookings start at $150'
+      single anchor, which under-performs against LA
+      competitors that publish per-hour or packaged prices.
+    priority: "CRITICAL"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-002", "HFLA-RULE-PP-003"]
+    related_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-003", "HFLA-EVD-008"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-022"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm the tiered deposit policy: $50 flat for quotes
+      below $300; 30 percent (rounded up to nearest dollar)
+      for quotes at or above $300.  Confirm the $300
+      threshold, the 30 percent rate, and that both tiers
+      remain non-refundable and apply toward final balance.
+    why_it_matters: >
+      A flat $50 hold becomes disproportionately small as
+      ticket size grows (multi-artist, school, festival,
+      corporate).  Tiered deposits align with category norms
+      and protect against late-cancellation losses on
+      larger commitments.
+    risk_if_missing: >
+      The business absorbs disproportionate cancellation
+      risk on higher-value bookings, and operators cannot
+      confidently quote larger events.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-008"]
+    related_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-002"]
+    blocked_channels: ["WEBSITE_PUBLIC", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-023"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Authorise the vendor / community pilot parameters:
+      (a) maximum 10 sponsored designs;
+      (b) HFLA-only-provider exclusivity during the pilot;
+      (c) visible sponsorship identification on every
+          customer-facing surface;
+      (d) continuation of paid services;
+      (e) sponsor-family attendance at each sponsored event;
+      (f) case-by-case CEO approval per booking.
+      Approve specific sponsor partners (if any).
+    why_it_matters: >
+      Sponsored content carries FTC endorsement-disclosure
+      and Google Ads Misrepresentation-policy risk
+      (HFLA-EVD-004).  Explicit parameters protect the brand
+      and ensure operators apply identical rules to every
+      sponsored engagement.
+    risk_if_missing: >
+      Operators may informally accept sponsored arrangements
+      that violate FTC disclosure rules or undermine the
+      paid-services revenue stream.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-VS-003"]
+    related_evidence_ids: ["HFLA-EVD-004"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-024"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm general-liability insurance carrier and limits;
+      confirm whether the policy supports per-event
+      additional-insured endorsements for venues / hosts;
+      set the COI-issuance SLA when a school or corporate
+      client requests one; decide whether COI issuance is
+      bundled with the booking fee or carries a separate
+      service charge.
+    why_it_matters: >
+      School and corporate bookings commonly require a COI
+      before contract signing.  Without a confirmed COI
+      workflow, these bookings stall and the segment cannot
+      scale.
+    risk_if_missing: >
+      Schools and corporate clients will reject HFLA from
+      their approved-vendor list if a COI cannot be issued
+      promptly.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-SC-003", "HFLA-RULE-VS-001", "HFLA-RULE-VS-002"]
+    related_evidence_ids: ["HFLA-EVD-002"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-025"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm the PII-redaction workflow for Copilot-internal
+      decision-support inputs: which fields must be redacted
+      (canonical PII set: customer_name, customer_email,
+      customer_phone, event_address, billing_address,
+      client_name, contact_email, contact_phone, lead_name,
+      quote_recipient, booking_contact), at what point in the
+      operator workflow redaction occurs, and operator
+      training acknowledgement that no PII may be pasted
+      into Copilot inputs.
+    why_it_matters: >
+      Copilot-internal decision support has no public-facing
+      surface, but content entering Copilot is processed
+      off-platform.  PII must be excluded at the boundary.
+    risk_if_missing: >
+      Customer PII may be sent to third-party AI services
+      without a defensible redaction policy, creating
+      privacy-law exposure and a governance gap relative to
+      the platform's existing RESTRICTED_OPERATIONS_PII
+      boundary.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-AR-003"]
+    related_evidence_ids: ["HFLA-EVD-005"]
+    blocked_channels: ["COPILOT_INTERNAL_DECISION_SUPPORT", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-026"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm the $100 cumulative paid-ad spend gate:
+      (a) the $100 cap is correct for the initial campaign
+      window; (b) the campaign is paused at the Google Ads
+      account level the moment cumulative spend reaches
+      $100; (c) the workflow for the CEO to authorise the
+      next spend tranche in writing; (d) who at Google Ads
+      account level is authorised to pause and resume the
+      campaign.
+    why_it_matters: >
+      The $100 gate caps initial paid-channel exposure
+      during commercial launch and forces a deliberate go /
+      no-go decision rather than passive auto-renewal.
+    risk_if_missing: >
+      Without a hard spend cap, a poorly-performing
+      campaign could continue drawing budget without
+      governance visibility.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-CI-003", "HFLA-RULE-CI-001"]
+    related_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-005"]
+    blocked_channels: ["GOOGLE_ADS_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-027"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm the artist dispatch / scheduling model: (A)
+      single dispatcher; (B) round-robin pool; (C) artist
+      self-claim with dispatcher backup.  Confirm the
+      source-of-truth scheduling system and how scheduling
+      conflicts are escalated.
+    why_it_matters: >
+      Inconsistent dispatch causes double-booked artists,
+      late arrivals, and operator-side quoting friction.
+      The model affects operator workflow, Copilot decision
+      support, and the quote-response SLA.
+    risk_if_missing: >
+      Bookings can be confirmed without a guaranteed artist,
+      leading to late cancellations and customer complaints.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-QT-001"]
+    related_evidence_ids: ["HFLA-EVD-002", "HFLA-EVD-003"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-028"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Set the same-day and same-weekend concurrent-booking
+      capacity caps: maximum number of confirmed bookings
+      per day and per weekend, conditional on artist roster
+      size.  Define the rule the operator applies when an
+      incoming inquiry exceeds capacity (waitlist, decline,
+      refer to partner, etc.).
+    why_it_matters: >
+      Without a capacity policy, operators may over-book a
+      single weekend, compromising service quality on the
+      highest-demand dates.
+    risk_if_missing: >
+      Over-booked weekends cause artist no-shows or
+      short-staffed events, directly damaging the brand on
+      the highest-revenue dates.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-QT-001", "HFLA-RULE-VS-001"]
+    related_evidence_ids: ["HFLA-EVD-003", "HFLA-EVD-011"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-029"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm customer-facing tax / fee disclosure:
+      (a) whether any tax or surcharge appears on the
+      customer invoice; (b) exact disclosure wording on the
+      website pricing page and in booking confirmation;
+      (c) 1099-NEC reporting workflow for contracted
+      artists; (d) W-9 collection workflow for corporate
+      clients.
+    why_it_matters: >
+      Tax exposure is silent until a CDTFA or IRS notice
+      arrives.  Operator-side invoice templates must be
+      consistent with the chosen treatment.
+    risk_if_missing: >
+      Inconsistent operator invoicing creates audit risk
+      and complicates year-end 1099 issuance.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-SC-004", "HFLA-RULE-VS-002"]
+    related_evidence_ids: ["HFLA-EVD-002"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-030"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm the recommended 30-minute overtime increment
+      (HFLA-RULE-BP-005) and confirm the half-hour overtime
+      rate.  Half-hour rate must be consistent with the
+      per-hour rate set under HFLA-BLK-010.
+    why_it_matters: >
+      Without an explicit increment rule, operators will
+      apply overtime inconsistently -- some quoting full
+      hours, some quoting smaller blocks -- creating
+      end-of-event disputes and quote drift across the team.
+    risk_if_missing: >
+      Inconsistent overtime billing across artists / events
+      damages customer trust and operator confidence.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-BP-005", "HFLA-RULE-BP-003"]
+    related_evidence_ids: ["HFLA-EVD-002"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-031"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm photo / video / privacy-consent governance
+      for face-painted customers at HFLA events:
+      (a) explicit ban on unconsented photography by HFLA
+          artists, partners, and sponsor representatives;
+      (b) opt-in mechanism (checkbox at booking
+          confirmation);
+      (c) parent / guardian consent requirement for any
+          identifiable depiction of a minor;
+      (d) booking-policy page text describing what HFLA
+          may and may not publish;
+      (e) internal-only event-coverage exception (private
+          operator review, COI claim documentation, QA).
+    why_it_matters: >
+      HFLA's primary service produces identifiable
+      depictions of children.  Publishing such imagery
+      without explicit consent creates direct privacy and
+      reputational exposure on a family-oriented brand.
+      V2 had no rule or blocker on this topic -- material
+      governance gap.
+    risk_if_missing: >
+      Operators or sponsors may post identifiable child
+      imagery to social media without consent, exposing
+      HFLA to parental complaints, platform takedowns,
+      and potential legal claims.
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-SC-005", "HFLA-RULE-VS-003"]
+    related_evidence_ids: ["HFLA-EVD-002"]
+    blocked_channels: ["WEBSITE_PUBLIC", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-032"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm the explicit interaction between the travel
+      fee policy (HFLA-RULE-QT-003) and the two-hour
+      minimum (if adopted under HFLA-RULE-PP-007 option B
+      or C): (a) does the two-hour minimum apply only to
+      the LA base zone or to every event regardless of
+      zone? (b) is the travel fee additive to the two-hour
+      minimum, or is the two-hour minimum waived above a
+      travel-fee threshold? (c) for events outside the
+      approved local service zone, does the two-hour
+      minimum become a three-hour minimum?
+    why_it_matters: >
+      Without explicit interaction rules, operators will
+      quote inconsistently for OC and Ventura events that
+      travel farther but commit less time on-site,
+      producing customer-trust friction and margin drift.
+      V2 did not address this interaction.
+    risk_if_missing: >
+      Quotes for the same OC / Ventura event shape will
+      vary widely between operators; customer-facing
+      perception of the policy will be incoherent.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-QT-004", "HFLA-RULE-PP-007", "HFLA-RULE-QT-003"]
+    related_evidence_ids: ["HFLA-EVD-008"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL", "WEBSITE_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+  - blocker_id: "HFLA-BLK-033"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: >
+      Confirm the quote-operator prohibited-promise list
+      (HFLA-RULE-CI-004): (a) operators must follow the
+      CEO-approved quote-operator scripts and (b) must NOT
+      make unapproved discounts, unpublished-package
+      prices, named-artist commitments, weather / parking
+      guarantees, COI SLAs not authorised under
+      HFLA-BLK-024, or sponsor / pilot commitments.
+      Confirm the operator-side escalation workflow when a
+      customer asks for an off-script commitment.
+    why_it_matters: >
+      Operator off-script promises become legally binding
+      commitments to the customer regardless of approval
+      status.  An explicit, documented prohibition is the
+      only defensible operator-side discipline.  V2 had no
+      explicit rule on this topic.
+    risk_if_missing: >
+      Operators may quote unauthorised discounts or
+      packages, undermining HFLA pricing discipline and
+      creating revenue leakage.
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-CI-004"]
+    related_evidence_ids: ["HFLA-EVD-002"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+
+# ===========================================================================
+# 4. CHANNEL PROJECTION RECORDS -- 30 DRAFT projections across 5 channels.
+#    Each projection governs exactly one independently-approvable CEO
+#    publication decision.  approved_channel_text is empty (DRAFT).
+# ===========================================================================
+channel_projection_records:
+
+  # ---- WEBSITE_PUBLIC (8 projections) -------------------------------------
+  - projection_id: "HFLA-PROJ-WEB-001"
+    publication_key: "hfla.web.headline_price_floor"
+    related_rule_ids: ["HFLA-RULE-PP-001"]
+    source_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-003"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PUBLIC_HEADLINE"
+    draft_channel_text: >
+      Face Painting Parties from $150.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Public headline.  CEO authorises wording in HFLA-BLK-001.
+
+  - projection_id: "HFLA-PROJ-WEB-002"
+    publication_key: "hfla.web.color_pop_package"
+    related_rule_ids: ["HFLA-RULE-PP-002"]
+    source_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-003"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PUBLIC_PACKAGE_DESCRIPTION"
+    draft_channel_text: >
+      Color Pop Face Painting -- from $150. One artist, one hour
+      of face painting, intended for up to 10 children (subject
+      to confirmation in your quote), compact event-menu designs.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Entry-tier package.  CEO authorises in HFLA-BLK-021.
+
+  - projection_id: "HFLA-PROJ-WEB-003"
+    publication_key: "hfla.web.birthday_favorite_package"
+    related_rule_ids: ["HFLA-RULE-PP-003"]
+    source_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-003"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PUBLIC_PACKAGE_DESCRIPTION"
+    draft_channel_text: >
+      Birthday Favorite -- from $275. One artist, two hours of
+      face painting, intended for up to 18 children (subject to
+      confirmation in your quote), full party-menu designs.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Mid-tier package.  CEO authorises in HFLA-BLK-021.
+
+  - projection_id: "HFLA-PROJ-WEB-004"
+    publication_key: "hfla.web.enhancements_by_quote"
+    related_rule_ids: ["HFLA-RULE-PP-004", "HFLA-RULE-PP-005"]
+    source_evidence_ids: ["HFLA-EVD-003"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PUBLIC_ENHANCEMENTS_DESCRIPTION"
+    draft_channel_text: >
+      Enhancements by quote -- glitter tattoos and face gems
+      added to any party package.  Balloon twisting by quote,
+      standalone or combined with face painting.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Enhancements + balloon copy.  CEO authorises in
+      HFLA-BLK-006 and HFLA-BLK-007.
+
+  - projection_id: "HFLA-PROJ-WEB-005"
+    publication_key: "hfla.web.custom_quote_segments"
+    related_rule_ids: ["HFLA-RULE-PP-006", "HFLA-RULE-VS-001", "HFLA-RULE-VS-002"]
+    source_evidence_ids: ["HFLA-EVD-003"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PUBLIC_CUSTOM_QUOTE_DESCRIPTION"
+    draft_channel_text: >
+      Custom quote for schools, festivals, corporate events,
+      and high-volume bookings.  Multiple artists available.
+      Share your event details for a tailored quote.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Schools / festivals / corporate copy.  CEO authorises
+      in HFLA-BLK-008 and HFLA-BLK-009.
+
+  - projection_id: "HFLA-PROJ-WEB-006"
+    publication_key: "hfla.web.travel_zip_request"
+    related_rule_ids: ["HFLA-RULE-QT-001", "HFLA-RULE-QT-002"]
+    source_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-002"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PUBLIC_TRAVEL_INTAKE"
+    draft_channel_text: >
+      Please share your event ZIP or city so we can confirm
+      coverage across Los Angeles, Orange, and Ventura
+      counties and any travel fee.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Public ZIP intake wording.  CEO authorises in
+      HFLA-BLK-004.
+
+  - projection_id: "HFLA-PROJ-WEB-007"
+    publication_key: "hfla.web.booking_cta"
+    related_rule_ids: ["HFLA-RULE-PP-001", "HFLA-RULE-AR-002"]
+    source_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-002"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PUBLIC_CTA"
+    draft_channel_text: >
+      Book your event: share your details and we will respond
+      with availability and pricing.  Phone or text
+      818-619-5506.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Booking CTA.  CEO confirms SLA wording in
+      HFLA-BLK-018.
+
+  - projection_id: "HFLA-PROJ-WEB-008"
+    publication_key: "hfla.web.pending_policy_qualifier"
+    related_rule_ids: ["HFLA-RULE-PP-008", "HFLA-RULE-BP-001", "HFLA-RULE-BP-004", "HFLA-RULE-SC-005"]
+    source_evidence_ids: ["HFLA-EVD-002"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PUBLIC_POLICY_QUALIFIER"
+    draft_channel_text: >
+      Final quote depends on event location, guest count,
+      services requested, event duration, and number of
+      artists needed.  Deposit policy, cancellation window,
+      weather policy and photo / video consent are confirmed
+      with your booking -- see Booking Policy.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Final-quote qualifier surfacing all open CEO
+      decisions for the booking-policy page.  CEO confirms
+      under HFLA-BLK-013, HFLA-BLK-014, HFLA-BLK-015,
+      HFLA-BLK-022, HFLA-BLK-031.
+
+  # ---- GOOGLE_ADS_PUBLIC (6 projections) ----------------------------------
+  - projection_id: "HFLA-PROJ-ADS-001"
+    publication_key: "hfla.ads.rsa_headline_1"
+    related_rule_ids: ["HFLA-RULE-CI-001", "HFLA-RULE-CI-002", "HFLA-RULE-PP-001"]
+    source_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-006"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "AD_HEADLINE"
+    draft_channel_text: >
+      LA Face Painting Pros
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      RSA headline 1 (21 chars, <=30 per HFLA-EVD-006).  CEO
+      authorises in HFLA-BLK-016.
+
+  - projection_id: "HFLA-PROJ-ADS-002"
+    publication_key: "hfla.ads.rsa_headline_2"
+    related_rule_ids: ["HFLA-RULE-CI-001", "HFLA-RULE-CI-002", "HFLA-RULE-PP-001"]
+    source_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-006"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "AD_HEADLINE"
+    draft_channel_text: >
+      Parties From $150
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      RSA headline 2 (17 chars, <=30).  CEO authorises in
+      HFLA-BLK-016.
+
+  - projection_id: "HFLA-PROJ-ADS-003"
+    publication_key: "hfla.ads.rsa_headline_3"
+    related_rule_ids: ["HFLA-RULE-CI-001", "HFLA-RULE-CI-002", "HFLA-RULE-PP-003"]
+    source_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-006"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "AD_HEADLINE"
+    draft_channel_text: >
+      Birthday Favorite From $275
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      RSA headline 3 (27 chars, <=30).  CEO authorises in
+      HFLA-BLK-016.
+
+  - projection_id: "HFLA-PROJ-ADS-004"
+    publication_key: "hfla.ads.rsa_description_1"
+    related_rule_ids: ["HFLA-RULE-CI-001", "HFLA-RULE-CI-002", "HFLA-RULE-PP-001"]
+    source_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-006"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "AD_DESCRIPTION"
+    draft_channel_text: >
+      Face painting, balloons & glitter tattoos for LA parties. Color Pop from $150. Quote fast.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      RSA description 1 (89 chars, <=90).  CEO authorises in
+      HFLA-BLK-016.
+
+  - projection_id: "HFLA-PROJ-ADS-005"
+    publication_key: "hfla.ads.rsa_description_2"
+    related_rule_ids: ["HFLA-RULE-CI-001", "HFLA-RULE-CI-002", "HFLA-RULE-SC-002"]
+    source_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-006", "HFLA-EVD-007"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "AD_DESCRIPTION"
+    draft_channel_text: >
+      Deposit holds your date. LA, OC & Ventura. Cosmetic-grade, FDA color-additive compliant.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      RSA description 2 (89 chars, <=90). 'Cosmetic-grade,
+      FDA color-additive compliant' wording follows
+      HFLA-RULE-SC-002 -- no unqualified 'hypoallergenic'.
+
+  - projection_id: "HFLA-PROJ-ADS-006"
+    publication_key: "hfla.ads.landing_parity_control"
+    related_rule_ids: ["HFLA-RULE-CI-001", "HFLA-RULE-CI-003"]
+    source_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-005"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "AD_LANDING_PARITY_CONTROL"
+    draft_channel_text: >
+      Landing-page parity control: every price or package
+      claim in this ad must match the wording on the ad's
+      landing page.  Campaign auto-pauses at $100
+      cumulative spend (HFLA-RULE-CI-003) pending CEO
+      re-authorisation.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Landing-parity + spend-cap eligibility control.
+      Operationalised via HFLA-BLK-016 and HFLA-BLK-026.
+
+  # ---- CUSTOMER_CHATBOT_PUBLIC (6 projections) ----------------------------
+  - projection_id: "HFLA-PROJ-BOT-001"
+    publication_key: "hfla.chatbot.starting_price_response"
+    related_rule_ids: ["HFLA-RULE-AR-001", "HFLA-RULE-PP-001"]
+    source_evidence_ids: ["HFLA-EVD-001"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_PRICING_RESPONSE"
+    draft_channel_text: >
+      Face Painting Parties start at $150 with Happy Faces
+      LA.  For a price tailored to your event, share your
+      details -- we'll respond with availability and pricing.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Starting-price chatbot response.  CEO confirms
+      authority limit in HFLA-BLK-017.
+
+  - projection_id: "HFLA-PROJ-BOT-002"
+    publication_key: "hfla.chatbot.package_selection_response"
+    related_rule_ids: ["HFLA-RULE-AR-001", "HFLA-RULE-PP-002", "HFLA-RULE-PP-003"]
+    source_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-003"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_PACKAGE_RESPONSE"
+    draft_channel_text: >
+      Two packages to choose from: Color Pop Face Painting
+      from $150 (1 hour, 1 artist, up to 10 children) and
+      Birthday Favorite from $275 (2 hours, 1 artist, up
+      to 18 children).  Both finalised in your quote.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Package-selection chatbot response.  CEO authorises
+      package names in HFLA-BLK-021.
+
+  - projection_id: "HFLA-PROJ-BOT-003"
+    publication_key: "hfla.chatbot.zip_travel_collection_response"
+    related_rule_ids: ["HFLA-RULE-AR-001", "HFLA-RULE-QT-001", "HFLA-RULE-QT-002"]
+    source_evidence_ids: ["HFLA-EVD-002"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_INTAKE_RESPONSE"
+    draft_channel_text: >
+      What is your event ZIP or city?  We serve Los
+      Angeles, Orange, and Ventura counties; travel may
+      apply for some locations.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      ZIP / travel chatbot intake.  CEO authorises wording
+      in HFLA-BLK-004.
+
+  - projection_id: "HFLA-PROJ-BOT-004"
+    publication_key: "hfla.chatbot.availability_intake_response"
+    related_rule_ids: ["HFLA-RULE-AR-001", "HFLA-RULE-QT-001"]
+    source_evidence_ids: ["HFLA-EVD-001"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_INTAKE_RESPONSE"
+    draft_channel_text: >
+      What is your event date and approximate start time?
+      Sharing this lets us check artist availability for
+      your slot.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Availability intake.  CEO confirms dispatch model
+      in HFLA-BLK-027.
+
+  - projection_id: "HFLA-PROJ-BOT-005"
+    publication_key: "hfla.chatbot.deposit_cancellation_escalation"
+    related_rule_ids: ["HFLA-RULE-AR-002", "HFLA-RULE-PP-008", "HFLA-RULE-BP-001"]
+    source_evidence_ids: ["HFLA-EVD-002"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_ESCALATION_RESPONSE"
+    draft_channel_text: >
+      Deposit and cancellation specifics are confirmed
+      when we send your quote.  For exact terms tailored
+      to your booking, please share your event details or
+      call / text 818-619-5506.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Deposit / cancellation escalation.  CEO confirms
+      deposit-tier and cancellation-window decisions in
+      HFLA-BLK-013, HFLA-BLK-022.
+
+  - projection_id: "HFLA-PROJ-BOT-006"
+    publication_key: "hfla.chatbot.prohibited_promises_guardrail"
+    related_rule_ids: ["HFLA-RULE-AR-002"]
+    source_evidence_ids: ["HFLA-EVD-004"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_GUARDRAIL"
+    draft_channel_text: >
+      For specific final pricing, school / festival /
+      corporate quotes, multi-artist bookings, COI
+      requests, or any sponsor commitment, please contact
+      the human quote team at
+      happyfacesla.com/contact/ or 818-619-5506.  The
+      chatbot cannot finalise these requests.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    notes_internal_only: >
+      Human-escalation + prohibited-promises chatbot
+      guardrail.  CEO approves language in HFLA-BLK-017.
+
+  # ---- COPILOT_INTERNAL_DECISION_SUPPORT (5 projections) ------------------
+  - projection_id: "HFLA-PROJ-COP-001"
+    publication_key: "hfla.copilot.draft_not_policy_disclaimer"
+    related_rule_ids: ["HFLA-RULE-AR-003"]
+    source_evidence_ids: ["HFLA-EVD-005"]
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    content_type: "INTERNAL_DRAFT_DISCLAIMER"
+    draft_channel_text: >
+      INTERNAL USE ONLY -- DRAFT, NOT APPROVED POLICY.
+      Every recommendation surfaced by Copilot is DRAFT
+      pending CEO release approval.  Do NOT communicate
+      any Copilot-generated commitment to a customer
+      without first verifying against an APPROVED
+      Channel Projection Record release.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    notes_internal_only: >
+      DRAFT-not-policy boundary.  Always present in
+      Copilot context.  CEO confirms wording in
+      HFLA-BLK-025.
+
+  - projection_id: "HFLA-PROJ-COP-002"
+    publication_key: "hfla.copilot.package_quotation_support"
+    related_rule_ids: ["HFLA-RULE-AR-003", "HFLA-RULE-PP-002", "HFLA-RULE-PP-003"]
+    source_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-003", "HFLA-EVD-008"]
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    content_type: "INTERNAL_PACKAGE_SUPPORT"
+    draft_channel_text: >
+      INTERNAL USE ONLY (DRAFT).  Package quotation
+      reference: Color Pop $150 (1 hr, 1 artist, <=10 kids
+      indicative) and Birthday Favorite $275 (2 hrs, 1
+      artist, <=18 kids indicative).  LA per-hour
+      comparator (HFLA-EVD-008 Paint On Your Face):
+      $120/hr face, $130/hr balloon, $135/hr caricature,
+      2-hour minimum.  Use to anchor operator quotes;
+      every customer commitment requires a sent quote.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    notes_internal_only: >
+      Internal Copilot package-quotation support.  CEO
+      confirms in HFLA-BLK-021.
+
+  - projection_id: "HFLA-PROJ-COP-003"
+    publication_key: "hfla.copilot.travel_deposit_conditional_guidance"
+    related_rule_ids: ["HFLA-RULE-AR-003", "HFLA-RULE-QT-003", "HFLA-RULE-QT-004", "HFLA-RULE-PP-008"]
+    source_evidence_ids: ["HFLA-EVD-002"]
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    content_type: "INTERNAL_CONDITIONAL_GUIDANCE"
+    draft_channel_text: >
+      INTERNAL USE ONLY (DRAFT).  Conditional guidance:
+      apply CEO-approved travel-fee method (HFLA-BLK-004,
+      HFLA-BLK-005); apply travel × two-hour interaction
+      rules (HFLA-BLK-032); apply tiered deposit
+      ($50 < $300; 30% >= $300 pending HFLA-BLK-022).
+      Flag any quote that triggers more than one open
+      CEO decision for operator escalation.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    notes_internal_only: >
+      Travel / deposit conditional guidance.  CEO
+      confirms via HFLA-BLK-004, HFLA-BLK-022,
+      HFLA-BLK-032.
+
+  - projection_id: "HFLA-PROJ-COP-004"
+    publication_key: "hfla.copilot.ads_spend_gate_guidance"
+    related_rule_ids: ["HFLA-RULE-AR-003", "HFLA-RULE-CI-003"]
+    source_evidence_ids: ["HFLA-EVD-005"]
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    content_type: "INTERNAL_ADS_SPEND_GUIDANCE"
+    draft_channel_text: >
+      INTERNAL USE ONLY (DRAFT).  Google Ads spend gate:
+      $100 cumulative cap (HFLA-RULE-CI-003).  If asked
+      about ad spend, surface only the $100 cap and the
+      pause-and-re-authorise workflow; never authorise
+      additional spend without CEO written approval
+      (HFLA-BLK-026).
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    notes_internal_only: >
+      Ads-spend gate guidance for Copilot.  CEO
+      confirms in HFLA-BLK-026.
+
+  - projection_id: "HFLA-PROJ-COP-005"
+    publication_key: "hfla.copilot.restricted_pii_boundary"
+    related_rule_ids: ["HFLA-RULE-AR-003"]
+    source_evidence_ids: ["HFLA-EVD-005"]
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    content_type: "INTERNAL_PII_BOUNDARY"
+    draft_channel_text: >
+      INTERNAL USE ONLY (DRAFT).  Restricted-PII boundary:
+      do not include or accept customer_name,
+      customer_email, customer_phone, event_address,
+      billing_address, client_name, contact_email,
+      contact_phone, lead_name, quote_recipient, or
+      booking_contact in any Copilot prompt or output.
+      PII flows only through the operator workflow and
+      the restricted operations workbook.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    notes_internal_only: >
+      PII boundary for Copilot.  CEO confirms redaction
+      workflow in HFLA-BLK-025.
+
+  # ---- QUOTE_OPERATOR_INTERNAL (5 projections) ----------------------------
+  - projection_id: "HFLA-PROJ-QOP-001"
+    publication_key: "hfla.quoteop.intake_fields_script"
+    related_rule_ids: ["HFLA-RULE-CI-004", "HFLA-RULE-QT-002"]
+    source_evidence_ids: ["HFLA-EVD-001", "HFLA-EVD-002"]
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    content_type: "OPERATOR_INTAKE_SCRIPT"
+    draft_channel_text: >
+      OPERATOR INTAKE (DRAFT).  Collect: event date and
+      start time; event ZIP / city; guest count;
+      requested services (face painting, balloon
+      twisting, glitter, gems); event type (private
+      birthday, school, corporate, festival); parking
+      and venue notes; allergy / sensitivity notes.
+      Confirm contact name + email + phone last.  Read
+      the privacy / photo-consent note at booking
+      confirmation (HFLA-PROJ-WEB-008).
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    notes_internal_only: >
+      Operator intake script.  CEO confirms in
+      HFLA-BLK-033.
+
+  - projection_id: "HFLA-PROJ-QOP-002"
+    publication_key: "hfla.quoteop.package_assembly_script"
+    related_rule_ids: ["HFLA-RULE-CI-004", "HFLA-RULE-PP-002", "HFLA-RULE-PP-003", "HFLA-RULE-PP-004", "HFLA-RULE-PP-005"]
+    source_evidence_ids: ["HFLA-EVD-003"]
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    content_type: "OPERATOR_PACKAGE_SCRIPT"
+    draft_channel_text: >
+      OPERATOR PACKAGE ASSEMBLY (DRAFT).  Start with
+      Color Pop ($150) or Birthday Favorite ($275) as
+      the anchor.  Layer Enhancements (glitter / gems)
+      by quote.  Layer Balloon twisting by quote.
+      Confirm artist count for guest count > 18.
+      Confirm any additional services trigger a new
+      written quote line.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    notes_internal_only: >
+      Operator package-assembly script.  CEO confirms
+      package pricing in HFLA-BLK-021.
+
+  - projection_id: "HFLA-PROJ-QOP-003"
+    publication_key: "hfla.quoteop.travel_handling_script"
+    related_rule_ids: ["HFLA-RULE-CI-004", "HFLA-RULE-QT-003", "HFLA-RULE-QT-004"]
+    source_evidence_ids: ["HFLA-EVD-002", "HFLA-EVD-008"]
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    content_type: "OPERATOR_TRAVEL_SCRIPT"
+    draft_channel_text: >
+      OPERATOR TRAVEL HANDLING (DRAFT).  Identify ZIP /
+      city zone (LA base / OC / Ventura).  Apply
+      CEO-approved travel-fee method (HFLA-BLK-004) and
+      per-county premium (HFLA-BLK-005).  Apply
+      travel × two-hour interaction rule (HFLA-BLK-032)
+      if hourly stance HFLA-BLK-019 selects option B
+      or C.  Flag parking / valet / gated-access notes
+      that may affect setup time.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    notes_internal_only: >
+      Operator travel-handling script.  CEO confirms in
+      HFLA-BLK-004, HFLA-BLK-005, HFLA-BLK-019,
+      HFLA-BLK-032.
+
+  - projection_id: "HFLA-PROJ-QOP-004"
+    publication_key: "hfla.quoteop.custom_event_escalation_script"
+    related_rule_ids: ["HFLA-RULE-CI-004", "HFLA-RULE-VS-001", "HFLA-RULE-VS-002", "HFLA-RULE-VS-003", "HFLA-RULE-SC-003"]
+    source_evidence_ids: ["HFLA-EVD-003", "HFLA-EVD-010", "HFLA-EVD-011"]
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    content_type: "OPERATOR_ESCALATION_SCRIPT"
+    draft_channel_text: >
+      OPERATOR CUSTOM-EVENT ESCALATION (DRAFT).  For
+      schools, festivals, corporate bookings, vendor /
+      community pilot enquiries, COI requests, or any
+      multi-artist booking, escalate to CEO before
+      quoting.  Apply CEO-approved minimum booking fee
+      (HFLA-BLK-008), corporate invoice terms
+      (HFLA-BLK-009), vendor-pilot parameters
+      (HFLA-BLK-023), and COI workflow (HFLA-BLK-024).
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    notes_internal_only: >
+      Operator custom-event escalation script.  CEO
+      confirms in HFLA-BLK-008, HFLA-BLK-009,
+      HFLA-BLK-023, HFLA-BLK-024.
+
+  - projection_id: "HFLA-PROJ-QOP-005"
+    publication_key: "hfla.quoteop.no_unapproved_promises_rule"
+    related_rule_ids: ["HFLA-RULE-CI-004"]
+    source_evidence_ids: ["HFLA-EVD-002"]
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    content_type: "OPERATOR_GUARDRAIL"
+    draft_channel_text: >
+      OPERATOR -- NO UNAPPROVED PROMISES (DRAFT).
+      Prohibited operator-side commitments include:
+      (a) discounts not pre-approved; (b) prices for
+      unpublished packages; (c) named-artist
+      commitments; (d) COI turnaround SLAs not
+      authorised under HFLA-BLK-024; (e) weather /
+      parking / venue guarantees; (f) sponsor / pilot
+      commitments; (g) any promise the operator could
+      not personally deliver today.  Escalate to CEO
+      before communicating any off-script commitment.
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    notes_internal_only: >
+      Operator no-unapproved-promises guardrail.  CEO
+      confirms in HFLA-BLK-033.
+
+# ===========================================================================
+# 5. RELEASE RECORDS -- exactly ONE DRAFT release shell.
+# ===========================================================================
+release_records:
+  - release_id: "HFLA-REL-DRAFT-COMMERCIAL-V3"
+    release_version: ""
+    release_title: "HFLA Commercial Channel Launch -- DRAFT CEO Review Package v3"
+    status: "DRAFT"
+    ceo_decision: "PENDING_CEO_REVIEW"
+    related_rule_ids:
+      - "HFLA-RULE-PP-001"
+      - "HFLA-RULE-PP-002"
+      - "HFLA-RULE-PP-003"
+      - "HFLA-RULE-PP-004"
+      - "HFLA-RULE-PP-005"
+      - "HFLA-RULE-PP-006"
+      - "HFLA-RULE-PP-007"
+      - "HFLA-RULE-PP-008"
+      - "HFLA-RULE-PP-009"
+      - "HFLA-RULE-BP-001"
+      - "HFLA-RULE-BP-002"
+      - "HFLA-RULE-BP-003"
+      - "HFLA-RULE-BP-004"
+      - "HFLA-RULE-BP-005"
+      - "HFLA-RULE-QT-001"
+      - "HFLA-RULE-QT-002"
+      - "HFLA-RULE-QT-003"
+      - "HFLA-RULE-QT-004"
+      - "HFLA-RULE-VS-001"
+      - "HFLA-RULE-VS-002"
+      - "HFLA-RULE-VS-003"
+      - "HFLA-RULE-SC-001"
+      - "HFLA-RULE-SC-002"
+      - "HFLA-RULE-SC-003"
+      - "HFLA-RULE-SC-004"
+      - "HFLA-RULE-SC-005"
+      - "HFLA-RULE-AR-001"
+      - "HFLA-RULE-AR-002"
+      - "HFLA-RULE-AR-003"
+      - "HFLA-RULE-CI-001"
+      - "HFLA-RULE-CI-002"
+      - "HFLA-RULE-CI-003"
+      - "HFLA-RULE-CI-004"
+    related_projection_ids:
+      - "HFLA-PROJ-WEB-001"
+      - "HFLA-PROJ-WEB-002"
+      - "HFLA-PROJ-WEB-003"
+      - "HFLA-PROJ-WEB-004"
+      - "HFLA-PROJ-WEB-005"
+      - "HFLA-PROJ-WEB-006"
+      - "HFLA-PROJ-WEB-007"
+      - "HFLA-PROJ-WEB-008"
+      - "HFLA-PROJ-ADS-001"
+      - "HFLA-PROJ-ADS-002"
+      - "HFLA-PROJ-ADS-003"
+      - "HFLA-PROJ-ADS-004"
+      - "HFLA-PROJ-ADS-005"
+      - "HFLA-PROJ-ADS-006"
+      - "HFLA-PROJ-BOT-001"
+      - "HFLA-PROJ-BOT-002"
+      - "HFLA-PROJ-BOT-003"
+      - "HFLA-PROJ-BOT-004"
+      - "HFLA-PROJ-BOT-005"
+      - "HFLA-PROJ-BOT-006"
+      - "HFLA-PROJ-COP-001"
+      - "HFLA-PROJ-COP-002"
+      - "HFLA-PROJ-COP-003"
+      - "HFLA-PROJ-COP-004"
+      - "HFLA-PROJ-COP-005"
+      - "HFLA-PROJ-QOP-001"
+      - "HFLA-PROJ-QOP-002"
+      - "HFLA-PROJ-QOP-003"
+      - "HFLA-PROJ-QOP-004"
+      - "HFLA-PROJ-QOP-005"
+    authorized_channels: []
+    qa_evidence: ""
+    release_notes: >
+      Phase 1C commercial candidate -- DRAFT v3 for CEO review.
+      Replaces v2 (commit 869f419, rejected).  V3 covers all
+      five non-restricted consumer channels (WEBSITE_PUBLIC,
+      GOOGLE_ADS_PUBLIC, CUSTOMER_CHATBOT_PUBLIC,
+      COPILOT_INTERNAL_DECISION_SUPPORT,
+      QUOTE_OPERATOR_INTERNAL).  No content is live.
+      Thirty-three CEO decisions on open blockers are
+      required before this release can advance to
+      READY_FOR_CEO_REVIEW.  V3 expands the projection
+      register from 10 to 30 records (one per independently
+      governable CEO publication decision), supplies six
+      qualifying LA / SoCal market-reference evidence
+      records, adds 30-minute overtime increment
+      (HFLA-RULE-BP-005), adds photo / video / privacy
+      consent governance (HFLA-RULE-SC-005), adds explicit
+      travel × two-hour interaction (HFLA-RULE-QT-004), and
+      adds quote-operator no-unapproved-promises rule
+      (HFLA-RULE-CI-004).
+
+# ===========================================================================
+# 6. CHANNEL RELEASE ACTIVATIONS -- exactly 5 DRAFT activations,
+#    one per projected channel.  All reference
+#    HFLA-REL-DRAFT-COMMERCIAL-V3.
+# ===========================================================================
+channel_release_activations:
+
+  - activation_id: "HFLA-ACT-WEB-001"
+    release_id: "HFLA-REL-DRAFT-COMMERCIAL-V3"
+    channel: "WEBSITE_PUBLIC"
+    activation_status: "DRAFT"
+    snapshot_mode: "FULL_CHANNEL_SNAPSHOT"
+    qa_evidence: ""
+    notes_internal_only: >
+      Website public channel activation shell.  DRAFT -- not
+      active.  Requires CEO release advancement before
+      activation can advance.
+
+  - activation_id: "HFLA-ACT-ADS-001"
+    release_id: "HFLA-REL-DRAFT-COMMERCIAL-V3"
+    channel: "GOOGLE_ADS_PUBLIC"
+    activation_status: "DRAFT"
+    snapshot_mode: "FULL_CHANNEL_SNAPSHOT"
+    qa_evidence: ""
+    notes_internal_only: >
+      Google Ads public channel activation shell.  DRAFT --
+      not active.  Requires CEO campaign authorisation
+      (HFLA-BLK-016), safety language (HFLA-BLK-020), and
+      ad-copy approval before activation can advance.
+
+  - activation_id: "HFLA-ACT-BOT-001"
+    release_id: "HFLA-REL-DRAFT-COMMERCIAL-V3"
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    activation_status: "DRAFT"
+    snapshot_mode: "FULL_CHANNEL_SNAPSHOT"
+    qa_evidence: ""
+    notes_internal_only: >
+      Customer chatbot public channel activation shell.
+      DRAFT -- not active.  Requires CEO chatbot authority
+      limit (HFLA-BLK-017) before activation can advance.
+
+  - activation_id: "HFLA-ACT-COP-001"
+    release_id: "HFLA-REL-DRAFT-COMMERCIAL-V3"
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    activation_status: "DRAFT"
+    snapshot_mode: "FULL_CHANNEL_SNAPSHOT"
+    qa_evidence: ""
+    notes_internal_only: >
+      Copilot internal decision-support activation shell.
+      DRAFT -- not active.  Internal channel; requires
+      release advancement and HFLA-BLK-025 PII-redaction
+      workflow confirmation.
+
+  - activation_id: "HFLA-ACT-QOP-001"
+    release_id: "HFLA-REL-DRAFT-COMMERCIAL-V3"
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    activation_status: "DRAFT"
+    snapshot_mode: "FULL_CHANNEL_SNAPSHOT"
+    qa_evidence: ""
+    notes_internal_only: >
+      Quote operator internal activation shell.  DRAFT -- not
+      active.  Operator scripts pending CEO blocker
+      resolutions across pricing, travel, deposit, COI and
+      no-unapproved-promise decisions.
