@@ -1,0 +1,8 @@
+version: DRAFT v4
+research_access_date: 2026-05-24
+status: DRAFT_ONLY
+replaces_rejected_commit: c94970df19c2fc60606f5c96f79921ea1263f4eb
+candidate_path: candidates/phase1c/hfla_commercial_draft_v4/candidate.yaml
+sha256: eb1f8d35d35acd43a8ad905f3323c6b68663f6ffdc0e578d9a1ca057974a6f2d
+size_bytes: 46305
+hash_method: python hashlib.sha256(open(path, 'rb').read()).hexdigest()

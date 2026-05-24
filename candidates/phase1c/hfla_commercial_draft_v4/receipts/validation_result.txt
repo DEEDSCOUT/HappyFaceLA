@@ -1,0 +1,36 @@
+version: DRAFT v4
+research_access_date: 2026-05-24
+status: DRAFT_ONLY
+replaces_rejected_commit: c94970df19c2fc60606f5c96f79921ea1263f4eb
+command: python -m hfla_control_room.cli validate-phase1c-input -c config -i candidates/phase1c/hfla_commercial_draft_v4
+exit_code: 0
+candidate_sha256: eb1f8d35d35acd43a8ad905f3323c6b68663f6ffdc0e578d9a1ca057974a6f2d
+candidate_size_bytes: 46305
+--- stdout ---
+Loading baseline schema from: C:\Dev\happyfacesla-commercial-control-room\config
+Loading candidate Phase 1C input from: C:\Dev\happyfacesla-commercial-control-room\candidates\phase1c\hfla_commercial_draft_v4
+PHASE 1C INPUT VALIDATION PASSED � DRAFT CONTENT MAY BE LOADED ONLY AFTER SEPARATE CONTROLLER AUTHORIZATION.
+  Candidate rules:        20
+  Candidate evidence:     15
+  Candidate blockers:     12
+  Candidate projections:  30
+  Candidate releases:     1
+  Candidate activations:  5
+  Unresolved non-structural blocker decisions: 12
+  ! Candidate blocker 'HFLA-BLK-001' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Approve public starting-price anchor language Face Painting Parties from $150 and prohibit floor terminology.
+  ! Candidate blocker 'HFLA-BLK-002' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Approve Birthday Favorite positioning as a premium two-hour package above the documented $240 comparator base.
+  ! Candidate blocker 'HFLA-BLK-003' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Approve travel model choices: dispatch origin, included zone, travel-fee method and amount, and two-hour minimum interaction.
+  ! Candidate blocker 'HFLA-BLK-004' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm no-fee local zone language is prohibited until explicit approval.
+  ! Candidate blocker 'HFLA-BLK-005' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Approve controlled pilot only with event-level exclusivity, first-10 complimentary model, and family-attendance evidence requirement.
+  ! Candidate blocker 'HFLA-BLK-006' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Require product inventory, label documentation, intended-use confirmation, and pre-approval before any safety certification claim is published.
+  ! Candidate blocker 'HFLA-BLK-007' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Obtain official tax and accounting verification before publishing tax statements or operationalizing W-9 and 1099 procedures.
+  ! Candidate blocker 'HFLA-BLK-008' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=CRITICAL) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Approve written consent and retention handling before any identifiable guest photo or video publication or sharing.
+  ! Candidate blocker 'HFLA-BLK-009' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Confirm six qualifying local-market references are provider-level traceable locators and maintain supplementary references as non-qualifying context only.
+  ! Candidate blocker 'HFLA-BLK-010' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Affirm lifecycle policy: controller acceptance precedes CEO review, and CEO decisions do not authorize implementation by themselves.
+  ! Candidate blocker 'HFLA-BLK-011' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=HIGH) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Keep Google Ads blocked until later explicit controller authorization after CEO decisions and landing-page QA parity checks.
+  ! Candidate blocker 'HFLA-BLK-012' is OPEN (status=OPEN_CEO_INPUT_REQUIRED, priority=MEDIUM) but does not block Phase 1C intake (blocks_phase_1c_content_loading=False): Set overtime hourly rate for 30-minute increment billing.
+
+--- stderr ---
+2026-05-24T11:24:02  INFO      hfla_control_room.spec_loader � Loading config from: C:\Dev\happyfacesla-commercial-control-room\config
+2026-05-24T11:24:02  INFO      hfla_control_room.spec_loader � Config loaded and validated successfully.
+

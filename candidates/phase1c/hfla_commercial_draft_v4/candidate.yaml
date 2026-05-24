@@ -1,0 +1,990 @@
+# Happy Faces LA - Phase 1C Commercial Candidate Package
+# Version: DRAFT v4
+# Research/access date: 2026-05-24
+# Status: DRAFT only. No approved, released, or active content.
+# Replaces: rejected v3 commit c94970df19c2fc60606f5c96f79921ea1263f4eb
+
+rules:
+  - rule_id: "HFLA-RULE-PP-001"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Starting-price anchor language for public channels"
+    status: "DRAFT"
+    draft_recommendation: >
+      Public wording should use a starting-price anchor, not a price floor.
+      Approved draft wording target: Face Painting Parties from $150.
+      Avoid terms such as price floor, minimum floor, or public floor.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: "Decision pending in HFLA-BLK-001."
+
+  - rule_id: "HFLA-RULE-PP-002"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Color Pop entry-package starting price"
+    status: "DRAFT"
+    draft_recommendation: >
+      Color Pop Face Painting: from $150, 1 hour, 1 artist, compact menu,
+      intended for up to 10 children, subject to quote confirmation.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: "Decision pending in HFLA-BLK-001."
+
+  - rule_id: "HFLA-RULE-PP-003"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Birthday Favorite premium two-hour package"
+    status: "DRAFT"
+    draft_recommendation: >
+      Birthday Favorite: from $275, 2 hours, 1 artist, party menu,
+      intended for up to 18 children, subject to quote confirmation.
+      Rationale: this is a proposed premium two-hour packaged offer above
+      a documented $240 comparator base, subject to CEO approval of
+      positioning and margin.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-008"
+    internal_notes: "Decision pending in HFLA-BLK-002."
+
+  - rule_id: "HFLA-RULE-PP-004"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Enhancements and balloon twisting quote-only stance"
+    status: "DRAFT"
+    draft_recommendation: >
+      Glitter tattoos and face gems are by quote. Balloon twisting is by quote
+      unless later explicitly approved otherwise.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: "Public pricing publication detail is pending CEO review."
+
+  - rule_id: "HFLA-RULE-PP-005"
+    rule_category: "PUBLIC_PRICING"
+    rule_title: "Schools festivals and corporate custom-quote only"
+    status: "DRAFT"
+    draft_recommendation: >
+      Schools, festivals, and corporate events remain custom-quote only.
+      No fixed public package price is published at this phase.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: "Segment pricing details remain unresolved decisions."
+
+  - rule_id: "HFLA-RULE-QT-001"
+    rule_category: "QUOTE_TRAVEL"
+    rule_title: "Current public coverage statement preserved as observed fact"
+    status: "DRAFT"
+    draft_recommendation: >
+      Current observed service coverage statement is Los Angeles County,
+      Orange County, and Ventura County. This is an observed public fact,
+      not a pre-approved no-fee local pricing zone.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: "Supports separation of current coverage from pricing decisions."
+
+  - rule_id: "HFLA-RULE-QT-002"
+    rule_category: "QUOTE_TRAVEL"
+    rule_title: "Travel and final pricing intake wording"
+    status: "DRAFT"
+    draft_recommendation: >
+      Public draft wording: Please share your event ZIP or city so we can
+      confirm availability, travel requirements and final pricing.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: "Decision bundle pending in HFLA-BLK-003 and HFLA-BLK-004."
+
+  - rule_id: "HFLA-RULE-QT-003"
+    rule_category: "QUOTE_TRAVEL"
+    rule_title: "Two-hour minimum interaction with travel fees is unresolved"
+    status: "DRAFT"
+    draft_recommendation: >
+      Whether a two-hour minimum applies, and how it interacts with travel,
+      remains unresolved until CEO approval. No public commitment is made.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: "Decision pending in HFLA-BLK-003."
+
+  - rule_id: "HFLA-RULE-BP-001"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Deposit and timing baseline"
+    status: "DRAFT"
+    draft_recommendation: >
+      A $50 deposit reserves the date and applies toward final balance.
+      Remaining balance is due on event day before services begin.
+      Cancellation transfer window details remain pending decision.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: "Window and transfer details remain unresolved."
+
+  - rule_id: "HFLA-RULE-BP-002"
+    rule_category: "BOOKING_POLICY"
+    rule_title: "Overtime policy with 30-minute increment"
+    status: "DRAFT"
+    draft_recommendation: >
+      Overtime may be offered only when requested and approved before scheduled
+      end. Billing uses 30-minute increments based on a CEO-approved hourly rate.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-003"
+    internal_notes: "Rate decision pending in HFLA-BLK-012."
+
+  - rule_id: "HFLA-RULE-VS-001"
+    rule_category: "VENDOR_SCHOOL_CORPORATE"
+    rule_title: "Controlled community pilot structure"
+    status: "DRAFT"
+    draft_recommendation: >
+      Controlled pilot permits up to 10 complimentary fast-menu face paintings
+      at an approved family-oriented event. Promotion wording:
+      First 10 kids receive complimentary face painting sponsored by Happy Faces LA.
+      After the first 10 designs, HFLA may continue selling face painting,
+      glitter tattoos, and face gems to guests.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-013"
+    internal_notes: "Case-by-case approval pending in HFLA-BLK-005."
+
+  - rule_id: "HFLA-RULE-VS-002"
+    rule_category: "VENDOR_SCHOOL_CORPORATE"
+    rule_title: "No regional design exclusivity and no sponsor attendance condition"
+    status: "DRAFT"
+    draft_recommendation: >
+      Pilot must not impose regional design exclusivity and must not require
+      sponsor-family or sponsor-representative attendance as a condition.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-013"
+    internal_notes: "Removes unsupported conditions from prior draft."
+
+  - rule_id: "HFLA-RULE-SC-001"
+    rule_category: "SAFETY_CARE"
+    rule_title: "No unsubstantiated safety certification claims"
+    status: "DRAFT"
+    draft_recommendation: >
+      Public and ad content must not claim hypoallergenic,
+      FDA color-additive compliant, or FDA-approved unless product-specific
+      substantiation is collected and approved before publication.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-004"
+    internal_notes: "Evidence and approvals gated by HFLA-BLK-006."
+
+  - rule_id: "HFLA-RULE-SC-002"
+    rule_category: "SAFETY_CARE"
+    rule_title: "Safe sensitivity intake wording"
+    status: "DRAFT"
+    draft_recommendation: >
+      Safe draft wording may state: Please let us know about known skin
+      sensitivities or special requirements when requesting your quote.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-002"
+    internal_notes: "Allowed wording avoids unsupported certification claims."
+
+  - rule_id: "HFLA-RULE-SC-003"
+    rule_category: "SAFETY_CARE"
+    rule_title: "Photo and video publication consent"
+    status: "DRAFT"
+    draft_recommendation: >
+      No identifiable guest photo or video may be published, used in marketing,
+      or shared with partners without appropriate written consent.
+      For minors, written parent or guardian consent is required.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-001"
+    internal_notes: "Consent and legal handling blocked by HFLA-BLK-008."
+
+  - rule_id: "HFLA-RULE-SC-004"
+    rule_category: "SAFETY_CARE"
+    rule_title: "No pre-authorized internal photography of children"
+    status: "DRAFT"
+    draft_recommendation: >
+      Internal photography of children for QA, portfolio, or claim documentation
+      is not pre-authorized. Any future internal image workflow requires
+      separately approved privacy, retention, and legal controls.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-001"
+    internal_notes: "Blocked until HFLA-BLK-008 is resolved."
+
+  - rule_id: "HFLA-RULE-AR-001"
+    rule_category: "AI_CUSTOMER_RESPONSE"
+    rule_title: "Customer chatbot authority and escalation"
+    status: "DRAFT"
+    draft_recommendation: >
+      Customer chatbot may provide high-level draft guidance only and must route
+      quote, exceptions, and policy decisions to human review.
+      It must not create promises outside approved draft language.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-005"
+    internal_notes: "No autonomous commitments."
+
+  - rule_id: "HFLA-RULE-CI-001"
+    rule_category: "CHANNEL_IMPLEMENTATION"
+    rule_title: "Lifecycle and authorization separation"
+    status: "DRAFT"
+    draft_recommendation: >
+      This candidate is for controller audit only. CEO decisions do not
+      automatically publish, activate, or export content. Later implementation
+      requires approved text, released release record status, QA-backed channel
+      activation, and separate implementation authorization.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-005"
+    internal_notes: "Enforces corrected lifecycle posture."
+
+  - rule_id: "HFLA-RULE-CI-002"
+    rule_category: "CHANNEL_IMPLEMENTATION"
+    rule_title: "Google Ads pre-launch controls"
+    status: "DRAFT"
+    draft_recommendation: >
+      Google Ads remains blocked until explicit later controller authorization
+      after CEO decisions and landing-page QA alignment. RSA assets must remain
+      within character limits and avoid unsupported claims.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-006"
+    internal_notes: "Blocked by HFLA-BLK-011."
+
+  - rule_id: "HFLA-RULE-CI-003"
+    rule_category: "CHANNEL_IMPLEMENTATION"
+    rule_title: "Tax and documentation governance separation"
+    status: "DRAFT"
+    draft_recommendation: >
+      Keep customer-facing tax and fee disclosure, contractor reporting workflow,
+      and corporate documentation workflow as separate tracks.
+      Do not publish tax assertions or operationalize W-9 or 1099 procedures
+      without official accounting verification.
+    channel_visibility: "INTERNAL_ONLY"
+    source_evidence_ref: "HFLA-EVD-005"
+    internal_notes: "Blocked by HFLA-BLK-007."
+
+evidence_records:
+  - evidence_id: "HFLA-EVD-001"
+    source_category: "VERIFIED_CURRENT_FACT"
+    source_name: "Happy Faces LA homepage"
+    source_locator: "https://happyfacesla.com/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Homepage presents services and public-facing event positioning."
+    related_rule_ids: ["HFLA-RULE-SC-003", "HFLA-RULE-SC-004"]
+    reliability_tier: "TIER_1_PRIMARY"
+    notes: "Read-only web observation."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-002"
+    source_category: "VERIFIED_CURRENT_FACT"
+    source_name: "Happy Faces LA pricing page"
+    source_locator: "https://happyfacesla.com/pricing/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Shows bookings start at $150 and quote-required package components."
+    related_rule_ids: ["HFLA-RULE-PP-001", "HFLA-RULE-PP-002", "HFLA-RULE-PP-004"]
+    reliability_tier: "TIER_1_PRIMARY"
+    notes: "Read-only web observation."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-003"
+    source_category: "VERIFIED_CURRENT_FACT"
+    source_name: "Happy Faces LA booking policy"
+    source_locator: "https://happyfacesla.com/booking-policy/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "States county coverage, travel-fee dependency, deposit, and overtime conditions."
+    related_rule_ids: ["HFLA-RULE-QT-001", "HFLA-RULE-QT-002", "HFLA-RULE-BP-001", "HFLA-RULE-BP-002"]
+    reliability_tier: "TIER_1_PRIMARY"
+    notes: "Read-only web observation."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-004"
+    source_category: "OFFICIAL_POLICY"
+    source_name: "Google Ads Misrepresentation policy"
+    source_locator: "https://support.google.com/adspolicy/answer/6020955"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Ads must avoid deceptive or unsupported claims and must align with landing content."
+    related_rule_ids: ["HFLA-RULE-SC-001", "HFLA-RULE-CI-002"]
+    reliability_tier: "TIER_1_PRIMARY"
+    notes: "Policy baseline for claims controls."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-005"
+    source_category: "OFFICIAL_POLICY"
+    source_name: "Google Ads editorial policy overview"
+    source_locator: "https://support.google.com/adspolicy/answer/6021546"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Requires clear, accurate ad text and compliant user-facing content."
+    related_rule_ids: ["HFLA-RULE-AR-001", "HFLA-RULE-CI-001", "HFLA-RULE-CI-003"]
+    reliability_tier: "TIER_1_PRIMARY"
+    notes: "Policy baseline for public-facing copy quality."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-006"
+    source_category: "OFFICIAL_POLICY"
+    source_name: "Google Ads responsive search ads asset limits"
+    source_locator: "https://support.google.com/google-ads/answer/7684791"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "RSA headlines are limited to 30 characters and descriptions to 90 characters."
+    related_rule_ids: ["HFLA-RULE-CI-002"]
+    reliability_tier: "TIER_1_PRIMARY"
+    notes: "Used for character-limit audit."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-007"
+    source_category: "OFFICIAL_POLICY"
+    source_name: "FDA hypoallergenic cosmetics Q&A"
+    source_locator: "https://www.fda.gov/cosmetics/cosmetics-labeling-claims/hypoallergenic-cosmetics"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Hypoallergenic terminology is not a stand-alone proof claim."
+    related_rule_ids: ["HFLA-RULE-SC-001"]
+    reliability_tier: "TIER_1_PRIMARY"
+    notes: "Supports claim restraint in consumer copy."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-008"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Paint On Your Face"
+    source_locator: "https://paintonyourface.com/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Publicly shows face painting starting at $120 per hour and event-scope conditions."
+    related_rule_ids: ["HFLA-RULE-PP-003"]
+    reliability_tier: "TIER_2_SECONDARY"
+    notes: "LA/SoCal competitor reference; independently retrievable source locator."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-009"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Face Painting LA"
+    source_locator: "https://facepaintingla.com/"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Shows multi-service and corporate/event positioning with quote-style booking path."
+    related_rule_ids: ["HFLA-RULE-PP-005"]
+    reliability_tier: "TIER_2_SECONDARY"
+    notes: "LA provider reference; independently retrievable source locator."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-010"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Thumbtack Tammy P profile"
+    source_locator: "https://www.thumbtack.com/ca/north-hills/face-painting/tammy-p-face-painting-balloon-t/service/444621191598047255"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Provider listing includes Los Angeles-serving activity and a displayed starting price."
+    related_rule_ids: ["HFLA-RULE-PP-005"]
+    reliability_tier: "TIER_2_SECONDARY"
+    notes: "Provider-level listing URL, not just directory root."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-011"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Thumbtack Bella's Creative Crew profile"
+    source_locator: "https://www.thumbtack.com/ca/cerritos/face-painting/bellas-creative-crew/service/471392357310767126"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Provider listing includes service types, event categories, and displayed starting price."
+    related_rule_ids: ["HFLA-RULE-PP-005", "HFLA-RULE-VS-001"]
+    reliability_tier: "TIER_2_SECONDARY"
+    notes: "Provider-level listing URL, independently retrievable."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-012"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Thumbtack Funtastic Faces profile"
+    source_locator: "https://www.thumbtack.com/ca/los-angeles/face-painting/funtastic-faces-perfect-party-planning/service/200145138585724003"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Provider listing includes Los Angeles service profile and displayed starting price context."
+    related_rule_ids: ["HFLA-RULE-PP-005", "HFLA-RULE-VS-001"]
+    reliability_tier: "TIER_2_SECONDARY"
+    notes: "Provider-level listing URL, independently retrievable."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-013"
+    source_category: "MARKET_REFERENCE"
+    source_name: "GigSalad Los Angeles face painters listings"
+    source_locator: "https://www.gigsalad.com/Variety/Face-Painter/CA/Los+Angeles"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Marketplace listing shows Los Angeles providers with mixed disclosed-price and contact-for-rate models."
+    related_rule_ids: ["HFLA-RULE-VS-001", "HFLA-RULE-VS-002"]
+    reliability_tier: "TIER_2_SECONDARY"
+    notes: "Distinct local marketplace locator."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-014"
+    source_category: "MARKET_REFERENCE"
+    source_name: "Thumbtack Miemi Design profile"
+    source_locator: "https://www.thumbtack.com/ca/garden-grove/face-painting/miemi-design/service/231178049845019658"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "Provider profile shows hourly pricing plus travel fee language in nearby Southern California market."
+    related_rule_ids: ["HFLA-RULE-QT-002", "HFLA-RULE-QT-003"]
+    reliability_tier: "TIER_2_SECONDARY"
+    notes: "Nearby SoCal provider listing URL with explicit model detail."
+    status: "VERIFIED"
+
+  - evidence_id: "HFLA-EVD-S-001"
+    source_category: "SUPPLEMENTARY"
+    source_name: "Thumbtack national face painting prices guide"
+    source_locator: "https://www.thumbtack.com/p/face-painting-prices"
+    access_or_extraction_date: "2026-05-24"
+    verified_fact: "National pricing context only; does not qualify as local provider evidence."
+    related_rule_ids: ["HFLA-RULE-PP-003"]
+    reliability_tier: "TIER_3_INDICATIVE"
+    notes: "Supplementary non-qualifying context."
+    status: "VERIFIED"
+
+blocker_records:
+  - blocker_id: "HFLA-BLK-001"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: "Approve public starting-price anchor language Face Painting Parties from $150 and prohibit floor terminology."
+    why_it_matters: "Public wording consistency and pricing integrity."
+    risk_if_missing: "Inconsistent customer interpretation and policy drift."
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-001", "HFLA-RULE-PP-002"]
+    related_evidence_ids: ["HFLA-EVD-002"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+  - blocker_id: "HFLA-BLK-002"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: "Approve Birthday Favorite positioning as a premium two-hour package above the documented $240 comparator base."
+    why_it_matters: "Corrects flawed comparative rationale from rejected v3."
+    risk_if_missing: "Misleading value logic and margin confusion."
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-003"]
+    related_evidence_ids: ["HFLA-EVD-008", "HFLA-EVD-S-001"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+  - blocker_id: "HFLA-BLK-003"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: "Approve travel model choices: dispatch origin, included zone, travel-fee method and amount, and two-hour minimum interaction."
+    why_it_matters: "Separates observed coverage from unresolved operating economics."
+    risk_if_missing: "Over-commitment, quoting inconsistency, and margin leakage."
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-QT-001", "HFLA-RULE-QT-002", "HFLA-RULE-QT-003"]
+    related_evidence_ids: ["HFLA-EVD-003", "HFLA-EVD-014"]
+    blocked_channels: ["WEBSITE_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+  - blocker_id: "HFLA-BLK-004"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: "Confirm no-fee local zone language is prohibited until explicit approval."
+    why_it_matters: "Prevents accidental conversion of coverage statement into pricing commitment."
+    risk_if_missing: "Unapproved no-fee promises and travel disputes."
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-QT-001", "HFLA-RULE-QT-002"]
+    related_evidence_ids: ["HFLA-EVD-003"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+  - blocker_id: "HFLA-BLK-005"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: "Approve controlled pilot only with event-level exclusivity, first-10 complimentary model, and family-attendance evidence requirement."
+    why_it_matters: "Maintains lawful promotional controls without anti-competitive claims."
+    risk_if_missing: "Policy drift and unsupported pilot terms."
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-VS-001", "HFLA-RULE-VS-002"]
+    related_evidence_ids: ["HFLA-EVD-011", "HFLA-EVD-012", "HFLA-EVD-013"]
+    blocked_channels: ["WEBSITE_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+  - blocker_id: "HFLA-BLK-006"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: "Require product inventory, label documentation, intended-use confirmation, and pre-approval before any safety certification claim is published."
+    why_it_matters: "Avoids unsupported FDA or hypoallergenic marketing claims."
+    risk_if_missing: "Regulatory and ad-policy exposure."
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-SC-001"]
+    related_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-007"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+  - blocker_id: "HFLA-BLK-007"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: "Obtain official tax and accounting verification before publishing tax statements or operationalizing W-9 and 1099 procedures."
+    why_it_matters: "Separates customer pricing disclosure from contractor and corporate workflows."
+    risk_if_missing: "Unsupported tax assertions and operational errors."
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-CI-003"]
+    related_evidence_ids: ["HFLA-EVD-005"]
+    blocked_channels: ["WEBSITE_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC", "COPILOT_INTERNAL_DECISION_SUPPORT", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+  - blocker_id: "HFLA-BLK-008"
+    category: "LEGAL_REVIEW_REQUIRED"
+    decision_required: "Approve written consent and retention handling before any identifiable guest photo or video publication or sharing."
+    why_it_matters: "Protects minors and privacy obligations."
+    risk_if_missing: "Legal exposure and privacy non-compliance."
+    priority: "CRITICAL"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-SC-003", "HFLA-RULE-SC-004"]
+    related_evidence_ids: ["HFLA-EVD-001"]
+    blocked_channels: ["WEBSITE_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC", "COPILOT_INTERNAL_DECISION_SUPPORT", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+  - blocker_id: "HFLA-BLK-009"
+    category: "COMPLIANCE_REVIEW_REQUIRED"
+    decision_required: "Confirm six qualifying local-market references are provider-level traceable locators and maintain supplementary references as non-qualifying context only."
+    why_it_matters: "Evidence integrity for market-based recommendations."
+    risk_if_missing: "Insufficient substantiation for pricing and positioning claims."
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-PP-003", "HFLA-RULE-PP-005"]
+    related_evidence_ids: ["HFLA-EVD-008", "HFLA-EVD-009", "HFLA-EVD-010", "HFLA-EVD-011", "HFLA-EVD-012", "HFLA-EVD-013", "HFLA-EVD-014"]
+    blocked_channels: ["WEBSITE_PUBLIC", "GOOGLE_ADS_PUBLIC", "CUSTOMER_CHATBOT_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+  - blocker_id: "HFLA-BLK-010"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: "Affirm lifecycle policy: controller acceptance precedes CEO review, and CEO decisions do not authorize implementation by themselves."
+    why_it_matters: "Prevents governance sequencing failures."
+    risk_if_missing: "Unauthorized export or activation assumptions."
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-CI-001"]
+    related_evidence_ids: ["HFLA-EVD-005"]
+    blocked_channels: ["COPILOT_INTERNAL_DECISION_SUPPORT", "QUOTE_OPERATOR_INTERNAL"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+  - blocker_id: "HFLA-BLK-011"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: "Keep Google Ads blocked until later explicit controller authorization after CEO decisions and landing-page QA parity checks."
+    why_it_matters: "Prevents premature ad launch."
+    risk_if_missing: "Policy breach and unsupported public claims."
+    priority: "HIGH"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-CI-002"]
+    related_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-006"]
+    blocked_channels: ["GOOGLE_ADS_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+  - blocker_id: "HFLA-BLK-012"
+    category: "CEO_INPUT_REQUIRED"
+    decision_required: "Set overtime hourly rate for 30-minute increment billing."
+    why_it_matters: "Needed for consistent quoting when approved overtime occurs."
+    risk_if_missing: "Inconsistent overtime pricing and disputes."
+    priority: "MEDIUM"
+    status: "OPEN_CEO_INPUT_REQUIRED"
+    related_rule_ids: ["HFLA-RULE-BP-002"]
+    related_evidence_ids: ["HFLA-EVD-003"]
+    blocked_channels: ["QUOTE_OPERATOR_INTERNAL", "CUSTOMER_CHATBOT_PUBLIC"]
+    blocks_live_provisioning: false
+    blocks_phase_1c_content_loading: false
+    responsible_owner: "CEO"
+
+channel_projection_records:
+  - projection_id: "HFLA-PROJ-WEB-001"
+    publication_key: "hfla.web.headline_starting_anchor"
+    related_rule_ids: ["HFLA-RULE-PP-001"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "HEADLINE"
+    draft_channel_text: "Face Painting Parties from $150"
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-002"]
+
+  - projection_id: "HFLA-PROJ-WEB-002"
+    publication_key: "hfla.web.package_color_pop"
+    related_rule_ids: ["HFLA-RULE-PP-002"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PACKAGE_SUMMARY"
+    draft_channel_text: "Color Pop Face Painting: from $150, 1 hour, 1 artist, compact menu, intended for up to 10 children, subject to quote confirmation."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-002"]
+
+  - projection_id: "HFLA-PROJ-WEB-003"
+    publication_key: "hfla.web.package_birthday_favorite"
+    related_rule_ids: ["HFLA-RULE-PP-003"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PACKAGE_SUMMARY"
+    draft_channel_text: "Birthday Favorite: from $275, 2 hours, 1 artist, party menu, intended for up to 18 children, subject to quote confirmation."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-008"]
+
+  - projection_id: "HFLA-PROJ-WEB-004"
+    publication_key: "hfla.web.addons_quote_only"
+    related_rule_ids: ["HFLA-RULE-PP-004"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "ADDON_POLICY"
+    draft_channel_text: "Glitter tattoos and face gems are by quote. Balloon twisting is by quote unless later approved otherwise."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-002"]
+
+  - projection_id: "HFLA-PROJ-WEB-005"
+    publication_key: "hfla.web.segment_custom_quote"
+    related_rule_ids: ["HFLA-RULE-PP-005"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "SEGMENT_POLICY"
+    draft_channel_text: "Schools, festivals, and corporate events are custom quote only."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-002"]
+
+  - projection_id: "HFLA-PROJ-WEB-006"
+    publication_key: "hfla.web.travel_zip_prompt"
+    related_rule_ids: ["HFLA-RULE-QT-002"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "TRAVEL_INTAKE"
+    draft_channel_text: "Please share your event ZIP or city so we can confirm availability, travel requirements and final pricing."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-003"]
+
+  - projection_id: "HFLA-PROJ-WEB-007"
+    publication_key: "hfla.web.sensitivity_prompt"
+    related_rule_ids: ["HFLA-RULE-SC-002"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "SAFETY_NOTE"
+    draft_channel_text: "Please let us know about known skin sensitivities or special requirements when requesting your quote."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-002"]
+
+  - projection_id: "HFLA-PROJ-WEB-008"
+    publication_key: "hfla.web.privacy_consent_notice"
+    related_rule_ids: ["HFLA-RULE-SC-003"]
+    channel: "WEBSITE_PUBLIC"
+    content_type: "PRIVACY_NOTICE"
+    draft_channel_text: "No identifiable guest photo or video is published, used in marketing, or shared with partners without written consent. For minors, written parent or guardian consent is required."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-001"]
+
+  - projection_id: "HFLA-PROJ-ADS-001"
+    publication_key: "hfla.ads.headline_one"
+    related_rule_ids: ["HFLA-RULE-PP-001"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "RSA_HEADLINE"
+    draft_channel_text: "LA Face Painting from $150"
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-006"]
+
+  - projection_id: "HFLA-PROJ-ADS-002"
+    publication_key: "hfla.ads.headline_two"
+    related_rule_ids: ["HFLA-RULE-PP-002"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "RSA_HEADLINE"
+    draft_channel_text: "Color Pop Package from $150"
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-006"]
+
+  - projection_id: "HFLA-PROJ-ADS-003"
+    publication_key: "hfla.ads.headline_three"
+    related_rule_ids: ["HFLA-RULE-PP-003"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "RSA_HEADLINE"
+    draft_channel_text: "Birthday Favorite from $275"
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-006"]
+
+  - projection_id: "HFLA-PROJ-ADS-004"
+    publication_key: "hfla.ads.description_one"
+    related_rule_ids: ["HFLA-RULE-PP-005", "HFLA-RULE-QT-002"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "RSA_DESCRIPTION"
+    draft_channel_text: "Face painting services in LA. Share your ZIP or city for availability, travel needs and final pricing."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-006"]
+
+  - projection_id: "HFLA-PROJ-ADS-005"
+    publication_key: "hfla.ads.description_two"
+    related_rule_ids: ["HFLA-RULE-SC-002"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "RSA_DESCRIPTION"
+    draft_channel_text: "Tell us about skin sensitivities or special requirements when requesting your quote."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-006"]
+
+  - projection_id: "HFLA-PROJ-ADS-006"
+    publication_key: "hfla.ads.landing_parity_gate"
+    related_rule_ids: ["HFLA-RULE-CI-002"]
+    channel: "GOOGLE_ADS_PUBLIC"
+    content_type: "LAUNCH_GATE_NOTE"
+    draft_channel_text: "Ads remain blocked until controller authorization and landing-page parity QA are complete."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-005"]
+
+  - projection_id: "HFLA-PROJ-BOT-001"
+    publication_key: "hfla.bot.pricing_anchor"
+    related_rule_ids: ["HFLA-RULE-PP-001"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_REPLY"
+    draft_channel_text: "Happy Faces LA offers face painting parties from $150. Final pricing is confirmed by quote based on event details."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-002"]
+
+  - projection_id: "HFLA-PROJ-BOT-002"
+    publication_key: "hfla.bot.color_pop"
+    related_rule_ids: ["HFLA-RULE-PP-002"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_REPLY"
+    draft_channel_text: "Color Pop starts at $150 for 1 hour with 1 artist and a compact menu, intended for up to 10 children, subject to quote confirmation."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-002"]
+
+  - projection_id: "HFLA-PROJ-BOT-003"
+    publication_key: "hfla.bot.birthday_favorite"
+    related_rule_ids: ["HFLA-RULE-PP-003"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_REPLY"
+    draft_channel_text: "Birthday Favorite starts at $275 for 2 hours with 1 artist and a party menu, intended for up to 18 children, subject to quote confirmation."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-008"]
+
+  - projection_id: "HFLA-PROJ-BOT-004"
+    publication_key: "hfla.bot.travel_prompt"
+    related_rule_ids: ["HFLA-RULE-QT-002"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_REPLY"
+    draft_channel_text: "Please share your event ZIP or city so we can confirm availability, travel requirements and final pricing."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-003"]
+
+  - projection_id: "HFLA-PROJ-BOT-005"
+    publication_key: "hfla.bot.safety_prompt"
+    related_rule_ids: ["HFLA-RULE-SC-002"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_REPLY"
+    draft_channel_text: "Please share known skin sensitivities or special requirements when requesting your quote."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-002"]
+
+  - projection_id: "HFLA-PROJ-BOT-006"
+    publication_key: "hfla.bot.escalation"
+    related_rule_ids: ["HFLA-RULE-AR-001"]
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    content_type: "CHATBOT_ESCALATION"
+    draft_channel_text: "For final pricing and policy decisions, please submit your event details and our team will confirm your quote."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    source_evidence_ids: ["HFLA-EVD-005"]
+
+  - projection_id: "HFLA-PROJ-COP-001"
+    publication_key: "hfla.copilot.pricing_matrix_v4"
+    related_rule_ids: ["HFLA-RULE-PP-001", "HFLA-RULE-PP-002", "HFLA-RULE-PP-003", "HFLA-RULE-PP-004", "HFLA-RULE-PP-005"]
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    content_type: "INTERNAL_SUMMARY"
+    draft_channel_text: "Internal-only draft pricing matrix: starting-price anchor from $150, Color Pop from $150, Birthday Favorite from $275, add-ons by quote, school/festival/corporate by custom quote."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    source_evidence_ids: ["HFLA-EVD-002", "HFLA-EVD-008"]
+
+  - projection_id: "HFLA-PROJ-COP-002"
+    publication_key: "hfla.copilot.travel_decision_frame_v4"
+    related_rule_ids: ["HFLA-RULE-QT-001", "HFLA-RULE-QT-002", "HFLA-RULE-QT-003"]
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    content_type: "INTERNAL_DECISION_GUIDE"
+    draft_channel_text: "Internal-only: separate observed county coverage from unresolved dispatch and travel-fee approvals; do not imply approved no-fee zones."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    source_evidence_ids: ["HFLA-EVD-003", "HFLA-EVD-014"]
+
+  - projection_id: "HFLA-PROJ-COP-003"
+    publication_key: "hfla.copilot.vendor_pilot_controls_v4"
+    related_rule_ids: ["HFLA-RULE-VS-001", "HFLA-RULE-VS-002"]
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    content_type: "INTERNAL_DECISION_GUIDE"
+    draft_channel_text: "Internal-only pilot control: up to 10 complimentary fast-menu designs, event-specific exclusivity only, no regional exclusivity and no sponsor-attendance condition."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    source_evidence_ids: ["HFLA-EVD-013"]
+
+  - projection_id: "HFLA-PROJ-COP-004"
+    publication_key: "hfla.copilot.safety_privacy_controls_v4"
+    related_rule_ids: ["HFLA-RULE-SC-001", "HFLA-RULE-SC-003", "HFLA-RULE-SC-004"]
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    content_type: "INTERNAL_RISK_CONTROL"
+    draft_channel_text: "Internal-only: remove FDA and hypoallergenic claims from all public channels unless substantiated; no identifiable minor imagery use without written consent and approved retention controls."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    source_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-007"]
+
+  - projection_id: "HFLA-PROJ-COP-005"
+    publication_key: "hfla.copilot.lifecycle_gate_v4"
+    related_rule_ids: ["HFLA-RULE-CI-001", "HFLA-RULE-CI-002", "HFLA-RULE-CI-003"]
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    content_type: "INTERNAL_LIFECYCLE_GUIDE"
+    draft_channel_text: "Internal-only lifecycle gate: controller acceptance first, then CEO review; CEO decisions do not publish; implementation requires release status, QA activation, and separate authorization."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    source_evidence_ids: ["HFLA-EVD-005", "HFLA-EVD-006"]
+
+  - projection_id: "HFLA-PROJ-QOP-001"
+    publication_key: "hfla.qop.public_wording_guardrails_v4"
+    related_rule_ids: ["HFLA-RULE-PP-001", "HFLA-RULE-PP-004", "HFLA-RULE-PP-005"]
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    content_type: "OPERATOR_SCRIPT"
+    draft_channel_text: "Operator guardrails: use starting-price anchor language, keep add-ons and balloon twisting by quote unless approved, and keep school/festival/corporate custom quote only."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    source_evidence_ids: ["HFLA-EVD-002"]
+
+  - projection_id: "HFLA-PROJ-QOP-002"
+    publication_key: "hfla.qop.travel_quote_intake_v4"
+    related_rule_ids: ["HFLA-RULE-QT-001", "HFLA-RULE-QT-002", "HFLA-RULE-QT-003"]
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    content_type: "OPERATOR_SCRIPT"
+    draft_channel_text: "Operator intake script: collect ZIP or city and event details; do not promise no-fee zones; hold travel calculations until approved method and rates are finalized."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    source_evidence_ids: ["HFLA-EVD-003"]
+
+  - projection_id: "HFLA-PROJ-QOP-003"
+    publication_key: "hfla.qop.vendor_pilot_script_v4"
+    related_rule_ids: ["HFLA-RULE-VS-001", "HFLA-RULE-VS-002"]
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    content_type: "OPERATOR_SCRIPT"
+    draft_channel_text: "Operator pilot script: case-by-case only, first 10 kids complimentary sponsored by Happy Faces LA, then paid services may continue, no regional exclusivity terms."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    source_evidence_ids: ["HFLA-EVD-013"]
+
+  - projection_id: "HFLA-PROJ-QOP-004"
+    publication_key: "hfla.qop.safety_privacy_script_v4"
+    related_rule_ids: ["HFLA-RULE-SC-001", "HFLA-RULE-SC-002", "HFLA-RULE-SC-003", "HFLA-RULE-SC-004"]
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    content_type: "OPERATOR_SCRIPT"
+    draft_channel_text: "Operator safety and privacy script: avoid unsupported safety certifications, ask about sensitivities, and require written consent before any identifiable guest image usage discussion."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    source_evidence_ids: ["HFLA-EVD-004", "HFLA-EVD-007"]
+
+  - projection_id: "HFLA-PROJ-QOP-005"
+    publication_key: "hfla.qop.tax_doc_controls_v4"
+    related_rule_ids: ["HFLA-RULE-CI-003"]
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    content_type: "OPERATOR_SCRIPT"
+    draft_channel_text: "Operator documentation script: do not publish tax conclusions or claim W-9/1099 workflows until accounting verification and approved documented process exist."
+    approved_channel_text: ""
+    release_status: "DRAFT"
+    contains_internal_only_logic: true
+    source_evidence_ids: ["HFLA-EVD-005"]
+
+release_records:
+  - release_id: "HFLA-REL-DRAFT-COMMERCIAL-V4"
+    release_version: ""
+    release_title: "HFLA Commercial Candidate DRAFT v4 - controller audit package only"
+    status: "DRAFT"
+    ceo_decision: "PENDING_CEO_REVIEW"
+    authorized_channels: []
+    related_rule_ids:
+      - "HFLA-RULE-PP-001"
+      - "HFLA-RULE-PP-002"
+      - "HFLA-RULE-PP-003"
+      - "HFLA-RULE-PP-004"
+      - "HFLA-RULE-PP-005"
+      - "HFLA-RULE-QT-001"
+      - "HFLA-RULE-QT-002"
+      - "HFLA-RULE-QT-003"
+      - "HFLA-RULE-BP-001"
+      - "HFLA-RULE-BP-002"
+      - "HFLA-RULE-VS-001"
+      - "HFLA-RULE-VS-002"
+      - "HFLA-RULE-SC-001"
+      - "HFLA-RULE-SC-002"
+      - "HFLA-RULE-SC-003"
+      - "HFLA-RULE-SC-004"
+      - "HFLA-RULE-AR-001"
+      - "HFLA-RULE-CI-001"
+      - "HFLA-RULE-CI-002"
+      - "HFLA-RULE-CI-003"
+    related_projection_ids:
+      - "HFLA-PROJ-WEB-001"
+      - "HFLA-PROJ-WEB-002"
+      - "HFLA-PROJ-WEB-003"
+      - "HFLA-PROJ-WEB-004"
+      - "HFLA-PROJ-WEB-005"
+      - "HFLA-PROJ-WEB-006"
+      - "HFLA-PROJ-WEB-007"
+      - "HFLA-PROJ-WEB-008"
+      - "HFLA-PROJ-ADS-001"
+      - "HFLA-PROJ-ADS-002"
+      - "HFLA-PROJ-ADS-003"
+      - "HFLA-PROJ-ADS-004"
+      - "HFLA-PROJ-ADS-005"
+      - "HFLA-PROJ-ADS-006"
+      - "HFLA-PROJ-BOT-001"
+      - "HFLA-PROJ-BOT-002"
+      - "HFLA-PROJ-BOT-003"
+      - "HFLA-PROJ-BOT-004"
+      - "HFLA-PROJ-BOT-005"
+      - "HFLA-PROJ-BOT-006"
+      - "HFLA-PROJ-COP-001"
+      - "HFLA-PROJ-COP-002"
+      - "HFLA-PROJ-COP-003"
+      - "HFLA-PROJ-COP-004"
+      - "HFLA-PROJ-COP-005"
+      - "HFLA-PROJ-QOP-001"
+      - "HFLA-PROJ-QOP-002"
+      - "HFLA-PROJ-QOP-003"
+      - "HFLA-PROJ-QOP-004"
+      - "HFLA-PROJ-QOP-005"
+    qa_evidence: ""
+    release_notes: >
+      DRAFT v4 package for controller audit only. No approval, no release,
+      no activation, and no implementation export authorization.
+
+channel_release_activations:
+  - activation_id: "HFLA-ACT-WEB-001"
+    release_id: "HFLA-REL-DRAFT-COMMERCIAL-V4"
+    channel: "WEBSITE_PUBLIC"
+    activation_status: "DRAFT"
+    snapshot_mode: "FULL_CHANNEL_SNAPSHOT"
+    qa_evidence: ""
+
+  - activation_id: "HFLA-ACT-ADS-001"
+    release_id: "HFLA-REL-DRAFT-COMMERCIAL-V4"
+    channel: "GOOGLE_ADS_PUBLIC"
+    activation_status: "DRAFT"
+    snapshot_mode: "FULL_CHANNEL_SNAPSHOT"
+    qa_evidence: ""
+
+  - activation_id: "HFLA-ACT-BOT-001"
+    release_id: "HFLA-REL-DRAFT-COMMERCIAL-V4"
+    channel: "CUSTOMER_CHATBOT_PUBLIC"
+    activation_status: "DRAFT"
+    snapshot_mode: "FULL_CHANNEL_SNAPSHOT"
+    qa_evidence: ""
+
+  - activation_id: "HFLA-ACT-COP-001"
+    release_id: "HFLA-REL-DRAFT-COMMERCIAL-V4"
+    channel: "COPILOT_INTERNAL_DECISION_SUPPORT"
+    activation_status: "DRAFT"
+    snapshot_mode: "FULL_CHANNEL_SNAPSHOT"
+    qa_evidence: ""
+
+  - activation_id: "HFLA-ACT-QOP-001"
+    release_id: "HFLA-REL-DRAFT-COMMERCIAL-V4"
+    channel: "QUOTE_OPERATOR_INTERNAL"
+    activation_status: "DRAFT"
+    snapshot_mode: "FULL_CHANNEL_SNAPSHOT"
+    qa_evidence: ""
