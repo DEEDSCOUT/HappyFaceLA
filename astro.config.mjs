@@ -14,7 +14,6 @@ export default defineConfig({
       filter: (page) => {
         const excludedPaths = [
           '/share-your-experience/',
-          '/kids-birthday-party-entertainment-los-angeles/',
           '/corporate-event-face-painting-los-angeles/',
           '/school-festival-face-painting-los-angeles/',
           '/service-areas/'
