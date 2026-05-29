@@ -30,7 +30,7 @@ export const services: ServiceItem[] = [
         intro:
             "Happy Faces LA provides colorful, event-ready face painting with kid-friendly designs and fast line management for busy events.",
         heroSubcopy:
-            "Face painting designs for parties and events, with kid-friendly designs and quick line management for birthdays, school events, festivals, and family celebrations across Los Angeles, Orange County, and Ventura County. Often booked together with balloon twisting, glitter tattoos, or face gems for a full party experience.",
+            "Face painting designs for parties and events, with kid-friendly designs and quick line management for birthdays, school events, festivals, and family celebrations. Serving Los Angeles and nearby areas. Share your event city or ZIP code for availability. Often booked together with balloon twisting, glitter tattoos, or face gems for a full party experience.",
         crossSellTitle: "More Than Face Painting — Complete Kids Party Fun",
         crossSellDescription:
             "Many families book face painting together with balloon twisting, glitter tattoos, or face gems so guests have more to do while lines move faster. Choose one service or build a package around your event size, age range, and schedule.",

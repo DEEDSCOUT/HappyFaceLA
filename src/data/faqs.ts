@@ -7,7 +7,7 @@ export const commonFaqs: FaqItem[] = [
     {
         question: "Do you offer face painting and balloon twisting together?",
         answer:
-            "Yes. Happy Faces LA offers face painting, balloon twisting, glitter tattoos, and face gems for Los Angeles parties and events. Combo packages are available based on event size, location, and date."
+            "Yes. Happy Faces LA offers face painting, balloon twisting, glitter tattoos, and face gems for Los Angeles parties and events. Combined services are available based on event size, location, and date."
     },
     {
         question: "What areas does Happy Faces LA serve?",
@@ -50,7 +50,7 @@ export const facePaintingFaqs: FaqItem[] = [
     {
         question: "What is the minimum booking for face painting?",
         answer:
-            "Bookings start at $150. Final pricing depends on event date, location, guest count, and event length. Submit your event details for an accurate quote."
+            "Face Painting Parties from $150"
     }
 ];
 

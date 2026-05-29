@@ -11,7 +11,7 @@ export const business = {
     businessAddress: "",
     serviceAreaOnly: "Yes — service-area-only. No public address.",
     insuranceCoiStatus: "",
-    serviceRadius: "Los Angeles County, Orange County, and Ventura County",
+    serviceRadius: "Los Angeles and nearby areas",
     services: [
         "Face Painting",
         "Balloon Twisting",

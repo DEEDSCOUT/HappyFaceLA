@@ -2,9 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
 import PageIntro from "../components/sections/PageIntro.astro";
-import PackageCard from "../components/content/PackageCard.astro";
 import QuoteForm from "../components/conversion/QuoteForm.astro";
-import { packages } from "../data/packages";
 import { serviceJsonLd, faqJsonLd } from "../utils/schema";
 
 const canonicalPath = "/pricing/";
@@ -12,7 +10,7 @@ const pricingFaqs = [
   {
     question: "Do you publish exact pricing online?",
     answer:
-      "Bookings start at $150. Final pricing is based on event date, location, guest count, service mix, and number of artists needed. Request a quote for your event."
+      "Face Painting Parties from $150. Final pricing is based on event date, location, guest count, service mix, and number of artists needed. Request a quote for your event."
   },
   {
     question: "What affects event pricing?",
@@ -32,7 +30,7 @@ const pricingFaqs = [
   ]}
 >
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Pricing", href: canonicalPath }]} />
-  <PageIntro title="Pricing & Packages" description="Pricing depends on event date, location, number of guests, services requested, and artist count. Submit your event details for an accurate quote." />
+  <PageIntro title="Face Painting Pricing" description="Pricing depends on event date, location, number of guests, services requested, and artist count. Submit your event details for an accurate quote." />
 
   <section class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-10">
     <section class="rounded-2xl border border-slate-200 bg-white p-6">
@@ -46,13 +44,8 @@ const pricingFaqs = [
     </section>
 
     <section class="rounded-2xl border border-orange-200 bg-orange-50 p-6">
-      <p class="text-lg font-semibold text-orange-800">Bookings start at $150.</p>
-      <p class="mt-1 text-sm text-orange-700">Final pricing depends on location, guest count, services requested, event duration, and number of artists needed. Submit your event details for an accurate quote.</p>
+      <p class="text-lg font-semibold text-orange-800">Face Painting Parties from $150.</p>
     </section>
-
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {packages.map((pkg) => <PackageCard {...pkg} />)}
-    </div>
 
     <QuoteForm />
   </section>

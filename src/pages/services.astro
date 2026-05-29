@@ -2,11 +2,9 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
 import ServiceCrossSell from "../components/sections/ServiceCrossSell.astro";
-import BookingCtaBlock from "../components/sections/BookingCtaBlock.astro";
-import PackageCard from "../components/content/PackageCard.astro";
 import ServiceAreaLinks from "../components/sections/ServiceAreaLinks.astro";
 import FAQAccordion from "../components/content/FAQAccordion.astro";
-import { packages } from "../data/packages";
+import BookingCtaBlock from "../components/sections/BookingCtaBlock.astro";
 import { commonFaqs } from "../data/faqs";
 import { breadcrumbJsonLd, localBusinessJsonLd } from "../utils/schema";
 
@@ -36,7 +34,7 @@ const canonicalPath = "/services/";
         Face Painting, Balloon Twisting, Glitter Tattoos &amp; Face Gems in Los Angeles
       </h1>
       <p class="mt-5 max-w-3xl text-lg text-slate-700">
-        Happy Faces LA brings colorful, kid-friendly party entertainment to birthdays, school events, festivals, community events, and family celebrations across Los Angeles, Orange County, and Ventura County.
+        Happy Faces LA brings colorful, kid-friendly party entertainment to birthdays, school events, festivals, community events, and family celebrations. Serving Los Angeles and nearby areas. Share your event city or ZIP code for availability.
       </p>
       <div class="mt-7 flex flex-wrap gap-3">
         <a class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600" href="/contact/">
@@ -46,7 +44,7 @@ const canonicalPath = "/services/";
           Call/Text 818-619-5506
         </a>
       </div>
-      <p class="mt-5 text-sm text-slate-600">Face painting • Balloon twisting • Glitter tattoos • Face gems • Bundled packages</p>
+      <p class="mt-5 text-sm text-slate-600">Face painting • Balloon twisting • Glitter tattoos • Face gems • Combined services</p>
     </div>
   </section>
 
@@ -61,21 +59,6 @@ const canonicalPath = "/services/";
         description="Each page includes what is included, who it is best for, and how it pairs with other services. The same booking form works for any combination."
         showCta={false}
       />
-    </div>
-  </section>
-
-  <section class="mx-auto w-full max-w-6xl px-4 pb-12">
-    <h2 class="text-2xl font-bold text-slate-900">Popular packages</h2>
-    <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">
-      Bundled packages combine multiple services and are usually the easiest way to book when you have 15+ guests or a longer event window.
-    </p>
-    <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {packages.slice(0, 3).map((pkg) => <PackageCard {...pkg} />)}
-    </div>
-    <div class="mt-6">
-      <a class="inline-block text-sm font-semibold text-orange-600 hover:text-orange-700" href="/pricing/">
-        View all package options →
-      </a>
     </div>
   </section>
 

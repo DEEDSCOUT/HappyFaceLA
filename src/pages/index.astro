@@ -2,17 +2,13 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/sections/Hero.astro";
 import ServiceCard from "../components/content/ServiceCard.astro";
-import PackageCard from "../components/content/PackageCard.astro";
 import GalleryGrid from "../components/content/GalleryGrid.astro";
 import FAQAccordion from "../components/content/FAQAccordion.astro";
 import ServiceAreaLinks from "../components/sections/ServiceAreaLinks.astro";
-import TrustSection from "../components/sections/TrustSection.astro";
-import InsuranceBadgeSection from "../components/sections/InsuranceBadgeSection.astro";
 import TestimonialsSection from "../components/sections/TestimonialsSection.astro";
 import GoogleReviewsSection from "../components/sections/GoogleReviewsSection.astro";
 import CTASection from "../components/sections/CTASection.astro";
 import { services } from "../data/services";
-import { packages } from "../data/packages";
 import { commonFaqs } from "../data/faqs";
 import { galleryItems } from "../data/gallery";
 import { organizationJsonLd, localBusinessJsonLd, websiteJsonLd } from "../utils/schema";
@@ -47,13 +43,6 @@ const featuredGallery = galleryItems
 	</section>
 
 	<section class="mx-auto w-full max-w-6xl px-4 py-10">
-		<h2 class="text-2xl font-bold text-slate-900">Package preview</h2>
-		<div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-			{packages.slice(0, 3).map((pkg) => <PackageCard {...pkg} />)}
-		</div>
-	</section>
-
-	<section class="mx-auto w-full max-w-6xl px-4 py-10">
 		<GalleryGrid title="Recent events" images={featuredGallery} />
 	</section>
 
@@ -63,14 +52,6 @@ const featuredGallery = galleryItems
 
 	<section class="mx-auto w-full max-w-6xl px-4 py-10">
 		<ServiceAreaLinks />
-	</section>
-
-	<section class="mx-auto w-full max-w-6xl px-4 py-10">
-		<TrustSection />
-	</section>
-
-	<section class="mx-auto w-full max-w-6xl px-4 py-10">
-		<InsuranceBadgeSection />
 	</section>
 
 	<section class="mx-auto w-full max-w-6xl px-4 py-10">
