@@ -995,7 +995,6 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
             f"SELECT campaign_budget.resource_name, campaign_budget.name "
             f"FROM campaign_budget "
             f"WHERE campaign_budget.name = '{budget_name}' "
-            f"AND campaign_budget.explicitly_shared = false "
             f"LIMIT 1",
         )
         if existing_budgets and not inp.validate_only:
