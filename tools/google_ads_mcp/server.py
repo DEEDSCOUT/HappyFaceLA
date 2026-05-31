@@ -995,10 +995,13 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         b_resp = mutations.run_mutate(
             client, "CampaignBudgetService", CFG.customer_id, [b_op], inp.validate_only
         )
+        # Always use the resource name from the budget response (validate_only returns a
+        # temporary resource name; live returns the real one). Fall back to a temp name
+        # only if the API returns no results (shouldn't happen but defensive).
         budget_rn = (
             b_resp.results[0].resource_name
-            if not inp.validate_only
-            else "<validate-only>"
+            if b_resp.results
+            else f"customers/{CFG.customer_id}/campaignBudgets/-1"
         )
 
         # 2) campaign — always PAUSED
@@ -1008,8 +1011,8 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         c_op.create.advertising_channel_type = (
             client.enums.AdvertisingChannelTypeEnum.SEARCH
         )
-        if not inp.validate_only:
-            c_op.create.campaign_budget = budget_rn
+        c_op.create.campaign_budget = budget_rn  # required even in validate_only
+        c_op.create.contains_eu_political_advertising = False  # required v24 field
         if inp.bidding == "MANUAL_CPC":
             c_op.create.manual_cpc._pb.SetInParent()  # type: ignore[attr-defined]
         else:
