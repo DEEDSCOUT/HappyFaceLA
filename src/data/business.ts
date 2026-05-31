@@ -17,8 +17,7 @@ export const business = {
         "Balloon Twisting",
         "Glitter Tattoos",
         "Face Gems",
-        "Face Jewelry",
-        "Temporary Tattoos"
+        "Face Jewelry"
     ],
     areaServed: [
         "Los Angeles",
