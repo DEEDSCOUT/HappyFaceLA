@@ -36,6 +36,24 @@ class BidStrategyInput(MutationCommon):
     target_roas: Optional[float] = None
 
 
+class ImportGA4ConversionInput(MutationCommon):
+    ga4_event_name: str
+    conversion_name: str
+    category: Literal[
+        "PHONE_CALL_LEAD",
+        "CONTACT",
+        "SUBMIT_LEAD_FORM",
+        "PURCHASE",
+        "PAGE_VIEW",
+        "OTHER",
+    ] = "CONTACT"
+    include_in_conversions_metric: bool = False  # False = secondary
+    counting_type: Literal["ONE_PER_CLICK", "MANY_PER_CLICK"] = "ONE_PER_CLICK"
+    click_through_lookback_window_days: int = 30
+    view_through_lookback_window_days: int = 1
+    default_value: float = 1.0
+
+
 class ConversionActionInput(MutationCommon):
     conversion_action_id: str
     name: Optional[str] = None

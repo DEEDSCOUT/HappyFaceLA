@@ -648,6 +648,80 @@ def google_ads_update_bid_strategy(payload: dict) -> dict:
 
 
 @mcp.tool()
+def google_ads_import_ga4_conversion(payload: dict) -> dict:
+    """Import a GA4 custom event as a new conversion action (secondary by default).
+
+    Use this to import GA4 events such as phone_click or sms_click.
+    Set include_in_conversions_metric=False (the default) to keep it secondary
+    so it does not affect Smart Bidding or primary conversion counts.
+    """
+    inp = schemas.ImportGA4ConversionInput.model_validate(payload)
+    client = _client()
+    with mutations.with_safety(
+        CFG,
+        tool="google_ads_import_ga4_conversion",
+        reason=inp.reason,
+        risk_level="medium",
+        validate_only=inp.validate_only,
+        approval_token=inp.approval_token,
+        resources_touched=["<new conversion action>"],
+        before_data={"ga4_event_name": inp.ga4_event_name},
+    ) as plan:
+        op = client.get_type("ConversionActionOperation")
+        ca = op.create
+        ca.name = inp.conversion_name
+        ca.type_ = client.enums.ConversionActionTypeEnum.GOOGLE_ANALYTICS_4_CUSTOM
+        ca.category = client.enums.ConversionActionCategoryEnum[inp.category]
+        ca.status = client.enums.ConversionActionStatusEnum.ENABLED
+        ca.include_in_conversions_metric = inp.include_in_conversions_metric
+        ca.counting_type = client.enums.ConversionActionCountingTypeEnum[
+            inp.counting_type
+        ]
+        ca.click_through_lookback_window_days = inp.click_through_lookback_window_days
+        ca.view_through_lookback_window_days = inp.view_through_lookback_window_days
+        ca.value_settings.default_value = inp.default_value
+        ca.value_settings.always_use_default_value = True
+        plan["operations"] = [
+            {
+                "service": "ConversionActionService",
+                "operation": "create",
+                "resource_name": "<new conversion action>",
+                "fields_changed": {
+                    "name": inp.conversion_name,
+                    "ga4_event_name": inp.ga4_event_name,
+                    "category": inp.category,
+                    "include_in_conversions_metric": inp.include_in_conversions_metric,
+                    "counting_type": inp.counting_type,
+                },
+                "old_values": {},
+                "new_values": inp.model_dump(exclude_none=True),
+            }
+        ]
+        resp = mutations.run_mutate(
+            client, "ConversionActionService", CFG.customer_id, [op], inp.validate_only
+        )
+        new_rn = (
+            resp.results[0].resource_name if not inp.validate_only else "<validate-only>"
+        )
+        plan["after"] = {
+            "validate_only": inp.validate_only,
+            "resource_name": new_rn,
+        }
+        return {
+            "plan": plan["plan"],
+            "plan_path": plan["plan_path"],
+            "validate_only": inp.validate_only,
+            "resource_name": new_rn,
+            "note": (
+                "Conversion action created as secondary (include_in_conversions_metric=False). "
+                "It will not affect Smart Bidding or primary conversion counts."
+                if not inp.include_in_conversions_metric
+                else "Conversion action created as PRIMARY — verify this was intended."
+            ),
+        }
+
+
+@mcp.tool()
 def google_ads_update_conversion_action(payload: dict) -> dict:
     """Update a conversion action's editable fields."""
     inp = schemas.ConversionActionInput.model_validate(payload)

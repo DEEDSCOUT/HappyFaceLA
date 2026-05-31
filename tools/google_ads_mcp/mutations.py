@@ -130,25 +130,36 @@ def with_safety(
 
 
 def run_mutate(client, service_name: str, customer_id: str, operations: list, validate_only: bool, partial_failure: bool = False):
-    """Generic mutate caller. Returns the response object."""
+    """Generic mutate caller. Returns the response object.
+
+    The Google Ads Python SDK v21+ accepts mutate calls via a typed request
+    object rather than keyword arguments. Passing validate_only / partial_failure
+    as kwargs causes a TypeError against the underlying gRPC stub. Build the
+    appropriate Mutate*Request type so the fields are set on the proto message.
+    """
     service = client.get_service(service_name)
-    # All Google Ads mutate methods follow the pattern mutate_<resource>(customer_id, operations, ...)
-    # e.g. CampaignService.mutate_campaigns
-    mutate_method_name = {
-        "CampaignService": "mutate_campaigns",
-        "CampaignBudgetService": "mutate_campaign_budgets",
-        "CampaignCriterionService": "mutate_campaign_criteria",
-        "ConversionActionService": "mutate_conversion_actions",
-        "CustomerConversionGoalService": "mutate_customer_conversion_goals",
-        "CampaignConversionGoalService": "mutate_campaign_conversion_goals",
-        "AdGroupCriterionService": "mutate_ad_group_criteria",
-        "AssetService": "mutate_assets",
-        "AssetGroupAssetService": "mutate_asset_group_assets",
-        "RecommendationService": "apply_recommendation",
-    }[service_name]
+    service_to_method = {
+        "CampaignService": ("mutate_campaigns", "MutateCampaignsRequest"),
+        "CampaignBudgetService": ("mutate_campaign_budgets", "MutateCampaignBudgetsRequest"),
+        "CampaignCriterionService": ("mutate_campaign_criteria", "MutateCampaignCriteriaRequest"),
+        "ConversionActionService": ("mutate_conversion_actions", "MutateConversionActionsRequest"),
+        "CustomerConversionGoalService": ("mutate_customer_conversion_goals", "MutateCustomerConversionGoalsRequest"),
+        "CampaignConversionGoalService": ("mutate_campaign_conversion_goals", "MutateCampaignConversionGoalsRequest"),
+        "AdGroupCriterionService": ("mutate_ad_group_criteria", "MutateAdGroupCriteriaRequest"),
+        "AssetService": ("mutate_assets", "MutateAssetsRequest"),
+        "AssetGroupAssetService": ("mutate_asset_group_assets", "MutateAssetGroupAssetsRequest"),
+        "RecommendationService": ("apply_recommendation", None),
+    }
+    mutate_method_name, request_type_name = service_to_method[service_name]
     method = getattr(service, mutate_method_name)
-    kwargs = {"customer_id": customer_id, "operations": operations}
-    if mutate_method_name != "apply_recommendation":
-        kwargs["validate_only"] = validate_only
-        kwargs["partial_failure"] = partial_failure
-    return method(**kwargs)
+
+    if request_type_name is None:
+        # apply_recommendation uses its own request shape — pass kwargs as before
+        return method(customer_id=customer_id, operations=operations)
+
+    req = client.get_type(request_type_name)
+    req.customer_id = customer_id
+    req.operations.extend(operations)
+    req.validate_only = validate_only
+    req.partial_failure = partial_failure
+    return method(req)
