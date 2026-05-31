@@ -1091,9 +1091,9 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
             "campaign_results": [str(r) for r in c_resp.results],
         }
         return {
-            "plan": plan["plan"],
-            "plan_path": plan["plan_path"],
             "validate_only": inp.validate_only,
+            "budget_resource_name": budget_rn,
+            "campaign_results": [str(r) for r in c_resp.results],
             "note": "Campaign created PAUSED. Use google_ads_update_campaign_status with reason containing 'ENABLE' to activate.",
         }
 
