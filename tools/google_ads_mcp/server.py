@@ -995,14 +995,35 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         b_resp = mutations.run_mutate(
             client, "CampaignBudgetService", CFG.customer_id, [b_op], inp.validate_only
         )
-        # Always use the resource name from the budget response (validate_only returns a
-        # temporary resource name; live returns the real one). Fall back to a temp name
-        # only if the API returns no results (shouldn't happen but defensive).
-        budget_rn = (
-            b_resp.results[0].resource_name
-            if b_resp.results
-            else f"customers/{CFG.customer_id}/campaignBudgets/-1"
-        )
+
+        if inp.validate_only:
+            # validate_only: budget structure validated OK. Campaign service validation
+            # is skipped — campaign_budget is a cross-service reference that requires a
+            # real resource name, which only exists after the budget is created. To
+            # create the campaign, call again with validate_only=false + approval_token.
+            plan["operations"] = [
+                {
+                    "service": "CampaignBudgetService",
+                    "operation": "create (validate only)",
+                    "resource_name": "<not created>",
+                    "fields_changed": {"amount_usd": inp.daily_budget_usd},
+                    "old_values": {},
+                    "new_values": {"name": b_op.create.name, "amount_usd": inp.daily_budget_usd},
+                }
+            ]
+            plan["after"] = {"validate_only": True}
+            return {
+                "plan": plan["plan"],
+                "plan_path": plan["plan_path"],
+                "validate_only": True,
+                "note": (
+                    "Budget structure validated OK. Campaign service validation skipped "
+                    "(cross-service temp resource names are not supported in separate validate_only calls). "
+                    "Ready to execute: call again with validate_only=false and approval_token."
+                ),
+            }
+
+        budget_rn = b_resp.results[0].resource_name
 
         # 2) campaign — always PAUSED
         c_op = client.get_type("CampaignOperation")
@@ -1011,7 +1032,7 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         c_op.create.advertising_channel_type = (
             client.enums.AdvertisingChannelTypeEnum.SEARCH
         )
-        c_op.create.campaign_budget = budget_rn  # required even in validate_only
+        c_op.create.campaign_budget = budget_rn
         c_op.create.contains_eu_political_advertising = False  # required v24 field
         if inp.bidding == "MANUAL_CPC":
             c_op.create.manual_cpc._pb.SetInParent()  # type: ignore[attr-defined]
@@ -1022,7 +1043,7 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         c_op.create.network_settings.target_content_network = False
         c_op.create.network_settings.target_partner_search_network = False
         c_resp = mutations.run_mutate(
-            client, "CampaignService", CFG.customer_id, [c_op], inp.validate_only
+            client, "CampaignService", CFG.customer_id, [c_op], False
         )
 
         plan["operations"] = [
