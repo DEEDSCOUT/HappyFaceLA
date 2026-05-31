@@ -18,25 +18,32 @@ const { service, faqs } = Astro.props;
 
 // Use real gallery images for this service only — no placeholder fallback
 const serviceGallery = galleryItems
-  .filter((item) => item.permissionConfirmed && item.service === service.name && !item.src.endsWith(".svg"))
+  .filter(
+    (item) =>
+      item.permissionConfirmed &&
+      item.service === service.name &&
+      !item.src.endsWith(".svg"),
+  )
   .map((item) => ({ src: item.src, alt: item.alt }));
 ---
 
 <section class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-10">
-  {service.image && (
-    <div class="overflow-hidden rounded-2xl">
-      <img
-        src={service.image}
-        alt={service.imageAlt ?? service.name}
-        width="1400"
-        height="788"
-        class="w-full bg-slate-100 object-contain"
-        style="aspect-ratio:16/9;"
-        loading="eager"
-        decoding="async"
-      />
-    </div>
-  )}
+  {
+    service.image && (
+      <div class="overflow-hidden rounded-2xl">
+        <img
+          src={service.image}
+          alt={service.imageAlt ?? service.name}
+          width="1400"
+          height="788"
+          class="w-full bg-slate-100 object-contain"
+          style="aspect-ratio:16/9;"
+          loading="eager"
+          decoding="async"
+        />
+      </div>
+    )
+  }
 
   <ServiceCrossSell
     currentSlug={service.slug}
@@ -45,9 +52,11 @@ const serviceGallery = galleryItems
   />
 
   <article class="rounded-2xl border border-slate-200 bg-white p-6">
-    <h2 class="text-2xl font-bold text-slate-900">Who this service is best for</h2>
+    <h2 class="text-2xl font-bold text-slate-900">
+      Who this service is best for
+    </h2>
     <p class="mt-3 text-sm leading-relaxed text-slate-700">
-      {service.intro} This page is designed for birthdays, school events, festivals, corporate family days, and private celebrations in Los Angeles.
+      {service.intro} This page is designed for birthday parties and private celebrations in Los Angeles.
     </p>
   </article>
 
@@ -56,49 +65,69 @@ const serviceGallery = galleryItems
     <article class="rounded-2xl border border-slate-200 bg-white p-6">
       <h2 class="text-lg font-bold text-slate-900">What it includes</h2>
       <ul class="mt-3 space-y-2 text-sm text-slate-700">
-        {service.whatItIncludes.map((item) => (
-          <li class="flex gap-2">
-            <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
-            <span>{item}</span>
-          </li>
-        ))}
+        {
+          service.whatItIncludes.map((item) => (
+            <li class="flex gap-2">
+              <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">
+                ✓
+              </span>
+              <span>{item}</span>
+            </li>
+          ))
+        }
       </ul>
     </article>
 
     <article class="rounded-2xl border border-slate-200 bg-white p-6">
       <h2 class="text-lg font-bold text-slate-900">Best for</h2>
       <ul class="mt-3 space-y-2 text-sm text-slate-700">
-        {service.bestFor.map((item) => (
-          <li class="flex gap-2">
-            <span class="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">→</span>
-            <span>{item}</span>
-          </li>
-        ))}
+        {
+          service.bestFor.map((item) => (
+            <li class="flex gap-2">
+              <span class="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">
+                →
+              </span>
+              <span>{item}</span>
+            </li>
+          ))
+        }
       </ul>
     </article>
 
     <article class="rounded-2xl border border-slate-200 bg-white p-6">
       <h2 class="text-lg font-bold text-slate-900">Add-ons available</h2>
       <ul class="mt-3 space-y-2 text-sm text-slate-700">
-        {service.addOns.map((item) => (
-          <li class="flex gap-2">
-            <span class="mt-0.5 shrink-0 text-orange-400" aria-hidden="true">+</span>
-            <span>{item}</span>
-          </li>
-        ))}
+        {
+          service.addOns.map((item) => (
+            <li class="flex gap-2">
+              <span class="mt-0.5 shrink-0 text-orange-400" aria-hidden="true">
+                +
+              </span>
+              <span>{item}</span>
+            </li>
+          ))
+        }
       </ul>
     </article>
   </div>
 
-  {serviceGallery.length > 0 && (
-    <GalleryGrid title={`${service.name} Gallery`} images={serviceGallery} />
-  )}
+  {
+    serviceGallery.length > 0 && (
+      <GalleryGrid title={`${service.name} Gallery`} images={serviceGallery} />
+    )
+  }
 
   <section class="rounded-2xl border border-slate-200 bg-white p-6">
     <h2 class="text-2xl font-bold text-slate-900">Booking notes</h2>
     <ul class="mt-4 space-y-2 text-sm text-slate-700">
-      <li>Please share any sensitivities or event requirements when requesting a quote. Service details are confirmed before booking.</li>
-      <li>Serving Los Angeles and nearby areas. Share your event city or ZIP code for availability.</li>
+      <li>
+        Please share any sensitivities or event requirements when requesting a
+        quote. Service details are confirmed before booking.
+      </li>
+      <li>
+        Serving Los Angeles and nearby areas. Share your event city or ZIP code
+        for availability.
+      </li>
     </ul>
   </section>
 

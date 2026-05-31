@@ -86,7 +86,7 @@ export const glitterTattooFaqs: FaqItem[] = [
     {
         question: "What types of events are glitter tattoos good for?",
         answer:
-            "Glitter tattoos are popular at school carnivals, birthday parties, festival booths, and any event where guests want a fast, eye-catching design. They work well as a dedicated station or alongside face painting and face gems."
+            "Glitter tattoos are popular at birthday parties and private events where guests want a fast, eye-catching design. They work well as a dedicated station or alongside face painting and face gems."
     },
     {
         question: "Can glitter tattoos be added to face painting or balloon twisting?",
@@ -99,9 +99,9 @@ export const glitterTattooFaqs: FaqItem[] = [
             "Submit your event details using the quote form or contact page. Include your event date, location, approximate guest count, and any services you want to combine. Availability and pricing are confirmed before booking."
     },
     {
-        question: "Are glitter tattoos suitable for school or festival stations?",
+        question: "Are glitter tattoos a good add-on for birthday party lines?",
         answer:
-            "Yes. Glitter tattoos are a popular add-on at school carnivals, PTA events, and festival booths. Happy Faces LA can set up a dedicated glitter tattoo station or combine it with other services at the same event."
+            "Yes. Glitter tattoos move quickly and work well alongside other party services. Happy Faces LA can set up a dedicated glitter tattoo station or combine it with face painting, face gems, or balloon twisting at the same event."
     },
     {
         question: "How is availability confirmed?",
@@ -134,6 +134,6 @@ export const faceGemsFaqs: FaqItem[] = [
     {
         question: "What events are face gems best for?",
         answer:
-            "Face gems work well at themed birthday parties, school events, festivals, photo booths, and events where guests want a photo-ready accent look. They can be booked alone or as part of a multi-service package."
+            "Face gems work well at themed birthday parties and private events where guests want a photo-ready accent look. They can be booked alone or as part of a multi-service package."
     }
 ];

@@ -26,11 +26,11 @@ export const services: ServiceItem[] = [
         shortName: "Face painting",
         title: "Face Painting in Los Angeles",
         description:
-            "Professional face painting for birthdays, school events, festivals, and private celebrations across Los Angeles.",
+            "Professional face painting for birthday parties and private celebrations in Los Angeles.",
         intro:
             "Happy Faces LA provides colorful, event-ready face painting with kid-friendly designs and fast line management for busy events.",
         heroSubcopy:
-            "Face painting designs for parties and events, with kid-friendly designs and quick line management for birthdays, school events, festivals, and family celebrations. Serving Los Angeles and nearby areas. Share your event city or ZIP code for availability. Often booked together with balloon twisting, glitter tattoos, or face gems for a full party experience.",
+            "Face painting designs for parties and events, with kid-friendly designs and quick line management for birthdays and family celebrations in Los Angeles. Serving Los Angeles and nearby areas. Share your event city or ZIP code for availability. Often booked together with balloon twisting, glitter tattoos, or face gems for a full party experience.",
         crossSellTitle: "More Than Face Painting — Complete Kids Party Fun",
         crossSellDescription:
             "Many families book face painting together with balloon twisting, glitter tattoos, or face gems so guests have more to do while lines move faster. Choose one service or build a package around your event size, age range, and schedule.",
@@ -42,9 +42,9 @@ export const services: ServiceItem[] = [
         ],
         bestFor: [
             "Kids birthday parties",
-            "School carnivals and festivals",
-            "Corporate family events",
-            "Private celebrations",
+            "Themed and character parties",
+            "Family celebrations",
+            "Private events in Los Angeles",
         ],
         addOns: ["Balloon twisting", "Glitter tattoos", "Face gems / face jewelry"],
         image: "/images/services/happy-faces-la-face-painting-service.webp",
@@ -56,11 +56,11 @@ export const services: ServiceItem[] = [
         shortName: "Balloon twisting",
         title: "Balloon Twisting in Los Angeles",
         description:
-            "Book balloon twisting for kids parties, school events, and family-friendly corporate events in Los Angeles.",
+            "Book balloon twisting for kids birthday parties and private celebrations in Los Angeles.",
         intro:
             "Our balloon twisting service adds movement and excitement to events with crowd-friendly designs and quick interactions.",
         heroSubcopy:
-            "Balloon animals, swords, princess crowns, and themed designs kids can take home. Fast turnaround keeps event lines moving at birthdays, school events, festivals, and corporate family days across Los Angeles. Pairs naturally with face painting, glitter tattoos, and face gems.",
+            "Balloon animals, swords, princess crowns, and themed designs kids can take home. Fast turnaround keeps event lines moving at birthday parties and private celebrations across Los Angeles. Pairs naturally with face painting, glitter tattoos, and face gems.",
         crossSellTitle: "More Than Balloon Twisting — Build a Full Party Lineup",
         crossSellDescription:
             "Balloon twisting is a great anchor service. Add face painting, glitter tattoos, or face gems so guests have multiple stations and short waits across the event.",
@@ -72,9 +72,9 @@ export const services: ServiceItem[] = [
         ],
         bestFor: [
             "Birthday parties",
-            "School events",
-            "Family-friendly festivals",
-            "Corporate family days",
+            "Kids birthday entertainment",
+            "Family celebrations",
+            "Private events in Los Angeles",
         ],
         addOns: ["Face painting", "Glitter tattoos", "Face gems"],
         image: "/images/services/happy-faces-la-balloon-twisting-service.webp",
@@ -86,11 +86,11 @@ export const services: ServiceItem[] = [
         shortName: "Glitter tattoos",
         title: "Glitter Tattoos in Los Angeles",
         description:
-            "Glitter tattoos for birthdays, school carnivals, and festivals with clean setup and event-ready service.",
+            "Glitter tattoos for birthday parties and private events with clean setup and event-ready service.",
         intro:
             "Glitter tattoos are a fast, photo-friendly add-on for events where guests want fun designs and short wait times.",
         heroSubcopy:
-            "Temporary glitter tattoo designs for parties and events — a fast, photo-friendly station for older kids and teens. Great for school carnivals, festival booths, and high-traffic birthday lines across Los Angeles. Often paired with face painting or face gems for full theme looks.",
+            "Glitter tattoo designs for parties and events — a fast, photo-friendly station for older kids and teens. Great for birthday parties and high-traffic event lines across Los Angeles. Often paired with face painting or face gems for full theme looks.",
         crossSellTitle: "Pair Glitter Tattoos With Other Party Services",
         crossSellDescription:
             "Glitter tattoos move fast — perfect alongside slower stations like face painting or as a finishing touch with face gems. Add balloon twisting to give younger guests a take-home keepsake.",
@@ -99,10 +99,10 @@ export const services: ServiceItem[] = [
             "Fast application, great for large groups",
         ],
         bestFor: [
-            "School carnivals and festival booths",
             "Birthday party add-ons",
+            "Themed birthday parties",
             "Events with older kids and teens",
-            "High-throughput party lines",
+            "High-throughput birthday lines",
         ],
         addOns: ["Face painting", "Face gems", "Balloon twisting"],
         image: "/images/services/happy-faces-la-glitter-tattoo-service.webp",
