@@ -1036,7 +1036,7 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
                 ),
             }
 
-        budget_rn = b_resp.results[0].resource_name
+        # budget_rn already set above (either reused or from b_resp.results)
 
         # 2) campaign — always PAUSED
         c_op = client.get_type("CampaignOperation")
