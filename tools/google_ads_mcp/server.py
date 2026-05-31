@@ -1013,8 +1013,6 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
             ]
             plan["after"] = {"validate_only": True}
             return {
-                "plan": plan["plan"],
-                "plan_path": plan["plan_path"],
                 "validate_only": True,
                 "note": (
                     "Budget structure validated OK. Campaign service validation skipped "
