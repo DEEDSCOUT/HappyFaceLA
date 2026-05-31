@@ -1031,7 +1031,7 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
             client.enums.AdvertisingChannelTypeEnum.SEARCH
         )
         c_op.create.campaign_budget = budget_rn
-        c_op.create.contains_eu_political_advertising = False  # required v24 field
+        c_op.create._pb.contains_eu_political_advertising = False  # proto3 optional — must use _pb to transmit False
         if inp.bidding == "MANUAL_CPC":
             c_op.create.manual_cpc._pb.SetInParent()  # type: ignore[attr-defined]
         else:
