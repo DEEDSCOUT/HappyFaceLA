@@ -987,14 +987,30 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         resources_touched=["<new campaign>"],
         before_data={"name": inp.name},
     ) as plan:
-        # 1) budget
-        b_op = client.get_type("CampaignBudgetOperation")
-        b_op.create.name = f"Budget for {inp.name}"
-        b_op.create.amount_micros = mutations.budget_usd_to_micros(inp.daily_budget_usd)
-        b_op.create.delivery_method = client.enums.BudgetDeliveryMethodEnum.STANDARD
-        b_resp = mutations.run_mutate(
-            client, "CampaignBudgetService", CFG.customer_id, [b_op], inp.validate_only
+        # 1) budget — upsert by name to tolerate retry after partial failure
+        budget_name = f"Budget for {inp.name}"
+        existing_budgets = gaql.stream_to_dicts(
+            client,
+            CFG.customer_id,
+            f"SELECT campaign_budget.resource_name, campaign_budget.name "
+            f"FROM campaign_budget "
+            f"WHERE campaign_budget.name = '{budget_name}' "
+            f"AND campaign_budget.explicitly_shared = false "
+            f"LIMIT 1",
         )
+        if existing_budgets and not inp.validate_only:
+            budget_rn = existing_budgets[0]["campaign_budget"]["resource_name"]
+            b_resp = None
+            log.info("Reusing existing budget %s", budget_rn)
+        else:
+            b_op = client.get_type("CampaignBudgetOperation")
+            b_op.create.name = budget_name
+            b_op.create.amount_micros = mutations.budget_usd_to_micros(inp.daily_budget_usd)
+            b_op.create.delivery_method = client.enums.BudgetDeliveryMethodEnum.STANDARD
+            b_resp = mutations.run_mutate(
+                client, "CampaignBudgetService", CFG.customer_id, [b_op], inp.validate_only
+            )
+            budget_rn = b_resp.results[0].resource_name if b_resp.results else f"customers/{CFG.customer_id}/campaignBudgets/-1"
 
         if inp.validate_only:
             # validate_only: budget structure validated OK. Campaign service validation
@@ -1047,12 +1063,12 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         plan["operations"] = [
             {
                 "service": "CampaignBudgetService",
-                "operation": "create",
+                "operation": "reused" if b_resp is None else "create",
                 "resource_name": budget_rn,
                 "fields_changed": {"amount_usd": inp.daily_budget_usd},
                 "old_values": {},
                 "new_values": {
-                    "name": b_op.create.name,
+                    "name": budget_name,
                     "amount_usd": inp.daily_budget_usd,
                 },
             },
@@ -1072,7 +1088,7 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         ]
         plan["after"] = {
             "validate_only": inp.validate_only,
-            "budget_results": [str(r) for r in b_resp.results],
+            "budget_results": [] if b_resp is None else [str(r) for r in b_resp.results],
             "campaign_results": [str(r) for r in c_resp.results],
         }
         return {
