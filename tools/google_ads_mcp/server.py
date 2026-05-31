@@ -673,7 +673,7 @@ def google_ads_import_ga4_conversion(payload: dict) -> dict:
         ca.type_ = client.enums.ConversionActionTypeEnum.GOOGLE_ANALYTICS_4_CUSTOM
         ca.category = client.enums.ConversionActionCategoryEnum[inp.category]
         ca.status = client.enums.ConversionActionStatusEnum.ENABLED
-        ca.include_in_conversions_metric = inp.include_in_conversions_metric
+        ca.primary_for_goal = inp.include_in_conversions_metric
         ca.counting_type = client.enums.ConversionActionCountingTypeEnum[
             inp.counting_type
         ]
