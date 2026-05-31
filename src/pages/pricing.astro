@@ -10,13 +10,13 @@ const pricingFaqs = [
   {
     question: "Do you publish exact pricing online?",
     answer:
-      "Face Painting Parties from $150. Final pricing is based on event date, location, guest count, service mix, and number of artists needed. Request a quote for your event."
+      "Face Painting Parties from $150. Final pricing is based on event date, location, guest count, service mix, and number of artists needed. Request a quote for your event.",
   },
   {
     question: "What affects event pricing?",
     answer:
-      "Date demand, travel, duration, add-ons, and staffing all affect final quote totals."
-  }
+      "Date demand, travel, duration, add-ons, and staffing all affect final quote totals.",
+  },
 ];
 ---
 
@@ -25,12 +25,23 @@ const pricingFaqs = [
   description="Pricing depends on event date, location, guest count, and services requested. Request availability and pricing from Happy Faces LA."
   canonicalPath={canonicalPath}
   jsonLd={[
-    serviceJsonLd("Party Entertainment Pricing", `https://happyfacesla.com${canonicalPath}`),
-    faqJsonLd(pricingFaqs)
+    serviceJsonLd(
+      "Party Entertainment Pricing",
+      `https://happyfacesla.com${canonicalPath}`,
+    ),
+    faqJsonLd(pricingFaqs),
   ]}
 >
-  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Pricing", href: canonicalPath }]} />
-  <PageIntro title="Face Painting Pricing" description="Pricing depends on event date, location, number of guests, services requested, and artist count. Submit your event details for an accurate quote." />
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Pricing", href: canonicalPath },
+    ]}
+  />
+  <PageIntro
+    title="Face Painting Pricing"
+    description="Pricing depends on event date, location, number of guests, services requested, and artist count. Submit your event details for an accurate quote."
+  />
 
   <section class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-10">
     <section class="rounded-2xl border border-slate-200 bg-white p-6">
@@ -44,7 +55,9 @@ const pricingFaqs = [
     </section>
 
     <section class="rounded-2xl border border-orange-200 bg-orange-50 p-6">
-      <p class="text-lg font-semibold text-orange-800">Face Painting Parties from $150.</p>
+      <p class="text-lg font-semibold text-orange-800">
+        Face Painting Parties from $150.
+      </p>
     </section>
 
     <QuoteForm />
@@ -52,9 +65,14 @@ const pricingFaqs = [
 
   <script is:inline>
     window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: "pricing_view", source_page: window.location.pathname });
+    window.dataLayer.push({
+      event: "pricing_view",
+      source_page: window.location.pathname,
+    });
     if (typeof window.gtag === "function") {
-      window.gtag("event", "pricing_view", { source_page: window.location.pathname });
+      window.gtag("event", "pricing_view", {
+        source_page: window.location.pathname,
+      });
     }
   </script>
 </BaseLayout>

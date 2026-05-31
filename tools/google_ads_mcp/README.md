@@ -86,8 +86,16 @@ and create a fresh Desktop app client before running this script.
 `google_ads_campaigns`, `google_ads_campaign_diagnostics`,
 `google_ads_conversion_actions`, `google_ads_conversion_goals`,
 `google_ads_pmax_asset_groups`, `google_ads_assets`, `google_ads_locations`,
+`google_ads_geo_target_suggest`, `google_ads_keyword_historical_metrics`,
 `google_ads_keywords_and_negatives`, `google_ads_change_history`,
 `google_ads_generate_diagnostics_report`.
+
+### Keyword-demand reads (no mutation)
+
+- `google_ads_geo_target_suggest`: resolve geo target constants by location names.
+- `google_ads_keyword_historical_metrics`: keyword demand metrics (avg monthly
+  searches, competition, competition index, top-of-page bids, monthly volumes)
+  via `KeywordPlanIdeaService`, with optional per-geo breakdown (`split_by_geo`).
 
 ## Write tools (all default `validate_only=true`)
 

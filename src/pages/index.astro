@@ -11,13 +11,22 @@ import CTASection from "../components/sections/CTASection.astro";
 import { services } from "../data/services";
 import { commonFaqs } from "../data/faqs";
 import { galleryItems } from "../data/gallery";
-import { organizationJsonLd, localBusinessJsonLd, websiteJsonLd } from "../utils/schema";
+import {
+	organizationJsonLd,
+	localBusinessJsonLd,
+	websiteJsonLd,
+} from "../utils/schema";
 
 // Show up to 6 featured gallery items on the homepage — real photos only
 const featuredGallery = galleryItems
-  .filter((item) => item.permissionConfirmed && item.featured && !item.src.endsWith(".svg"))
-  .slice(0, 6)
-  .map((item) => ({ src: item.src, alt: item.alt }));
+	.filter(
+		(item) =>
+			item.permissionConfirmed &&
+			item.featured &&
+			!item.src.endsWith(".svg"),
+	)
+	.slice(0, 6)
+	.map((item) => ({ src: item.src, alt: item.alt }));
 ---
 
 <BaseLayout
@@ -36,9 +45,17 @@ const featuredGallery = galleryItems
 	<section class="mx-auto w-full max-w-6xl px-4 py-10">
 		<h2 class="text-2xl font-bold text-slate-900">Core services</h2>
 		<div class="mt-4 grid gap-4 md:grid-cols-2">
-			{services.map((service) => (
-				<ServiceCard title={service.name} description={service.description} href={`/${service.slug}/`} image={service.image} imageAlt={service.imageAlt} />
-			))}
+			{
+				services.map((service) => (
+					<ServiceCard
+						title={service.name}
+						description={service.description}
+						href={`/${service.slug}/`}
+						image={service.image}
+						imageAlt={service.imageAlt}
+					/>
+				))
+			}
 		</div>
 	</section>
 
@@ -46,7 +63,10 @@ const featuredGallery = galleryItems
 		<GalleryGrid title="Recent events" images={featuredGallery} />
 	</section>
 
-	<GoogleReviewsSection heading="What our LA families say on Google" limit={3} />
+	<GoogleReviewsSection
+		heading="What our LA families say on Google"
+		limit={3}
+	/>
 
 	<TestimonialsSection limit={6} />
 

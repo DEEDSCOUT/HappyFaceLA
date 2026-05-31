@@ -12,8 +12,16 @@ const canonicalPath = "/contact/";
   description="Request availability and pricing from Happy Faces LA for Los Angeles face painting, balloons, glitter tattoos, and face gems."
   canonicalPath={canonicalPath}
 >
-  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Contact", href: canonicalPath }]} />
-  <PageIntro title="Get Availability & Pricing" description="Tell us about your event and we will follow up with availability and next steps." />
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Contact", href: canonicalPath },
+    ]}
+  />
+  <PageIntro
+    title="Get Availability & Pricing"
+    description="Tell us about your event and we will follow up with availability and next steps."
+  />
 
   <section class="mx-auto w-full max-w-6xl px-4 py-10">
     <QuoteForm />

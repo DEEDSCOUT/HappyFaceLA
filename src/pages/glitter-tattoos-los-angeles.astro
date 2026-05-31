@@ -5,9 +5,16 @@ import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
 import ServicePageSections from "../components/sections/ServicePageSections.astro";
 import { services } from "../data/services";
 import { glitterTattooFaqs } from "../data/faqs";
-import { serviceJsonLd, breadcrumbJsonLd, localBusinessJsonLd, faqJsonLd } from "../utils/schema";
+import {
+  serviceJsonLd,
+  breadcrumbJsonLd,
+  localBusinessJsonLd,
+  faqJsonLd,
+} from "../utils/schema";
 
-const service = services.find((item) => item.slug === "glitter-tattoos-los-angeles")!;
+const service = services.find(
+  (item) => item.slug === "glitter-tattoos-los-angeles",
+)!;
 const canonicalPath = "/glitter-tattoos-los-angeles/";
 ---
 
@@ -20,12 +27,20 @@ const canonicalPath = "/glitter-tattoos-los-angeles/";
     serviceJsonLd(service.name, `https://happyfacesla.com${canonicalPath}`),
     breadcrumbJsonLd([
       { name: "Home", url: "https://happyfacesla.com/" },
-      { name: "Glitter Tattoos in Los Angeles", url: `https://happyfacesla.com${canonicalPath}` }
+      {
+        name: "Glitter Tattoos in Los Angeles",
+        url: `https://happyfacesla.com${canonicalPath}`,
+      },
     ]),
-    faqJsonLd(glitterTattooFaqs)
+    faqJsonLd(glitterTattooFaqs),
   ]}
 >
-  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Glitter Tattoos", href: canonicalPath }]} />
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Glitter Tattoos", href: canonicalPath },
+    ]}
+  />
   <PageIntro
     title="Glitter Tattoos in Los Angeles"
     description={service.heroSubcopy ?? service.description}

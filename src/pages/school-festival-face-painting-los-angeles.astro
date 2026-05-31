@@ -3,7 +3,11 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
 import PageIntro from "../components/sections/PageIntro.astro";
 import EventTypePageSections from "../components/sections/EventTypePageSections.astro";
-import { localBusinessJsonLd, serviceJsonLd, breadcrumbJsonLd } from "../utils/schema";
+import {
+  localBusinessJsonLd,
+  serviceJsonLd,
+  breadcrumbJsonLd,
+} from "../utils/schema";
 
 const canonicalPath = "/school-festival-face-painting-los-angeles/";
 const eventType = "School and Festival Face Painting";
@@ -19,11 +23,19 @@ const eventType = "School and Festival Face Painting";
     serviceJsonLd(eventType, `https://happyfacesla.com${canonicalPath}`),
     breadcrumbJsonLd([
       { name: "Home", url: "https://happyfacesla.com/" },
-      { name: eventType, url: `https://happyfacesla.com${canonicalPath}` }
-    ])
+      { name: eventType, url: `https://happyfacesla.com${canonicalPath}` },
+    ]),
   ]}
 >
-  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "School & Festival", href: canonicalPath }]} />
-  <PageIntro title="School & Festival Face Painting in Los Angeles" description="Professional entertainment for carnivals, fundraisers, camps, and festivals." />
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "School & Festival", href: canonicalPath },
+    ]}
+  />
+  <PageIntro
+    title="School & Festival Face Painting in Los Angeles"
+    description="Professional entertainment for carnivals, fundraisers, camps, and festivals."
+  />
   <EventTypePageSections eventType={eventType} />
 </BaseLayout>

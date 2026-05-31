@@ -1,0 +1,57 @@
+{
+    "site_url": "https://happyfacesla.com/",
+    "search_type": "WEB",
+    "data_state": "final",
+    "date_range": "last_365_days",
+    "dimensions": [
+        "query"
+    ],
+    "collected": "2026-05-28",
+    "row_count": 6,
+    "has_more": false,
+    "note": "Queries 'balloon twisters near me' and 'los angeles face painting' appear in multi-dimension cross-tabs but fall below the anonymization threshold in standalone query dimension.",
+    "rows": [
+        {
+            "query": "balloon twister los angeles",
+            "clicks": 0,
+            "impressions": 2,
+            "ctr": 0,
+            "position": 41.5
+        },
+        {
+            "query": "balloon twisters los angeles",
+            "clicks": 0,
+            "impressions": 5,
+            "ctr": 0,
+            "position": 43.4
+        },
+        {
+            "query": "face painting charges",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 72
+        },
+        {
+            "query": "face painting fees",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 89
+        },
+        {
+            "query": "face painting los angeles",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 43
+        },
+        {
+            "query": "happy faces face painting",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 43
+        }
+    ]
+}

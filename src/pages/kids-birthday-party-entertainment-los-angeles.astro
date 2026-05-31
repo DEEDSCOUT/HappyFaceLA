@@ -3,7 +3,11 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
 import PageIntro from "../components/sections/PageIntro.astro";
 import BirthdayPartyPageSections from "../components/sections/BirthdayPartyPageSections.astro";
-import { localBusinessJsonLd, serviceJsonLd, breadcrumbJsonLd } from "../utils/schema";
+import {
+  localBusinessJsonLd,
+  serviceJsonLd,
+  breadcrumbJsonLd,
+} from "../utils/schema";
 
 const canonicalPath = "/kids-birthday-party-entertainment-los-angeles/";
 const eventType = "Kids Birthday Party Face Painting & Entertainment";
@@ -18,11 +22,22 @@ const eventType = "Kids Birthday Party Face Painting & Entertainment";
     serviceJsonLd(eventType, `https://happyfacesla.com${canonicalPath}`),
     breadcrumbJsonLd([
       { name: "Home", url: "https://happyfacesla.com/" },
-      { name: "Birthday Party Entertainment", url: `https://happyfacesla.com${canonicalPath}` }
-    ])
+      {
+        name: "Birthday Party Entertainment",
+        url: `https://happyfacesla.com${canonicalPath}`,
+      },
+    ]),
   ]}
 >
-  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Birthday Party Entertainment", href: canonicalPath }]} />
-  <PageIntro title="Kids Birthday Party Face Painting & Entertainment in Los Angeles" description="Celebrate with colorful face painting and creative party entertainment for children's birthday celebrations in Los Angeles." />
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Birthday Party Entertainment", href: canonicalPath },
+    ]}
+  />
+  <PageIntro
+    title="Kids Birthday Party Face Painting & Entertainment in Los Angeles"
+    description="Celebrate with colorful face painting and creative party entertainment for children's birthday celebrations in Los Angeles."
+  />
   <BirthdayPartyPageSections />
 </BaseLayout>

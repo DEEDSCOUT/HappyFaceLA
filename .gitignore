@@ -32,6 +32,9 @@ pnpm-debug.log*
 tools/google_ads_mcp/.venv/
 tools/google_ads_mcp/.env
 tools/google_ads_mcp/.env.local
+tools/gsc_harvester/.env
+tools/gbp_mcp/.venv/
+tools/gbp_mcp/.env.local
 tools/**/__pycache__/
 tools/**/*.pyc
 .env.google-ads

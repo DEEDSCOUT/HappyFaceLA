@@ -1,0 +1,78 @@
+{
+    "site_url": "https://happyfacesla.com/",
+    "search_type": "WEB",
+    "data_state": "final",
+    "date_range": "last_365_days",
+    "dimensions": [
+        "page"
+    ],
+    "collected": "2026-05-28",
+    "row_count": 9,
+    "has_more": false,
+    "note": "Page-dimension totals (196 attributed impressions across 9 pages) do not equal date-dimension totals (72 impressions). GSC aggregation methodology: impressions below per-page attribution threshold are counted in date totals but not attributed to a page row.",
+    "rows": [
+        {
+            "page": "https://happyfacesla.com/",
+            "clicks": 1,
+            "impressions": 51,
+            "ctr": 0.0196,
+            "position": 3.6
+        },
+        {
+            "page": "https://happyfacesla.com/balloon-twisting-los-angeles/",
+            "clicks": 0,
+            "impressions": 23,
+            "ctr": 0,
+            "position": 18
+        },
+        {
+            "page": "https://happyfacesla.com/contact/",
+            "clicks": 0,
+            "impressions": 19,
+            "ctr": 0,
+            "position": 9
+        },
+        {
+            "page": "https://happyfacesla.com/corporate-event-face-painting-los-angeles/",
+            "clicks": 0,
+            "impressions": 11,
+            "ctr": 0,
+            "position": 3.6
+        },
+        {
+            "page": "https://happyfacesla.com/face-gems-face-jewelry-los-angeles/",
+            "clicks": 0,
+            "impressions": 17,
+            "ctr": 0,
+            "position": 10.1
+        },
+        {
+            "page": "https://happyfacesla.com/face-painting-los-angeles/",
+            "clicks": 0,
+            "impressions": 22,
+            "ctr": 0,
+            "position": 7.3
+        },
+        {
+            "page": "https://happyfacesla.com/gallery/",
+            "clicks": 0,
+            "impressions": 15,
+            "ctr": 0,
+            "position": 6.2
+        },
+        {
+            "page": "https://happyfacesla.com/glitter-tattoos-los-angeles/",
+            "clicks": 0,
+            "impressions": 14,
+            "ctr": 0,
+            "position": 5.4
+        },
+        {
+            "page": "https://happyfacesla.com/pricing/",
+            "clicks": 0,
+            "impressions": 24,
+            "ctr": 0,
+            "position": 13.2
+        }
+    ]
+}

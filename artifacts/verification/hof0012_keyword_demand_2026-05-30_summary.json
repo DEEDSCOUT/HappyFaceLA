@@ -1,0 +1,238 @@
+{
+  "as_of": "2026-05-30",
+  "framework": "HOF-0012",
+  "keyword_source": "exact_user_supplied_list",
+  "keyword_set": [
+    "face painting",
+    "face painter",
+    "kids face painting",
+    "face painting near me",
+    "birthday party face painter",
+    "face painter for birthday party",
+    "kids birthday party entertainment",
+    "children's party entertainment",
+    "birthday party entertainment near me",
+    "party entertainment for kids",
+    "balloon twisting",
+    "balloon artist",
+    "balloon twisting near me",
+    "balloon artist for birthday party",
+    "glitter tattoos",
+    "glitter tattoos for parties",
+    "face gems",
+    "face gems for kids party"
+  ],
+  "clusters": {
+    "face_painting_core": [
+      "face painting",
+      "face painter",
+      "kids face painting",
+      "face painting near me",
+      "birthday party face painter",
+      "face painter for birthday party"
+    ],
+    "birthday_entertainment": [
+      "kids birthday party entertainment",
+      "children's party entertainment",
+      "birthday party entertainment near me",
+      "party entertainment for kids"
+    ],
+    "balloon_twisting": [
+      "balloon twisting",
+      "balloon artist",
+      "balloon twisting near me",
+      "balloon artist for birthday party"
+    ],
+    "glitter_face_gems": [
+      "glitter tattoos",
+      "glitter tattoos for parties",
+      "face gems",
+      "face gems for kids party"
+    ]
+  },
+  "per_county_summary": {
+    "Los Angeles County": {
+      "total_keywords": 18,
+      "returned_keywords": 16,
+      "missing_keywords": 2
+    },
+    "Orange County": {
+      "total_keywords": 18,
+      "returned_keywords": 16,
+      "missing_keywords": 2
+    },
+    "Ventura County": {
+      "total_keywords": 18,
+      "returned_keywords": 16,
+      "missing_keywords": 2
+    }
+  },
+  "matrix": [
+    {
+      "county": "Los Angeles County",
+      "cluster": "face_painting_core",
+      "status": "NEEDS_MANUAL_REVIEW",
+      "total_avg_monthly_searches": 4100,
+      "missing_keywords": 2
+    },
+    {
+      "county": "Los Angeles County",
+      "cluster": "birthday_entertainment",
+      "status": "LOW_DATA",
+      "total_avg_monthly_searches": 10,
+      "missing_keywords": 0
+    },
+    {
+      "county": "Los Angeles County",
+      "cluster": "balloon_twisting",
+      "status": "VALIDATED_DEMAND",
+      "total_avg_monthly_searches": 330,
+      "missing_keywords": 0
+    },
+    {
+      "county": "Los Angeles County",
+      "cluster": "glitter_face_gems",
+      "status": "VALIDATED_DEMAND",
+      "total_avg_monthly_searches": 920,
+      "missing_keywords": 0
+    },
+    {
+      "county": "Orange County",
+      "cluster": "face_painting_core",
+      "status": "LOW_DATA",
+      "total_avg_monthly_searches": 20,
+      "missing_keywords": 2
+    },
+    {
+      "county": "Orange County",
+      "cluster": "birthday_entertainment",
+      "status": "NO_DATA_RETURNED",
+      "total_avg_monthly_searches": 0,
+      "missing_keywords": 0
+    },
+    {
+      "county": "Orange County",
+      "cluster": "balloon_twisting",
+      "status": "LOW_DATA",
+      "total_avg_monthly_searches": 10,
+      "missing_keywords": 0
+    },
+    {
+      "county": "Orange County",
+      "cluster": "glitter_face_gems",
+      "status": "LOW_DATA",
+      "total_avg_monthly_searches": 20,
+      "missing_keywords": 0
+    },
+    {
+      "county": "Ventura County",
+      "cluster": "face_painting_core",
+      "status": "NEEDS_MANUAL_REVIEW",
+      "total_avg_monthly_searches": 260,
+      "missing_keywords": 2
+    },
+    {
+      "county": "Ventura County",
+      "cluster": "birthday_entertainment",
+      "status": "LOW_DATA",
+      "total_avg_monthly_searches": 10,
+      "missing_keywords": 0
+    },
+    {
+      "county": "Ventura County",
+      "cluster": "balloon_twisting",
+      "status": "LOW_DATA",
+      "total_avg_monthly_searches": 40,
+      "missing_keywords": 0
+    },
+    {
+      "county": "Ventura County",
+      "cluster": "glitter_face_gems",
+      "status": "LOW_DATA",
+      "total_avg_monthly_searches": 80,
+      "missing_keywords": 0
+    }
+  ],
+  "missing_keywords_per_county": {
+    "Los Angeles County": [
+      "face painter",
+      "face painter for birthday party"
+    ],
+    "Orange County": [
+      "face painter",
+      "face painter for birthday party"
+    ],
+    "Ventura County": [
+      "face painter",
+      "face painter for birthday party"
+    ]
+  },
+  "top5_keyword_averages_per_county": {
+    "Los Angeles County": [
+      {
+        "keyword": "face painting",
+        "avg_monthly_searches": 3600
+      },
+      {
+        "keyword": "glitter tattoos",
+        "avg_monthly_searches": 590
+      },
+      {
+        "keyword": "face painting near me",
+        "avg_monthly_searches": 480
+      },
+      {
+        "keyword": "face gems",
+        "avg_monthly_searches": 320
+      },
+      {
+        "keyword": "balloon twisting",
+        "avg_monthly_searches": 170
+      }
+    ],
+    "Orange County": [
+      {
+        "keyword": "face painting",
+        "avg_monthly_searches": 10
+      },
+      {
+        "keyword": "face painting near me",
+        "avg_monthly_searches": 10
+      },
+      {
+        "keyword": "balloon artist",
+        "avg_monthly_searches": 10
+      },
+      {
+        "keyword": "glitter tattoos",
+        "avg_monthly_searches": 10
+      },
+      {
+        "keyword": "face gems",
+        "avg_monthly_searches": 10
+      }
+    ],
+    "Ventura County": [
+      {
+        "keyword": "face painting",
+        "avg_monthly_searches": 210
+      },
+      {
+        "keyword": "glitter tattoos",
+        "avg_monthly_searches": 50
+      },
+      {
+        "keyword": "face painting near me",
+        "avg_monthly_searches": 40
+      },
+      {
+        "keyword": "face gems",
+        "avg_monthly_searches": 20
+      },
+      {
+        "keyword": "birthday party face painter",
+        "avg_monthly_searches": 10
+      }
+    ]
+  }
+}

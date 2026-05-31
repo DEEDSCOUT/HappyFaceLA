@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../Dev/happyfacesla-commercial-control-room"
+		}
+	],
+	"settings": {
+		"chat.agent.maxRequests": 500,
+		"editor.codeActions.triggerOnFocusChange": true
+	}
+}

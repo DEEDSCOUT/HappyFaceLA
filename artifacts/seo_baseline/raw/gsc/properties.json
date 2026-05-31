@@ -1,0 +1,14 @@
+{
+    "count": 2,
+    "collected": "2026-05-28",
+    "properties": [
+        {
+            "site_url": "https://happyfacesla.com/",
+            "permission_level": "siteOwner"
+        },
+        {
+            "site_url": "sc-domain:happyfacesla.com",
+            "permission_level": "siteOwner"
+        }
+    ]
+}

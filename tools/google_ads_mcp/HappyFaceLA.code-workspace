@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "G:/My Drive"
+		}
+	],
+	"settings": {
+		"chat.agent.maxRequests": 500
+	}
+}

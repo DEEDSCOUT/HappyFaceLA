@@ -1,0 +1,53 @@
+{
+  "site_url": "https://happyfacesla.com/",
+  "search_type": "IMAGE",
+  "data_state": "all",
+  "date_range": "last_365_days",
+  "dimensions": [
+    "query"
+  ],
+  "collected": "2026-05-28",
+  "source_file": "artifacts/seo_baseline/raw/gsc/search_analytics_image_final_or_labeled_all.json",
+  "extracted_section": "sections.all_appendix_query",
+  "payload": {
+    "data_state": "all",
+    "date_range": "last_365_days",
+    "dimensions": [
+      "query"
+    ],
+    "collected": "2026-05-28",
+    "note": "data_state=all returned only 4 provisional rows (unfinalized data from last ~48 hours). At time of prior session IMAGE all had 22 rows; the additional rows appear to have since been finalized and merged into the final dataset.",
+    "row_count": 4,
+    "has_more": false,
+    "rows": [
+      {
+        "query": "birthday party face painting",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 127
+      },
+      {
+        "query": "face gems kids party",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 38
+      },
+      {
+        "query": "face painting for birthday party",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 62
+      },
+      {
+        "query": "kids face gems ideas",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 83
+      }
+    ]
+  }
+}

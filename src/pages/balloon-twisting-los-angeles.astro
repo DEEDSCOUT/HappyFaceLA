@@ -5,9 +5,16 @@ import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
 import ServicePageSections from "../components/sections/ServicePageSections.astro";
 import { services } from "../data/services";
 import { balloonTwistingFaqs } from "../data/faqs";
-import { serviceJsonLd, breadcrumbJsonLd, localBusinessJsonLd, faqJsonLd } from "../utils/schema";
+import {
+  serviceJsonLd,
+  breadcrumbJsonLd,
+  localBusinessJsonLd,
+  faqJsonLd,
+} from "../utils/schema";
 
-const service = services.find((item) => item.slug === "balloon-twisting-los-angeles")!;
+const service = services.find(
+  (item) => item.slug === "balloon-twisting-los-angeles",
+)!;
 const canonicalPath = "/balloon-twisting-los-angeles/";
 ---
 
@@ -20,12 +27,20 @@ const canonicalPath = "/balloon-twisting-los-angeles/";
     serviceJsonLd(service.name, `https://happyfacesla.com${canonicalPath}`),
     breadcrumbJsonLd([
       { name: "Home", url: "https://happyfacesla.com/" },
-      { name: "Balloon Twisting in Los Angeles", url: `https://happyfacesla.com${canonicalPath}` }
+      {
+        name: "Balloon Twisting in Los Angeles",
+        url: `https://happyfacesla.com${canonicalPath}`,
+      },
     ]),
-    faqJsonLd(balloonTwistingFaqs)
+    faqJsonLd(balloonTwistingFaqs),
   ]}
 >
-  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Balloon Twisting", href: canonicalPath }]} />
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Balloon Twisting", href: canonicalPath },
+    ]}
+  />
   <PageIntro
     title="Balloon Twisting in Los Angeles"
     description={service.heroSubcopy ?? service.description}

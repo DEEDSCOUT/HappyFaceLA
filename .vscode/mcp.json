@@ -1,9 +1,19 @@
 {
   "servers": {
+    "happyfacesla-gbp": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/tools/gbp_mcp/.venv/Scripts/python.exe",
+      "args": [
+        "${workspaceFolder}/tools/gbp_mcp/server.py"
+      ],
+      "envFile": "${workspaceFolder}/tools/gbp_mcp/.env.local"
+    },
     "happyfacesla-google-ads": {
       "type": "stdio",
       "command": "${workspaceFolder}/tools/google_ads_mcp/.venv/Scripts/python.exe",
-      "args": ["${workspaceFolder}/tools/google_ads_mcp/server.py"],
+      "args": [
+        "${workspaceFolder}/tools/google_ads_mcp/server.py"
+      ],
       "envFile": "${workspaceFolder}/tools/google_ads_mcp/.env.local"
     }
   }

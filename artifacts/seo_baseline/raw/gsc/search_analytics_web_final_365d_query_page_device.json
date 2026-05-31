@@ -1,0 +1,106 @@
+{
+    "site_url": "https://happyfacesla.com/",
+    "search_type": "WEB",
+    "data_state": "final",
+    "date_range": "last_365_days",
+    "dimensions": [
+        "query",
+        "page",
+        "device"
+    ],
+    "collected": "2026-05-28",
+    "row_count": 10,
+    "has_more": false,
+    "rows": [
+        {
+            "query": "balloon twister los angeles",
+            "page": "https://happyfacesla.com/balloon-twisting-los-angeles/",
+            "device": "DESKTOP",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 47
+        },
+        {
+            "query": "balloon twister los angeles",
+            "page": "https://happyfacesla.com/balloon-twisting-los-angeles/",
+            "device": "MOBILE",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 36
+        },
+        {
+            "query": "balloon twisters los angeles",
+            "page": "https://happyfacesla.com/balloon-twisting-los-angeles/",
+            "device": "DESKTOP",
+            "clicks": 0,
+            "impressions": 3,
+            "ctr": 0,
+            "position": 43
+        },
+        {
+            "query": "balloon twisters los angeles",
+            "page": "https://happyfacesla.com/balloon-twisting-los-angeles/",
+            "device": "MOBILE",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 46
+        },
+        {
+            "query": "balloon twisters los angeles",
+            "page": "https://happyfacesla.com/balloon-twisting-los-angeles/",
+            "device": "TABLET",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 42
+        },
+        {
+            "query": "face painting charges",
+            "page": "https://happyfacesla.com/pricing/",
+            "device": "DESKTOP",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 72
+        },
+        {
+            "query": "face painting fees",
+            "page": "https://happyfacesla.com/pricing/",
+            "device": "DESKTOP",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 89
+        },
+        {
+            "query": "face painting los angeles",
+            "page": "https://happyfacesla.com/face-painting-los-angeles/",
+            "device": "DESKTOP",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 43
+        },
+        {
+            "query": "happy faces face painting",
+            "page": "https://happyfacesla.com/",
+            "device": "DESKTOP",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 64
+        },
+        {
+            "query": "happy faces face painting",
+            "page": "https://happyfacesla.com/face-painting-los-angeles/",
+            "device": "DESKTOP",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 43
+        }
+    ]
+}

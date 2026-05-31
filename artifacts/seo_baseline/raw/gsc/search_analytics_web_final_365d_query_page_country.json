@@ -1,0 +1,79 @@
+{
+    "site_url": "https://happyfacesla.com/",
+    "search_type": "WEB",
+    "data_state": "final",
+    "date_range": "last_365_days",
+    "dimensions": [
+        "query",
+        "page",
+        "country"
+    ],
+    "collected": "2026-05-28",
+    "row_count": 7,
+    "has_more": false,
+    "rows": [
+        {
+            "query": "balloon twister los angeles",
+            "page": "https://happyfacesla.com/balloon-twisting-los-angeles/",
+            "country": "usa",
+            "clicks": 0,
+            "impressions": 2,
+            "ctr": 0,
+            "position": 41.5
+        },
+        {
+            "query": "balloon twisters los angeles",
+            "page": "https://happyfacesla.com/balloon-twisting-los-angeles/",
+            "country": "usa",
+            "clicks": 0,
+            "impressions": 5,
+            "ctr": 0,
+            "position": 43.4
+        },
+        {
+            "query": "face painting charges",
+            "page": "https://happyfacesla.com/pricing/",
+            "country": "usa",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 72
+        },
+        {
+            "query": "face painting fees",
+            "page": "https://happyfacesla.com/pricing/",
+            "country": "usa",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 89
+        },
+        {
+            "query": "face painting los angeles",
+            "page": "https://happyfacesla.com/face-painting-los-angeles/",
+            "country": "usa",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 43
+        },
+        {
+            "query": "happy faces face painting",
+            "page": "https://happyfacesla.com/",
+            "country": "usa",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 64
+        },
+        {
+            "query": "happy faces face painting",
+            "page": "https://happyfacesla.com/face-painting-los-angeles/",
+            "country": "usa",
+            "clicks": 0,
+            "impressions": 1,
+            "ctr": 0,
+            "position": 43
+        }
+    ]
+}

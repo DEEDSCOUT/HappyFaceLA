@@ -6,7 +6,7 @@ interface Props {
 
 const {
   title = "Ready to lock in your event date?",
-  description = "Share your event details and Happy Faces LA will confirm availability and next steps."
+  description = "Share your event details and Happy Faces LA will confirm availability and next steps.",
 } = Astro.props;
 ---
 
@@ -14,7 +14,14 @@ const {
   <h2 class="text-2xl font-bold">{title}</h2>
   <p class="mt-2 max-w-2xl text-sm text-slate-200">{description}</p>
   <div class="mt-5 flex flex-wrap gap-3">
-    <a class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white" href="/contact/">Get Availability & Pricing</a>
-    <a class="rounded-xl border border-slate-500 px-5 py-3 text-sm font-semibold" href="tel:+18186195506" data-track-event="phone_click">Call/Text 818-619-5506</a>
+    <a
+      class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white"
+      href="/contact/">Get Availability & Pricing</a
+    >
+    <a
+      class="rounded-xl border border-slate-500 px-5 py-3 text-sm font-semibold"
+      href="tel:+18186195506"
+      data-track-event="phone_click">Call/Text 818-619-5506</a
+    >
   </div>
 </section>

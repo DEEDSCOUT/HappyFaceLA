@@ -1,0 +1,18 @@
+{
+    "page_url": "https://happyfacesla.com/privacy-policy/",
+    "site_url": "sc-domain:happyfacesla.com",
+    "inspection_timestamp": "2026-05-28",
+    "verdict": "PASS",
+    "coverage_state": "Submitted and indexed",
+    "last_crawled": "2026-05-28 05:38",
+    "page_fetch_state": "SUCCESSFUL",
+    "robots_txt_state": "ALLOWED",
+    "indexing_state": "INDEXING_ALLOWED",
+    "google_canonical": "https://happyfacesla.com/privacy-policy/",
+    "user_canonical": "https://happyfacesla.com/privacy-policy/",
+    "crawled_as": "MOBILE",
+    "referring_urls": [
+        "https://happyfacesla.com/"
+    ],
+    "rich_results": null
+}

@@ -1,0 +1,27 @@
+{
+  "spreadsheetId": "1RVCOE7mkGxu4YS18TmJhu3btxUQ1S26zFPDHs52kw9Q",
+  "testTab": "03_INTERNAL_QUOTE_TRAVEL_TEST_CR2B",
+  "evidenceTab": "CR2B_REGRESSION_EVIDENCE",
+  "processedRows": 72,
+  "passCount": 58,
+  "failCount": 14,
+  "failedTestIds": [
+    "TC-M01",
+    "TC-M02",
+    "TC-M03",
+    "TC-M04",
+    "TC-M05",
+    "TC-M06",
+    "TC-M07",
+    "TC-M08",
+    "TC-D01",
+    "TC-D02",
+    "TC-D03",
+    "TC-D04",
+    "TC-D05",
+    "TC-D06"
+  ],
+  "stAllPopulated": false,
+  "akAllPopulated": true,
+  "anomalies": []
+}

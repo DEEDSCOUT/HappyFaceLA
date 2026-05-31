@@ -12,38 +12,71 @@ const { location } = Astro.props;
 const faqs = [
   {
     question: `What services are available in ${location.city}?`,
-    answer: `Happy Faces LA offers face painting, balloon twisting, glitter tattoos, and face gems in ${location.city}.`
+    answer: `Happy Faces LA offers face painting, balloon twisting, glitter tattoos, and face gems in ${location.city}.`,
   },
   {
     question: `Do you travel for events in ${location.city}?`,
-    answer: `Yes. Serving Los Angeles and nearby areas. Share your event city or ZIP code for availability.`
-  }
+    answer: `Yes. Serving Los Angeles and nearby areas. Share your event city or ZIP code for availability.`,
+  },
 ];
 ---
 
 <section class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-10">
   <section class="rounded-2xl border border-slate-200 bg-white p-6">
-    <h2 class="text-2xl font-bold text-slate-900">Services available in {location.city}</h2>
+    <h2 class="text-2xl font-bold text-slate-900">
+      Services available in {location.city}
+    </h2>
     <p class="mt-3 text-sm leading-relaxed text-slate-700">
-      Happy Faces LA provides face painting, balloon twisting, glitter tattoos, and face jewelry for birthdays, school events, and private celebrations in {location.city}.
+      Happy Faces LA provides face painting, balloon twisting, glitter tattoos,
+      and face jewelry for birthdays, school events, and private celebrations in {
+        location.city
+      }.
     </p>
     <ul class="mt-4 space-y-2 text-sm text-slate-700">
-      <li><a href="/face-painting-los-angeles/" class="text-orange-600 hover:underline">Face Painting</a> — custom designs for all ages</li>
-      <li><a href="/balloon-twisting-los-angeles/" class="text-orange-600 hover:underline">Balloon Twisting</a> — animals, swords, flowers, and more</li>
-      <li><a href="/glitter-tattoos-los-angeles/" class="text-orange-600 hover:underline">Glitter Tattoos</a> — temporary designs for parties and festival stations</li>
-      <li><a href="/face-gems-face-jewelry-los-angeles/" class="text-orange-600 hover:underline">Face Gems & Face Jewelry</a> — glamorous photo-ready looks</li>
+      <li>
+        <a
+          href="/face-painting-los-angeles/"
+          class="text-orange-600 hover:underline">Face Painting</a
+        > — custom designs for all ages
+      </li>
+      <li>
+        <a
+          href="/balloon-twisting-los-angeles/"
+          class="text-orange-600 hover:underline">Balloon Twisting</a
+        > — animals, swords, flowers, and more
+      </li>
+      <li>
+        <a
+          href="/glitter-tattoos-los-angeles/"
+          class="text-orange-600 hover:underline">Glitter Tattoos</a
+        > — temporary designs for parties and festival stations
+      </li>
+      <li>
+        <a
+          href="/face-gems-face-jewelry-los-angeles/"
+          class="text-orange-600 hover:underline">Face Gems & Face Jewelry</a
+        > — glamorous photo-ready looks
+      </li>
     </ul>
     <p class="mt-4 text-sm text-slate-600">
-      <a href="/services/" class="text-orange-600 hover:underline">See all services →</a>
+      <a href="/services/" class="text-orange-600 hover:underline"
+        >See all services →</a
+      >
       <span class="mx-2 text-slate-300">|</span>
-      <a href="/contact/" class="text-orange-600 hover:underline">Contact us →</a>
+      <a href="/contact/" class="text-orange-600 hover:underline"
+        >Contact us →</a
+      >
       <span class="mx-2 text-slate-300">|</span>
-      <a href="/pricing/" class="text-orange-600 hover:underline">View pricing →</a>
+      <a href="/pricing/" class="text-orange-600 hover:underline"
+        >View pricing →</a
+      >
     </p>
   </section>
 
   <section class="rounded-2xl border border-slate-200 bg-white p-6">
-    <h2 class="text-2xl font-bold text-slate-900">Best event types in {location.city}</h2>
+    <h2 class="text-2xl font-bold text-slate-900">
+      Best event types in {location.city}
+    </h2>
     <ul class="mt-4 space-y-2 text-sm text-slate-700">
       <li>Kids birthday parties</li>
       <li>School and PTA events</li>
@@ -55,18 +88,27 @@ const faqs = [
   <section class="rounded-2xl border border-slate-200 bg-white p-6">
     <h2 class="text-2xl font-bold text-slate-900">Travel and setup notes</h2>
     <p class="mt-3 text-sm text-slate-700">
-      Serving Los Angeles and nearby areas. Share your event city or ZIP code for availability.
+      Serving Los Angeles and nearby areas. Share your event city or ZIP code
+      for availability.
     </p>
   </section>
 
   <section class="rounded-2xl border border-slate-200 bg-white p-6">
     <h2 class="text-2xl font-bold text-slate-900">Nearby service areas</h2>
     <div class="mt-4 flex flex-wrap gap-2">
-      {location.nearby.map((nearbySlug) => (
-        <a class="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-700 hover:border-orange-500 hover:text-orange-600" href={`/service-areas/${nearbySlug}/`}>
-          {nearbySlug.split("-").map((part) => part[0].toUpperCase() + part.slice(1)).join(" ")}
-        </a>
-      ))}
+      {
+        location.nearby.map((nearbySlug) => (
+          <a
+            class="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-700 hover:border-orange-500 hover:text-orange-600"
+            href={`/service-areas/${nearbySlug}/`}
+          >
+            {nearbySlug
+              .split("-")
+              .map((part) => part[0].toUpperCase() + part.slice(1))
+              .join(" ")}
+          </a>
+        ))
+      }
     </div>
   </section>
 

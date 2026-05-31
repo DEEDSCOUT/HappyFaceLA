@@ -1,0 +1,8 @@
+# Google Search Console Disavow File — happyfacesla.com
+# Created: 2026-05-27
+# Purpose: Disavow confirmed spam/link-farm backlinks
+#
+# Source: GSC URL Inspection referrer on https://happyfacesla.com/
+# Domain flagged as link-farm / spam backlink provider
+
+domain:best-backlink-provider.com.in

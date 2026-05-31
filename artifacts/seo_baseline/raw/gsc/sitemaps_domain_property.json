@@ -1,0 +1,16 @@
+{
+    "site_url": "sc-domain:happyfacesla.com",
+    "collected": "2026-05-28",
+    "sitemaps": [
+        {
+            "path": "https://happyfacesla.com/sitemap-index.xml",
+            "last_submitted": "2026-05-22 14:18",
+            "last_downloaded": "2026-05-28 16:29",
+            "type": "Index",
+            "is_pending": false,
+            "url_count": "12",
+            "errors": 0,
+            "warnings": 0
+        }
+    ]
+}

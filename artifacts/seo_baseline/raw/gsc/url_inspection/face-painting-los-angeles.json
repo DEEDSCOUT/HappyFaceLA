@@ -1,0 +1,25 @@
+{
+    "page_url": "https://happyfacesla.com/face-painting-los-angeles/",
+    "site_url": "sc-domain:happyfacesla.com",
+    "inspection_timestamp": "2026-05-28",
+    "verdict": "PASS",
+    "coverage_state": "Submitted and indexed",
+    "last_crawled": "2026-05-23 02:50",
+    "page_fetch_state": "SUCCESSFUL",
+    "robots_txt_state": "ALLOWED",
+    "indexing_state": "INDEXING_ALLOWED",
+    "google_canonical": "https://happyfacesla.com/face-painting-los-angeles/",
+    "user_canonical": "https://happyfacesla.com/face-painting-los-angeles/",
+    "crawled_as": "MOBILE",
+    "referring_urls": [
+        "https://happyfacesla.com/"
+    ],
+    "rich_results": {
+        "verdict": "PASS",
+        "detected_types": [
+            "Breadcrumbs",
+            "FAQ"
+        ],
+        "issues": []
+    }
+}

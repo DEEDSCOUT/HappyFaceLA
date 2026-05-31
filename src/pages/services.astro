@@ -19,39 +19,70 @@ const canonicalPath = "/services/";
     localBusinessJsonLd(),
     breadcrumbJsonLd([
       { name: "Home", url: "https://happyfacesla.com/" },
-      { name: "Services", url: `https://happyfacesla.com${canonicalPath}` }
-    ])
+      { name: "Services", url: `https://happyfacesla.com${canonicalPath}` },
+    ]),
   ]}
 >
-  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Services", href: canonicalPath }]} />
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Services", href: canonicalPath },
+    ]}
+  />
 
-  <section class="relative overflow-hidden bg-gradient-to-br from-amber-50 via-white to-cyan-50">
-    <div class="absolute -left-16 top-8 h-52 w-52 rounded-full bg-orange-200/50 blur-2xl"></div>
-    <div class="absolute -right-16 bottom-0 h-64 w-64 rounded-full bg-cyan-200/50 blur-2xl"></div>
+  <section
+    class="relative overflow-hidden bg-gradient-to-br from-amber-50 via-white to-cyan-50"
+  >
+    <div
+      class="absolute -left-16 top-8 h-52 w-52 rounded-full bg-orange-200/50 blur-2xl"
+    >
+    </div>
+    <div
+      class="absolute -right-16 bottom-0 h-64 w-64 rounded-full bg-cyan-200/50 blur-2xl"
+    >
+    </div>
 
     <div class="relative mx-auto w-full max-w-6xl px-4 py-14 md:py-20">
-      <h1 class="text-4xl font-extrabold leading-tight text-slate-900 md:text-5xl lg:text-6xl">
-        Face Painting, Balloon Twisting, Glitter Tattoos &amp; Face Gems in Los Angeles
+      <h1
+        class="text-4xl font-extrabold leading-tight text-slate-900 md:text-5xl lg:text-6xl"
+      >
+        Face Painting, Balloon Twisting, Glitter Tattoos &amp; Face Gems in Los
+        Angeles
       </h1>
       <p class="mt-5 max-w-3xl text-lg text-slate-700">
-        Happy Faces LA brings colorful, kid-friendly party entertainment to birthdays, school events, festivals, community events, and family celebrations. Serving Los Angeles and nearby areas. Share your event city or ZIP code for availability.
+        Happy Faces LA brings colorful, kid-friendly party entertainment to
+        birthdays, school events, festivals, community events, and family
+        celebrations. Serving Los Angeles and nearby areas. Share your event
+        city or ZIP code for availability.
       </p>
       <div class="mt-7 flex flex-wrap gap-3">
-        <a class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600" href="/contact/">
+        <a
+          class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600"
+          href="/contact/"
+        >
           Get Availability &amp; Pricing
         </a>
-        <a class="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900" href="tel:+18186195506" data-track-event="phone_click">
+        <a
+          class="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900"
+          href="tel:+18186195506"
+          data-track-event="phone_click"
+        >
           Call/Text 818-619-5506
         </a>
       </div>
-      <p class="mt-5 text-sm text-slate-600">Face painting • Balloon twisting • Glitter tattoos • Face gems • Combined services</p>
+      <p class="mt-5 text-sm text-slate-600">
+        Face painting • Balloon twisting • Glitter tattoos • Face gems •
+        Combined services
+      </p>
     </div>
   </section>
 
   <section class="mx-auto w-full max-w-6xl px-4 py-12">
     <h2 class="text-2xl font-bold text-slate-900">Our services</h2>
     <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">
-      Pick a single service or combine two or more to keep guests engaged across the whole event. Each service can be booked alone or bundled into a custom package.
+      Pick a single service or combine two or more to keep guests engaged across
+      the whole event. Each service can be booked alone or bundled into a custom
+      package.
     </p>
     <div class="mt-6">
       <ServiceCrossSell
@@ -61,7 +92,12 @@ const canonicalPath = "/services/";
       />
     </div>
     <p class="mt-6 text-sm text-slate-700">
-      <a class="text-orange-600 hover:underline" href="/kids-birthday-party-entertainment-los-angeles/">Planning a birthday party? Explore kids birthday party face painting and entertainment in Los Angeles →</a>
+      <a
+        class="text-orange-600 hover:underline"
+        href="/kids-birthday-party-entertainment-los-angeles/"
+        >Planning a birthday party? Explore kids birthday party face painting
+        and entertainment in Los Angeles →</a
+      >
     </p>
   </section>
 
