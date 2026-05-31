@@ -5,14 +5,21 @@ import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
 import ServicePageSections from "../components/sections/ServicePageSections.astro";
 import { services } from "../data/services";
 import { facePaintingFaqs } from "../data/faqs";
-import { serviceJsonLd, breadcrumbJsonLd, localBusinessJsonLd, faqJsonLd } from "../utils/schema";
+import {
+  serviceJsonLd,
+  breadcrumbJsonLd,
+  localBusinessJsonLd,
+  faqJsonLd,
+} from "../utils/schema";
 
-const service = services.find((item) => item.slug === "face-painting-los-angeles")!;
+const service = services.find(
+  (item) => item.slug === "face-painting-los-angeles",
+)!;
 const canonicalPath = "/face-painting-los-angeles/";
 ---
 
 <BaseLayout
-  title="Face Painting Los Angeles | Kids Birthday Parties & Events"
+  title="Face Painting Los Angeles | Birthday Party Face Painter"
   description="Professional face painting for birthday parties and private celebrations in Los Angeles. Bundle with balloon twisting, glitter tattoos, and face gems."
   canonicalPath={canonicalPath}
   jsonLd={[
@@ -20,12 +27,20 @@ const canonicalPath = "/face-painting-los-angeles/";
     serviceJsonLd(service.name, `https://happyfacesla.com${canonicalPath}`),
     breadcrumbJsonLd([
       { name: "Home", url: "https://happyfacesla.com/" },
-      { name: "Face Painting in Los Angeles", url: `https://happyfacesla.com${canonicalPath}` }
+      {
+        name: "Face Painting in Los Angeles",
+        url: `https://happyfacesla.com${canonicalPath}`,
+      },
     ]),
-    faqJsonLd(facePaintingFaqs)
+    faqJsonLd(facePaintingFaqs),
   ]}
 >
-  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Face Painting", href: canonicalPath }]} />
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Face Painting", href: canonicalPath },
+    ]}
+  />
   <PageIntro
     title="Face Painting in Los Angeles"
     description={service.heroSubcopy ?? service.description}
