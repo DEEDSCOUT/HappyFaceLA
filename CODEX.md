@@ -1,7 +1,7 @@
 # CODEX.md — Codex Agent Operational Rules (Secondary Developer / Reviewer / PR Agent)
 
 **Project:** Happy Faces LA — Commercial Control Room  
-**Last updated:** 2026-06-05
+**Last updated:** 2026-06-06
 
 ---
 
@@ -12,6 +12,8 @@ This file defines operating rules for the **Codex Agent** — the secondary deve
 Codex is distinct from:
 - **Claude Code** — Primary Developer Agent (implements, runs gates, reports)
 - **ChatGPT** — Auditor Agent (final approval gate, does not implement)
+
+Agent routing, the full approved agent stack, operating modes, and the Route Decision process are defined in [`docs/agent-workflow/AGENT_ROUTING_POLICY.md`](docs/agent-workflow/AGENT_ROUTING_POLICY.md). Codex must comply with any Route Decision issued by the Auditor before beginning implementation.
 
 ---
 
@@ -109,6 +111,7 @@ The human operator is the only party who can:
 
 - `AGENTS.md` — Role definitions and core rules (all agents)
 - `CLAUDE.md` — Primary Developer Agent (Claude Code) rules
-- `docs/agent-workflow/AUDITOR_PROTOCOL.md` — ChatGPT Auditor review protocol
+- `docs/agent-workflow/AGENT_ROUTING_POLICY.md` — Agent stack, routing rules, modes, Route Decision template
+- `docs/agent-workflow/AUDITOR_PROTOCOL.md` — ChatGPT Auditor review and route-decision protocol
 - `docs/agent-workflow/DEVELOPER_PROTOCOL.md` — Primary Developer step-by-step protocol
 - `docs/agent-workflow/EVIDENCE_REGISTER.md` — Session evidence log

@@ -1,13 +1,15 @@
 # CLAUDE.md — Claude Code Behavior Rules
 
 **Project:** Happy Faces LA — Commercial Control Room  
-**Last updated:** 2026-06-05
+**Last updated:** 2026-06-06
 
 ---
 
 ## Identity
 
-This file configures behavior for Claude Code (the Developer Agent) operating in this repository.
+This file configures behavior for Claude Code (the **Primary Developer Agent**) operating in this repository.
+
+Agent routing, the full approved agent stack, operating modes, and the Route Decision process are defined in [`docs/agent-workflow/AGENT_ROUTING_POLICY.md`](docs/agent-workflow/AGENT_ROUTING_POLICY.md). Claude Code must comply with any Route Decision issued by the Auditor (ChatGPT) before beginning implementation.
 
 ---
 
@@ -73,5 +75,6 @@ Stop and wait for Auditor approval before proceeding when:
 ## Related Files
 
 - `AGENTS.md` — Role definitions and core rules
-- `CODEX.md` — ChatGPT/Auditor rules
+- `CODEX.md` — Codex Agent (Secondary Developer / Reviewer / PR) rules
+- `docs/agent-workflow/AGENT_ROUTING_POLICY.md` — Agent stack, routing rules, modes, Route Decision template
 - `docs/agent-workflow/` — Full protocol and evidence documentation

@@ -100,6 +100,7 @@ $requiredDocs = @(
     "AGENTS.md",
     "CLAUDE.md",
     "CODEX.md",
+    "docs/agent-workflow/AGENT_ROUTING_POLICY.md",
     "docs/agent-workflow/AGENT_SYSTEM_ARCHITECTURE.md",
     "docs/agent-workflow/DEVELOPER_PROTOCOL.md",
     "docs/agent-workflow/AUDITOR_PROTOCOL.md",

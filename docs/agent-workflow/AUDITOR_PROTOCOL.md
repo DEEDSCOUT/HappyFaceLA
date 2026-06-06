@@ -2,17 +2,38 @@
 
 **Project:** Happy Faces LA — Commercial Control Room  
 **Role:** Auditor Agent (ChatGPT)  
-**Last updated:** 2026-06-05
+**Last updated:** 2026-06-06
 
 ---
 
 ## Purpose
 
-The Auditor Agent reviews Developer Agent session transcripts and issues Approvals or Rejections. The Auditor does not implement, does not run commands, and does not have direct repository access.
+The Auditor Agent (ChatGPT) has two responsibilities:
+
+1. **Route Decisions** — Select the correct agent and mode for each task before implementation begins, using the template in [`docs/agent-workflow/AGENT_ROUTING_POLICY.md`](AGENT_ROUTING_POLICY.md).
+2. **Session Review** — Review Developer Agent session transcripts and issue Approvals or Rejections.
+
+The Auditor does not implement, does not run commands, and does not have direct repository access.
 
 ---
 
-## Step-by-Step Review Protocol
+## Part 1 — Route Decision Protocol
+
+Before any implementation session begins, the Auditor must issue a Route Decision using the template in `AGENT_ROUTING_POLICY.md`. The Route Decision must specify:
+
+- [ ] Assigned agent (from the approved stack in `AGENT_ROUTING_POLICY.md`)
+- [ ] Operating mode (`inspect-only`, `implementation`, `validation`, `commit-preparation`, or `final-audit`)
+- [ ] Authorized files (explicit list)
+- [ ] Blocked files (explicit list)
+- [ ] Authorized commands
+- [ ] Gate requirement (yes/no)
+- [ ] Commit authorization (yes/no — exact files if yes)
+
+**No agent begins implementation without a Route Decision on record.**
+
+---
+
+## Part 2 — Session Review Protocol
 
 ### Step 1 — Verify Baseline Evidence
 
@@ -38,8 +59,10 @@ Confirm:
 ### Step 3 — Verify Implementation Scope
 
 Confirm:
-- [ ] Only the files specified in the session prompt were modified.
-- [ ] No files in `src/`, `tests/`, or `candidates/` were modified (unless explicitly authorized in the prompt).
+- [ ] The agent used matches the agent named in the Route Decision.
+- [ ] Only the files in the Route Decision's authorized file list were modified.
+- [ ] No files in `src/`, `tests/`, or `candidates/` were modified (unless explicitly authorized).
+- [ ] No blocked files (per `AGENT_ROUTING_POLICY.md`) were modified.
 - [ ] No files were deleted.
 - [ ] No dependencies were installed.
 
@@ -115,3 +138,13 @@ Status: REJECTED
 
 The Auditor must not assume a gate passed because the Developer Agent said it did.  
 Evidence in the transcript is the only valid basis for approval.
+
+---
+
+## Related Files
+
+- `AGENTS.md` — Role definitions and core rules
+- `CLAUDE.md` — Primary Developer Agent (Claude Code) rules
+- `CODEX.md` — Codex Agent rules
+- `docs/agent-workflow/AGENT_ROUTING_POLICY.md` — **Agent stack, routing rules, modes, and Route Decision template**
+- `docs/agent-workflow/EVIDENCE_REGISTER.md` — Session evidence log

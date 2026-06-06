@@ -1,7 +1,7 @@
 # AGENTS.md — Agent Role Definitions
 
 **Project:** Happy Faces LA — Commercial Control Room  
-**Last updated:** 2026-06-05  
+**Last updated:** 2026-06-06  
 **Branch at creation:** main
 
 ---
@@ -17,6 +17,7 @@
 - Stops after the final report in each session.
 
 ### Auditor Agent (ChatGPT or equivalent external reviewer)
+- Issues Route Decisions before implementation begins (see `docs/agent-workflow/AGENT_ROUTING_POLICY.md`).
 - Reviews Developer Agent output.
 - Does NOT implement changes.
 - Approves or rejects based on evidence provided by the Developer Agent.
@@ -61,10 +62,11 @@
 
 ## Related Files
 
-- `CLAUDE.md` — Claude Code–specific behavior rules
-- `CODEX.md` — OpenAI Codex/ChatGPT operational rules
+- `CLAUDE.md` — Claude Code (Primary Developer Agent) rules
+- `CODEX.md` — Codex Agent rules (Secondary Developer / Reviewer / PR)
+- `docs/agent-workflow/AGENT_ROUTING_POLICY.md` — **Agent stack, routing rules, modes, and Route Decision template**
 - `docs/agent-workflow/AGENT_SYSTEM_ARCHITECTURE.md` — Full system design
 - `docs/agent-workflow/DEVELOPER_PROTOCOL.md` — Developer Agent step-by-step protocol
-- `docs/agent-workflow/AUDITOR_PROTOCOL.md` — Auditor Agent review protocol
+- `docs/agent-workflow/AUDITOR_PROTOCOL.md` — Auditor review and route-decision protocol
 - `docs/agent-workflow/VALIDATION_GATE_MATRIX.md` — Discovered validation gates
 - `docs/agent-workflow/EVIDENCE_REGISTER.md` — Session evidence log
