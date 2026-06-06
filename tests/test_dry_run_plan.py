@@ -36,10 +36,7 @@ class TestDryRunPlan:
         """Plan must contain exactly 2 CONFIGURE_SPREADSHEET operations."""
         spec = load_full_spec(CONFIG_DIR)
         plan = build_plan(spec)
-        sheet_ops = [
-            op for op in plan["operations"]
-            if op.get("op") == "CONFIGURE_SPREADSHEET"
-        ]
+        sheet_ops = [op for op in plan["operations"] if op.get("op") == "CONFIGURE_SPREADSHEET"]
         assert len(sheet_ops) == 2, (
             f"Expected exactly 2 CONFIGURE_SPREADSHEET operations, got {len(sheet_ops)}."
         )
@@ -48,10 +45,7 @@ class TestDryRunPlan:
         """Plan must contain exactly 2 CONFIGURE_DOCUMENT operations."""
         spec = load_full_spec(CONFIG_DIR)
         plan = build_plan(spec)
-        doc_ops = [
-            op for op in plan["operations"]
-            if op.get("op") == "CONFIGURE_DOCUMENT"
-        ]
+        doc_ops = [op for op in plan["operations"] if op.get("op") == "CONFIGURE_DOCUMENT"]
         assert len(doc_ops) == 2, (
             f"Expected exactly 2 CONFIGURE_DOCUMENT operations, got {len(doc_ops)}."
         )
@@ -76,9 +70,11 @@ class TestDryRunPlan:
         """build_plan must not call any Google API functions."""
         spec = load_full_spec(CONFIG_DIR)
 
-        with patch("hfla_control_room.google_auth.get_drive_service") as mock_drive, \
-             patch("hfla_control_room.google_auth.get_sheets_service") as mock_sheets, \
-             patch("hfla_control_room.google_auth.get_docs_service") as mock_docs:
+        with (
+            patch("hfla_control_room.google_auth.get_drive_service") as mock_drive,
+            patch("hfla_control_room.google_auth.get_sheets_service") as mock_sheets,
+            patch("hfla_control_room.google_auth.get_docs_service") as mock_docs,
+        ):
             build_plan(spec)
 
         mock_drive.assert_not_called()
@@ -113,6 +109,17 @@ class TestDryRunPlan:
         manifest = Manifest()
         with pytest.raises(RuntimeError, match="BLOCKED"):
             DriveProvisioner(manifest=manifest, dry_run=False)
+
+    def test_create_folder_raises_phase_1_block(self):
+        """create_folder() must raise RuntimeError (BLOCKED) in Phase 1."""
+        from hfla_control_room.constants import PHASE_1_BLOCK_MESSAGE
+        from hfla_control_room.drive_provisioner import DriveProvisioner
+        from hfla_control_room.manifest import Manifest
+
+        manifest = Manifest()
+        provisioner = DriveProvisioner(manifest=manifest, dry_run=True)
+        with pytest.raises(RuntimeError, match="BLOCKED"):
+            provisioner.create_folder(name="test_folder")
 
     def test_plan_metadata_keys_present(self):
         """Plan dict must include plan_metadata with all new semantic count fields."""

@@ -107,10 +107,10 @@ RESTRICTED_CONSUMER_CHANNELS: frozenset[ConsumerChannel] = frozenset(
 
 
 class ChannelVisibility(StrEnum):
-    INTERNAL_ONLY = "INTERNAL_ONLY"         # Never exported to any channel
-    RESTRICTED_PII = "RESTRICTED_PII"       # Never exported — PII or sensitive financial data
-    INTERNAL_APPROVED = "INTERNAL_APPROVED" # Eligible for internal/copilot channel only
-    CHANNEL_SAFE = "CHANNEL_SAFE"           # Eligible for public channels after per-channel review
+    INTERNAL_ONLY = "INTERNAL_ONLY"  # Never exported to any channel
+    RESTRICTED_PII = "RESTRICTED_PII"  # Never exported — PII or sensitive financial data
+    INTERNAL_APPROVED = "INTERNAL_APPROVED"  # Eligible for internal/copilot channel only
+    CHANNEL_SAFE = "CHANNEL_SAFE"  # Eligible for public channels after per-channel review
 
 
 class PublicSafeReviewStatus(StrEnum):
@@ -248,9 +248,9 @@ class EvidenceStatus(StrEnum):
 
 
 class EvidenceReliabilityTier(StrEnum):
-    TIER_1_PRIMARY = "TIER_1_PRIMARY"         # Official source, direct observation
-    TIER_2_SECONDARY = "TIER_2_SECONDARY"     # Derived/calculated from primary
-    TIER_3_INDICATIVE = "TIER_3_INDICATIVE"   # Third-party, pending verification
+    TIER_1_PRIMARY = "TIER_1_PRIMARY"  # Official source, direct observation
+    TIER_2_SECONDARY = "TIER_2_SECONDARY"  # Derived/calculated from primary
+    TIER_3_INDICATIVE = "TIER_3_INDICATIVE"  # Third-party, pending verification
     UNCLASSIFIED = "UNCLASSIFIED"
 
 
@@ -292,9 +292,7 @@ INTERNAL_ONLY_FIELD_NAMES = frozenset(
 )
 
 # Required banner text for public-facing / channel-safe tabs
-DRAFT_CHANNEL_BANNER = (
-    "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
-)
+DRAFT_CHANNEL_BANNER = "DRAFT — NOT AUTHORIZED FOR PUBLICATION UNTIL CEO RELEASE APPROVAL"
 
 # Required banner text for restricted operations workbook
 RESTRICTED_OPERATIONS_BANNER = (
@@ -356,6 +354,10 @@ _WORKSPACE_ROOT = Path(AUTHORIZED_WORKSPACE_PATH)
 # OAuth credential storage — git-ignored .secrets/
 SECRETS_DIR = _WORKSPACE_ROOT / ".secrets"
 CLIENT_SECRET_PATH = SECRETS_DIR / "client_secret.json"
+CREDENTIALS_PATH = SECRETS_DIR / "credentials.json"  # OAuth client secret (input to auth flow)
+GA4_TOKEN_PATH = (
+    SECRETS_DIR / "ga4_token.json"
+)  # ADC token (output of auth flow, used by analytics-mcp)
 
 # Runtime state — git-ignored .runtime/
 RUNTIME_DIR = _WORKSPACE_ROOT / ".runtime"
@@ -366,5 +368,3 @@ LAST_PLAN_RUN_PATH = RUNTIME_DIR / "audit" / "last_plan_run.json"
 
 # Private exports — git-ignored .exports/private/
 PRIVATE_EXPORT_DIR = _WORKSPACE_ROOT / ".exports" / "private"
-
-

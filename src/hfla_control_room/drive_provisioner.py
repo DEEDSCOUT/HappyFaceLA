@@ -80,9 +80,7 @@ class DriveProvisioner:
                 _process_folder(root, child)
             else:
                 child_key = make_key(child.asset_type.value, f"{root}/{child.name}")
-                log.append(
-                    f"[DRY-RUN] WOULD CREATE {child.asset_type.value}: {root}/{child.name}"
-                )
+                log.append(f"[DRY-RUN] WOULD CREATE {child.asset_type.value}: {root}/{child.name}")
                 self.manifest.upsert(
                     ManifestEntry(
                         key=child_key,
@@ -96,4 +94,6 @@ class DriveProvisioner:
 
     def create_folder(self, name: str, parent_id: str | None = None) -> str:
         """BLOCKED IN PHASE 1."""
+        if not self.dry_run:
+            raise RuntimeError(PHASE_1_BLOCK_MESSAGE)
         raise RuntimeError(PHASE_1_BLOCK_MESSAGE)
