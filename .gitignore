@@ -12,6 +12,7 @@ secrets/
 client_secret.json
 client_secrets.json
 token.json
+Happy Faces LA GA4 credentials.json
 token.pickle
 credentials.json
 service_account.json
