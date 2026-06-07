@@ -81,6 +81,22 @@ const currentPath = Astro.url.pathname;
       }
     }
 
+    function readUrlAttribution() {
+      const out = {};
+      try {
+        const params = new URLSearchParams(window.location.search);
+        ATTR_KEYS.forEach((key) => {
+          const value = (params.get(key) || "").trim();
+          if (value) {
+            out[key] = value;
+          }
+        });
+      } catch {
+        /* noop */
+      }
+      return out;
+    }
+
     function trackEvent(eventName, params = {}) {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ event: eventName, ...params });
@@ -121,14 +137,28 @@ const currentPath = Astro.url.pathname;
     }
 
     function hydrateAttribution(form) {
-      const values = readAttrStore();
+      // Merge stored attribution with the current URL; the current landing URL
+      // wins so first-touch ad params populate even before BaseLayout writes storage.
+      const values = { ...readAttrStore(), ...readUrlAttribution() };
       ATTR_KEYS.forEach((key) => {
         const input = form.querySelector(`input[name="${key}"]`);
         if (!(input instanceof HTMLInputElement)) {
           return;
         }
-        input.value = String(values[key] || "").trim();
+        const next = String(values[key] || "").trim();
+        // Only write non-empty values so blank/stale storage never clobbers a live URL value.
+        if (next) {
+          input.value = next;
+        }
       });
+      // Persist the merged (current-touch) attribution so later pages keep these values.
+      try {
+        const payload = JSON.stringify(values);
+        sessionStorage.setItem("hfla_attribution", payload);
+        localStorage.setItem("hfla_attribution", payload);
+      } catch {
+        // fail silently; the form must still submit visible fields
+      }
     }
 
     /**
@@ -217,6 +247,9 @@ const currentPath = Astro.url.pathname;
           errorNode.textContent = "";
         }
 
+        // Refresh attribution at submit time so hidden fields reflect the current
+        // URL/storage regardless of initial page-load script order.
+        hydrateAttribution(form);
         const payload = getPayload(form);
 
         try {
