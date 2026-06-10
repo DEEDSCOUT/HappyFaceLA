@@ -50,3 +50,8 @@ docs/google-ads/audit-log.jsonl
 data/gsc/raw/
 data/gsc/normalized/
 !data/gsc/.gitkeep
+
+# Mailbox state-machine harness runtime state + Python caches
+.agent/
+__pycache__/
+.pytest_cache/
