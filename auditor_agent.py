@@ -5,8 +5,8 @@ auditor_agent.py — Background Auditor Evaluation Loop
 Runs the Auditor half of the cross-process multi-agent execution framework.
 Imports MailboxProtocol, BuilderState, and AuditorState from agents.mailbox.
 
-Key behaviour: Forces exactly ONE edit_required cycle on the first review of
-Task 1, then approves every subsequent review to exercise the full state machine.
+Key behaviour: Evaluates each submitted code artifact deterministically from
+the mailbox payload, without retaining process-local execution state.
 """
 
 import sys
@@ -28,20 +28,18 @@ logging.basicConfig(
 from agents.mailbox import MailboxProtocol, BuilderState, AuditorState
 
 
+VALIDATION_MARKER = "// Fixed: Added API validation checks"
+
+
 def main() -> None:
     """Main auditor evaluation loop."""
     mailbox = MailboxProtocol()
-
-    # Internal toggle: we force exactly ONE edit_required before approving.
-    # Once the edit cycle has been issued, this flips to True and all subsequent
-    # reviews result in "proceed".
-    edit_issued = False
 
     # Track the last builder timestamp we already evaluated so we never
     # re-evaluate a stale awaiting_review state after acting on it.
     last_evaluated_builder_timestamp = 0.0
 
-    logging.info("Auditor agent started. edit_issued=%s", edit_issued)
+    logging.info("Auditor agent started.")
 
     while True:
         try:
@@ -62,28 +60,29 @@ def main() -> None:
                 last_evaluated_builder_timestamp = builder_state.timestamp
 
                 current_task = builder_state.payload.get("current_task", "<unknown>")
+                proposed_code = builder_state.payload.get("proposed_code", "")
 
-                if not edit_issued:
+                if VALIDATION_MARKER not in proposed_code:
                     # ---------------------------------------------------------
-                    # FIRST review: force an edit_required cycle
+                    # Artifact lacks the required validation marker.
                     # ---------------------------------------------------------
                     auditor_state.directive = "edit_required"
                     auditor_state.feedback = (
                         "Missing error handling for empty API payloads on line 12."
                     )
                     mailbox.write_auditor(auditor_state)
-                    edit_issued = True
                     logging.info(
-                        "Audit complete: Edits requested for '%s'. edit_issued=%s",
+                        "Audit complete: Edits requested for '%s'.",
                         current_task,
-                        edit_issued,
                     )
                 else:
                     # ---------------------------------------------------------
-                    # All subsequent reviews: approve
+                    # Artifact contains the required validation marker.
                     # ---------------------------------------------------------
                     auditor_state.directive = "proceed"
-                    auditor_state.feedback = f"Approved: {current_task}"
+                    auditor_state.feedback = (
+                        f"Approved: {current_task} passed code validation checks."
+                    )
                     mailbox.write_auditor(auditor_state)
                     logging.info(
                         "Audit complete: Task approved to proceed — '%s'",

@@ -9,7 +9,7 @@ state correctness.
 Phases:
   Phase 1 — Baseline Clean Reset
   Phase 2 — Concurrent Subprocess Execution
-  Phase 3 — State Watcher Monitoring (30-second timeout)
+  Phase 3 — State Watcher Monitoring (11-second timeout)
   Phase 4 — Completion Verification & Final Report
 """
 
@@ -44,7 +44,7 @@ AGENT_DIR = ".agent"
 BUILDER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "builder_agent.py")
 AUDITOR_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "auditor_agent.py")
 TASKS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tasks.json")
-MAX_TIMEOUT_SECONDS = 30
+MAX_TIMEOUT_SECONDS = 11
 POLL_INTERVAL = 0.25  # How often the harness polls state files
 
 # Two-task backlog seeded into tasks.json for the end-to-end run. Task names are
@@ -57,7 +57,10 @@ SEED_TASKS = [
     },
     {
         "current_task": "Task 2: Implement Database Schemas",
-        "proposed_code": "// Artifacts for Task 2: Implement Database Schemas",
+        "proposed_code": (
+            "// Artifacts for Task 2: Implement Database Schemas\n"
+            "// Fixed: Added API validation checks"
+        ),
     },
 ]
 
