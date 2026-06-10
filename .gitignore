@@ -53,5 +53,6 @@ data/gsc/normalized/
 
 # Mailbox state-machine harness runtime state + Python caches
 .agent/
+/tasks.json
 __pycache__/
 .pytest_cache/

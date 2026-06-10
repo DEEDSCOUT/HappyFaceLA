@@ -12,7 +12,8 @@ and enforces hard assertions on the key state-machine invariants:
   * Task 1 enters an ``edit_required`` cycle.
   * Task 1 recovers and is approved (``proceed``).
   * Task 2 is approved (``proceed``).
-  * The builder reaches ``tasks_completed_awaiting_final_signoff``.
+  * The tasks.json backlog is fully drained and the builder returns to
+    idle/standby (the dynamic builder no longer exits).
   * The run never times out.
 
 Run with:  pytest test_mailbox_state_machine.py
@@ -59,9 +60,9 @@ def test_task2_approved_proceed(milestones):
     assert milestones["Task 2 approved (proceed)"] is True
 
 
-def test_final_status_reached(milestones):
-    """The builder must reach tasks_completed_awaiting_final_signoff."""
-    assert milestones["Final status reached"] is True
+def test_backlog_drained(milestones):
+    """The tasks.json backlog must be fully drained after both tasks complete."""
+    assert milestones["Backlog drained (all tasks completed)"] is True
 
 
 def test_did_not_time_out(milestones):

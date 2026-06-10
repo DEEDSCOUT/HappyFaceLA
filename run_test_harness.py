@@ -43,8 +43,40 @@ from agents.mailbox import MailboxProtocol, BuilderState, AuditorState
 AGENT_DIR = ".agent"
 BUILDER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "builder_agent.py")
 AUDITOR_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "auditor_agent.py")
+TASKS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tasks.json")
 MAX_TIMEOUT_SECONDS = 30
 POLL_INTERVAL = 0.25  # How often the harness polls state files
+
+# Two-task backlog seeded into tasks.json for the end-to-end run. Task names are
+# deliberately kept as "Task 1"/"Task 2" so milestone detection via auditor
+# feedback substrings continues to work.
+SEED_TASKS = [
+    {
+        "current_task": "Task 1: Generate Data Ingestion Pipeline",
+        "proposed_code": "// Artifacts for Task 1: Generate Data Ingestion Pipeline",
+    },
+    {
+        "current_task": "Task 2: Implement Database Schemas",
+        "proposed_code": "// Artifacts for Task 2: Implement Database Schemas",
+    },
+]
+
+
+def _read_tasks_file() -> list:
+    """Best-effort read of tasks.json; returns [] when missing/empty/unreadable."""
+    if not os.path.exists(TASKS_FILE):
+        return []
+    try:
+        with open(TASKS_FILE, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+        if not content:
+            return []
+        data = json.loads(content)
+        if isinstance(data, dict):
+            return data.get("tasks", []) or []
+        return data if isinstance(data, list) else []
+    except (OSError, json.JSONDecodeError):
+        return []
 
 
 # ===========================================================================
@@ -75,6 +107,11 @@ def phase1_baseline_reset() -> MailboxProtocol:
 
     mailbox.write_builder(builder_init)
     mailbox.write_auditor(auditor_init)
+
+    # Seed the dynamic backlog drop-box (tasks.json) with the two-task workload.
+    with open(TASKS_FILE, "w", encoding="utf-8") as f:
+        json.dump(SEED_TASKS, f, indent=2)
+    logger.info("Seeded tasks.json with %d tasks.", len(SEED_TASKS))
 
     # Verify initial state
     bs = mailbox.read_builder()
@@ -176,7 +213,7 @@ def phase3_monitor(mailbox, builder_proc, auditor_proc):
         "task1_edit_cycle": False,
         "task1_proceed": False,
         "task2_proceed": False,
-        "final_status_reached": False,
+        "backlog_drained": False,
         "timed_out": False,
     }
 
@@ -209,12 +246,6 @@ def phase3_monitor(mailbox, builder_proc, auditor_proc):
                     "timestamp": builder_state.timestamp,
                     "task": builder_state.payload.get("current_task", ""),
                 })
-
-                # Track specific milestones
-                if builder_state.status == "tasks_completed_awaiting_final_signoff":
-                    events["final_status_reached"] = True
-                    logger.info("Builder reached tasks_completed_awaiting_final_signoff!")
-                    break
 
         except Exception as exc:
             logger.warning("Error reading builder state: %s", exc)
@@ -251,17 +282,26 @@ def phase3_monitor(mailbox, builder_proc, auditor_proc):
         except Exception as exc:
             logger.warning("Error reading auditor state: %s", exc)
 
-        # Check if builder process has exited
+        # -----------------------------------------------------------------
+        # Completion: both tasks approved AND backlog fully drained AND the
+        # builder has returned to idle/standby. The dynamic builder never
+        # exits, so completion is defined by drained state, not process exit.
+        # -----------------------------------------------------------------
+        if events["task1_proceed"] and events["task2_proceed"] and not events["backlog_drained"]:
+            try:
+                latest = mailbox.read_builder()
+                if _read_tasks_file() == [] and latest.status == "idle":
+                    events["backlog_drained"] = True
+                    logger.info("Backlog drained, both tasks proceeded, builder back to standby.")
+                    break
+            except Exception as exc:
+                logger.warning("Error during completion check: %s", exc)
+
+        # Guard: the dynamic builder is expected to stay alive indefinitely.
+        # If it died, surface it and stop monitoring (failure path).
         builder_poll = builder_proc.poll()
         if builder_poll is not None:
-            logger.info("Builder process exited with code: %d", builder_poll)
-            # Give a final read
-            try:
-                builder_state = mailbox.read_builder()
-                if builder_state.status == "tasks_completed_awaiting_final_signoff":
-                    events["final_status_reached"] = True
-            except Exception:
-                pass
+            logger.warning("Builder process exited unexpectedly with code: %d", builder_poll)
             break
 
         time.sleep(POLL_INTERVAL)
@@ -285,7 +325,7 @@ def compute_milestones(events) -> dict:
         "Task 1 edit cycle triggered": events["task1_edit_cycle"],
         "Task 1 approved (proceed)": events["task1_proceed"],
         "Task 2 approved (proceed)": events["task2_proceed"],
-        "Final status reached": events["final_status_reached"],
+        "Backlog drained (all tasks completed)": events["backlog_drained"],
         "Timed out": events["timed_out"],
     }
 
@@ -298,7 +338,8 @@ def phase4_verify(events, mailbox, builder_proc, auditor_proc):
     Print a final verification report confirming:
       - Task 1 entered an edit cycle, recovered, and proceeded.
       - Task 2 finished successfully.
-      - Builder state reached tasks_completed_awaiting_final_signoff.
+      - The tasks.json backlog was fully drained and the builder returned
+        to idle/standby.
     Then terminate both subprocesses cleanly.
     """
     logger.info("=" * 60)
@@ -361,7 +402,7 @@ def phase4_verify(events, mailbox, builder_proc, auditor_proc):
         print(f"    timestamp: {final_auditor.timestamp:.3f}")
 
     print("\n" + "=" * 60)
-    if all_passed and events["final_status_reached"]:
+    if all_passed and events["backlog_drained"]:
         print("  RESULT: ALL CHECKS PASSED ✓")
     else:
         print("  RESULT: SOME CHECKS FAILED ✗")
@@ -390,7 +431,7 @@ def phase4_verify(events, mailbox, builder_proc, auditor_proc):
             logger.info("%s already exited with code %d.", name, proc.poll())
 
     logger.info("Phase 4 complete. Harness finished.")
-    return all_passed and events["final_status_reached"]
+    return all_passed and events["backlog_drained"]
 
 
 # ===========================================================================

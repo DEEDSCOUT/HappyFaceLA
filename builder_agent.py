@@ -4,9 +4,23 @@ builder_agent.py — Persistent Builder State-Machine Loop
 =========================================================
 Runs the Builder half of the cross-process multi-agent execution framework.
 Imports MailboxProtocol, BuilderState, and AuditorState from agents.mailbox.
+
+Task source
+-----------
+A dynamic, file-based backlog drop-box — ``tasks.json`` at the workspace root.
+The Builder atomically pops the FIRST task object off the array when it is idle,
+persists the remaining tasks back to disk, and transitions to "working".
+
+When the backlog is empty or the file is missing, the Builder does NOT exit.
+Instead it emits a "Standby: Awaiting tasks..." heartbeat every 5 seconds and
+stays alive indefinitely, ready for tasks to be dropped in live.
+
+All ``tasks.json`` writes use the same .tmp-swap + retry/backoff protocol as
+mailbox.py, so manual edits to the backlog never trigger file-lock crashes.
 """
 
-import sys
+import os
+import json
 import time
 import logging
 
@@ -25,36 +39,114 @@ logging.basicConfig(
 from agents.mailbox import MailboxProtocol, BuilderState, AuditorState
 
 # ---------------------------------------------------------------------------
-# Static task queue — two sequential test items
+# Dynamic backlog configuration
 # ---------------------------------------------------------------------------
-TASK_QUEUE = [
-    {
-        "current_task": "Task 1: Generate Data Ingestion Pipeline",
-        "proposed_code": "// Artifacts for Task 1: Generate Data Ingestion Pipeline",
-    },
-    {
-        "current_task": "Task 2: Implement Database Schemas",
-        "proposed_code": "// Artifacts for Task 2: Implement Database Schemas",
-    },
-]
+# tasks.json lives at the workspace root (the directory containing this script),
+# matching how mailbox.py anchors its .agent directory.
+TASKS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tasks.json")
+STANDBY_HEARTBEAT_SECONDS = 5.0
+IO_RETRY_ATTEMPTS = 5
+
+
+# ---------------------------------------------------------------------------
+# tasks.json I/O — atomic, lock-resilient, shape-preserving
+# ---------------------------------------------------------------------------
+def _read_tasks(tasks_file: str):
+    """
+    Safely read the backlog with retry/backoff for cross-process resilience.
+
+    Accepts two on-disk shapes so a human can drop in whichever is convenient:
+      * a bare JSON array:          [ {..task..}, {..task..} ]
+      * a wrapper object:           { "tasks": [ {..task..} ] }
+
+    Returns a tuple ``(kind, tasks)`` where ``kind`` is "list" or "dict" so the
+    original shape can be preserved on write-back. A missing, empty, or
+    transiently unreadable file is treated as an empty backlog: ``("list", [])``.
+    """
+    if not os.path.exists(tasks_file):
+        return "list", []
+
+    for attempt in range(IO_RETRY_ATTEMPTS):
+        try:
+            with open(tasks_file, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+            if not content:
+                return "list", []
+
+            data = json.loads(content)
+            if isinstance(data, dict):
+                tasks = data.get("tasks", [])
+                return "dict", list(tasks) if isinstance(tasks, list) else []
+            if isinstance(data, list):
+                return "list", list(data)
+            # Unexpected scalar/other — treat as empty backlog.
+            return "list", []
+        except (PermissionError, IOError, json.JSONDecodeError):
+            # File is locked or being mid-written by a manual editor — back off.
+            time.sleep(0.05 * (2 ** attempt))
+
+    # Could not read cleanly after retries; treat as empty for THIS cycle only.
+    logging.warning("tasks.json unreadable after retries — treating as empty this cycle.")
+    return "list", []
+
+
+def _write_tasks(tasks_file: str, kind: str, tasks: list) -> bool:
+    """
+    Atomically persist the remaining tasks using the .tmp-swap protocol with
+    retry/backoff. Preserves the original on-disk shape (bare list vs wrapper
+    object). Returns True on success, False if it could not persist after
+    retries (caller must then NOT consider the popped task consumed).
+    """
+    payload = {"tasks": tasks} if kind == "dict" else tasks
+    tmp_file = f"{tasks_file}.tmp"
+
+    for attempt in range(IO_RETRY_ATTEMPTS):
+        try:
+            with open(tmp_file, "w", encoding="utf-8") as f:
+                json.dump(payload, f, indent=2)
+            os.replace(tmp_file, tasks_file)
+            return True
+        except (PermissionError, IOError):
+            time.sleep(0.05 * (2 ** attempt))
+
+    # Best-effort cleanup of a stranded temp file.
+    try:
+        if os.path.exists(tmp_file):
+            os.remove(tmp_file)
+    except OSError:
+        pass
+    return False
+
+
+def _normalise_task(task) -> dict:
+    """
+    Coerce a backlog entry into the dict payload shape the state machine expects
+    (``current_task`` / ``proposed_code``). Strings or malformed entries are
+    wrapped so downstream ``payload.get(...)`` calls never crash.
+    """
+    if isinstance(task, dict):
+        return task
+    return {"current_task": str(task), "proposed_code": ""}
 
 
 def main() -> None:
     """Main builder state-machine loop."""
     mailbox = MailboxProtocol()
-    queue = list(TASK_QUEUE)  # shallow copy so we can pop
 
-    logging.info("Builder agent started. Task queue size: %d", len(queue))
+    logging.info("Builder agent started. Backlog file: %s", TASKS_FILE)
 
-    # Ensure a clean starting state
+    # Ensure a clean starting state. If we restart mid-cycle, preserve it.
     builder_state = mailbox.read_builder()
     if builder_state.status not in ("idle", "tasks_completed_awaiting_final_signoff"):
-        # If we somehow restart mid-cycle, preserve the existing state
         logging.warning("Builder restarting in non-idle state: %s", builder_state.status)
     else:
         builder_state = BuilderState(status="idle", payload={})
         mailbox.write_builder(builder_state)
         logging.info("Builder initialized to idle.")
+
+    # Heartbeat throttle for the standby state. 0.0 forces an immediate first
+    # heartbeat the moment the backlog is found empty.
+    last_standby_log = 0.0
 
     while True:
         try:
@@ -67,27 +159,38 @@ def main() -> None:
             status = builder_state.status
 
             # =================================================================
-            # IF status == "idle"
+            # IF status == "idle" — dynamic ingestion from tasks.json
             # =================================================================
             if status == "idle":
-                if queue:
-                    task_data = queue.pop(0)
-                    builder_state.status = "working"
-                    builder_state.payload = task_data
-                    mailbox.write_builder(builder_state)
-                    logging.info(
-                        "Picked up task: %s",
-                        task_data.get("current_task", "<unknown>"),
-                    )
+                kind, tasks = _read_tasks(TASKS_FILE)
+
+                if tasks:
+                    next_task = _normalise_task(tasks[0])
+                    remaining = tasks[1:]
+
+                    # Persist the pop FIRST. Only consume the task if the
+                    # backlog was durably updated — otherwise defer to the next
+                    # cycle so a write failure never loses or double-runs a task.
+                    if _write_tasks(TASKS_FILE, kind, remaining):
+                        builder_state.status = "working"
+                        builder_state.payload = next_task
+                        mailbox.write_builder(builder_state)
+                        last_standby_log = 0.0  # re-arm heartbeat for next idle gap
+                        logging.info(
+                            "Ingested task from tasks.json: %s  (remaining in backlog: %d)",
+                            next_task.get("current_task", "<unknown>"),
+                            len(remaining),
+                        )
+                    else:
+                        logging.error(
+                            "Could not persist tasks.json after pop — deferring task to next cycle."
+                        )
                 else:
-                    # No more tasks — signal completion and exit
-                    builder_state.status = "tasks_completed_awaiting_final_signoff"
-                    builder_state.payload = {"session": "all_tasks_done"}
-                    mailbox.write_builder(builder_state)
-                    logging.info(
-                        "All tasks completed. Status → tasks_completed_awaiting_final_signoff. Exiting."
-                    )
-                    sys.exit(0)
+                    # Empty/missing backlog — stay alive and heartbeat.
+                    now = time.time()
+                    if now - last_standby_log >= STANDBY_HEARTBEAT_SECONDS:
+                        logging.info("Standby: Awaiting tasks...")
+                        last_standby_log = now
 
             # =================================================================
             # IF status == "working"
@@ -106,12 +209,11 @@ def main() -> None:
             # IF status == "awaiting_review"
             # =================================================================
             elif status == "awaiting_review":
-                # Only react when the auditor has written a FRESH response
+                # Only react when the auditor has written a FRESH response.
                 if auditor_state.timestamp <= builder_state.timestamp:
-                    # Auditor has not yet responded — keep idling
+                    # Auditor has not yet responded — keep idling.
                     pass
                 else:
-                    # Fresh auditor response detected
                     directive = auditor_state.directive
                     if directive == "proceed":
                         logging.info(
@@ -119,7 +221,7 @@ def main() -> None:
                             builder_state.payload.get("current_task", "<unknown>"),
                             auditor_state.feedback,
                         )
-                        # Clear current task and return to idle for next task
+                        # Clear current task and return to idle for next task.
                         builder_state.status = "idle"
                         builder_state.payload = {}
                         mailbox.write_builder(builder_state)
@@ -131,21 +233,19 @@ def main() -> None:
                             builder_state.payload.get("current_task", "<unknown>"),
                             auditor_state.feedback,
                         )
-                        # Append modification marker to proposed_code
+                        # Append modification marker to proposed_code.
                         existing_code = builder_state.payload.get("proposed_code", "")
                         builder_state.payload["proposed_code"] = (
                             existing_code + "\n// Fixed: Added API validation checks"
                         )
-                        # Reset to working so the loop re-stages for review
+                        # Reset to working so the loop re-stages for review.
                         builder_state.status = "working"
                         mailbox.write_builder(builder_state)
-                        logging.info(
-                            "Applied edit constraint. Re-staging task as working."
-                        )
+                        logging.info("Applied edit constraint. Re-staging task as working.")
 
                     elif directive == "hold":
                         logging.info("Auditor issued HOLD. Remaining in awaiting_review.")
-                        # Do nothing — keep polling
+                        # Do nothing — keep polling.
 
                     else:
                         logging.warning(
@@ -153,21 +253,20 @@ def main() -> None:
                         )
 
             # =================================================================
-            # IF status == "tasks_completed_awaiting_final_signoff"
+            # Any other / stale status — recover to idle so the loop keeps
+            # serving the live backlog rather than getting stuck or exiting.
             # =================================================================
-            elif status == "tasks_completed_awaiting_final_signoff":
-                logging.info("Already at final sign-off. Exiting.")
-                sys.exit(0)
-
             else:
-                logging.warning("Unrecognised builder status: '%s'. Resetting to idle.", status)
+                logging.warning(
+                    "Unrecognised builder status: '%s'. Recovering to idle.", status
+                )
                 builder_state.status = "idle"
                 builder_state.payload = {}
                 mailbox.write_builder(builder_state)
 
         except Exception as exc:
             logging.error("Unhandled exception in builder loop: %s", exc, exc_info=True)
-            # Do NOT terminate — keep the loop alive for resilience
+            # Do NOT terminate — keep the loop alive for resilience.
             time.sleep(1)
 
         # Main loop cadence
