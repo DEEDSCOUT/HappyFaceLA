@@ -1,0 +1,2 @@
+﻿# Copy your raw prompt to your clipboard first, then run this in PowerShell:\n
+Get-Clipboard | ForEach-Object { $_ -replace '\\"', '\\\\"' } | ForEach-Object { \\"$_\n\\" } | Out-File -Encoding utf8 escaped_prompt.txt\n

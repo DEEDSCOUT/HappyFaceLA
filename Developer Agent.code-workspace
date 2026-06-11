@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"name": "happyfacesla-commercial-control-room",
+			"path": "../Dev/happyfacesla-commercial-control-room"
+		},
+		{
+			"name": "HappyFaceLA",
+			"path": "."
+		}
+	],
+	"settings": {
+		"astro.content-intellisense": true,
+		"chatgpt.runCodexInWindowsSubsystemForLinux": false,
+		"claudeCode.allowDangerouslySkipPermissions": false,
+		"claudeCode.hideOnboarding": true,
+		"claudeCode.useCtrlEnterToSend": true,
+		"claudeCode.usePythonEnvironment": true,
+		"claudeCode.respectGitIgnore": true,
+		"claudeCode.environmentVariables": []
+	}
+}

@@ -1,0 +1,28 @@
+{
+  "phase": "PUBLIC-BOOKING-R13-R8C",
+  "date": "2026-06-10",
+  "deployment": "https://4e2f6a07.happyfacesla.pages.dev",
+  "alias": "https://r13-r8c-proof.happyfacesla.pages.dev",
+  "branch": "r13-r8c-proof",
+  "binding_confirmation": {
+    "method": "runtime no-seed probe (no D1 rows seeded, no secret values read)",
+    "checkout_no_seed": {
+      "endpoint": "/api/create-checkout-session",
+      "http_status": 503,
+      "body": { "ok": false, "error": "Booking storage is not configured" },
+      "interpretation": "BOOKINGS_KV binding ABSENT in Preview env (gate is after the Stripe-key gate, before any D1 lookup)"
+    }
+  },
+  "binding_health_resmoke": {
+    "eligibility_no_seed": {
+      "endpoint": "/api/booking-eligibility",
+      "http_status": 200,
+      "availability_status": "unavailable",
+      "paymentAllowed": false,
+      "interpretation": "AVAILABILITY_D1 binding HEALTHY (D1 present, no matching row -> unavailable; not the unknown/storage-error that signals D1 absent)"
+    },
+    "admin_no_token": { "endpoint": "/api/admin/slots", "http_status": 401, "body": { "ok": false, "error": "Unauthorized" } },
+    "admin_wrong_token": { "endpoint": "/api/admin/slots", "http_status": 401, "body": { "ok": false, "error": "Unauthorized" } }
+  },
+  "result": "BLOCKED — Preview BOOKINGS_KV binding still absent; per no-loop rule, no D1 seeded, no checkout proof run, nothing to clean up"
+}

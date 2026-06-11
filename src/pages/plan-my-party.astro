@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import WizardShell from '../components/wizard/WizardShell.astro';
+
+const title = 'Plan My Party — Happy Faces LA Face Painting & Entertainment';
+const description =
+  'Answer a few quick questions and get a personalized entertainment plan for your party or event. ' +
+  'No payment required — just tell us about your party and we\'ll send a custom quote.';
+const canonicalPath = '/plan-my-party';
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath={canonicalPath}
+  noindex={false}
+>
+  <main id="main-content" class="py-8 sm:py-12">
+    <div class="max-w-2xl mx-auto px-4">
+      <header class="text-center mb-8">
+        <p class="text-sm font-semibold uppercase tracking-wide text-orange-500 mb-2">
+          Party Planning Made Easy
+        </p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">
+          Let's plan your perfect party
+        </h1>
+        <p class="mt-3 text-slate-600 text-base sm:text-lg leading-relaxed max-w-lg mx-auto">
+          Answer a few questions and we'll build a personalized entertainment plan — then send you an
+          official quote. No payment required today.
+        </p>
+      </header>
+
+      <WizardShell />
+    </div>
+  </main>
+</BaseLayout>

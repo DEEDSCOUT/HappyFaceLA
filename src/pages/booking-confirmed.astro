@@ -1,0 +1,66 @@
+---
+// Booking Confirmed — shown after successful Stripe retainer payment
+// Receives ?session_id= from Stripe success_url
+// Option A strict gate: checkout is available only after server-side availability confirmation.
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retainer Received — Happy Faces LA</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 0; }
+    .container { max-width: 540px; margin: 3rem auto; padding: 1.5rem; }
+    .card { background: #fff; border-radius: 1.25rem; box-shadow: 0 1px 8px rgba(0,0,0,0.08); padding: 2.5rem; }
+    .icon { font-size: 3rem; margin-bottom: 0.75rem; }
+    h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 0.5rem; }
+    p { line-height: 1.65; color: #475569; margin: 0.75rem 0; }
+    .notice { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 0.75rem; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .notice strong { color: #c2410c; }
+    ul { padding-left: 1.25rem; color: #475569; }
+    li { margin: 0.5rem 0; line-height: 1.6; }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
+    .btn-primary { background: #f97316; color: #fff; border: none; border-radius: 0.75rem; padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .btn-secondary { background: #fff; color: #475569; border: 1px solid #cbd5e1; border-radius: 0.75rem; padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 600; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="icon">🎉</div>
+      <h1>Retainer received!</h1>
+      <p>
+        Thank you! Your 20% booking retainer has been received by Happy Faces LA.
+        We're excited to help make your event amazing.
+      </p>
+
+      <div class="notice">
+        <strong>Your date is reserved.</strong><br />
+        Checkout is only offered after the system has availability confirmation for your request.
+        Our team will still review the details and send your official confirmation email.
+      </div>
+
+      <p><strong>What happens next:</strong></p>
+      <ul>
+        <li>We review your event details and send your official booking confirmation email.</li>
+        <li>You receive an official booking confirmation email.</li>
+        <li>The remaining balance is due closer to your event date.</li>
+        <li>A Happy Faces LA artist shows up ready to make every child smile!</li>
+      </ul>
+
+      <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 1.25rem;">
+        Questions? Email us or call — your booking reference is in your Stripe receipt email.
+        If you don't see it, check your spam folder.
+      </p>
+
+      <div class="actions">
+        <a href="/" class="btn-primary">Back to Home</a>
+        <a href="/plan-my-party" class="btn-secondary">Plan Another Party</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

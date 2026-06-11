@@ -1,4 +1,5 @@
 """Pydantic input schemas for write tools."""
+
 from __future__ import annotations
 
 from typing import Literal, Optional

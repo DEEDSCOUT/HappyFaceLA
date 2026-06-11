@@ -1,0 +1,58 @@
+<!-- Step 3: Kids Count — with inline capacity guidance. Managed by WizardShell client-side script. -->
+<div class="wizard-step" data-wizard-step="3">
+  <h2 class="text-2xl font-bold text-slate-900">How many little guests will participate?</h2>
+  <p class="mt-2 text-slate-600">
+    This helps us recommend the right amount of time so every child gets a great experience — not a rushed one.
+  </p>
+
+  <div class="mt-6 flex flex-col gap-3" role="radiogroup" aria-label="Number of participating children" id="step3-options">
+    <label class="wizard-option" data-value="1-10">
+      <input type="radio" name="kidsCountBucket" value="1-10" aria-label="1 to 10 children" />
+      <span class="block font-semibold text-slate-900">1–10 children</span>
+    </label>
+    <label class="wizard-option" data-value="11-18">
+      <input type="radio" name="kidsCountBucket" value="11-18" aria-label="11 to 18 children" />
+      <span class="block font-semibold text-slate-900">11–18 children</span>
+    </label>
+    <label class="wizard-option" data-value="19-25">
+      <input type="radio" name="kidsCountBucket" value="19-25" aria-label="19 to 25 children" />
+      <span class="block font-semibold text-slate-900">19–25 children</span>
+    </label>
+    <label class="wizard-option" data-value="26-40">
+      <input type="radio" name="kidsCountBucket" value="26-40" aria-label="26 to 40 children" />
+      <span class="block font-semibold text-slate-900">26–40 children</span>
+    </label>
+    <label class="wizard-option" data-value="40-plus">
+      <input type="radio" name="kidsCountBucket" value="40-plus" aria-label="More than 40 children" />
+      <span class="block font-semibold text-slate-900">More than 40 children</span>
+    </label>
+    <label class="wizard-option" data-value="not-sure">
+      <input type="radio" name="kidsCountBucket" value="not-sure" aria-label="Not sure yet" />
+      <span class="block font-semibold text-slate-900">Not sure yet</span>
+    </label>
+  </div>
+
+  <!-- Exact count input for 40+ groups (shown by JS when '40-plus' is selected) -->
+  <div id="step3-exact-count" class="hidden mt-4">
+    <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+      Approximately how many children? <span class="text-rose-600">*</span>
+      <input
+        id="field-kidsExact"
+        type="number"
+        name="kidsCountActual"
+        min="41"
+        max="200"
+        placeholder="e.g. 80"
+        class="mt-1 w-40 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+        aria-describedby="step3-exact-hint"
+      />
+      <span id="step3-exact-hint" class="text-xs text-slate-500">Enter 41–200. Up to 160 may qualify for instant booking depending on design and duration.</span>
+    </label>
+  </div>
+
+  <!-- Capacity guidance — populated by JS when an option is selected -->
+  <p id="step3-guidance" class="mt-4 wizard-guidance hidden" aria-live="polite"></p>
+
+  <!-- Selling copy — populated by JS -->
+  <p id="step3-selling" class="mt-3 text-sm text-slate-600 hidden" aria-live="polite"></p>
+</div>

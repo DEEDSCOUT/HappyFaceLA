@@ -1,0 +1,2737 @@
+{
+  "campaign": [
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23864074792",
+        "status": "PAUSED",
+        "advertising_channel_type": "PERFORMANCE_MAX",
+        "network_settings": {
+          "target_google_search": true,
+          "target_search_network": true,
+          "target_content_network": true,
+          "target_partner_search_network": false
+        },
+        "bidding_strategy_type": "MAXIMIZE_CONVERSIONS",
+        "geo_target_type_setting": {
+          "positive_geo_target_type": "PRESENCE",
+          "negative_geo_target_type": "PRESENCE"
+        },
+        "name": "Kids Party Face Painting",
+        "id": "23864074792"
+      },
+      "campaign_budget": {
+        "resource_name": "customers/4699120105/campaignBudgets/15581920286",
+        "amount_micros": "20000000"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "status": "PAUSED",
+        "advertising_channel_type": "SEARCH",
+        "network_settings": {
+          "target_google_search": true,
+          "target_search_network": false,
+          "target_content_network": false,
+          "target_partner_search_network": false
+        },
+        "bidding_strategy_type": "MANUAL_CPC",
+        "geo_target_type_setting": {
+          "positive_geo_target_type": "PRESENCE",
+          "negative_geo_target_type": "PRESENCE"
+        },
+        "name": "HFL | Search | Birthday Party LA",
+        "id": "23901051766"
+      },
+      "campaign_budget": {
+        "resource_name": "customers/4699120105/campaignBudgets/15610375406",
+        "amount_micros": "20000000"
+      }
+    }
+  ],
+  "metrics": [
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23864074792",
+        "name": "Kids Party Face Painting",
+        "id": "23864074792"
+      },
+      "metrics": {
+        "clicks": "137",
+        "conversions": 1.0,
+        "cost_micros": "69706375",
+        "impressions": "8377"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "name": "HFL | Search | Birthday Party LA",
+        "id": "23901051766"
+      },
+      "metrics": {
+        "clicks": "0",
+        "conversions": 0.0,
+        "cost_micros": "0",
+        "impressions": "0"
+      }
+    }
+  ],
+  "locations": [
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~9057137",
+        "location": {
+          "geo_target_constant": "geoTargetConstants/9057137"
+        },
+        "negative": false
+      }
+    }
+  ],
+  "adgroups": [
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246857",
+        "status": "PAUSED",
+        "id": "194820246857",
+        "name": "Face Painting - Birthday - LA"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246897",
+        "status": "PAUSED",
+        "id": "194820246897",
+        "name": "Kids Birthday Entertainment - LA"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246937",
+        "status": "PAUSED",
+        "id": "194820246937",
+        "name": "Balloon Twisting - Birthday - LA"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247097",
+        "status": "PAUSED",
+        "id": "194820247097",
+        "name": "Glitter Tattoos - Birthday - LA"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247137",
+        "status": "PAUSED",
+        "id": "194820247137",
+        "name": "Face Gems - Birthday - LA"
+      }
+    }
+  ],
+  "keywords": [
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246857",
+        "name": "Face Painting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246857~301140044304",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "face painter for birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246857~301140044304"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246857",
+        "name": "Face Painting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246857~306510709125",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "face painter for birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246857~306510709125"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246857",
+        "name": "Face Painting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246857~381681794615",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "face painting los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246857~381681794615"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246857",
+        "name": "Face Painting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246857~381681795575",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "face painting los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246857~381681795575"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246857",
+        "name": "Face Painting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246857~806634517413",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "birthday face painter los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246857~806634517413"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246857",
+        "name": "Face Painting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246857~2490400267652",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "birthday face painter los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246857~2490400267652"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246897",
+        "name": "Kids Birthday Entertainment - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246897~26624493405",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "kids birthday party entertainment los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246897~26624493405"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246897",
+        "name": "Kids Birthday Entertainment - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246897~26624637405",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "kids birthday party entertainment los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246897~26624637405"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246897",
+        "name": "Kids Birthday Entertainment - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246897~313680728541",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "kids party entertainment los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246897~313680728541"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246897",
+        "name": "Kids Birthday Entertainment - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246897~392955459246",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "birthday party entertainment los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246897~392955459246"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246897",
+        "name": "Kids Birthday Entertainment - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246897~419496897746",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "kids party entertainment los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246897~419496897746"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246897",
+        "name": "Kids Birthday Entertainment - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246897~514651323992",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "birthday party entertainment los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246897~514651323992"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246937",
+        "name": "Balloon Twisting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246937~390505898046",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "balloon animals los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246937~390505898046"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246937",
+        "name": "Balloon Twisting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246937~837982092155",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "balloon twisting los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246937~837982092155"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246937",
+        "name": "Balloon Twisting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246937~840265839492",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "balloon twisting los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246937~840265839492"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246937",
+        "name": "Balloon Twisting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246937~1414808377883",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "balloon animals los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246937~1414808377883"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246937",
+        "name": "Balloon Twisting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246937~2352195184539",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "balloon twisting birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246937~2352195184539"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246937",
+        "name": "Balloon Twisting - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820246937~2437846373028",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "balloon twisting birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820246937~2437846373028"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247097",
+        "name": "Glitter Tattoos - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247097~497282532707",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "glitter tattoos los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247097~497282532707"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247097",
+        "name": "Glitter Tattoos - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247097~864672880313",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "glitter tattoo birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247097~864672880313"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247097",
+        "name": "Glitter Tattoos - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247097~1684999652827",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "glitter tattoos for birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247097~1684999652827"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247097",
+        "name": "Glitter Tattoos - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247097~1933729619713",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "glitter tattoos los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247097~1933729619713"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247097",
+        "name": "Glitter Tattoos - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247097~2473352921212",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "glitter tattoo birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247097~2473352921212"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247097",
+        "name": "Glitter Tattoos - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247097~2473353507332",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "glitter tattoos for birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247097~2473353507332"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247137",
+        "name": "Face Gems - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247137~2490400267812",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "face gems los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247137~2490400267812"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247137",
+        "name": "Face Gems - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247137~2490400267852",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "face gems los angeles"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247137~2490400267852"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247137",
+        "name": "Face Gems - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247137~2490400267892",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "face gems birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247137~2490400267892"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247137",
+        "name": "Face Gems - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247137~2490400268052",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "face gems birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247137~2490400268052"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247137",
+        "name": "Face Gems - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247137~2490400268092",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "face jewelry birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247137~2490400268092"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247137",
+        "name": "Face Gems - Birthday - LA"
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/4699120105/adGroupCriteria/194820247137~2490400268132",
+        "status": "ENABLED",
+        "keyword": {
+          "match_type": "EXACT",
+          "text": "face jewelry birthday party"
+        },
+        "negative": false
+      },
+      "keyword_view": {
+        "resource_name": "customers/4699120105/keywordViews/194820247137~2490400268132"
+      }
+    }
+  ],
+  "negatives": [
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~12136831",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "insurance"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~15120770",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "free"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~22221522",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "cheap"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~23312443",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "orange county"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~24196630",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "deposit"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~24281741",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "festival"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~26937803",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "school"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~28362313",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "supply"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~33920640",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "diy"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~34457162",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "supplies"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~43572473",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "ventura county"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~44186350",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "tattoo shop"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~48928920",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "corporate"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~50148640",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "makeup artist"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~54343063",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "insured"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~54690693",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "retainer"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~64497581",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "clown"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~84814351",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "prom"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~99985424",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "kit"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~101354759",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "henna"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~103690425",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "bachelorette"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~106029834",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "guarantee"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~331550614",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "tattoo parlor"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~304935813521",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "school carnival"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~314438679526",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "temporary tattoo shop"
+        },
+        "negative": true
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_criterion": {
+        "resource_name": "customers/4699120105/campaignCriteria/23901051766~609550707536",
+        "keyword": {
+          "match_type": "PHRASE",
+          "text": "non-refundable"
+        },
+        "negative": true
+      }
+    }
+  ],
+  "rsas": [
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246857",
+        "name": "Face Painting - Birthday - LA"
+      },
+      "ad_group_ad": {
+        "resource_name": "customers/4699120105/adGroupAds/194820246857~811261825429",
+        "status": "PAUSED",
+        "ad": {
+          "responsive_search_ad": {
+            "headlines": [
+              {
+                "text": "Face Painting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Birthday Party Face Painter",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Face Painting From $150",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Kids Birthday Face Painting",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request Availability Today",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Book Face Painting in LA",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Glitter Tattoos for Parties",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Balloon Twisting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ],
+            "descriptions": [
+              {
+                "text": "Professional face painting for birthday parties and private celebrations in Los Angeles.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Face painting parties from $150. Share city or ZIP for LA availability.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Add balloon twisting, glitter tattoos, and face gems for a full birthday experience.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request availability for your Los Angeles birthday party or private celebration.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ]
+          },
+          "resource_name": "customers/4699120105/ads/811261825429",
+          "id": "811261825429",
+          "final_urls": [
+            "https://happyfacesla.com/face-painting-los-angeles/"
+          ]
+        },
+        "policy_summary": {
+          "review_status": "REVIEW_IN_PROGRESS",
+          "approval_status": "UNKNOWN"
+        }
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246897",
+        "name": "Kids Birthday Entertainment - LA"
+      },
+      "ad_group_ad": {
+        "resource_name": "customers/4699120105/adGroupAds/194820246897~811261825432",
+        "status": "PAUSED",
+        "ad": {
+          "responsive_search_ad": {
+            "headlines": [
+              {
+                "text": "Face Painting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Birthday Party Face Painter",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Face Painting From $150",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Kids Birthday Face Painting",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request Availability Today",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Book Face Painting in LA",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Glitter Tattoos for Parties",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Balloon Twisting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ],
+            "descriptions": [
+              {
+                "text": "Professional face painting for birthday parties and private celebrations in Los Angeles.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Face painting parties from $150. Share city or ZIP for LA availability.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Add balloon twisting, glitter tattoos, and face gems for a full birthday experience.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request availability for your Los Angeles birthday party or private celebration.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ]
+          },
+          "resource_name": "customers/4699120105/ads/811261825432",
+          "id": "811261825432",
+          "final_urls": [
+            "https://happyfacesla.com/kids-birthday-party-entertainment-los-angeles/"
+          ]
+        },
+        "policy_summary": {
+          "review_status": "REVIEW_IN_PROGRESS",
+          "approval_status": "UNKNOWN"
+        }
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246937",
+        "name": "Balloon Twisting - Birthday - LA"
+      },
+      "ad_group_ad": {
+        "resource_name": "customers/4699120105/adGroupAds/194820246937~811261825435",
+        "status": "PAUSED",
+        "ad": {
+          "responsive_search_ad": {
+            "headlines": [
+              {
+                "text": "Face Painting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Birthday Party Face Painter",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Face Painting From $150",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Kids Birthday Face Painting",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request Availability Today",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Book Face Painting in LA",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Glitter Tattoos for Parties",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Balloon Twisting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ],
+            "descriptions": [
+              {
+                "text": "Professional face painting for birthday parties and private celebrations in Los Angeles.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Face painting parties from $150. Share city or ZIP for LA availability.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Add balloon twisting, glitter tattoos, and face gems for a full birthday experience.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request availability for your Los Angeles birthday party or private celebration.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ]
+          },
+          "resource_name": "customers/4699120105/ads/811261825435",
+          "id": "811261825435",
+          "final_urls": [
+            "https://happyfacesla.com/balloon-twisting-los-angeles/"
+          ]
+        },
+        "policy_summary": {
+          "review_status": "REVIEW_IN_PROGRESS",
+          "approval_status": "UNKNOWN"
+        }
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247097",
+        "name": "Glitter Tattoos - Birthday - LA"
+      },
+      "ad_group_ad": {
+        "resource_name": "customers/4699120105/adGroupAds/194820247097~811261825438",
+        "status": "PAUSED",
+        "ad": {
+          "responsive_search_ad": {
+            "headlines": [
+              {
+                "text": "Face Painting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Birthday Party Face Painter",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Face Painting From $150",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Kids Birthday Face Painting",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request Availability Today",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Book Face Painting in LA",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Glitter Tattoos for Parties",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Balloon Twisting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ],
+            "descriptions": [
+              {
+                "text": "Professional face painting for birthday parties and private celebrations in Los Angeles.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Face painting parties from $150. Share city or ZIP for LA availability.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Add balloon twisting, glitter tattoos, and face gems for a full birthday experience.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request availability for your Los Angeles birthday party or private celebration.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ]
+          },
+          "resource_name": "customers/4699120105/ads/811261825438",
+          "id": "811261825438",
+          "final_urls": [
+            "https://happyfacesla.com/glitter-tattoos-los-angeles/"
+          ]
+        },
+        "policy_summary": {
+          "review_status": "REVIEW_IN_PROGRESS",
+          "approval_status": "UNKNOWN"
+        }
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247137",
+        "name": "Face Gems - Birthday - LA"
+      },
+      "ad_group_ad": {
+        "resource_name": "customers/4699120105/adGroupAds/194820247137~811261825561",
+        "status": "PAUSED",
+        "ad": {
+          "responsive_search_ad": {
+            "headlines": [
+              {
+                "text": "Face Painting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Birthday Party Face Painter",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Face Painting From $150",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Kids Birthday Face Painting",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request Availability Today",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Book Face Painting in LA",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Glitter Tattoos for Parties",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Balloon Twisting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ],
+            "descriptions": [
+              {
+                "text": "Professional face painting for birthday parties and private celebrations in Los Angeles.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Face painting parties from $150. Share city or ZIP for LA availability.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Add balloon twisting, glitter tattoos, and face gems for a full birthday experience.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request availability for your Los Angeles birthday party or private celebration.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ]
+          },
+          "resource_name": "customers/4699120105/ads/811261825561",
+          "id": "811261825561",
+          "final_urls": [
+            "https://happyfacesla.com/face-gems-face-jewelry-los-angeles/"
+          ]
+        },
+        "policy_summary": {
+          "review_status": "REVIEW_IN_PROGRESS",
+          "approval_status": "UNKNOWN"
+        }
+      }
+    }
+  ],
+  "campaign_assets": [
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_asset": {
+        "resource_name": "customers/4699120105/campaignAssets/23901051766~368040781173~SITELINK",
+        "field_type": "SITELINK",
+        "status": "ENABLED",
+        "asset": "customers/4699120105/assets/368040781173"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_asset": {
+        "resource_name": "customers/4699120105/campaignAssets/23901051766~368040781176~SITELINK",
+        "field_type": "SITELINK",
+        "status": "ENABLED",
+        "asset": "customers/4699120105/assets/368040781176"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_asset": {
+        "resource_name": "customers/4699120105/campaignAssets/23901051766~368040781179~SITELINK",
+        "field_type": "SITELINK",
+        "status": "ENABLED",
+        "asset": "customers/4699120105/assets/368040781179"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_asset": {
+        "resource_name": "customers/4699120105/campaignAssets/23901051766~368040781182~SITELINK",
+        "field_type": "SITELINK",
+        "status": "ENABLED",
+        "asset": "customers/4699120105/assets/368040781182"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_asset": {
+        "resource_name": "customers/4699120105/campaignAssets/23901051766~368040781185~SITELINK",
+        "field_type": "SITELINK",
+        "status": "ENABLED",
+        "asset": "customers/4699120105/assets/368040781185"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_asset": {
+        "resource_name": "customers/4699120105/campaignAssets/23901051766~368040781155~CALLOUT",
+        "field_type": "CALLOUT",
+        "status": "ENABLED",
+        "asset": "customers/4699120105/assets/368040781155"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_asset": {
+        "resource_name": "customers/4699120105/campaignAssets/23901051766~368040781158~CALLOUT",
+        "field_type": "CALLOUT",
+        "status": "ENABLED",
+        "asset": "customers/4699120105/assets/368040781158"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_asset": {
+        "resource_name": "customers/4699120105/campaignAssets/23901051766~368040781161~CALLOUT",
+        "field_type": "CALLOUT",
+        "status": "ENABLED",
+        "asset": "customers/4699120105/assets/368040781161"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_asset": {
+        "resource_name": "customers/4699120105/campaignAssets/23901051766~368040781164~CALLOUT",
+        "field_type": "CALLOUT",
+        "status": "ENABLED",
+        "asset": "customers/4699120105/assets/368040781164"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_asset": {
+        "resource_name": "customers/4699120105/campaignAssets/23901051766~368040781167~CALLOUT",
+        "field_type": "CALLOUT",
+        "status": "ENABLED",
+        "asset": "customers/4699120105/assets/368040781167"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "campaign_asset": {
+        "resource_name": "customers/4699120105/campaignAssets/23901051766~368040781170~CALLOUT",
+        "field_type": "CALLOUT",
+        "status": "ENABLED",
+        "asset": "customers/4699120105/assets/368040781170"
+      }
+    }
+  ],
+  "asset_details": [
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362219670038",
+        "type_": "YOUTUBE_VIDEO"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362219672405",
+        "type_": "YOUTUBE_VIDEO"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362219672933",
+        "type_": "YOUTUBE_VIDEO"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362222740277",
+        "type_": "YOUTUBE_VIDEO"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362223796885",
+        "type_": "IMAGE"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362223928021",
+        "type_": "IMAGE"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362226963316",
+        "type_": "CALL"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362227002478",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362228414734",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/pricing/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Pricing & Packages"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362228414737",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/face-painting-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Face Painting"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362228414740",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/gallery/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Gallery"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362228414743",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/contact/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Contact / Get Quote"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362231185471",
+        "type_": "YOUTUBE_VIDEO"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362300786596",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/contact/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Get Availability"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362305618734",
+        "type_": "IMAGE"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362305633893",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362305633896",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362305633899",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362305633902",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362305633905",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898059",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898062",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898065",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898068",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898071",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898074",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898077",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898080",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898083",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898086",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898089",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362310898092",
+        "type_": "CALL_TO_ACTION"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384000442",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/balloon-twisting-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Balloon Twisting"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227365",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227368",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227371",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227374",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227377",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227380",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227383",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227386",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227389",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227392",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227395",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227398",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/362384227401",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832617",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832620",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832623",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832626",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832629",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832632",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832635",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832638",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832641",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832644",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832647",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832650",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832653",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832656",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/363482832659",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/364343293450",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/364388571398",
+        "type_": "IMAGE"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/364419779727",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367876052351",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Birthday Party Ready"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367876052354",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Face Painting"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367876052357",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Balloon Twisting"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367876052360",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Glitter Tattoos"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367876052363",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Face Gems"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367876052366",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Request Availability"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367876052369",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/face-painting-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Face Painting"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367876052372",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/balloon-twisting-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Balloon Twisting"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367876052375",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/glitter-tattoos-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Glitter Tattoos"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367876052378",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/face-gems-face-jewelry-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Face Gems"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367876052381",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/kids-birthday-party-entertainment-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Birthday Entertainment"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367963733965",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367963733968",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367963733971",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367963733974",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367963733977",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367963733980",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367963733983",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367963733986",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367963733989",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367963733992",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/367963733995",
+        "type_": "TEXT"
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/368040781155",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Birthday Party Ready"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/368040781158",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Face Painting"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/368040781161",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Balloon Twisting"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/368040781164",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Glitter Tattoos"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/368040781167",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Face Gems"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/368040781170",
+        "type_": "CALLOUT",
+        "callout_asset": {
+          "callout_text": "Request Availability"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/368040781173",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/face-painting-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Face Painting"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/368040781176",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/balloon-twisting-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Balloon Twisting"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/368040781179",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/glitter-tattoos-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Glitter Tattoos"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/368040781182",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/face-gems-face-jewelry-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Face Gems"
+        }
+      }
+    },
+    {
+      "asset": {
+        "resource_name": "customers/4699120105/assets/368040781185",
+        "type_": "SITELINK",
+        "final_urls": [
+          "https://happyfacesla.com/kids-birthday-party-entertainment-los-angeles/"
+        ],
+        "sitelink_asset": {
+          "link_text": "Birthday Entertainment"
+        }
+      }
+    }
+  ],
+  "conversions": [
+    {
+      "conversion_action": {
+        "resource_name": "customers/4699120105/conversionActions/7615217741",
+        "status": "ENABLED",
+        "category": "SUBMIT_LEAD_FORM",
+        "name": "Happy Faces LA Website (web) generate_lead",
+        "include_in_conversions_metric": true,
+        "primary_for_goal": true
+      }
+    },
+    {
+      "conversion_action": {
+        "resource_name": "customers/4699120105/conversionActions/7618341822",
+        "status": "ENABLED",
+        "category": "PHONE_CALL_LEAD",
+        "name": "Calls from ads",
+        "include_in_conversions_metric": true,
+        "primary_for_goal": true
+      }
+    },
+    {
+      "conversion_action": {
+        "resource_name": "customers/4699120105/conversionActions/7630712321",
+        "status": "ENABLED",
+        "category": "PHONE_CALL_LEAD",
+        "name": "Happy Faces LA Website (web) sms_click",
+        "include_in_conversions_metric": false,
+        "primary_for_goal": false
+      }
+    },
+    {
+      "conversion_action": {
+        "resource_name": "customers/4699120105/conversionActions/7631103798",
+        "status": "ENABLED",
+        "category": "PHONE_CALL_LEAD",
+        "name": "Happy Faces LA Website (web) phone_click",
+        "include_in_conversions_metric": false,
+        "primary_for_goal": false
+      }
+    }
+  ],
+  "location_names": [
+    {
+      "geo_target_constant": {
+        "resource_name": "geoTargetConstants/9057137",
+        "name": "Los Angeles County",
+        "country_code": "US",
+        "target_type": "County"
+      }
+    }
+  ],
+  "final_urls": [
+    "https://happyfacesla.com/face-painting-los-angeles/",
+    "https://happyfacesla.com/kids-birthday-party-entertainment-los-angeles/",
+    "https://happyfacesla.com/balloon-twisting-los-angeles/",
+    "https://happyfacesla.com/glitter-tattoos-los-angeles/",
+    "https://happyfacesla.com/face-gems-face-jewelry-los-angeles/"
+  ],
+  "copy_forbidden_hits": [],
+  "landing_page_checks": [
+    {
+      "url": "https://happyfacesla.com/face-painting-los-angeles/",
+      "status": 200,
+      "robots": "index,follow",
+      "canonical": "https://happyfacesla.com/face-painting-los-angeles/",
+      "canonical_self": true,
+      "from_150": true,
+      "forbidden_hits": []
+    },
+    {
+      "url": "https://happyfacesla.com/kids-birthday-party-entertainment-los-angeles/",
+      "status": 200,
+      "robots": "index,follow",
+      "canonical": "https://happyfacesla.com/kids-birthday-party-entertainment-los-angeles/",
+      "canonical_self": true,
+      "from_150": true,
+      "forbidden_hits": []
+    },
+    {
+      "url": "https://happyfacesla.com/balloon-twisting-los-angeles/",
+      "status": 200,
+      "robots": "index,follow",
+      "canonical": "https://happyfacesla.com/balloon-twisting-los-angeles/",
+      "canonical_self": true,
+      "from_150": false,
+      "forbidden_hits": []
+    },
+    {
+      "url": "https://happyfacesla.com/glitter-tattoos-los-angeles/",
+      "status": 200,
+      "robots": "index,follow",
+      "canonical": "https://happyfacesla.com/glitter-tattoos-los-angeles/",
+      "canonical_self": true,
+      "from_150": false,
+      "forbidden_hits": []
+    },
+    {
+      "url": "https://happyfacesla.com/face-gems-face-jewelry-los-angeles/",
+      "status": 200,
+      "robots": "index,follow",
+      "canonical": "https://happyfacesla.com/face-gems-face-jewelry-los-angeles/",
+      "canonical_self": true,
+      "from_150": false,
+      "forbidden_hits": []
+    }
+  ],
+  "qa": {
+    "campaign_paused": true,
+    "pmax_paused": true,
+    "budget_20": true,
+    "spend_zero_target": true,
+    "adgroups_5": true,
+    "keywords_30": true,
+    "broad_absent": true,
+    "negatives_present": true,
+    "rsa_count_5": true,
+    "assets_linked": true,
+    "price_claim_in_ads": true,
+    "price_claim_supported_on_all_landing_pages": false
+  },
+  "campaign_asset_counts": {
+    "SITELINK": 5,
+    "CALLOUT": 6
+  }
+}

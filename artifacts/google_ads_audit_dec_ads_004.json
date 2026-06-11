@@ -1,0 +1,328 @@
+{
+  "campaign_identity": {
+    "ok": false,
+    "error": "(<_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_message:\"Request contains an invalid argument.\", grpc_status:3}\"\n>, <_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_message:\"Request contains an invalid argument.\", grpc_status:3}\"\n>, errors {\n  error_code {\n    query_error: UNRECOGNIZED_FIELD\n  }\n  message: \"Unrecognized fields in the query: \\'campaign.target_content_network\\', \\'campaign.target_search_network\\', \\'campaign.goal_config_level\\', \\'campaign.target_google_search\\', \\'campaign.start_date\\', \\'campaign.end_date\\'.\"\n}\nrequest_id: \"SjvrytfPP5yO4b7eqVjwwg\"\n, 'SjvrytfPP5yO4b7eqVjwwg')"
+  },
+  "campaign_metrics_all_time": {
+    "ok": true,
+    "count": 2,
+    "rows": [
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23864074792",
+          "name": "Kids Party Face Painting",
+          "id": "23864074792"
+        },
+        "metrics": {
+          "clicks": "137",
+          "conversions": 1.0,
+          "cost_micros": "69706375",
+          "impressions": "8377"
+        }
+      },
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23901051766",
+          "name": "HFL | Search | Birthday Party LA",
+          "id": "23901051766"
+        },
+        "metrics": {
+          "clicks": "0",
+          "conversions": 0.0,
+          "cost_micros": "0",
+          "impressions": "0"
+        }
+      }
+    ]
+  },
+  "campaign_metrics_30d": {
+    "ok": true,
+    "count": 2,
+    "rows": [
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23864074792",
+          "name": "Kids Party Face Painting",
+          "id": "23864074792"
+        },
+        "metrics": {
+          "clicks": "137",
+          "conversions": 1.0,
+          "cost_micros": "69706375",
+          "impressions": "8377"
+        }
+      },
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23901051766",
+          "name": "HFL | Search | Birthday Party LA",
+          "id": "23901051766"
+        },
+        "metrics": {
+          "clicks": "0",
+          "conversions": 0.0,
+          "cost_micros": "0",
+          "impressions": "0"
+        }
+      }
+    ]
+  },
+  "campaign_conversion_goals": {
+    "ok": true,
+    "count": 8,
+    "rows": [
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23864074792",
+          "name": "Kids Party Face Painting",
+          "id": "23864074792"
+        },
+        "campaign_conversion_goal": {
+          "resource_name": "customers/4699120105/campaignConversionGoals/23864074792~PHONE_CALL_LEAD~WEBSITE",
+          "category": "PHONE_CALL_LEAD",
+          "origin": "WEBSITE",
+          "biddable": true
+        }
+      },
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23864074792",
+          "name": "Kids Party Face Painting",
+          "id": "23864074792"
+        },
+        "campaign_conversion_goal": {
+          "resource_name": "customers/4699120105/campaignConversionGoals/23864074792~PHONE_CALL_LEAD~CALL_FROM_ADS",
+          "category": "PHONE_CALL_LEAD",
+          "origin": "CALL_FROM_ADS",
+          "biddable": true
+        }
+      },
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23864074792",
+          "name": "Kids Party Face Painting",
+          "id": "23864074792"
+        },
+        "campaign_conversion_goal": {
+          "resource_name": "customers/4699120105/campaignConversionGoals/23864074792~SUBMIT_LEAD_FORM~WEBSITE",
+          "category": "SUBMIT_LEAD_FORM",
+          "origin": "WEBSITE",
+          "biddable": true
+        }
+      },
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23864074792",
+          "name": "Kids Party Face Painting",
+          "id": "23864074792"
+        },
+        "campaign_conversion_goal": {
+          "resource_name": "customers/4699120105/campaignConversionGoals/23864074792~CONTACT~WEBSITE",
+          "category": "CONTACT",
+          "origin": "WEBSITE"
+        }
+      },
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23901051766",
+          "name": "HFL | Search | Birthday Party LA",
+          "id": "23901051766"
+        },
+        "campaign_conversion_goal": {
+          "resource_name": "customers/4699120105/campaignConversionGoals/23901051766~PHONE_CALL_LEAD~WEBSITE",
+          "category": "PHONE_CALL_LEAD",
+          "origin": "WEBSITE",
+          "biddable": true
+        }
+      },
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23901051766",
+          "name": "HFL | Search | Birthday Party LA",
+          "id": "23901051766"
+        },
+        "campaign_conversion_goal": {
+          "resource_name": "customers/4699120105/campaignConversionGoals/23901051766~PHONE_CALL_LEAD~CALL_FROM_ADS",
+          "category": "PHONE_CALL_LEAD",
+          "origin": "CALL_FROM_ADS",
+          "biddable": true
+        }
+      },
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23901051766",
+          "name": "HFL | Search | Birthday Party LA",
+          "id": "23901051766"
+        },
+        "campaign_conversion_goal": {
+          "resource_name": "customers/4699120105/campaignConversionGoals/23901051766~SUBMIT_LEAD_FORM~WEBSITE",
+          "category": "SUBMIT_LEAD_FORM",
+          "origin": "WEBSITE",
+          "biddable": true
+        }
+      },
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23901051766",
+          "name": "HFL | Search | Birthday Party LA",
+          "id": "23901051766"
+        },
+        "campaign_conversion_goal": {
+          "resource_name": "customers/4699120105/campaignConversionGoals/23901051766~CONTACT~WEBSITE",
+          "category": "CONTACT",
+          "origin": "WEBSITE"
+        }
+      }
+    ]
+  },
+  "conversion_actions": {
+    "ok": true,
+    "count": 8,
+    "rows": [
+      {
+        "conversion_action": {
+          "resource_name": "customers/4699120105/conversionActions/7615217732",
+          "status": "HIDDEN",
+          "type_": "GOOGLE_ANALYTICS_4_CLOSE_CONVERT_LEAD",
+          "category": "CONVERTED_LEAD",
+          "counting_type": "MANY_PER_CLICK",
+          "id": "7615217732",
+          "name": "Happy Faces LA Website (web) close_convert_lead",
+          "include_in_conversions_metric": false,
+          "origin": "WEBSITE",
+          "primary_for_goal": false
+        }
+      },
+      {
+        "conversion_action": {
+          "resource_name": "customers/4699120105/conversionActions/7615217735",
+          "status": "HIDDEN",
+          "type_": "GOOGLE_ANALYTICS_4_QUALIFY_LEAD",
+          "category": "QUALIFIED_LEAD",
+          "counting_type": "MANY_PER_CLICK",
+          "id": "7615217735",
+          "name": "Happy Faces LA Website (web) qualify_lead",
+          "include_in_conversions_metric": false,
+          "origin": "WEBSITE",
+          "primary_for_goal": false
+        }
+      },
+      {
+        "conversion_action": {
+          "resource_name": "customers/4699120105/conversionActions/7615217738",
+          "status": "HIDDEN",
+          "type_": "GOOGLE_ANALYTICS_4_PURCHASE",
+          "category": "PURCHASE",
+          "counting_type": "MANY_PER_CLICK",
+          "id": "7615217738",
+          "name": "Happy Faces LA Website (web) purchase",
+          "include_in_conversions_metric": false,
+          "origin": "WEBSITE",
+          "primary_for_goal": false
+        }
+      },
+      {
+        "conversion_action": {
+          "resource_name": "customers/4699120105/conversionActions/7615217741",
+          "status": "ENABLED",
+          "type_": "GOOGLE_ANALYTICS_4_GENERATE_LEAD",
+          "category": "SUBMIT_LEAD_FORM",
+          "counting_type": "ONE_PER_CLICK",
+          "id": "7615217741",
+          "name": "Happy Faces LA Website (web) generate_lead",
+          "include_in_conversions_metric": true,
+          "origin": "WEBSITE",
+          "primary_for_goal": true
+        }
+      },
+      {
+        "conversion_action": {
+          "resource_name": "customers/4699120105/conversionActions/7615646296",
+          "status": "REMOVED",
+          "type_": "GOOGLE_ANALYTICS_4_CUSTOM",
+          "category": "CONTACT",
+          "counting_type": "MANY_PER_CLICK",
+          "id": "7615646296",
+          "name": "Contact Us",
+          "include_in_conversions_metric": false,
+          "origin": "WEBSITE",
+          "primary_for_goal": false
+        }
+      },
+      {
+        "conversion_action": {
+          "resource_name": "customers/4699120105/conversionActions/7618341822",
+          "status": "ENABLED",
+          "type_": "AD_CALL",
+          "category": "PHONE_CALL_LEAD",
+          "counting_type": "MANY_PER_CLICK",
+          "id": "7618341822",
+          "name": "Calls from ads",
+          "include_in_conversions_metric": true,
+          "origin": "CALL_FROM_ADS",
+          "primary_for_goal": true
+        }
+      },
+      {
+        "conversion_action": {
+          "resource_name": "customers/4699120105/conversionActions/7630712321",
+          "status": "ENABLED",
+          "type_": "GOOGLE_ANALYTICS_4_CUSTOM",
+          "category": "PHONE_CALL_LEAD",
+          "counting_type": "ONE_PER_CLICK",
+          "id": "7630712321",
+          "name": "Happy Faces LA Website (web) sms_click",
+          "include_in_conversions_metric": false,
+          "origin": "WEBSITE",
+          "primary_for_goal": false
+        }
+      },
+      {
+        "conversion_action": {
+          "resource_name": "customers/4699120105/conversionActions/7631103798",
+          "status": "ENABLED",
+          "type_": "GOOGLE_ANALYTICS_4_CUSTOM",
+          "category": "PHONE_CALL_LEAD",
+          "counting_type": "ONE_PER_CLICK",
+          "id": "7631103798",
+          "name": "Happy Faces LA Website (web) phone_click",
+          "include_in_conversions_metric": false,
+          "origin": "WEBSITE",
+          "primary_for_goal": false
+        }
+      }
+    ]
+  },
+  "locations": {
+    "ok": true,
+    "count": 0,
+    "rows": []
+  },
+  "ad_groups": {
+    "ok": true,
+    "count": 0,
+    "rows": []
+  },
+  "keywords_target": {
+    "ok": false,
+    "error": "(<_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_status:3, grpc_message:\"Request contains an invalid argument.\"}\"\n>, <_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_status:3, grpc_message:\"Request contains an invalid argument.\"}\"\n>, errors {\n  error_code {\n    query_error: UNRECOGNIZED_FIELD\n  }\n  message: \"Unrecognized fields in the query: \\'ad_group_criterion.policy_summary.approval_status\\', \\'ad_group_criterion.policy_summary.review_status\\'.\"\n}\nrequest_id: \"LwOGw2p-RbkOWw_mrM8g2w\"\n, 'LwOGw2p-RbkOWw_mrM8g2w')"
+  },
+  "campaign_negative_keywords": {
+    "ok": true,
+    "count": 0,
+    "rows": []
+  },
+  "rsas": {
+    "ok": false,
+    "error": "(<_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_message:\"Request contains an invalid argument.\", grpc_status:3}\"\n>, <_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_message:\"Request contains an invalid argument.\", grpc_status:3}\"\n>, errors {\n  error_code {\n    query_error: UNRECOGNIZED_FIELD\n  }\n  message: \"Unrecognized fields in the query: \\'ad_group_ad.ad.path2\\', \\'ad_group_ad.ad.path1\\'.\"\n}\nrequest_id: \"bcBgltvQmdWXRIGEVXsT9g\"\n, 'bcBgltvQmdWXRIGEVXsT9g')"
+  },
+  "assets_links": {
+    "ok": false,
+    "error": "(<_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_message:\"Request contains an invalid argument.\", grpc_status:3}\"\n>, <_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_message:\"Request contains an invalid argument.\", grpc_status:3}\"\n>, errors {\n  error_code {\n    query_error: EXPECTED_REFERENCED_FIELD_IN_SELECT_CLAUSE\n  }\n  message: \"The following field must be present in SELECT clause: \\'campaign.id\\'.\"\n}\nrequest_id: \"3EegNRHAXD0R7sl7GpY5gw\"\n, '3EegNRHAXD0R7sl7GpY5gw')"
+  },
+  "change_events_30d": {
+    "ok": false,
+    "error": "(<_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_status:3, grpc_message:\"Request contains an invalid argument.\"}\"\n>, <_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_status:3, grpc_message:\"Request contains an invalid argument.\"}\"\n>, errors {\n  error_code {\n    query_error: BAD_FIELD_NAME\n  }\n  message: \"Error in WHERE clause: invalid field name \\'(\\'.\"\n}\nrequest_id: \"lBjqV_YFaKkp6FvUwdkUwA\"\n, 'lBjqV_YFaKkp6FvUwdkUwA')"
+  },
+  "distinct_final_urls": []
+}

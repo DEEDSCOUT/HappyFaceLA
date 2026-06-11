@@ -18,7 +18,7 @@ export const packages: PackageItem[] = [
         ],
         duration: "Varies by guest count",
         guestCapacity: "Varies by event",
-        startingPrice: "Bookings start at $150",
+        startingPrice: "Custom quote required",
     },
     {
         name: "Face Painting + Balloons Package",

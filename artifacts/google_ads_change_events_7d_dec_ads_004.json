@@ -1,0 +1,7 @@
+{
+  "change_target_7d": [],
+  "change_pmax_7d": [],
+  "change_conv_ids_7d": {
+    "error": "(<_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_status:3, grpc_message:\"Request contains an invalid argument.\"}\"\n>, <_SingleThreadedRendezvous of RPC that terminated with:\n\tstatus = StatusCode.INVALID_ARGUMENT\n\tdetails = \"Request contains an invalid argument.\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer ipv4:142.251.218.10:443 {grpc_status:3, grpc_message:\"Request contains an invalid argument.\"}\"\n>, errors {\n  error_code {\n    request_error: RESOURCE_NAME_MALFORMED\n  }\n  message: \"Resource name \\'customers/4699120105/conversionActions/7615217741\\' is malformed: expected \\'customers/{customer_id}/changeEvents/{timestamp_micros}~{command_index}~{mutate_index}\\'.\"\n}\nrequest_id: \"QMvPfXhEIKPV8dk_QCk_Ug\"\n, 'QMvPfXhEIKPV8dk_QCk_Ug')"
+  }
+}

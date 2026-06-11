@@ -4,6 +4,16 @@ Production-ready Sprint 1 implementation for a static-first local service websit
 
 For full project roadmap, current status, deployment gates, and handoff instructions, see [PROJECT_ROADMAP.md](PROJECT_ROADMAP.md).
 
+Commercial booking/gallery governance status:
+
+PUBLIC-BOOKING-R13-R8D PREVIEW BOOKINGS_KV BINDING RECHECK / CURRENT-CODE PREVIEW REDEPLOY / CHECKOUT-WEBHOOK PROOF RERUN SUBMITTED — AUDITOR REVIEW REQUIRED — RELEASE STATE NO_GO
+
+R13-R8D continuation created a fresh non-production current-code Preview deployment from commit `2431c8b` on branch `r13-r8d-proof` (`https://c5d78321.happyfacesla.pages.dev`, alias `https://r13-r8d-proof.happyfacesla.pages.dev`) and proved the owner-configured Preview `BOOKINGS_KV` binding is now available. The no-seed checkout gate returned 409 fail-closed with no checkout URL, not the prior 503 `Booking storage is not configured`. Preview `AVAILABILITY_D1`, `ADMIN_SLOT_TOKEN`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `BOOKINGS_KV` were confirmed through redacted metadata/runtime proof only; production `AVAILABILITY_D1` remains absent in Cloudflare Pages metadata. P5-P9 were rerun with synthetic non-PII data only; P8/P9 used live webhook signature fail-closed checks plus approved TEST simulation without reading the webhook secret. Synthetic D1 rows were cleaned to zero and synthetic KV keys were deleted; no pre-existing KV records were listed/read/changed. `EVD-PUBLIC-BOOKING-R13-R8D-001` and `EVD-PUBLIC-BOOKING-R13-R8-001` are Pending Auditor Review / Pending. `BLK-PUBLIC-R13-R8-PREVIEW-KV-BINDING-001` and `BLK-PUBLIC-R13-R8-PREVIEW-FUNCTIONS-CURRENT-CODE-001` are Proposed Closed by R13-R8D. `BLK-R9-001`, `BLK-R9-002`, and `BLK-R9-003` remain OPEN. RELEASE STATE NO_GO.
+
+WEBSITE-GALLERY-R2-R1 remains accepted for non-production preview only. WEBSITE-GALLERY-R3 remains REVISION REQUIRED / No. Gallery live publication remains blocked.
+
+The deployment notes in this README describe technical setup only. They do not authorize happyfacesla.com publication, deploy planning, SEO/indexing work, payment activation, Ads, social publishing, R4 live-publication execution, production D1 mutation, production KV mutation, production slot seeding, R13-R9/R13-R10/R13-R11 execution, or customer-facing release.
+
 - Canonical domain: <https://happyfacesla.com>
 - Redirect domain: <https://happyfacela.com>
 - Phone: 818-619-5506

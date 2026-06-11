@@ -1,0 +1,656 @@
+{
+  "campaign": [
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23864074792",
+        "status": "PAUSED",
+        "name": "Kids Party Face Painting",
+        "id": "23864074792"
+      },
+      "campaign_budget": {
+        "resource_name": "customers/4699120105/campaignBudgets/15581920286",
+        "amount_micros": "20000000"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "status": "PAUSED",
+        "name": "HFL | Search | Birthday Party LA",
+        "id": "23901051766"
+      },
+      "campaign_budget": {
+        "resource_name": "customers/4699120105/campaignBudgets/15610375406",
+        "amount_micros": "20000000"
+      }
+    }
+  ],
+  "metrics": [
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23864074792",
+        "name": "Kids Party Face Painting",
+        "id": "23864074792"
+      },
+      "metrics": {
+        "clicks": "137",
+        "cost_micros": "69706375",
+        "impressions": "8377"
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "name": "HFL | Search | Birthday Party LA",
+        "id": "23901051766"
+      },
+      "metrics": {
+        "clicks": "0",
+        "cost_micros": "0",
+        "impressions": "0"
+      }
+    }
+  ],
+  "rsas_live": [
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246857",
+        "name": "Face Painting - Birthday - LA"
+      },
+      "ad_group_ad": {
+        "resource_name": "customers/4699120105/adGroupAds/194820246857~811261825429",
+        "status": "PAUSED",
+        "ad": {
+          "responsive_search_ad": {
+            "headlines": [
+              {
+                "text": "Face Painting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Birthday Party Face Painter",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Face Painting From $150",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Kids Birthday Face Painting",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Request Availability Today",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Book Face Painting in LA",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Glitter Tattoos for Parties",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Balloon Twisting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              }
+            ],
+            "descriptions": [
+              {
+                "text": "Professional face painting for birthday parties and private celebrations in Los Angeles.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Face painting parties from $150. Share city or ZIP for LA availability.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Add balloon twisting, glitter tattoos, and face gems for a full birthday experience.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Request availability for your Los Angeles birthday party or private celebration.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              }
+            ]
+          },
+          "resource_name": "customers/4699120105/ads/811261825429",
+          "id": "811261825429",
+          "final_urls": [
+            "https://happyfacesla.com/face-painting-los-angeles/"
+          ]
+        },
+        "policy_summary": {
+          "review_status": "REVIEW_IN_PROGRESS",
+          "approval_status": "UNKNOWN"
+        }
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246897",
+        "name": "Kids Birthday Entertainment - LA"
+      },
+      "ad_group_ad": {
+        "resource_name": "customers/4699120105/adGroupAds/194820246897~811261825432",
+        "status": "PAUSED",
+        "ad": {
+          "responsive_search_ad": {
+            "headlines": [
+              {
+                "text": "Face Painting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Birthday Party Face Painter",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Face Painting From $150",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Kids Birthday Face Painting",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Request Availability Today",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Book Face Painting in LA",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Glitter Tattoos for Parties",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Balloon Twisting Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              }
+            ],
+            "descriptions": [
+              {
+                "text": "Professional face painting for birthday parties and private celebrations in Los Angeles.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Face painting parties from $150. Share city or ZIP for LA availability.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Add balloon twisting, glitter tattoos, and face gems for a full birthday experience.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              },
+              {
+                "text": "Request availability for your Los Angeles birthday party or private celebration.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEWED",
+                  "approval_status": "APPROVED"
+                }
+              }
+            ]
+          },
+          "resource_name": "customers/4699120105/ads/811261825432",
+          "id": "811261825432",
+          "final_urls": [
+            "https://happyfacesla.com/kids-birthday-party-entertainment-los-angeles/"
+          ]
+        },
+        "policy_summary": {
+          "review_status": "REVIEW_IN_PROGRESS",
+          "approval_status": "UNKNOWN"
+        }
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820246937",
+        "name": "Balloon Twisting - Birthday - LA"
+      },
+      "ad_group_ad": {
+        "resource_name": "customers/4699120105/adGroupAds/194820246937~811331102762",
+        "status": "PAUSED",
+        "ad": {
+          "responsive_search_ad": {
+            "headlines": [
+              {
+                "text": "Balloon Twisting for Parties",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "LA Birthday Balloon Artist",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Book Balloon Twisting in LA",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Fun Balloon Creations",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request Availability Today",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ],
+            "descriptions": [
+              {
+                "text": "Balloon twisting for birthday parties and private celebrations across Los Angeles.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Add balloon fun guests love. Share city or ZIP for availability.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ]
+          },
+          "resource_name": "customers/4699120105/ads/811331102762",
+          "id": "811331102762",
+          "final_urls": [
+            "https://happyfacesla.com/balloon-twisting-los-angeles/"
+          ]
+        },
+        "policy_summary": {
+          "review_status": "REVIEW_IN_PROGRESS",
+          "approval_status": "UNKNOWN"
+        }
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247097",
+        "name": "Glitter Tattoos - Birthday - LA"
+      },
+      "ad_group_ad": {
+        "resource_name": "customers/4699120105/adGroupAds/194820247097~811331102765",
+        "status": "PAUSED",
+        "ad": {
+          "responsive_search_ad": {
+            "headlines": [
+              {
+                "text": "Glitter Tattoos for Parties",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "LA Birthday Glitter Tattoos",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Book Glitter Tattoos in LA",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Sparkle Party Add-On",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request Availability Today",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ],
+            "descriptions": [
+              {
+                "text": "Glitter tattoos for birthday parties and private events across Los Angeles.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Add sparkle to your party package. Share city or ZIP for availability.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ]
+          },
+          "resource_name": "customers/4699120105/ads/811331102765",
+          "id": "811331102765",
+          "final_urls": [
+            "https://happyfacesla.com/glitter-tattoos-los-angeles/"
+          ]
+        },
+        "policy_summary": {
+          "review_status": "REVIEW_IN_PROGRESS",
+          "approval_status": "UNKNOWN"
+        }
+      }
+    },
+    {
+      "campaign": {
+        "resource_name": "customers/4699120105/campaigns/23901051766",
+        "id": "23901051766"
+      },
+      "ad_group": {
+        "resource_name": "customers/4699120105/adGroups/194820247137",
+        "name": "Face Gems - Birthday - LA"
+      },
+      "ad_group_ad": {
+        "resource_name": "customers/4699120105/adGroupAds/194820247137~811331102768",
+        "status": "PAUSED",
+        "ad": {
+          "responsive_search_ad": {
+            "headlines": [
+              {
+                "text": "Face Gems for Birthday Parties",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "LA Face Gems Party Add-On",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Book Face Gems in Los Angeles",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Sparkly Party Looks",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Request Availability Today",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ],
+            "descriptions": [
+              {
+                "text": "Face gems add sparkle for birthday parties and private events in Los Angeles.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              },
+              {
+                "text": "Pair with glitter tattoos or face painting. Share city or ZIP for availability.",
+                "asset_performance_label": "PENDING",
+                "policy_summary_info": {
+                  "review_status": "REVIEW_IN_PROGRESS"
+                }
+              }
+            ]
+          },
+          "resource_name": "customers/4699120105/ads/811331102768",
+          "id": "811331102768",
+          "final_urls": [
+            "https://happyfacesla.com/face-gems-face-jewelry-los-angeles/"
+          ]
+        },
+        "policy_summary": {
+          "review_status": "REVIEW_IN_PROGRESS",
+          "approval_status": "UNKNOWN"
+        }
+      }
+    }
+  ],
+  "conversions": [
+    {
+      "conversion_action": {
+        "resource_name": "customers/4699120105/conversionActions/7615217741",
+        "status": "ENABLED",
+        "category": "SUBMIT_LEAD_FORM",
+        "name": "Happy Faces LA Website (web) generate_lead",
+        "include_in_conversions_metric": true,
+        "primary_for_goal": true
+      }
+    },
+    {
+      "conversion_action": {
+        "resource_name": "customers/4699120105/conversionActions/7618341822",
+        "status": "ENABLED",
+        "category": "PHONE_CALL_LEAD",
+        "name": "Calls from ads",
+        "include_in_conversions_metric": true,
+        "primary_for_goal": true
+      }
+    },
+    {
+      "conversion_action": {
+        "resource_name": "customers/4699120105/conversionActions/7630712321",
+        "status": "ENABLED",
+        "category": "CONTACT",
+        "name": "Happy Faces LA Website (web) sms_click",
+        "include_in_conversions_metric": false,
+        "primary_for_goal": false
+      }
+    },
+    {
+      "conversion_action": {
+        "resource_name": "customers/4699120105/conversionActions/7631103798",
+        "status": "ENABLED",
+        "category": "PHONE_CALL_LEAD",
+        "name": "Happy Faces LA Website (web) phone_click",
+        "include_in_conversions_metric": false,
+        "primary_for_goal": false
+      }
+    }
+  ],
+  "rsa_checks": [
+    {
+      "ad_group": "Face Painting - Birthday - LA",
+      "status": "PAUSED",
+      "approval_status": "UNKNOWN",
+      "review_status": "REVIEW_IN_PROGRESS",
+      "disapproval_reasons": [],
+      "limited_or_restricted_labels": [],
+      "has_150_claim": true
+    },
+    {
+      "ad_group": "Kids Birthday Entertainment - LA",
+      "status": "PAUSED",
+      "approval_status": "UNKNOWN",
+      "review_status": "REVIEW_IN_PROGRESS",
+      "disapproval_reasons": [],
+      "limited_or_restricted_labels": [],
+      "has_150_claim": true
+    },
+    {
+      "ad_group": "Balloon Twisting - Birthday - LA",
+      "status": "PAUSED",
+      "approval_status": "UNKNOWN",
+      "review_status": "REVIEW_IN_PROGRESS",
+      "disapproval_reasons": [],
+      "limited_or_restricted_labels": [],
+      "has_150_claim": false
+    },
+    {
+      "ad_group": "Glitter Tattoos - Birthday - LA",
+      "status": "PAUSED",
+      "approval_status": "UNKNOWN",
+      "review_status": "REVIEW_IN_PROGRESS",
+      "disapproval_reasons": [],
+      "limited_or_restricted_labels": [],
+      "has_150_claim": false
+    },
+    {
+      "ad_group": "Face Gems - Birthday - LA",
+      "status": "PAUSED",
+      "approval_status": "UNKNOWN",
+      "review_status": "REVIEW_IN_PROGRESS",
+      "disapproval_reasons": [],
+      "limited_or_restricted_labels": [],
+      "has_150_claim": false
+    }
+  ],
+  "conversion_eval": {
+    "generate_lead_primary": true,
+    "calls_from_ads_primary": true,
+    "phone_click_secondary": true,
+    "sms_click_secondary": true,
+    "sms_click_category_contact": true
+  },
+  "status_eval": {
+    "campaign_paused": true,
+    "budget_20": true,
+    "spend_zero": true,
+    "pmax_paused": true,
+    "live_rsa_count": 5,
+    "unsupported_150_reappeared": false,
+    "any_blocking_policy_signal": false
+  },
+  "verdict": "READY FOR OWNER FINAL LAUNCH APPROVAL"
+}

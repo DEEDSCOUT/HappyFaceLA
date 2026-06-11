@@ -701,7 +701,9 @@ def google_ads_import_ga4_conversion(payload: dict) -> dict:
             client, "ConversionActionService", CFG.customer_id, [op], inp.validate_only
         )
         new_rn = (
-            resp.results[0].resource_name if not inp.validate_only else "<validate-only>"
+            resp.results[0].resource_name
+            if not inp.validate_only
+            else "<validate-only>"
         )
         plan["after"] = {
             "validate_only": inp.validate_only,
@@ -1004,12 +1006,22 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         else:
             b_op = client.get_type("CampaignBudgetOperation")
             b_op.create.name = budget_name
-            b_op.create.amount_micros = mutations.budget_usd_to_micros(inp.daily_budget_usd)
+            b_op.create.amount_micros = mutations.budget_usd_to_micros(
+                inp.daily_budget_usd
+            )
             b_op.create.delivery_method = client.enums.BudgetDeliveryMethodEnum.STANDARD
             b_resp = mutations.run_mutate(
-                client, "CampaignBudgetService", CFG.customer_id, [b_op], inp.validate_only
+                client,
+                "CampaignBudgetService",
+                CFG.customer_id,
+                [b_op],
+                inp.validate_only,
             )
-            budget_rn = b_resp.results[0].resource_name if b_resp.results else f"customers/{CFG.customer_id}/campaignBudgets/-1"
+            budget_rn = (
+                b_resp.results[0].resource_name
+                if b_resp.results
+                else f"customers/{CFG.customer_id}/campaignBudgets/-1"
+            )
 
         if inp.validate_only:
             # validate_only: budget structure validated OK. Campaign service validation
@@ -1023,7 +1035,10 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
                     "resource_name": "<not created>",
                     "fields_changed": {"amount_usd": inp.daily_budget_usd},
                     "old_values": {},
-                    "new_values": {"name": b_op.create.name, "amount_usd": inp.daily_budget_usd},
+                    "new_values": {
+                        "name": b_op.create.name,
+                        "amount_usd": inp.daily_budget_usd,
+                    },
                 }
             ]
             plan["after"] = {"validate_only": True}
@@ -1046,7 +1061,9 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
             client.enums.AdvertisingChannelTypeEnum.SEARCH
         )
         c_op.create.campaign_budget = budget_rn
-        c_op.create._pb.contains_eu_political_advertising = 3  # DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING
+        c_op.create._pb.contains_eu_political_advertising = (
+            3  # DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING
+        )
         if inp.bidding == "MANUAL_CPC":
             c_op.create.manual_cpc._pb.SetInParent()  # type: ignore[attr-defined]
         else:
@@ -1087,7 +1104,9 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         ]
         plan["after"] = {
             "validate_only": inp.validate_only,
-            "budget_results": [] if b_resp is None else [str(r) for r in b_resp.results],
+            "budget_results": []
+            if b_resp is None
+            else [str(r) for r in b_resp.results],
             "campaign_results": [str(r) for r in c_resp.results],
         }
         return {

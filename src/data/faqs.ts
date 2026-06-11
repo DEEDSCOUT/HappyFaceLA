@@ -17,7 +17,7 @@ export const commonFaqs: FaqItem[] = [
     {
         question: "How is pricing calculated?",
         answer:
-            "Pricing depends on event date, location, number of guests, services requested, and artist count. Submit your event details for an accurate quote."
+            "Pricing depends on event date, location, number of guests, services requested, and artist count. Submit your event details for an accurate quote, including any applicable travel fee."
     },
     {
         question: "Can schools and companies request custom quotes?",
@@ -50,7 +50,7 @@ export const facePaintingFaqs: FaqItem[] = [
     {
         question: "What is the minimum booking for face painting?",
         answer:
-            "Face Painting Parties from $150"
+            "Face painting pricing is provided in your personalized quote. Package and add-on prices are confirmed by quote."
     }
 ];
 
@@ -91,7 +91,7 @@ export const glitterTattooFaqs: FaqItem[] = [
     {
         question: "Can glitter tattoos be added to face painting or balloon twisting?",
         answer:
-            "Yes. Glitter tattoos pair well with face painting and balloon twisting as part of a multi-station event setup. Bundling services helps keep each station moving and gives guests more options."
+            "Yes. Glitter tattoos pair well with face painting and balloon twisting as part of a multi-station event setup. Availability and pricing are included in your personalized quote."
     },
     {
         question: "How do I request glitter tattoos for my event?",
@@ -101,7 +101,7 @@ export const glitterTattooFaqs: FaqItem[] = [
     {
         question: "Are glitter tattoos a good add-on for birthday party lines?",
         answer:
-            "Yes. Glitter tattoos move quickly and work well alongside other party services. Happy Faces LA can set up a dedicated glitter tattoo station or combine it with face painting, face gems, or balloon twisting at the same event."
+            "Yes. Glitter tattoos move quickly and work well alongside other party services. Happy Faces LA can set up a dedicated glitter tattoo station or combine it with face painting, face gems, or balloon twisting at the same event, with pricing confirmed by quote."
     },
     {
         question: "How is availability confirmed?",
@@ -119,12 +119,12 @@ export const faceGemsFaqs: FaqItem[] = [
     {
         question: "Can face gems be combined with face painting or glitter tattoos?",
         answer:
-            "Yes. Face gems are frequently paired with face painting as a finishing detail, or offered alongside glitter tattoos as a separate station. Bundling services creates a more complete experience for guests and helps keep each station moving."
+            "Yes. Face gems are frequently paired with face painting as a finishing detail, or offered alongside glitter tattoos as a separate station. Availability and pricing are included in your personalized quote."
     },
     {
         question: "Are face gems a good option for older kids and teens?",
         answer:
-            "Face gems are popular with older kids, teens, and adults who prefer a subtler option compared to full face painting. They work well as a standalone station or as an add-on at events with a mixed age range."
+            "Face gems are popular with older kids, teens, and adults who prefer a subtler option compared to full face painting. They work well as a standalone station or quoted add-on at events with a mixed age range."
     },
     {
         question: "How do I request face gems for my event?",

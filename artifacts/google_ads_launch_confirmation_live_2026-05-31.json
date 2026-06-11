@@ -1,0 +1,104 @@
+{
+  "document_type": "LAUNCH_CONFIRMATION",
+  "campaign_id": "23901051766",
+  "campaign_name": "HFL | Search | Birthday Party LA",
+  "launch_status": "LIVE SERVING READY \u2014 MONITORING PHASE ACTIVE",
+  "confirmed_at_utc": "2026-06-01T00:16:13.179873+00:00",
+  "confirmed_state": {
+    "campaign_status": "ENABLED",
+    "budget": "$20/day (20000000 micros)",
+    "bidding_strategy": "MANUAL_CPC",
+    "enhanced_cpc": false,
+    "max_cpc_per_adgroup": "$1.50",
+    "channel": "SEARCH",
+    "search_partners": false,
+    "display_network": false,
+    "location": "Los Angeles County only",
+    "geo_targeting_type": "PRESENCE",
+    "broad_match_keywords": false,
+    "keyword_breakdown": {
+      "PHRASE": 15,
+      "EXACT": 15,
+      "BROAD": 0
+    },
+    "old_pmax_23864074792": "PAUSED",
+    "only_campaign_enabled": true,
+    "ad_groups_enabled": [
+      "Face Painting - Birthday - LA",
+      "Kids Birthday Entertainment - LA",
+      "Balloon Twisting - Birthday - LA",
+      "Glitter Tattoos - Birthday - LA",
+      "Face Gems - Birthday - LA"
+    ],
+    "rsa_policy": {
+      "Face Painting - Birthday - LA": {
+        "approval": "APPROVED",
+        "review": "REVIEWED"
+      },
+      "Kids Birthday Entertainment - LA": {
+        "approval": "APPROVED",
+        "review": "REVIEWED"
+      },
+      "Balloon Twisting - Birthday - LA": {
+        "approval": "APPROVED",
+        "review": "REVIEWED"
+      },
+      "Glitter Tattoos - Birthday - LA": {
+        "approval": "APPROVED",
+        "review": "REVIEWED"
+      },
+      "Face Gems - Birthday - LA": {
+        "approval": "APPROVED",
+        "review": "REVIEWED"
+      }
+    },
+    "disapprovals": null,
+    "limited_restricted_labels": null,
+    "unsupported_150_claim": false,
+    "prohibited_copy": false,
+    "conversions": {
+      "generate_lead": {
+        "primary": true
+      },
+      "calls_from_ads": {
+        "primary": true
+      },
+      "phone_click": {
+        "primary": false,
+        "include_in_conversions": false
+      },
+      "sms_click": {
+        "primary": false,
+        "include_in_conversions": false,
+        "category": "CONTACT"
+      }
+    }
+  },
+  "phase_1_bidding_note": "Manual CPC at $1.50 is the authorised Phase 1 controlled-test strategy. Upgrade to Maximize Conversions is gated on accumulating a minimum of 30 conversions within a rolling 30-day window before any bidding strategy change.",
+  "monitoring": {
+    "phase": "Phase 1 \u2014 24h Post-Launch",
+    "checkpoint_due_utc": "2026-06-01T23:47:21+00:00",
+    "checkpoint_due_local_pt": "2026-06-01 ~4:47 PM PT",
+    "read_only": true,
+    "inspect_metrics": [
+      "impressions",
+      "clicks",
+      "average_cpc_vs_$1.50_cap",
+      "cost_micros_vs_$20_daily_budget",
+      "search_terms_report \u2014 flag irrelevant / out-of-geo queries",
+      "conversions \u2014 generate_lead and call events",
+      "disapprovals \u2014 any new policy flags",
+      "keyword_match_type_drift \u2014 confirm zero broad match",
+      "budget_pacing \u2014 flag if >$15 spent in first 24h"
+    ],
+    "pause_triggers": [
+      "Any new RSA disapproval",
+      "Daily spend exceeds $20 budget",
+      "Broad match keyword drift detected",
+      "Irrelevant or out-of-geo search terms >10% of volume",
+      "Unexpected campaign or ad group enablement outside 23901051766"
+    ]
+  },
+  "no_action_required_before_checkpoint": true,
+  "next_escalation": "Owner review after 24h checkpoint data is collected"
+}

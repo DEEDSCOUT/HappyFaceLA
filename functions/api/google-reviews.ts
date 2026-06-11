@@ -51,6 +51,19 @@ type PlacesResponse = {
     reviews?: PlacesReview[];
 };
 
+type PagesFunctionContext<EnvBindings> = {
+    request: Request;
+    env: EnvBindings;
+};
+
+type PagesFunction<EnvBindings> = (
+    context: PagesFunctionContext<EnvBindings>
+) => Response | Promise<Response>;
+
+type EdgeCacheStorage = CacheStorage & {
+    default: Cache;
+};
+
 const CACHE_TTL_SECONDS = 60 * 60 * 6; // 6 hours
 
 function json(data: unknown, status = 200, cacheSeconds = 0): Response {
@@ -83,7 +96,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     }
 
     // Edge cache lookup
-    const cache = caches.default;
+    const cache = (caches as EdgeCacheStorage).default;
     const cacheKey = new Request(new URL(request.url).toString(), { method: "GET" });
     const cached = await cache.match(cacheKey);
     if (cached) return cached;

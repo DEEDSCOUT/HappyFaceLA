@@ -1,0 +1,142 @@
+{
+  "launch_timestamp_utc": "2026-05-31T23:47:21.424612+00:00",
+  "authorized_target_campaign_id": "23901051766",
+  "pre": {
+    "campaign_rows": [
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23864074792",
+          "status": "PAUSED",
+          "name": "Kids Party Face Painting",
+          "id": "23864074792"
+        },
+        "campaign_budget": {
+          "resource_name": "customers/4699120105/campaignBudgets/15581920286",
+          "amount_micros": "20000000"
+        }
+      },
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23901051766",
+          "status": "PAUSED",
+          "name": "HFL | Search | Birthday Party LA",
+          "id": "23901051766"
+        },
+        "campaign_budget": {
+          "resource_name": "customers/4699120105/campaignBudgets/15610375406",
+          "amount_micros": "20000000"
+        }
+      }
+    ],
+    "enabled_campaigns": [],
+    "conversions": {
+      "Happy Faces LA Website (web) generate_lead": {
+        "category": "SUBMIT_LEAD_FORM",
+        "primary_for_goal": true,
+        "include_in_conversions_metric": true,
+        "status": "ENABLED"
+      },
+      "Calls from ads": {
+        "category": "PHONE_CALL_LEAD",
+        "primary_for_goal": true,
+        "include_in_conversions_metric": true,
+        "status": "ENABLED"
+      },
+      "Happy Faces LA Website (web) sms_click": {
+        "category": "CONTACT",
+        "primary_for_goal": false,
+        "include_in_conversions_metric": false,
+        "status": "ENABLED"
+      },
+      "Happy Faces LA Website (web) phone_click": {
+        "category": "PHONE_CALL_LEAD",
+        "primary_for_goal": false,
+        "include_in_conversions_metric": false,
+        "status": "ENABLED"
+      }
+    }
+  },
+  "mutation": {
+    "operation": "campaign_status_update",
+    "target_campaign_id": "23901051766",
+    "new_status": "ENABLED",
+    "mutate_results": [
+      "customers/4699120105/campaigns/23901051766"
+    ]
+  },
+  "post": {
+    "campaign_rows": [
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23864074792",
+          "status": "PAUSED",
+          "name": "Kids Party Face Painting",
+          "id": "23864074792"
+        },
+        "campaign_budget": {
+          "resource_name": "customers/4699120105/campaignBudgets/15581920286",
+          "amount_micros": "20000000"
+        }
+      },
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23901051766",
+          "status": "ENABLED",
+          "name": "HFL | Search | Birthday Party LA",
+          "id": "23901051766"
+        },
+        "campaign_budget": {
+          "resource_name": "customers/4699120105/campaignBudgets/15610375406",
+          "amount_micros": "20000000"
+        }
+      }
+    ],
+    "enabled_campaigns": [
+      {
+        "campaign": {
+          "resource_name": "customers/4699120105/campaigns/23901051766",
+          "status": "ENABLED",
+          "name": "HFL | Search | Birthday Party LA",
+          "id": "23901051766"
+        }
+      }
+    ],
+    "conversions": {
+      "Happy Faces LA Website (web) generate_lead": {
+        "category": "SUBMIT_LEAD_FORM",
+        "primary_for_goal": true,
+        "include_in_conversions_metric": true,
+        "status": "ENABLED"
+      },
+      "Calls from ads": {
+        "category": "PHONE_CALL_LEAD",
+        "primary_for_goal": true,
+        "include_in_conversions_metric": true,
+        "status": "ENABLED"
+      },
+      "Happy Faces LA Website (web) sms_click": {
+        "category": "CONTACT",
+        "primary_for_goal": false,
+        "include_in_conversions_metric": false,
+        "status": "ENABLED"
+      },
+      "Happy Faces LA Website (web) phone_click": {
+        "category": "PHONE_CALL_LEAD",
+        "primary_for_goal": false,
+        "include_in_conversions_metric": false,
+        "status": "ENABLED"
+      }
+    }
+  },
+  "checks": {
+    "campaign_23901051766_enabled": true,
+    "budget_remains_20": true,
+    "pmax_23864074792_paused": true,
+    "no_other_campaigns_enabled": true,
+    "conversions_unchanged": true
+  },
+  "monitoring": {
+    "first_checkpoint_due_utc": "2026-06-01T23:47:21.424612+00:00",
+    "note": "Read-only 24h post-launch monitoring checkpoint scheduled."
+  }
+}

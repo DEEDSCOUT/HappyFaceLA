@@ -1,0 +1,100 @@
+<!-- Step 6: Date, Time, and Location. Managed by WizardShell client-side script. -->
+<div class="wizard-step" data-wizard-step="6">
+  <h2 class="text-2xl font-bold text-slate-900">When and where is your event?</h2>
+  <p class="mt-2 text-slate-600">We'll check our calendar and confirm we're available.</p>
+
+  <div class="mt-6 flex flex-col gap-4">
+    <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+      Preferred event date <span class="text-rose-600">*</span>
+      <input
+        id="field-eventDate"
+        type="date"
+        name="eventDate"
+        required
+        class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+        aria-required="true"
+        aria-describedby="eventDate-error"
+      />
+      <span id="eventDate-error" class="text-rose-600 text-xs hidden" role="alert"></span>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+      Preferred start time <span class="text-rose-600">*</span>
+      <input
+        id="field-eventTime"
+        type="time"
+        name="eventTime"
+        required
+        class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+        aria-required="true"
+        aria-describedby="eventTime-error"
+      />
+      <span id="eventTime-error" class="text-rose-600 text-xs hidden" role="alert"></span>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+      Event city or neighborhood <span class="text-rose-600">*</span>
+      <input
+        id="field-eventCity"
+        type="text"
+        name="eventCity"
+        required
+        placeholder="e.g. Los Angeles, Pasadena, Burbank"
+        class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+        aria-required="true"
+        aria-describedby="eventCity-error"
+      />
+      <span id="eventCity-error" class="text-rose-600 text-xs hidden" role="alert"></span>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+      Venue name or address <span class="text-slate-400 font-normal">(optional)</span>
+      <input
+        id="field-venueName"
+        type="text"
+        name="venueName"
+        placeholder="e.g. Griffith Park, backyard on Elm St"
+        class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+      Special requests or notes <span class="text-slate-400 font-normal">(optional)</span>
+      <textarea
+        id="field-specialRequests"
+        name="specialRequests"
+        rows="3"
+        placeholder="Anything we should know about your event?"
+        class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 resize-none"
+      ></textarea>
+    </label>
+  </div>
+
+    <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+      Approximate distance from Los Angeles <span class="text-slate-400 font-normal">(optional — helps us estimate travel)</span>
+      <select
+        id="field-travelBand"
+        name="travelBand"
+        class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 bg-white"
+      >
+        <option value="">— Select approximate distance —</option>
+        <option value="0">Within 20 miles (no travel fee)</option>
+        <option value="30">21–40 miles ($25 travel fee)</option>
+        <option value="50">41–60 miles (estimate, may require staff review)</option>
+        <option value="70">Over 60 miles (custom quote)</option>
+      </select>
+    </label>
+  </div>
+
+  <!-- Required payment boundary notices -->
+  <div class="mt-5 flex flex-col gap-3">
+    <div class="wizard-notice">
+      <strong>Date not reserved yet.</strong> Your date is not reserved until your Booking Retainer is received.
+      Once we confirm availability and you approve your quote, we'll lock it in.
+    </div>
+    <div class="wizard-notice wizard-notice-amber">
+      <strong>Travel fee may apply.</strong> A travel fee may apply depending on your location —
+      we'll include any travel details in your official quote.
+    </div>
+  </div>
+</div>
