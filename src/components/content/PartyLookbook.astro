@@ -1,0 +1,961 @@
+---
+import type { LookbookFilter, LookbookItem } from "../../data/lookbook";
+
+interface Props {
+  items: LookbookItem[];
+  serviceFilters: LookbookFilter[];
+  speedFilters: LookbookFilter[];
+  categoryFilters: LookbookFilter[];
+  hero: LookbookItem;
+}
+
+const { items, serviceFilters, speedFilters, categoryFilters, hero } = Astro.props;
+
+const srcset = (sources: { src: string; width: number }[]) =>
+  sources.map((source) => `${source.src} ${source.width}w`).join(", ");
+
+const serviceCounts = serviceFilters.map((filter) => ({
+  ...filter,
+  count: items.filter((item) => item.service === filter.value).length,
+}));
+
+const facePaintingStyleFilters = speedFilters.filter((filter) =>
+  ["quick-designs", "classic-party", "premium-full-face"].includes(filter.value),
+);
+const balloonStyleFilters = speedFilters.filter((filter) => filter.value === "balloon-favorites");
+const faceGemsStyleFilters = speedFilters.filter((filter) => filter.value === "face-gems");
+
+const styleFilterGroups = [
+  { service: "all", allLabel: "All styles", filters: speedFilters },
+  { service: "face-painting", allLabel: "All Face Painting", filters: facePaintingStyleFilters },
+  { service: "balloon-twisting", allLabel: "All Balloon Looks", filters: balloonStyleFilters },
+  { service: "face-gems", allLabel: "All Face Gems", filters: faceGemsStyleFilters },
+];
+
+const serviceLabelFor = (service: string) =>
+  serviceFilters.find((filter) => filter.value === service)?.label ?? "All services";
+
+const isDuplicateLabel = (left: string, right: string) =>
+  left.trim().toLocaleLowerCase() === right.trim().toLocaleLowerCase();
+
+const cardTags = (item: LookbookItem) => {
+  const tags = [{ label: item.serviceLabel, tone: "orange" }];
+  if (!isDuplicateLabel(item.serviceLabel, item.speedLabel)) {
+    tags.push({ label: item.speedLabel, tone: "sky" });
+  }
+  if (
+    item.category &&
+    !isDuplicateLabel(item.category, item.serviceLabel) &&
+    !isDuplicateLabel(item.category, item.speedLabel)
+  ) {
+    tags.push({ label: item.category, tone: "slate" });
+  }
+  return tags;
+};
+
+const tagClass = (tone: string) => {
+  if (tone === "orange") return "bg-orange-50 text-orange-700";
+  if (tone === "sky") return "bg-sky-50 text-sky-700";
+  return "bg-slate-100 text-slate-700";
+};
+
+const objectPositionFor = (item: LookbookItem) => {
+  if (item.service === "face-gems") return "50% 18%";
+  if (item.service === "balloon-twisting") return "50% 46%";
+  if (["face-painting-011", "face-painting-012", "face-painting-013", "face-painting-048"].includes(item.slug)) {
+    return "50% 20%";
+  }
+  if (item.speed === "quick-designs") return "50% 28%";
+  return "50% 22%";
+};
+
+const isCostumeStyleDemo = (item: LookbookItem) =>
+  ["face-painting-011", "face-painting-012", "face-painting-013", "face-painting-017", "face-painting-048"].includes(
+    item.slug,
+  );
+---
+
+<section class="relative isolate min-h-[440px] overflow-hidden bg-slate-950 text-white sm:min-h-[520px]">
+  <picture>
+    <source type="image/avif" srcset={srcset(hero.image.avif)} sizes="100vw" />
+    <source type="image/webp" srcset={srcset(hero.image.webp)} sizes="100vw" />
+    <source type="image/jpeg" srcset={srcset(hero.image.jpg)} sizes="100vw" />
+    <img
+      src={hero.image.fallback}
+      alt={hero.alt}
+      class="absolute inset-0 h-full w-full object-cover"
+      style={`object-position: ${objectPositionFor(hero)}`}
+      width={hero.image.width}
+      height={hero.image.height}
+      fetchpriority="high"
+      decoding="async"
+    />
+  </picture>
+  <div class="absolute inset-0 bg-slate-950/58"></div>
+  <div class="relative mx-auto flex min-h-[440px] w-full max-w-6xl flex-col justify-end px-4 pb-10 pt-28 sm:min-h-[520px] sm:pb-14">
+    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-200">Happy Faces LA</p>
+    <h1 class="mt-3 max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">Party Lookbook</h1>
+    <p class="mt-4 max-w-2xl text-base leading-7 text-white/90 sm:text-lg">
+      Browse real Happy Faces LA designs and choose inspiration for your party. We'll help match the look,
+      guest count, and time window to the right party plan.
+    </p>
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <a
+        href="#lookbook-gallery"
+        class="inline-flex min-h-12 items-center justify-center rounded-lg bg-orange-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-950/20 transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-950"
+      >
+        Build my inspiration board
+      </a>
+      <a
+        href="/plan-my-party"
+        class="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/70 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-950"
+        data-track-event="hfla_gallery_to_wizard"
+      >
+        Start my party plan
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="bg-white">
+  <div class="mx-auto grid w-full max-w-6xl gap-5 px-4 py-8 md:grid-cols-3">
+    <div class="rounded-lg border border-orange-100 bg-orange-50 p-5">
+      <h2 class="text-lg font-bold text-slate-950">Quick Designs</h2>
+      <p class="mt-2 text-sm leading-6 text-slate-700">Best for larger guest counts and shorter party windows.</p>
+    </div>
+    <div class="rounded-lg border border-sky-100 bg-sky-50 p-5">
+      <h2 class="text-lg font-bold text-slate-950">Classic Party Designs</h2>
+      <p class="mt-2 text-sm leading-6 text-slate-700">Balanced color, detail, and timing for most birthdays.</p>
+    </div>
+    <div class="rounded-lg border border-emerald-100 bg-emerald-50 p-5">
+      <h2 class="text-lg font-bold text-slate-950">Premium / Full-Face</h2>
+      <p class="mt-2 text-sm leading-6 text-slate-700">
+        Best for smaller groups, longer windows, or parties where each child wants a bigger wow design.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="lookbook-gallery" class="bg-slate-50 py-8 pb-40 sm:py-12 sm:pb-36">
+  <div class="mx-auto w-full max-w-6xl px-4">
+    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.14em] text-orange-600">Party inspiration board</p>
+        <h2 class="mt-2 text-2xl font-bold text-slate-950 sm:text-3xl">Choose a few looks your child may like</h2>
+      </div>
+      <p id="lookbook-count" class="text-sm font-medium text-slate-600" aria-live="polite">
+        {items.length} looks shown
+      </p>
+    </div>
+
+    <div class="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-slate-800">
+      <strong>Not sure what to choose?</strong> Pick a few looks your child may like. We'll use them as inspiration
+      and help match the design style to your guest count and party time. Choose up to 3-4 favorites for the
+      clearest party plan.
+    </div>
+
+    <div class="mt-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex flex-col gap-3">
+        <span class="text-sm font-bold text-slate-800">Popular starting paths</span>
+        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          <button type="button" class="lookbook-quick-path rounded-lg border border-slate-300 px-3 py-3 text-left text-sm font-bold text-slate-800 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400" data-path-service="face-painting" data-path-style="quick-designs">
+            I want more kids painted faster
+          </button>
+          <button type="button" class="lookbook-quick-path rounded-lg border border-slate-300 px-3 py-3 text-left text-sm font-bold text-slate-800 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400" data-path-service="face-painting" data-path-style="classic-party">
+            I want colorful birthday favorites
+          </button>
+          <button type="button" class="lookbook-quick-path rounded-lg border border-slate-300 px-3 py-3 text-left text-sm font-bold text-slate-800 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400" data-path-service="face-painting" data-path-style="premium-full-face">
+            I want the biggest wow designs
+          </button>
+          <button type="button" class="lookbook-quick-path rounded-lg border border-slate-300 px-3 py-3 text-left text-sm font-bold text-slate-800 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400" data-path-service="balloon-twisting" data-path-style="balloon-favorites">
+            Add balloons
+          </button>
+          <button type="button" class="lookbook-quick-path rounded-lg border border-slate-300 px-3 py-3 text-left text-sm font-bold text-slate-800 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400" data-path-service="face-gems" data-path-style="face-gems">
+            Add sparkle
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5 space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex flex-col gap-3">
+        <span class="text-sm font-bold text-slate-800">Service</span>
+        <div class="flex flex-wrap gap-2" role="group" aria-label="Filter by service">
+          <button
+            type="button"
+            class="lookbook-filter rounded-lg border border-slate-300 bg-slate-950 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            data-filter-group="service"
+            data-filter-value="all"
+            aria-pressed="true"
+          >
+            All services
+          </button>
+          {
+            serviceCounts.map((filter) => (
+              <button
+                type="button"
+                class="lookbook-filter rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                data-filter-group="service"
+                data-filter-value={filter.value}
+                aria-pressed="false"
+              >
+                {filter.label} ({filter.count})
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="grid gap-4 lg:grid-cols-[1fr_220px]">
+        <div class="flex flex-col gap-3">
+          <span class="text-sm font-bold text-slate-800">Style type</span>
+          {
+            styleFilterGroups.map((group) => (
+              <div
+                class:list={["lookbook-style-group flex flex-wrap gap-2", group.service !== "all" && "hidden"]}
+                role="group"
+                aria-label={`Filter by ${group.allLabel}`}
+                data-style-filter-group={group.service}
+              >
+                <button
+                  type="button"
+                  class="lookbook-filter rounded-lg border border-slate-300 bg-slate-950 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  data-filter-group="style"
+                  data-filter-value="all"
+                  data-filter-service={group.service}
+                  aria-pressed="true"
+                >
+                  {group.allLabel}
+                </button>
+                {group.filters.map((filter) => (
+                  <button
+                    type="button"
+                    class="lookbook-filter rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    data-filter-group="style"
+                    data-filter-value={filter.value}
+                    data-filter-service={group.service}
+                    aria-pressed="false"
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
+            ))
+          }
+        </div>
+        <label class="flex flex-col gap-2 text-sm font-bold text-slate-800">
+          Style category
+          <select
+            id="lookbook-category-filter"
+            class="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            aria-label="Filter by style category"
+          >
+            <option value="all">All categories</option>
+            {categoryFilters.map((filter) => <option value={filter.value}>{filter.label}</option>)}
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <p id="lookbook-board-message" class="mt-4 hidden rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-semibold text-orange-800" role="status" aria-live="polite"></p>
+
+    <div id="lookbook-grid" class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        items.map((item, index) => (
+          <article
+            class="lookbook-card overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md data-[selected=true]:border-orange-400 data-[selected=true]:ring-2 data-[selected=true]:ring-orange-200"
+            data-service={item.service}
+            data-service-label={item.serviceLabel}
+            data-style={item.speed}
+            data-style-label={item.speedLabel}
+            data-design-style={item.designStyle}
+            data-category={item.category}
+            data-title={item.title}
+            data-slug={item.slug}
+            data-thumbnail={item.image.preview}
+            data-selected="false"
+          >
+            <button
+              type="button"
+              class="lookbook-open group block w-full text-left focus:outline-none focus:ring-2 focus:ring-orange-400"
+              data-slug={item.slug}
+              aria-label={`View ${item.title}`}
+            >
+              <span class="relative block aspect-[4/5] w-full overflow-hidden bg-slate-200">
+                <picture>
+                  <source type="image/avif" srcset={srcset(item.image.avif)} sizes="(min-width: 1024px) 31vw, (min-width: 640px) 46vw, 92vw" />
+                  <source type="image/webp" srcset={srcset(item.image.webp)} sizes="(min-width: 1024px) 31vw, (min-width: 640px) 46vw, 92vw" />
+                  <source type="image/jpeg" srcset={srcset(item.image.jpg)} sizes="(min-width: 1024px) 31vw, (min-width: 640px) 46vw, 92vw" />
+                  <img
+                    src={item.image.fallback}
+                    alt={item.alt}
+                    width={item.image.width}
+                    height={item.image.height}
+                    loading={index < 6 ? "eager" : "lazy"}
+                    decoding="async"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    style={`object-position: ${objectPositionFor(item)}`}
+                  />
+                </picture>
+                {isCostumeStyleDemo(item) && (
+                  <span class="absolute left-3 top-3 rounded-md bg-slate-950/85 px-2 py-1 text-xs font-bold text-white">
+                    Premium demo
+                  </span>
+                )}
+              </span>
+            </button>
+            <div class="flex min-h-[232px] flex-col gap-4 p-4">
+              <div class="flex flex-wrap gap-2">
+                {cardTags(item).map((tag) => (
+                  <span class:list={["rounded-md px-2 py-1 text-xs font-bold", tagClass(tag.tone)]}>{tag.label}</span>
+                ))}
+              </div>
+              <div>
+                <h3 class="text-lg font-bold leading-snug text-slate-950">{item.title}</h3>
+                {isCostumeStyleDemo(item) && (
+                  <p class="mt-1 text-sm text-slate-600">Premium costume-style demo for longer service windows.</p>
+                )}
+              </div>
+              <div class="mt-auto flex flex-col gap-2">
+                <button
+                  type="button"
+                  class="lookbook-add inline-flex min-h-11 items-center justify-center rounded-lg bg-orange-500 px-3 py-2 text-center text-sm font-bold text-white transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+                  data-board-action="add"
+                  data-slug={item.slug}
+                >
+                  Add to inspiration board
+                </button>
+                <div class="lookbook-selected-controls hidden grid-cols-[1fr_auto] gap-2" data-selected-controls>
+                  <span class="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-700">
+                    Added ✓
+                  </span>
+                  <button
+                    type="button"
+                    class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+                    data-board-action="remove"
+                    data-slug={item.slug}
+                  >
+                    Remove
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  class="lookbook-open inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+                  data-slug={item.slug}
+                >
+                  View
+                </button>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    <div id="lookbook-zero-state" class="mt-8 hidden rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm">
+      <h2 class="text-xl font-bold text-slate-950">No looks match that combination yet.</h2>
+      <p id="lookbook-zero-message" class="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-600"></p>
+      <div class="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+        <button type="button" class="rounded-lg border border-slate-300 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400" data-clear-style-filter>
+          Clear style filter
+        </button>
+        <button type="button" class="rounded-lg border border-slate-300 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400" data-show-service-filter>
+          Show all looks
+        </button>
+        <a href="/plan-my-party" class="rounded-lg bg-orange-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2" data-track-event="hfla_gallery_to_wizard">
+          Start my party plan
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-12 rounded-lg bg-white p-5 shadow-sm sm:p-6">
+      <div class="grid gap-5 md:grid-cols-3">
+        <div class="rounded-lg border border-orange-100 bg-orange-50 p-5">
+          <h2 class="text-lg font-bold text-slate-950">Quick Designs</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-700">Best for larger guest counts and shorter party windows.</p>
+        </div>
+        <div class="rounded-lg border border-sky-100 bg-sky-50 p-5">
+          <h2 class="text-lg font-bold text-slate-950">Classic Party Designs</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-700">Balanced color, detail, and timing for most birthdays.</p>
+        </div>
+        <div class="rounded-lg border border-emerald-100 bg-emerald-50 p-5">
+          <h2 class="text-lg font-bold text-slate-950">Premium / Full-Face</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-700">
+            Best for smaller groups, longer windows, or parties where each child wants a bigger wow design.
+          </p>
+        </div>
+      </div>
+      <div class="mt-6 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-950">Ready to plan your party?</h2>
+          <p class="mt-2 max-w-3xl text-base leading-7 text-slate-600">
+            Choose a few looks as inspiration and we'll help recommend the right setup. These looks are
+            inspiration examples. We'll recommend the right design style based on party size, time, and artist
+            availability.
+          </p>
+        </div>
+        <a
+          href="/plan-my-party"
+          class="inline-flex min-h-12 items-center justify-center rounded-lg bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+          data-track-event="hfla_gallery_to_wizard"
+        >
+          Start my party plan
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="lookbook-board-tray" class="pointer-events-none fixed inset-x-0 bottom-20 z-40 hidden px-3 sm:bottom-5 sm:px-5">
+  <div class="pointer-events-auto mx-auto flex w-full max-w-5xl flex-col gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-2xl sm:flex-row sm:items-center sm:justify-between">
+    <div class="min-w-0">
+      <p id="lookbook-board-count" class="text-sm font-bold text-slate-950">0 looks selected</p>
+      <p class="text-xs leading-5 text-slate-600">
+        These looks are inspiration examples. Final designs may vary by party size, time, and artist availability.
+      </p>
+    </div>
+    <div id="lookbook-board-thumbs" class="flex max-w-full gap-2 overflow-x-auto py-1" aria-label="Selected inspiration thumbnails"></div>
+    <div class="flex shrink-0 gap-2">
+      <button type="button" class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400" data-board-clear>
+        Clear all
+      </button>
+      <a id="lookbook-board-cta" href="/plan-my-party" class="inline-flex items-center justify-center rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2">
+        Plan my party with these ideas
+      </a>
+    </div>
+  </div>
+</div>
+
+<dialog id="lookbook-modal" class="w-[min(94vw,980px)] rounded-lg bg-white p-0 text-slate-950 shadow-2xl backdrop:bg-slate-950/75">
+  <div class="grid max-h-[92vh] overflow-y-auto md:grid-cols-[minmax(0,1.08fr)_minmax(290px,0.92fr)]">
+    <div class="flex items-center justify-center bg-slate-100 p-3">
+      <picture class="w-full">
+        <source id="lookbook-modal-avif" type="image/avif" sizes="(min-width: 768px) 56vw, 92vw" />
+        <source id="lookbook-modal-webp" type="image/webp" sizes="(min-width: 768px) 56vw, 92vw" />
+        <source id="lookbook-modal-jpg" type="image/jpeg" sizes="(min-width: 768px) 56vw, 92vw" />
+        <img
+          id="lookbook-modal-image"
+          src={hero.image.fallback}
+          alt={hero.alt}
+          class="max-h-[74vh] w-full rounded-md object-contain"
+          width={hero.image.width}
+          height={hero.image.height}
+          decoding="async"
+        />
+      </picture>
+    </div>
+    <div class="flex flex-col gap-5 p-5 sm:p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p id="lookbook-modal-service" class="text-sm font-bold uppercase tracking-[0.12em] text-orange-600"></p>
+          <h2 id="lookbook-modal-title" class="mt-2 text-2xl font-bold leading-tight text-slate-950"></h2>
+        </div>
+        <button
+          type="button"
+          class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400"
+          data-modal-close
+          aria-label="Close look detail"
+        >
+          Close
+        </button>
+      </div>
+      <div id="lookbook-modal-tags" class="flex flex-wrap gap-2"></div>
+      <p class="text-sm leading-6 text-slate-600">
+        This look can be used as inspiration. Final design may vary by guest count, time window, and artist
+        recommendation.
+      </p>
+      <div class="mt-auto flex flex-col gap-2">
+        <button
+          id="lookbook-modal-add"
+          type="button"
+          class="inline-flex min-h-12 items-center justify-center rounded-lg bg-orange-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+          data-board-action="add"
+        >
+          Add to inspiration board
+        </button>
+        <div id="lookbook-modal-selected" class="hidden grid-cols-[1fr_auto] gap-2">
+          <span class="inline-flex min-h-12 items-center justify-center rounded-lg bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+            Added to inspiration board ✓
+          </span>
+          <button
+            id="lookbook-modal-remove"
+            type="button"
+            class="inline-flex min-h-12 items-center justify-center rounded-lg border border-slate-300 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+            data-board-action="remove"
+          >
+            Remove
+          </button>
+        </div>
+        <a
+          id="lookbook-modal-cta"
+          href="/plan-my-party"
+          class="inline-flex min-h-12 items-center justify-center rounded-lg border border-slate-300 px-5 py-3 text-sm font-bold text-slate-800 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+        >
+          Plan my party with this style
+        </a>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script is:inline define:vars={{ totalItems: items.length }}>
+  (function () {
+    var MAX_SELECTION = 6;
+    var STORAGE_KEY = "hflaLookbookBoard";
+    var state = { service: "all", style: "all", category: "all" };
+    var cards = Array.prototype.slice.call(document.querySelectorAll(".lookbook-card"));
+    var selected = [];
+    var count = document.getElementById("lookbook-count");
+    var zeroState = document.getElementById("lookbook-zero-state");
+    var zeroMessage = document.getElementById("lookbook-zero-message");
+    var showServiceButton = document.querySelector("[data-show-service-filter]");
+    var categorySelect = document.getElementById("lookbook-category-filter");
+    var boardMessage = document.getElementById("lookbook-board-message");
+    var tray = document.getElementById("lookbook-board-tray");
+    var trayCount = document.getElementById("lookbook-board-count");
+    var trayThumbs = document.getElementById("lookbook-board-thumbs");
+    var trayCta = document.getElementById("lookbook-board-cta");
+    var modal = document.getElementById("lookbook-modal");
+    var currentModalSlug = "";
+    var lastTrigger = null;
+
+    var serviceLabels = {
+      all: "All services",
+      "face-painting": "Face Painting",
+      "balloon-twisting": "Balloon Twisting",
+      "face-gems": "Face Gems",
+    };
+    var styleLabels = {
+      "quick-designs": "Quick Designs",
+      "classic-party": "Classic Party Designs",
+      "premium-full-face": "Premium / Full-Face Designs",
+      "balloon-favorites": "Balloon Favorites",
+      "face-gems": "Face Gems",
+    };
+    var styleByService = {
+      all: ["quick-designs", "classic-party", "premium-full-face", "balloon-favorites", "face-gems"],
+      "face-painting": ["quick-designs", "classic-party", "premium-full-face"],
+      "balloon-twisting": ["balloon-favorites"],
+      "face-gems": ["face-gems"],
+    };
+
+    function track(eventName, params) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push(Object.assign({ event: eventName }, params || {}));
+      if (typeof window.gtag === "function") {
+        window.gtag("event", eventName, params || {});
+      }
+    }
+
+    function safeText(value, maxLength) {
+      return String(value || "")
+        .replace(/[^\w\s.,/&()+-]/g, "")
+        .trim()
+        .slice(0, maxLength || 120);
+    }
+
+    function getCard(slug) {
+      return cards.find(function (card) {
+        return card.getAttribute("data-slug") === slug;
+      });
+    }
+
+    function itemFromCard(card) {
+      return {
+        publicLookSlug: safeText(card.getAttribute("data-slug"), 80),
+        publicTitle: safeText(card.getAttribute("data-title"), 120),
+        service: safeText(card.getAttribute("data-service"), 40),
+        serviceLabel: safeText(card.getAttribute("data-service-label"), 40),
+        designStyle: safeText(card.getAttribute("data-design-style"), 40),
+        designStyleLabel: safeText(card.getAttribute("data-style-label"), 60),
+        category: safeText(card.getAttribute("data-category"), 80),
+        thumbnailSrc: safeText(card.getAttribute("data-thumbnail"), 160),
+      };
+    }
+
+    function isValidBoardItem(item) {
+      return (
+        item &&
+        /^[a-z0-9-]+$/.test(item.publicLookSlug || "") &&
+        ["face-painting", "balloon-twisting", "face-gems"].indexOf(item.service) !== -1 &&
+        typeof item.thumbnailSrc === "string" &&
+        item.thumbnailSrc.indexOf("/images/party-lookbook/") === 0 &&
+        item.thumbnailSrc.indexOf("..") === -1
+      );
+    }
+
+    function sanitizeBoardItem(raw) {
+      var item = {
+        publicLookSlug: safeText(raw && raw.publicLookSlug, 80),
+        publicTitle: safeText(raw && raw.publicTitle, 120),
+        service: safeText(raw && raw.service, 40),
+        serviceLabel: safeText(raw && raw.serviceLabel, 40),
+        designStyle: safeText(raw && raw.designStyle, 40),
+        designStyleLabel: safeText(raw && raw.designStyleLabel, 60),
+        category: safeText(raw && raw.category, 80),
+        thumbnailSrc: safeText(raw && raw.thumbnailSrc, 160),
+      };
+      return isValidBoardItem(item) ? item : null;
+    }
+
+    function loadBoard() {
+      try {
+        var parsed = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "[]");
+        if (Array.isArray(parsed)) {
+          selected = parsed.map(sanitizeBoardItem).filter(Boolean).slice(0, MAX_SELECTION);
+        }
+      } catch {
+        selected = [];
+      }
+      updateBoardUI();
+    }
+
+    function saveBoard() {
+      try {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selected));
+      } catch {}
+    }
+
+    function boardUrl() {
+      if (!selected.length) return "/plan-my-party";
+      var params = new URLSearchParams();
+      params.set("inspiration_board", "1");
+      params.set(
+        "inspirations",
+        selected
+          .map(function (item) {
+            return item.publicLookSlug;
+          })
+          .join(","),
+      );
+      return "/plan-my-party?" + params.toString();
+    }
+
+    function showBoardMessage(message) {
+      if (!boardMessage) return;
+      boardMessage.textContent = message;
+      boardMessage.classList.remove("hidden");
+      window.clearTimeout(showBoardMessage.timer);
+      showBoardMessage.timer = window.setTimeout(function () {
+        boardMessage.classList.add("hidden");
+      }, 3600);
+    }
+
+    function updateBoardUI() {
+      var slugs = selected.map(function (item) {
+        return item.publicLookSlug;
+      });
+      cards.forEach(function (card) {
+        var slug = card.getAttribute("data-slug") || "";
+        var isSelected = slugs.indexOf(slug) !== -1;
+        card.setAttribute("data-selected", isSelected ? "true" : "false");
+        var add = card.querySelector('[data-board-action="add"]');
+        var controls = card.querySelector("[data-selected-controls]");
+        if (add) add.classList.toggle("hidden", isSelected);
+        if (controls) {
+          controls.classList.toggle("hidden", !isSelected);
+          controls.classList.toggle("grid", isSelected);
+        }
+      });
+
+      if (tray) tray.classList.toggle("hidden", selected.length === 0);
+      if (trayCount) trayCount.textContent = selected.length + (selected.length === 1 ? " look selected" : " looks selected");
+      if (trayThumbs) {
+        trayThumbs.innerHTML = "";
+        selected.forEach(function (item) {
+          var img = document.createElement("img");
+          img.src = item.thumbnailSrc;
+          img.alt = item.publicTitle;
+          img.className = "h-12 w-12 shrink-0 rounded-md object-cover";
+          trayThumbs.appendChild(img);
+        });
+      }
+      if (trayCta) trayCta.setAttribute("href", boardUrl());
+      updateModalSelection();
+    }
+
+    function addToBoard(slug) {
+      if (selected.some(function (item) { return item.publicLookSlug === slug; })) {
+        showBoardMessage("That look is already on your inspiration board.");
+        return true;
+      }
+      if (selected.length >= MAX_SELECTION) {
+        showBoardMessage("To keep your party plan clear, choose up to 6 inspiration looks.");
+        return false;
+      }
+      var card = getCard(slug);
+      if (!card) return false;
+      selected.push(itemFromCard(card));
+      saveBoard();
+      updateBoardUI();
+      track("hfla_gallery_inspiration_select", { public_look_slug: slug, selected_count: selected.length });
+      return true;
+    }
+
+    function removeFromBoard(slug) {
+      selected = selected.filter(function (item) {
+        return item.publicLookSlug !== slug;
+      });
+      saveBoard();
+      updateBoardUI();
+    }
+
+    function clearBoard() {
+      selected = [];
+      saveBoard();
+      updateBoardUI();
+    }
+
+    function prepareBoardCta() {
+      saveBoard();
+      if (trayCta) trayCta.setAttribute("href", boardUrl());
+      track("hfla_gallery_to_wizard", {
+        selected_count: selected.length,
+        public_look_slugs: selected.map(function (item) { return item.publicLookSlug; }).join(","),
+      });
+    }
+
+    function setActiveButton(group, value) {
+      document.querySelectorAll('[data-filter-group="' + group + '"]').forEach(function (button) {
+        var scoped = group !== "style" || button.getAttribute("data-filter-service") === state.service;
+        var active = scoped && button.getAttribute("data-filter-value") === value;
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+        button.classList.toggle("bg-slate-950", active);
+        button.classList.toggle("text-white", active);
+        button.classList.toggle("bg-white", !active);
+        button.classList.toggle("text-slate-700", !active);
+      });
+    }
+
+    function isStyleAllowed(service, style) {
+      if (style === "all") return true;
+      return (styleByService[service] || []).indexOf(style) !== -1;
+    }
+
+    function updateStyleGroups() {
+      document.querySelectorAll(".lookbook-style-group").forEach(function (group) {
+        group.classList.toggle("hidden", group.getAttribute("data-style-filter-group") !== state.service);
+      });
+      if (!isStyleAllowed(state.service, state.style)) {
+        state.style = "all";
+      }
+      setActiveButton("style", state.style);
+    }
+
+    function zeroCopy() {
+      if (state.service === "balloon-twisting" && ["quick-designs", "classic-party", "premium-full-face"].indexOf(state.style) !== -1) {
+        return "Quick Designs are for face painting. For balloons, try Balloon Favorites.";
+      }
+      if (state.service === "face-gems" && ["quick-designs", "classic-party", "premium-full-face"].indexOf(state.style) !== -1) {
+        return "Premium / Full-Face applies to face painting. For sparkle looks, try Face Gems.";
+      }
+      return "Try clearing one filter or starting a party plan and we will help match the right style.";
+    }
+
+    function applyFilters() {
+      var shown = 0;
+      cards.forEach(function (card) {
+        var matches =
+          (state.service === "all" || card.getAttribute("data-service") === state.service) &&
+          (state.style === "all" || card.getAttribute("data-style") === state.style) &&
+          (state.category === "all" || card.getAttribute("data-category") === state.category);
+        card.classList.toggle("hidden", !matches);
+        if (matches) shown += 1;
+      });
+      if (count) count.textContent = shown + (shown === 1 ? " look shown" : " looks shown");
+      if (zeroState) zeroState.classList.toggle("hidden", shown !== 0);
+      if (zeroMessage) zeroMessage.textContent = zeroCopy();
+      if (showServiceButton) {
+        showServiceButton.textContent = state.service === "all" ? "Show all looks" : "Show all " + (serviceLabels[state.service] || "selected service");
+      }
+    }
+
+    document.querySelectorAll('[data-filter-group="service"]').forEach(function (button) {
+      button.addEventListener("click", function () {
+        state.service = button.getAttribute("data-filter-value") || "all";
+        setActiveButton("service", state.service);
+        updateStyleGroups();
+        applyFilters();
+        track("hfla_gallery_filter", { filter_type: "service", filter_value: state.service });
+      });
+    });
+
+    document.querySelectorAll('[data-filter-group="style"]').forEach(function (button) {
+      button.addEventListener("click", function () {
+        if (button.getAttribute("data-filter-service") !== state.service) return;
+        state.style = button.getAttribute("data-filter-value") || "all";
+        setActiveButton("style", state.style);
+        applyFilters();
+        track("hfla_gallery_filter", { filter_type: "style_type", filter_value: state.style });
+      });
+    });
+
+    if (categorySelect) {
+      categorySelect.addEventListener("change", function () {
+        state.category = categorySelect.value || "all";
+        applyFilters();
+        track("hfla_gallery_filter", { filter_type: "category", filter_value: state.category });
+      });
+    }
+
+    document.querySelectorAll(".lookbook-quick-path").forEach(function (button) {
+      button.addEventListener("click", function () {
+        state.service = button.getAttribute("data-path-service") || "all";
+        state.style = button.getAttribute("data-path-style") || "all";
+        setActiveButton("service", state.service);
+        updateStyleGroups();
+        setActiveButton("style", state.style);
+        applyFilters();
+        track("hfla_gallery_filter", { filter_type: "popular_path", filter_value: state.service + ":" + state.style });
+        document.getElementById("lookbook-grid")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+
+    document.querySelector("[data-clear-style-filter]")?.addEventListener("click", function () {
+      state.style = "all";
+      setActiveButton("style", state.style);
+      applyFilters();
+    });
+
+    document.querySelector("[data-show-service-filter]")?.addEventListener("click", function () {
+      state.style = "all";
+      state.category = "all";
+      if (categorySelect) categorySelect.value = "all";
+      setActiveButton("style", state.style);
+      applyFilters();
+    });
+
+    function tagsForCard(card) {
+      var service = card.getAttribute("data-service-label") || "";
+      var style = card.getAttribute("data-style-label") || "";
+      var category = card.getAttribute("data-category") || "";
+      var tags = [service];
+      if (style && style.toLowerCase() !== service.toLowerCase()) tags.push(style);
+      if (category && category.toLowerCase() !== service.toLowerCase() && category.toLowerCase() !== style.toLowerCase()) tags.push(category);
+      return tags;
+    }
+
+    function openModal(trigger) {
+      if (!modal || typeof modal.showModal !== "function") return;
+      var slug = trigger.getAttribute("data-slug") || "";
+      var card = getCard(slug);
+      if (!card) return;
+      currentModalSlug = slug;
+      lastTrigger = trigger;
+
+      var title = card.getAttribute("data-title") || "";
+      var image = document.getElementById("lookbook-modal-image");
+      var avif = document.getElementById("lookbook-modal-avif");
+      var webp = document.getElementById("lookbook-modal-webp");
+      var jpg = document.getElementById("lookbook-modal-jpg");
+      var titleEl = document.getElementById("lookbook-modal-title");
+      var serviceEl = document.getElementById("lookbook-modal-service");
+      var tagEl = document.getElementById("lookbook-modal-tags");
+      var firstSource = card.querySelector('source[type="image/avif"]');
+      var secondSource = card.querySelector('source[type="image/webp"]');
+      var thirdSource = card.querySelector('source[type="image/jpeg"]');
+      var cardImg = card.querySelector("img");
+
+      if (avif) avif.setAttribute("srcset", firstSource?.getAttribute("srcset") || "");
+      if (webp) webp.setAttribute("srcset", secondSource?.getAttribute("srcset") || "");
+      if (jpg) jpg.setAttribute("srcset", thirdSource?.getAttribute("srcset") || "");
+      if (image && cardImg) {
+        image.setAttribute("src", cardImg.getAttribute("src") || "");
+        image.setAttribute("alt", cardImg.getAttribute("alt") || title);
+      }
+      if (titleEl) titleEl.textContent = title;
+      if (serviceEl) serviceEl.textContent = card.getAttribute("data-service-label") || "";
+      if (tagEl) {
+        tagEl.innerHTML = "";
+        tagsForCard(card).forEach(function (tag, index) {
+          var span = document.createElement("span");
+          span.className =
+            "rounded-md px-2 py-1 text-xs font-bold " +
+            (index === 0 ? "bg-orange-50 text-orange-700" : index === 1 ? "bg-sky-50 text-sky-700" : "bg-slate-100 text-slate-700");
+          span.textContent = tag;
+          tagEl.appendChild(span);
+        });
+      }
+      updateModalSelection();
+      modal.showModal();
+      track("hfla_gallery_image_open", { public_look_slug: slug, public_look_title: title });
+    }
+
+    function updateModalSelection() {
+      if (!currentModalSlug) return;
+      var isSelected = selected.some(function (item) { return item.publicLookSlug === currentModalSlug; });
+      var add = document.getElementById("lookbook-modal-add");
+      var selectedState = document.getElementById("lookbook-modal-selected");
+      var remove = document.getElementById("lookbook-modal-remove");
+      var cta = document.getElementById("lookbook-modal-cta");
+      if (add) {
+        add.classList.toggle("hidden", isSelected);
+        add.setAttribute("data-slug", currentModalSlug);
+      }
+      if (selectedState) {
+        selectedState.classList.toggle("hidden", !isSelected);
+        selectedState.classList.toggle("grid", isSelected);
+      }
+      if (remove) remove.setAttribute("data-slug", currentModalSlug);
+      if (cta) cta.setAttribute("href", boardUrl());
+    }
+
+    document.querySelectorAll(".lookbook-open").forEach(function (trigger) {
+      trigger.addEventListener("click", function () {
+        openModal(trigger);
+      });
+    });
+
+    document.addEventListener("click", function (event) {
+      var target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      var actionEl = target.closest("[data-board-action]");
+      if (actionEl) {
+        var action = actionEl.getAttribute("data-board-action");
+        var slug = actionEl.getAttribute("data-slug") || currentModalSlug;
+        if (action === "add") addToBoard(slug);
+        if (action === "remove") removeFromBoard(slug);
+      }
+    });
+
+    document.querySelector("[data-board-clear]")?.addEventListener("click", clearBoard);
+
+    if (trayCta) {
+      trayCta.addEventListener("click", prepareBoardCta);
+    }
+
+    document.getElementById("lookbook-modal-cta")?.addEventListener("click", function () {
+      if (currentModalSlug) addToBoard(currentModalSlug);
+      saveBoard();
+      var cta = document.getElementById("lookbook-modal-cta");
+      if (cta) cta.setAttribute("href", boardUrl());
+      track("hfla_gallery_to_wizard", { public_look_slug: currentModalSlug, selected_count: selected.length });
+    });
+
+    document.querySelectorAll("[data-modal-close]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        if (modal) modal.close();
+      });
+    });
+
+    if (modal) {
+      modal.addEventListener("click", function (event) {
+        if (event.target === modal) modal.close();
+      });
+      modal.addEventListener("close", function () {
+        if (lastTrigger && typeof lastTrigger.focus === "function") lastTrigger.focus();
+      });
+    }
+
+    document.querySelectorAll('[data-track-event="hfla_gallery_to_wizard"]').forEach(function (link) {
+      link.addEventListener("click", function () {
+        track("hfla_gallery_to_wizard", { source_page: window.location.pathname });
+      });
+    });
+
+    updateStyleGroups();
+    applyFilters();
+    loadBoard();
+    track("hfla_gallery_view", { item_count: totalItems, source_page: window.location.pathname });
+  })();
+</script>

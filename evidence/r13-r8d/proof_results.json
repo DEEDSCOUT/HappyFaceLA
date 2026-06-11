@@ -1,0 +1,112 @@
+[
+  {
+    "label": "P1_open_confirmed",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "status": "instant-book",
+      "reasons": [],
+      "capacityResult": {
+        "requiredArtistCount": 1,
+        "serviceWindowMinutes": 100
+      },
+      "pricing": {
+        "eventTotalCents": 27500,
+        "retainerCents": 5500,
+        "travelFeeCents": 0,
+        "pricingModel": "fixed-package"
+      },
+      "availability": {
+        "status": "confirmed",
+        "paymentAllowed": true,
+        "message": "Availability is confirmed for this requested time.",
+        "safeSlotId": "slot_testproof_open_001"
+      }
+    }
+  },
+  {
+    "label": "P2_nomatch_failclosed",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "status": "instant-book",
+      "reasons": [],
+      "capacityResult": {
+        "requiredArtistCount": 1,
+        "serviceWindowMinutes": 100
+      },
+      "pricing": {
+        "eventTotalCents": 27500,
+        "retainerCents": 5500,
+        "travelFeeCents": 0,
+        "pricingModel": "fixed-package"
+      },
+      "availability": {
+        "status": "unavailable",
+        "paymentAllowed": false,
+        "message": "That time is no longer available. Please choose another time or request a manual quote."
+      }
+    }
+  },
+  {
+    "label": "P5_checkout_blocked",
+    "status": 409,
+    "body": {
+      "ok": false,
+      "error": "Availability is not confirmed for online retainer checkout",
+      "availability": {
+        "status": "unavailable",
+        "paymentAllowed": false,
+        "customerMessage": "That time is no longer available. Please choose another time or request a manual quote."
+      }
+    }
+  },
+  {
+    "label": "P7_checkout_nomatch",
+    "status": 409,
+    "body": {
+      "ok": false,
+      "error": "Availability is not confirmed for online retainer checkout",
+      "availability": {
+        "status": "unavailable",
+        "paymentAllowed": false,
+        "customerMessage": "That time is no longer available. Please choose another time or request a manual quote."
+      },
+      "hasCheckoutUrl": false
+    }
+  },
+  {
+    "label": "P10_admin_no_token",
+    "status": 401,
+    "body": {
+      "ok": false,
+      "error": "Unauthorized"
+    }
+  },
+  {
+    "label": "P10_admin_wrong_token",
+    "status": 401,
+    "body": {
+      "ok": false,
+      "error": "Unauthorized"
+    }
+  },
+  {
+    "label": "P6_checkout_open",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "hasCheckoutUrl": true,
+      "checkoutHost": "checkout.stripe.com",
+      "sessionIdPrefix": "cs_test_a1iZ...",
+      "availability": {
+        "status": "held",
+        "paymentAllowed": true,
+        "customerMessage": "Availability is safely held while you complete checkout.",
+        "safeSlotId": "slot_testproof_checkout_007",
+        "safeHoldId": "hold_beaaf5a1e05c43348ccbefaef8a362a4",
+        "holdExpiresAt": "2026-06-11T04:13:54.261Z"
+      }
+    }
+  }
+]

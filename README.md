@@ -4,6 +4,16 @@ Production-ready Sprint 1 implementation for a static-first local service websit
 
 For full project roadmap, current status, deployment gates, and handoff instructions, see [PROJECT_ROADMAP.md](PROJECT_ROADMAP.md).
 
+Commercial booking/gallery governance status:
+
+PUBLIC-BOOKING-R13-R9 ADMIN SLOT WORKFLOW + BROWSER QA PROOF BLOCKED — CORRECT ADMIN TOKEN NOT AVAILABLE TO EXECUTION ENVIRONMENT — RELEASE STATE NO_GO
+
+R13-R8D is owner-confirmed auditor accepted and R13-R8-specific blockers are accepted for closure. R13-R9 began under owner authorization and created a fresh non-production Preview deployment from commit `2431c8b` on branch `r13-r9-proof` (`https://ff381b9f.happyfacesla.pages.dev`, alias `https://r13-r9-proof.happyfacesla.pages.dev`). Required validation passed: `npm run astro -- check` exit 0; `node tests\r13-r4\d1-availability-controlled-implementation.mjs` exit 0; `npm run build` exit 0; `npm run qa:postbuild` exit 0. Missing/wrong admin token checks returned 401 fail-closed, but correct-token admin slot creation is blocked because `ADMIN_SLOT_TOKEN` is not available to this execution environment through a non-exposing runtime variable and secret files may not be opened. Browser QA, confirmed-slot checkout, hold, webhook/simulation, idempotency, and cleanup proof were not executed. No synthetic R13-R9 D1 rows or KV records were created; no production D1/KV was touched. `EVD-PUBLIC-BOOKING-R13-R9-001` is BLOCKED / Not Submitted. `BLK-PUBLIC-R13-R9-ADMIN-SLOT-TOKEN-RUNTIME-001` is OPEN. `BLK-R9-001`, `BLK-R9-002`, and `BLK-R9-003` remain OPEN. RELEASE STATE NO_GO.
+
+WEBSITE-GALLERY-R2-R1 remains accepted for non-production preview only. WEBSITE-GALLERY-R3 remains REVISION REQUIRED / No. Gallery live publication remains blocked.
+
+The deployment notes in this README describe technical setup only. They do not authorize happyfacesla.com publication, deploy planning, SEO/indexing work, payment activation, Ads, social publishing, R4 live-publication execution, production D1 mutation, production KV mutation, production slot seeding, R13-R9/R13-R10/R13-R11 execution, or customer-facing release.
+
 - Canonical domain: <https://happyfacesla.com>
 - Redirect domain: <https://happyfacela.com>
 - Phone: 818-619-5506

@@ -1,9 +1,14 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
-import PageIntro from "../components/sections/PageIntro.astro";
-import FilteredGallery from "../components/content/FilteredGallery.astro";
-import { galleryItems, galleryCategories } from "../data/gallery";
+import PartyLookbook from "../components/content/PartyLookbook.astro";
+import {
+  lookbookCategoryFilters,
+  lookbookHero,
+  lookbookItems,
+  lookbookServiceFilters,
+  lookbookSpeedFilters,
+} from "../data/lookbook";
 
 const canonicalPath = "/gallery/";
 ---
@@ -19,54 +24,11 @@ const canonicalPath = "/gallery/";
       { label: "Gallery", href: canonicalPath },
     ]}
   />
-  <PageIntro
-    title="Gallery"
-    description="Face painting, balloon twisting, glitter tattoos, and face gems at parties and events. Serving Los Angeles and nearby areas."
+  <PartyLookbook
+    items={lookbookItems}
+    serviceFilters={lookbookServiceFilters}
+    speedFilters={lookbookSpeedFilters}
+    categoryFilters={lookbookCategoryFilters}
+    hero={lookbookHero}
   />
-
-  <section class="mx-auto w-full max-w-6xl px-4 pt-4 pb-0">
-    <p class="text-sm text-slate-600">
-      View service details:
-      <a
-        href="/face-painting-los-angeles/"
-        class="text-orange-600 hover:underline">Face Painting</a
-      >
-      <span class="mx-1 text-slate-300">·</span>
-      <a
-        href="/balloon-twisting-los-angeles/"
-        class="text-orange-600 hover:underline">Balloon Twisting</a
-      >
-      <span class="mx-1 text-slate-300">·</span>
-      <a
-        href="/face-gems-face-jewelry-los-angeles/"
-        class="text-orange-600 hover:underline">Face Gems</a
-      >
-      <span class="mx-1 text-slate-300">·</span>
-      <a
-        href="/glitter-tattoos-los-angeles/"
-        class="text-orange-600 hover:underline">Glitter Tattoos</a
-      >
-      <span class="mx-1 text-slate-300">·</span>
-      <a href="/services/" class="text-orange-600 hover:underline"
-        >All Services</a
-      >
-    </p>
-  </section>
-
-  <section class="mx-auto w-full max-w-6xl px-4 py-10">
-    <FilteredGallery items={galleryItems} categories={galleryCategories} />
-  </section>
-
-  <script is:inline>
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: "gallery_view",
-      source_page: window.location.pathname,
-    });
-    if (typeof window.gtag === "function") {
-      window.gtag("event", "gallery_view", {
-        source_page: window.location.pathname,
-      });
-    }
-  </script>
 </BaseLayout>

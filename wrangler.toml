@@ -8,3 +8,17 @@ compatibility_date = "2024-09-23"
 [vars]
 # Placeholder override for local dev. Real secrets go in .dev.vars (gitignored).
 CF_PAGES_BRANCH = "local"
+
+# KV namespace for booking records — PUBLIC-BOOKING-R8
+# Replace placeholder IDs with real values from: wrangler kv:namespace create BOOKINGS_KV
+[[kv_namespaces]]
+binding = "BOOKINGS_KV"
+id = "1feee337a6364d64ac98779ab18ec387"
+preview_id = "1feee337a6364d64ac98779ab18ec387"
+
+# Preview/test D1 availability source — PUBLIC-BOOKING-R13-R7.
+# No production D1 binding or slot data is configured here.
+[[d1_databases]]
+binding = "AVAILABILITY_D1"
+database_name = "hfla-availability-preview"
+database_id = "2152648b-cd81-494e-b2d9-6f16e6a89251"

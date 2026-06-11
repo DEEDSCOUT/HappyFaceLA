@@ -1,0 +1,45 @@
+<!-- Step 1: Event Type — managed by WizardShell client-side script -->
+<div class="wizard-step" data-wizard-step="1">
+  <h2 class="text-2xl font-bold text-slate-900">Let's start with your event.</h2>
+  <p class="mt-2 text-slate-600">What kind of event are you planning?</p>
+
+  <div class="mt-6 flex flex-col gap-3" role="radiogroup" aria-label="Event type" id="step1-options">
+    <label class="wizard-option" data-value="birthday-party">
+      <input type="radio" name="eventType" value="birthday-party" aria-label="Birthday party" />
+      <span>
+        <span class="block font-semibold text-slate-900">Birthday party</span>
+        <span class="text-sm text-slate-500">Celebrate in style</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="school-event">
+      <input type="radio" name="eventType" value="school-event" aria-label="School event" />
+      <span>
+        <span class="block font-semibold text-slate-900">School event</span>
+        <span class="text-sm text-slate-500">Carnivals, fairs, and classroom celebrations</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="corporate-family-day">
+      <input type="radio" name="eventType" value="corporate-family-day" aria-label="Corporate event or family day" />
+      <span>
+        <span class="block font-semibold text-slate-900">Corporate event or family day</span>
+        <span class="text-sm text-slate-500">Company picnics, team events, and family days</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="festival-community">
+      <input type="radio" name="eventType" value="festival-community" aria-label="Festival or community event" />
+      <span>
+        <span class="block font-semibold text-slate-900">Festival or community event</span>
+        <span class="text-sm text-slate-500">Public fairs, festivals, and community gatherings</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="other">
+      <input type="radio" name="eventType" value="other" aria-label="Other or not sure" />
+      <span>
+        <span class="block font-semibold text-slate-900">Other / I'm not sure yet</span>
+        <span class="text-sm text-slate-500">We'll figure out exactly what fits</span>
+      </span>
+    </label>
+  </div>
+
+  <p id="step1-feedback" class="mt-4 wizard-guidance hidden" aria-live="polite"></p>
+</div>

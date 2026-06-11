@@ -1,0 +1,181 @@
+/* Happy Faces LA — Guided Selling Wizard styles
+   Supplements Tailwind utility classes used inline in components.
+   Mobile-first. */
+
+/* ── Step visibility ────────────────────────────────────────── */
+.wizard-step {
+  display: none;
+}
+.wizard-step.active {
+  display: block;
+}
+
+/* ── Option cards (radio / checkbox selections) ─────────────── */
+.wizard-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border: 2px solid #e2e8f0; /* slate-200 */
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  background: #fff;
+  width: 100%;
+  text-align: left;
+}
+
+.wizard-option:hover {
+  border-color: #f97316; /* orange-500 */
+  background: #fff7ed;   /* orange-50 */
+}
+
+.wizard-option.selected {
+  border-color: #f97316; /* orange-500 */
+  background: #fff7ed;   /* orange-50 */
+}
+
+.wizard-option input[type="radio"],
+.wizard-option input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: #f97316; /* orange-500 */
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* ── Recommended badge ──────────────────────────────────────── */
+.wizard-recommended-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #f97316;
+  background: #fff7ed;
+  border: 1px solid #fed7aa; /* orange-200 */
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+/* ── Capacity-aware badge color variants ────────────────────── */
+.wizard-badge-green {
+  color: #15803d;
+  background: #dcfce7;
+  border-color: #bbf7d0;
+}
+.wizard-badge-amber {
+  color: #92400e;
+  background: #fef3c7;
+  border-color: #fde68a;
+}
+.wizard-badge-red {
+  color: #991b1b;
+  background: #fee2e2;
+  border-color: #fecaca;
+}
+.wizard-badge-blue {
+  color: #1d4ed8;
+  background: #dbeafe;
+  border-color: #bfdbfe;
+}
+
+/* ── Inline guidance / feedback box ────────────────────────── */
+.wizard-guidance {
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  border: 1px solid #bfdbfe; /* blue-200 */
+  background: #eff6ff;       /* blue-50 */
+  color: #1e3a5f;
+}
+
+/* ── Conflict warning banner ────────────────────────────────── */
+.wizard-conflict-warning {
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  border: 1px solid #fde68a; /* amber-200 */
+  background: #fffbeb;       /* amber-50 */
+  color: #92400e;            /* amber-800 */
+}
+
+/* ── Notice boxes (payment boundary / travel) ───────────────── */
+.wizard-notice {
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border: 1px solid #d1fae5; /* emerald-200 */
+  background: #f0fdf4;       /* emerald-50 */
+  color: #065f46;            /* emerald-800 */
+}
+
+.wizard-notice-amber {
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+/* ── Progress bar ───────────────────────────────────────────── */
+.wizard-progress-track {
+  height: 6px;
+  background: #e2e8f0; /* slate-200 */
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.wizard-progress-fill {
+  height: 100%;
+  background: #f97316; /* orange-500 */
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* ── Recommendation summary card ────────────────────────────── */
+.wizard-summary-row {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f1f5f9; /* slate-100 */
+  font-size: 0.875rem;
+}
+
+.wizard-summary-label {
+  flex-shrink: 0;
+  width: 7rem;
+  color: #64748b; /* slate-500 */
+  font-weight: 500;
+}
+
+.wizard-summary-value {
+  color: #1e293b; /* slate-800 */
+}
+
+/* ── Confirmation screen ────────────────────────────────────── */
+.wizard-confirmation {
+  text-align: center;
+}
+
+.wizard-confirmation-icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+/* ── Mobile: one option per row, full width buttons ─────────── */
+@media (max-width: 639px) {
+  .wizard-option {
+    width: 100%;
+  }
+}
+
+/* ── Focus visible for accessibility ────────────────────────── */
+.wizard-option:focus-within {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+}

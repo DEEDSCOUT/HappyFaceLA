@@ -9,11 +9,12 @@ Every write tool calls `with_safety(...)` which:
   6. captures an after-snapshot
   7. appends an audit-log entry
 """
+
 from __future__ import annotations
 
 import logging
 from contextlib import contextmanager
-from typing import Any, Callable
+from typing import Any
 
 from .audit import write_audit
 from .config import Config
@@ -27,7 +28,9 @@ class MutationRefused(RuntimeError):
     pass
 
 
-def enforce_approval(cfg: Config, validate_only: bool, approval_token: str | None) -> None:
+def enforce_approval(
+    cfg: Config, validate_only: bool, approval_token: str | None
+) -> None:
     if not cfg.allow_mutate:
         raise MutationRefused(
             "Mutations disabled: set GOOGLE_ADS_ALLOW_MUTATE=true in .env.local."
@@ -55,7 +58,9 @@ def micros_to_usd(micros: int | str | None) -> float:
     return int(micros) / 1_000_000
 
 
-def check_budget_delta(cfg: Config, old_micros: int, new_micros: int, force: bool) -> None:
+def check_budget_delta(
+    cfg: Config, old_micros: int, new_micros: int, force: bool
+) -> None:
     if old_micros <= 0:
         return
     pct = abs(new_micros - old_micros) / old_micros * 100
@@ -91,64 +96,111 @@ def with_safety(
             risk_level=risk_level,
             resources_touched=resources_touched,
             operations=plan_holder["operations"],
-            before_snapshot_path=str(snap_before.relative_to(cfg.docs_dir.parent.parent)),
+            before_snapshot_path=str(
+                snap_before.relative_to(cfg.docs_dir.parent.parent)
+            ),
         )
         plan_path = save_plan(cfg, plan, tool)
         snap_after = None
         if plan_holder["after"] is not None:
             snap_after = write_snapshot(cfg, f"{tool}-after", plan_holder["after"])
-        write_audit(cfg, {
-            "actor": "copilot_mcp",
-            "tool": tool,
-            "validate_only": validate_only,
-            "approval_token_present": bool(approval_token),
-            "customer_id": cfg.customer_id,
-            "plan_id": plan["plan_id"],
-            "plan_path": str(plan_path),
-            "before_snapshot": str(snap_before),
-            "after_snapshot": str(snap_after) if snap_after else None,
-            "resources": resources_touched,
-            "result": "success",
-            "error": None,
-        })
+        write_audit(
+            cfg,
+            {
+                "actor": "copilot_mcp",
+                "tool": tool,
+                "validate_only": validate_only,
+                "approval_token_present": bool(approval_token),
+                "customer_id": cfg.customer_id,
+                "plan_id": plan["plan_id"],
+                "plan_path": str(plan_path),
+                "before_snapshot": str(snap_before),
+                "after_snapshot": str(snap_after) if snap_after else None,
+                "resources": resources_touched,
+                "result": "success",
+                "error": None,
+            },
+        )
         plan_holder["plan"] = plan
         plan_holder["plan_path"] = str(plan_path)
         plan_holder["before_snapshot"] = str(snap_before)
         plan_holder["after_snapshot"] = str(snap_after) if snap_after else None
     except Exception as exc:
-        write_audit(cfg, {
-            "actor": "copilot_mcp",
-            "tool": tool,
-            "validate_only": validate_only,
-            "approval_token_present": bool(approval_token),
-            "customer_id": cfg.customer_id,
-            "resources": resources_touched,
-            "result": "failure",
-            "error": str(exc)[:500],
-        })
+        write_audit(
+            cfg,
+            {
+                "actor": "copilot_mcp",
+                "tool": tool,
+                "validate_only": validate_only,
+                "approval_token_present": bool(approval_token),
+                "customer_id": cfg.customer_id,
+                "resources": resources_touched,
+                "result": "failure",
+                "error": str(exc)[:500],
+            },
+        )
         raise
 
 
-def run_mutate(client, service_name: str, customer_id: str, operations: list, validate_only: bool, partial_failure: bool = False):
-    """Generic mutate caller. Returns the response object."""
+def run_mutate(
+    client,
+    service_name: str,
+    customer_id: str,
+    operations: list,
+    validate_only: bool,
+    partial_failure: bool = False,
+):
+    """Generic mutate caller. Returns the response object.
+
+    The Google Ads Python SDK v21+ accepts mutate calls via a typed request
+    object rather than keyword arguments. Passing validate_only / partial_failure
+    as kwargs causes a TypeError against the underlying gRPC stub. Build the
+    appropriate Mutate*Request type so the fields are set on the proto message.
+    """
     service = client.get_service(service_name)
-    # All Google Ads mutate methods follow the pattern mutate_<resource>(customer_id, operations, ...)
-    # e.g. CampaignService.mutate_campaigns
-    mutate_method_name = {
-        "CampaignService": "mutate_campaigns",
-        "CampaignBudgetService": "mutate_campaign_budgets",
-        "CampaignCriterionService": "mutate_campaign_criteria",
-        "ConversionActionService": "mutate_conversion_actions",
-        "CustomerConversionGoalService": "mutate_customer_conversion_goals",
-        "CampaignConversionGoalService": "mutate_campaign_conversion_goals",
-        "AdGroupCriterionService": "mutate_ad_group_criteria",
-        "AssetService": "mutate_assets",
-        "AssetGroupAssetService": "mutate_asset_group_assets",
-        "RecommendationService": "apply_recommendation",
-    }[service_name]
+    service_to_method = {
+        "CampaignService": ("mutate_campaigns", "MutateCampaignsRequest"),
+        "CampaignBudgetService": (
+            "mutate_campaign_budgets",
+            "MutateCampaignBudgetsRequest",
+        ),
+        "CampaignCriterionService": (
+            "mutate_campaign_criteria",
+            "MutateCampaignCriteriaRequest",
+        ),
+        "ConversionActionService": (
+            "mutate_conversion_actions",
+            "MutateConversionActionsRequest",
+        ),
+        "CustomerConversionGoalService": (
+            "mutate_customer_conversion_goals",
+            "MutateCustomerConversionGoalsRequest",
+        ),
+        "CampaignConversionGoalService": (
+            "mutate_campaign_conversion_goals",
+            "MutateCampaignConversionGoalsRequest",
+        ),
+        "AdGroupCriterionService": (
+            "mutate_ad_group_criteria",
+            "MutateAdGroupCriteriaRequest",
+        ),
+        "AssetService": ("mutate_assets", "MutateAssetsRequest"),
+        "AssetGroupAssetService": (
+            "mutate_asset_group_assets",
+            "MutateAssetGroupAssetsRequest",
+        ),
+        "RecommendationService": ("apply_recommendation", None),
+    }
+    mutate_method_name, request_type_name = service_to_method[service_name]
     method = getattr(service, mutate_method_name)
-    kwargs = {"customer_id": customer_id, "operations": operations}
-    if mutate_method_name != "apply_recommendation":
-        kwargs["validate_only"] = validate_only
-        kwargs["partial_failure"] = partial_failure
-    return method(**kwargs)
+
+    if request_type_name is None:
+        # apply_recommendation uses its own request shape — pass kwargs as before
+        return method(customer_id=customer_id, operations=operations)
+
+    req = client.get_type(request_type_name)
+    req.customer_id = customer_id
+    req.operations.extend(operations)
+    req.validate_only = validate_only
+    req.partial_failure = partial_failure
+    return method(req)

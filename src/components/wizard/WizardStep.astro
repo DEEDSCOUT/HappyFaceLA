@@ -1,0 +1,18 @@
+---
+// WizardStep: reusable step wrapper.
+// Used for documentation — step HTML is rendered directly inside WizardShell.
+// This component is available for standalone step rendering if needed.
+interface Props {
+  step: number;
+  label?: string;
+}
+const { step, label } = Astro.props;
+---
+
+<div
+  class="wizard-step"
+  data-wizard-step={step}
+  aria-label={label ?? `Step ${step}`}
+>
+  <slot />
+</div>

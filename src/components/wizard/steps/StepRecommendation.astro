@@ -1,0 +1,86 @@
+<!-- Step 7: Smart Recommendation — fast-quote or custom-quote variant. Managed by WizardShell client-side script. -->
+<div class="wizard-step" data-wizard-step="7">
+
+  <!-- Fast-quote variant -->
+  <div id="rec-fast" class="hidden">
+    <div class="text-3xl mb-2" aria-hidden="true">✨</div>
+    <h2 class="text-2xl font-bold text-slate-900">Here's your Happy Party Plan!</h2>
+    <p class="mt-2 text-slate-600">Based on your answers, here's what we think will make your party amazing.</p>
+
+    <div class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div id="rec-summary-rows" class="divide-y divide-slate-100">
+        <!-- Summary rows injected by JS: event type, services, kids, style, recommended duration, date, location -->
+      </div>
+    </div>
+
+    <!-- Personalized selling copy -->
+    <p id="rec-selling-copy" class="mt-4 text-slate-700 leading-relaxed font-medium"></p>
+
+    <!-- Conflict warning (amber) — shown only when selected < recommended -->
+    <div id="rec-conflict-warning" class="mt-4 wizard-conflict-warning hidden" role="alert"></div>
+
+    <!-- Pricing panel (shown by JS for instant-book eligible events) -->
+    <div id="rec-pricing-panel" class="hidden mt-5">
+      <div class="rounded-2xl border-2 border-orange-400 bg-orange-50 p-5">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <p class="text-xs font-semibold text-orange-700 uppercase tracking-wide">Estimated Price</p>
+            <p id="rec-price-display" class="text-3xl font-bold text-slate-900 mt-0.5"></p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs font-semibold text-orange-700 uppercase tracking-wide">Reserve Today For</p>
+            <p id="rec-retainer-display" class="text-2xl font-bold text-orange-600 mt-0.5"></p>
+          </div>
+        </div>
+        <p id="rec-pricing-detail" class="mt-2 text-xs text-slate-600"></p>
+        <div class="mt-4 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-800">
+          <strong>Availability confirmed for this request.</strong> Secure checkout collects a 20% Booking Retainer to reserve your date.
+        </div>
+        <button
+          id="btn-stripe-reserve"
+          type="button"
+          class="mt-4 w-full rounded-xl bg-orange-500 px-6 py-3.5 text-sm font-bold text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          aria-label="Reserve with 20% retainer via secure payment"
+        >
+          Reserve with 20% Retainer →
+        </button>
+        <p class="mt-2 text-center text-xs text-slate-500">Secure payment via Stripe · No charge until you click Pay</p>
+      </div>
+    </div>
+
+    <!-- Standard notice (shown when NOT eligible for instant-book) -->
+    <div id="rec-standard-notice" class="mt-5 wizard-notice">
+      No payment is due yet. We'll confirm availability and send your official quote.
+      Once you approve, a <strong>20% Booking Retainer</strong> reserves your date.
+    </div>
+  </div>
+
+  <!-- Custom-quote variant -->
+  <div id="rec-custom" class="hidden">
+    <div class="text-3xl mb-2" aria-hidden="true">🎪</div>
+    <h2 class="text-2xl font-bold text-slate-900">This looks like a special event!</h2>
+
+    <!-- Custom copy — populated by JS -->
+    <p id="rec-custom-copy" class="mt-3 text-slate-700 leading-relaxed"></p>
+
+    <div class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div id="rec-custom-summary-rows" class="divide-y divide-slate-100"></div>
+    </div>
+
+    <!-- Payment boundary -->
+    <div class="mt-5 wizard-notice">
+      Our team will review your details and send a tailored plan. No payment is due at this stage.
+      Once you approve your quote, a <strong>20% Booking Retainer</strong> reserves your date.
+    </div>
+  </div>
+
+  <!-- Edit answers link -->
+  <button
+    id="btn-edit-answers"
+    type="button"
+    class="mt-5 text-sm text-orange-600 underline underline-offset-2 hover:text-orange-700"
+    aria-label="Go back and edit your answers"
+  >
+    ← Edit my answers
+  </button>
+</div>

@@ -1,0 +1,52 @@
+<!-- Step 2: Services — multi-select checkboxes. Managed by WizardShell client-side script. -->
+<div class="wizard-step" data-wizard-step="2">
+  <h2 class="text-2xl font-bold text-slate-900">What will make your guests wow?</h2>
+  <p class="mt-2 text-slate-600">Which services are you interested in? Select all that apply.</p>
+
+  <div class="mt-6 flex flex-col gap-3" role="group" aria-label="Services" id="step2-options">
+    <label class="wizard-option" data-value="face-painting">
+      <input type="checkbox" name="services" value="face-painting" aria-label="Face painting" />
+      <span>
+        <span class="block font-semibold text-slate-900">Face painting</span>
+        <span class="text-sm text-slate-500">Always a crowd favorite</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="balloon-twisting">
+      <input type="checkbox" name="services" value="balloon-twisting" aria-label="Balloon twisting" />
+      <span>
+        <span class="block font-semibold text-slate-900">Balloon twisting</span>
+        <span class="text-sm text-slate-500">Sculptures the kids take home</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="glitter-tattoos">
+      <input type="checkbox" name="services" value="glitter-tattoos" aria-label="Glitter tattoos" />
+      <span>
+        <span class="block font-semibold text-slate-900">Glitter tattoos</span>
+        <span class="text-sm text-slate-500">Sparkly and long-lasting</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="face-gems">
+      <input type="checkbox" name="services" value="face-gems" aria-label="Face gems" />
+      <span>
+        <span class="block font-semibold text-slate-900">Face gems</span>
+        <span class="text-sm text-slate-500">Add-on sparkle for any look</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="combo">
+      <input type="checkbox" name="services" value="combo" aria-label="Combo package" />
+      <span>
+        <span class="block font-semibold text-slate-900">Combo package — help me mix and match</span>
+        <span class="text-sm text-slate-500">We'll build the best combination for your event</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="not-sure">
+      <input type="checkbox" name="services" value="not-sure" aria-label="Not sure, recommend for me" />
+      <span>
+        <span class="block font-semibold text-slate-900">Not sure — recommend for me</span>
+        <span class="text-sm text-slate-500">We'll suggest what works best for your group</span>
+      </span>
+    </label>
+  </div>
+
+  <p id="step2-feedback" class="mt-4 wizard-guidance hidden" aria-live="polite"></p>
+</div>

@@ -1,0 +1,92 @@
+<!-- Step 8: Contact / Quote Request. Managed by WizardShell client-side script. -->
+<div class="wizard-step" data-wizard-step="8">
+  <h2 class="text-2xl font-bold text-slate-900">Almost there — let's get your quote request in.</h2>
+  <p class="mt-2 text-slate-600">
+    Enter your contact details. No payment is due — we'll review your request and send your official quote.
+  </p>
+
+  <form id="wizard-quote-form" novalidate class="mt-5 flex flex-col gap-4">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+        First name <span class="text-rose-600">*</span>
+        <input
+          id="field-firstName"
+          type="text"
+          name="firstName"
+          required
+          autocomplete="given-name"
+          class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+          aria-required="true"
+          aria-describedby="firstName-error"
+        />
+        <span id="firstName-error" class="text-rose-600 text-xs hidden" role="alert"></span>
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+        Last name <span class="text-rose-600">*</span>
+        <input
+          id="field-lastName"
+          type="text"
+          name="lastName"
+          required
+          autocomplete="family-name"
+          class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+          aria-required="true"
+          aria-describedby="lastName-error"
+        />
+        <span id="lastName-error" class="text-rose-600 text-xs hidden" role="alert"></span>
+      </label>
+    </div>
+
+    <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+      Email address <span class="text-rose-600">*</span>
+      <input
+        id="field-email"
+        type="email"
+        name="email"
+        required
+        autocomplete="email"
+        class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+        aria-required="true"
+        aria-describedby="email-error"
+      />
+      <span id="email-error" class="text-rose-600 text-xs hidden" role="alert"></span>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+      Phone number <span class="text-slate-400 font-normal">(optional)</span>
+      <input
+        id="field-phone"
+        type="tel"
+        name="phone"
+        autocomplete="tel"
+        class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+      />
+    </label>
+
+    <!-- Honeypot — hidden from real users -->
+    <input type="text" name="honeypot" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+
+    <!-- Payment boundary notices -->
+    <div class="wizard-notice mt-2">
+      <strong>No payment is required at this stage.</strong> We'll confirm availability, then send your
+      official quote. Once you approve it, a <strong>20% Booking Retainer</strong> is required to reserve
+      your date.
+    </div>
+    <div class="wizard-notice mt-1">
+      <strong>Your date is not reserved until your Booking Retainer is received</strong> after you approve
+      your quote.
+    </div>
+
+    <button
+      id="btn-submit-quote"
+      type="submit"
+      class="mt-2 rounded-xl bg-orange-500 px-6 py-3 text-base font-semibold text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+      aria-label="Send my quote request"
+    >
+      Send My Quote Request →
+    </button>
+
+    <p id="step8-error" class="text-rose-700 text-sm hidden" role="alert"></p>
+  </form>
+</div>

@@ -1,0 +1,173 @@
+PUBLIC-BOOKING-R13-R8A PREVIEW FUNCTIONS CURRENT-CODE REMEDIATION AND STRIPE TEST SECRET PRECONDITION EXECUTION
+
+Owner authorization:
+
+I, Shawn Ras, authorize PUBLIC-BOOKING-R13-R8A PREVIEW FUNCTIONS CURRENT-CODE REMEDIATION AND STRIPE TEST SECRET PRECONDITION EXECUTION.
+
+Goal:
+
+Resolve the R13-R8 blocker without creating another planning loop. The objective is to make a non-production Cloudflare Pages Preview deployment prove the current R13 D1-backed Pages Functions, then rerun the R13-R8 proof set if all preconditions are satisfied.
+
+This is an execution/remediation phase, not a planning phase.
+
+Current blocker:
+
+R13-R8 is BLOCKED because active Preview deployments did not prove current R13 D1-backed Functions:
+
+* seeded open preview D1 slot returned `availability.status=unknown` and `paymentAllowed=false`
+* `/api/admin/slots` returned static 404 HTML
+* checkout returned 503 `Payment service not configured`
+* Preview `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are absent
+* synthetic D1 rows were cleaned up to 0 remaining rows
+
+Authorization basis:
+
+* R13-R7 PASS / Yes.
+* R13-R7-R1 PASS / Yes.
+* Preview `AVAILABILITY_D1` exists.
+* Preview `ADMIN_SLOT_TOKEN` exists as `secret_text`.
+* Production `AVAILABILITY_D1` remains absent.
+* R13-R8 is blocked, not passed.
+* `BLK-PUBLIC-R13-R8-PREVIEW-FUNCTIONS-CURRENT-CODE-001` is OPEN.
+* `BLK-R9-001`, `BLK-R9-002`, and `BLK-R9-003` remain OPEN.
+* RELEASE STATE remains NO_GO.
+
+Allowed scope:
+
+1. Identify why the active Cloudflare Pages Preview URLs are not serving current R13 Pages Functions.
+2. Create or trigger a non-production Preview deployment that serves the current R13 code and Functions.
+3. Use only Preview environment and preview D1 database `hfla-availability-preview`.
+4. Keep production D1 bindings absent.
+5. Confirm Preview `AVAILABILITY_D1` presence through redacted proof.
+6. Confirm Preview `ADMIN_SLOT_TOKEN` presence through redacted proof.
+7. Confirm Preview Stripe TEST secrets presence only:
+
+   * `STRIPE_SECRET_KEY`
+   * `STRIPE_WEBHOOK_SECRET`
+8. Do not read, print, log, screenshot, or expose any secret value.
+9. If Preview Stripe TEST secrets are missing, stop and report BLOCKED with owner action required.
+10. If a current-code Preview deployment cannot be created without prohibited Git/GitHub or production actions, stop and report BLOCKED with exact reason.
+11. If current-code Preview deployment and required Preview TEST secrets are present, rerun the R13-R8 proof set.
+12. Use synthetic non-PII D1 rows only.
+13. Clean up synthetic rows to 0 remaining rows, or leave them blocked/test-only only if cleanup is technically impossible and fully documented.
+14. Update governance.
+
+Preview deployment rule:
+
+A non-production Cloudflare Pages Preview deployment is authorized only for this proof. It must not become the production deployment, must not publish to happyfacesla.com, must not change DNS, and must not be promoted to production.
+
+Git/GitHub rule:
+
+Do not use Git/GitHub unless separately and explicitly authorized. Prefer Cloudflare/Wrangler/API preview deployment paths. If the only possible path requires Git/GitHub action, stop and report BLOCKED.
+
+Strict prohibitions:
+
+* No production D1 mutation.
+* No production D1 binding.
+* No production slot seeding.
+* No real customer data.
+* No customer PII.
+* No live Stripe/payment collection.
+* No live checkout.
+* No happyfacesla.com publication.
+* No production deploy.
+* No DNS change.
+* No Ads/social/GBP.
+* No SEO/indexing/GSC/sitemap/robots/canonical work.
+* No workbook/Sheets mutation.
+* No Git/GitHub action unless separately authorized.
+* No secret value read or exposure.
+* No R13-R9, R13-R10, or R13-R11 execution.
+* No gallery R4.
+* No gallery go-live planning.
+* No customer-facing release.
+
+Required proof after remediation:
+
+Rerun the R13-R8 proof set only if current-code Preview deployment and Preview TEST secrets are present:
+
+P1 — seeded open synthetic slot returns confirmed availability or accepted equivalent from real Preview D1.
+P2 — no matching slot fails closed with `paymentAllowed=false`.
+P3 — open slot response contains only allowlisted customer-safe fields.
+P4 — held/reserved/blocked/expired/unavailable/malformed states fail closed.
+P5 — checkout re-checks D1 and refuses if slot is blocked after eligibility.
+P6 — TEST checkout creates/uses hold before Stripe TEST session.
+P7 — unknown availability returns no checkout URL.
+P8 — signed TEST webhook or approved TEST simulation reserves held synthetic slot.
+P9 — duplicate webhook is idempotent.
+P10 — missing/wrong admin token fails closed.
+P11 — synthetic D1 rows cleaned up or left blocked/test-only with exact reason.
+P12 — no private leakage.
+
+Required validation:
+
+Run and report exact command, exit code, and result:
+
+* `npm run astro -- check`
+* `node tests\r13-r4\d1-availability-controlled-implementation.mjs`
+* `npm run build`
+* `npm run qa:postbuild`
+
+Required static/leak scans:
+
+* no admin token leakage
+* no Stripe live secret prefix
+* no `.env` / `.dev.vars` secret-file access
+* no D1 raw/private field in public output
+* no contractor/cost/margin/artist/internal details
+* no Drive paths/raw filenames/governance IDs
+* no unsafe R13 booking-path patterns
+* no SEO/indexing file edits
+
+Required deliverable:
+
+Create:
+
+* `docs/commercial-booking/PUBLIC_BOOKING_R13_R8A_PREVIEW_FUNCTIONS_CURRENT_CODE_REMEDIATION_AND_STRIPE_TEST_SECRET_PRECONDITION_REPORT.md`
+
+Update:
+
+* `docs/commercial-booking/CURRENT_COMMERCIAL_BOOKING_STATUS.md`
+* `docs/commercial-booking/COMMERCIAL_BOOKING_EVIDENCE_REGISTER.md`
+* `docs/commercial-booking/COMMERCIAL_BOOKING_PHASE_TRACKER.md`
+* `docs/commercial-booking/COMMERCIAL_BOOKING_DEFECT_REGISTER.md`
+* `docs/commercial-booking/README.md`
+* root `README.md` only if it mirrors commercial booking status
+* `C:\HappyFaceLA\README.md` only as governance-status mirror, not behavior
+
+Required governance:
+
+If remediation succeeds and R13-R8 proof passes:
+
+* `EVD-PUBLIC-BOOKING-R13-R8A-001 = Pending Auditor Review / Pending`
+* `BLK-PUBLIC-R13-R8-PREVIEW-FUNCTIONS-CURRENT-CODE-001 = Proposed Closed by R13-R8A`
+* `EVD-PUBLIC-BOOKING-R13-R8-001` remains BLOCKED until auditor accepts rerun proof
+* `BLK-R9-001 = OPEN`
+* `BLK-R9-002 = OPEN`
+* `BLK-R9-003 = OPEN`
+* `RELEASE STATE = NO_GO`
+
+If remediation is blocked:
+
+* `EVD-PUBLIC-BOOKING-R13-R8A-001 = Pending Auditor Review / Pending`
+* `BLK-PUBLIC-R13-R8-PREVIEW-FUNCTIONS-CURRENT-CODE-001 = OPEN`
+* Record exact blocker and next required owner action
+* Keep all release blockers open
+
+Required final status:
+
+If successful:
+
+`PUBLIC-BOOKING-R13-R8A PREVIEW FUNCTIONS CURRENT-CODE REMEDIATION AND STRIPE TEST SECRET PRECONDITION EXECUTION SUBMITTED — AUDITOR REVIEW REQUIRED — RELEASE STATE NO_GO`
+
+If blocked:
+
+`PUBLIC-BOOKING-R13-R8A PREVIEW FUNCTIONS CURRENT-CODE REMEDIATION AND STRIPE TEST SECRET PRECONDITION EXECUTION BLOCKED — AUDITOR REVIEW REQUIRED — RELEASE STATE NO_GO`
+
+Future gate preservation:
+
+Keep `PUBLIC-BOOKING-R13-R11 FINAL LIVE PRE-PUBLIC TEST` as a future mandatory gate only after R13-R8 proof passes, R13-R9, R13-R10, BLK-R9-002/003 closeout, and separate owner authorization. Do not execute it now.
+
+Required final response line:
+
+`VERDICT: PROCEED — Submit R13-R8A for auditor review only after either proving a current-code Preview deployment with D1-backed Functions and Preview Stripe TEST preconditions, or reporting the exact blocker; keep BLK-R9-001/002/003 OPEN; do not publish publicly, do not enable live payment, do not mutate production D1, do not seed production slots, and do not start R13-R9/R13-R10/R13-R11 without separate authorization.`

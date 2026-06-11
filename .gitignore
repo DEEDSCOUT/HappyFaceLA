@@ -17,6 +17,12 @@ pnpm-debug.log*
 .env
 .env.local
 .env.production
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+.env.local.txt
+.env*.txt
 .dev.vars
 
 # wrangler local state
@@ -50,3 +56,9 @@ docs/google-ads/audit-log.jsonl
 data/gsc/raw/
 data/gsc/normalized/
 !data/gsc/.gitkeep
+
+# Mailbox state-machine harness runtime state + Python caches
+.agent/
+/tasks.json
+__pycache__/
+.pytest_cache/

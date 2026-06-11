@@ -1,0 +1,27 @@
+---
+interface Props {
+  totalSteps?: number;
+}
+const { totalSteps = 8 } = Astro.props;
+---
+
+<div
+  class="mb-6"
+  role="progressbar"
+  aria-label="Wizard step progress"
+  aria-valuenow={1}
+  aria-valuemin={1}
+  aria-valuemax={totalSteps}
+  id="wizard-progress-bar"
+  data-total={totalSteps}
+>
+  <div class="flex items-center justify-between mb-2">
+    <span class="text-xs font-medium text-slate-500" id="wizard-progress-label">
+      Step 1 of {totalSteps}
+    </span>
+    <span class="text-xs text-slate-400" id="wizard-progress-pct">12%</span>
+  </div>
+  <div class="wizard-progress-track" aria-hidden="true">
+    <div class="wizard-progress-fill" id="wizard-progress-fill" style="width: 12%"></div>
+  </div>
+</div>

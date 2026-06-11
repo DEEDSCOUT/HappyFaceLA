@@ -1,0 +1,57 @@
+<!-- Step 5: Duration — smart pre-selection + capacity-aware badge labels. Managed by WizardShell. -->
+<div class="wizard-step" data-wizard-step="5">
+  <h2 class="text-2xl font-bold text-slate-900">How long is your service window?</h2>
+
+  <!-- Dynamic subheading with recommendation basis — populated by JS -->
+  <p id="step5-subheading" class="mt-2 text-slate-600">
+    Based on your party size and design choice, here's what we recommend.
+  </p>
+
+  <div class="mt-6 flex flex-col gap-3" role="radiogroup" aria-label="Service window duration" id="step5-options">
+    <label class="wizard-option" data-value="60">
+      <input type="radio" name="selectedDuration" value="60" aria-label="1 hour" />
+      <span class="flex items-center gap-2 flex-wrap">
+        <span class="block font-semibold text-slate-900">1 hour</span>
+        <span id="badge-60" class="wizard-recommended-badge hidden"></span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="90">
+      <input type="radio" name="selectedDuration" value="90" aria-label="1.5 hours" />
+      <span class="flex items-center gap-2 flex-wrap">
+        <span class="block font-semibold text-slate-900">1.5 hours</span>
+        <span id="badge-90" class="wizard-recommended-badge hidden"></span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="120">
+      <input type="radio" name="selectedDuration" value="120" aria-label="2 hours" />
+      <span class="flex items-center gap-2 flex-wrap">
+        <span class="block font-semibold text-slate-900">2 hours</span>
+        <span id="badge-120" class="wizard-recommended-badge hidden"></span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="180">
+      <input type="radio" name="selectedDuration" value="180" aria-label="3 hours" />
+      <span class="flex items-center gap-2 flex-wrap">
+        <span class="block font-semibold text-slate-900">3 hours</span>
+        <span id="badge-180" class="wizard-recommended-badge hidden"></span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="240">
+      <input type="radio" name="selectedDuration" value="240" aria-label="4 hours" />
+      <span class="flex items-center gap-2 flex-wrap">
+        <span class="block font-semibold text-slate-900">4 hours</span>
+        <span id="badge-240" class="wizard-recommended-badge hidden"></span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="custom">
+      <input type="radio" name="selectedDuration" value="custom" aria-label="5 hours or more, or not sure" />
+      <span class="flex items-center gap-2 flex-wrap">
+        <span class="block font-semibold text-slate-900">5+ hours / Not sure</span>
+        <span id="badge-custom" class="wizard-recommended-badge hidden"></span>
+      </span>
+    </label>
+  </div>
+
+  <!-- Conflict warning — shown when selected < recommended -->
+  <div id="step5-conflict" class="mt-4 wizard-conflict-warning hidden" role="alert" aria-live="polite"></div>
+</div>

@@ -1,0 +1,181 @@
+{
+  "timestamp_utc": "2026-06-01T00:08:28.128878+00:00",
+  "campaign_id": "23901051766",
+  "campaign_name": "HFL | Search | Birthday Party LA",
+  "status_summary": {
+    "campaign_status": "ENABLED",
+    "budget_micros": "20000000",
+    "bidding_strategy_type": "MANUAL_CPC",
+    "channel_type": "SEARCH",
+    "search_partners": false,
+    "display_network": false,
+    "presence_targeting": "PRESENCE",
+    "location_targets": [
+      "Los Angeles County"
+    ]
+  },
+  "bidding_documentation": {
+    "current_strategy": "MANUAL_CPC",
+    "enhanced_cpc_enabled": false,
+    "rationale": "Manual CPC is the intended Phase 1 controlled test strategy. Allows direct CPC inspection before switching to Maximize Conversions once sufficient conversion signal (minimum 30 conversions/30 days) accumulates.",
+    "max_cpc_by_adgroup": {
+      "Face Painting - Birthday - LA": {
+        "status": "ENABLED",
+        "cpc_bid_micros": "1500000",
+        "cpc_bid_dollars": 1.5
+      },
+      "Kids Birthday Entertainment - LA": {
+        "status": "ENABLED",
+        "cpc_bid_micros": "1500000",
+        "cpc_bid_dollars": 1.5
+      },
+      "Balloon Twisting - Birthday - LA": {
+        "status": "ENABLED",
+        "cpc_bid_micros": "1500000",
+        "cpc_bid_dollars": 1.5
+      },
+      "Glitter Tattoos - Birthday - LA": {
+        "status": "ENABLED",
+        "cpc_bid_micros": "1500000",
+        "cpc_bid_dollars": 1.5
+      },
+      "Face Gems - Birthday - LA": {
+        "status": "ENABLED",
+        "cpc_bid_micros": "1500000",
+        "cpc_bid_dollars": 1.5
+      }
+    },
+    "keyword_match_counts": {
+      "PHRASE": 15,
+      "EXACT": 15,
+      "BROAD": 0,
+      "OTHER": 0
+    },
+    "campaign_negative_count": 26
+  },
+  "adgroup_statuses": {
+    "Face Painting - Birthday - LA": {
+      "status": "ENABLED",
+      "cpc_bid_micros": "1500000",
+      "cpc_bid_dollars": 1.5
+    },
+    "Kids Birthday Entertainment - LA": {
+      "status": "ENABLED",
+      "cpc_bid_micros": "1500000",
+      "cpc_bid_dollars": 1.5
+    },
+    "Balloon Twisting - Birthday - LA": {
+      "status": "ENABLED",
+      "cpc_bid_micros": "1500000",
+      "cpc_bid_dollars": 1.5
+    },
+    "Glitter Tattoos - Birthday - LA": {
+      "status": "ENABLED",
+      "cpc_bid_micros": "1500000",
+      "cpc_bid_dollars": 1.5
+    },
+    "Face Gems - Birthday - LA": {
+      "status": "ENABLED",
+      "cpc_bid_micros": "1500000",
+      "cpc_bid_dollars": 1.5
+    }
+  },
+  "keyword_match_counts": {
+    "PHRASE": 15,
+    "EXACT": 15,
+    "BROAD": 0,
+    "OTHER": 0
+  },
+  "rsa_summary": [
+    {
+      "ad_group": "Face Painting - Birthday - LA",
+      "status": "ENABLED",
+      "approval_status": "APPROVED",
+      "review_status": "REVIEWED",
+      "disapproval_reasons": [],
+      "has_150_claim": true,
+      "prohibited_hits": []
+    },
+    {
+      "ad_group": "Kids Birthday Entertainment - LA",
+      "status": "ENABLED",
+      "approval_status": "APPROVED",
+      "review_status": "REVIEWED",
+      "disapproval_reasons": [],
+      "has_150_claim": true,
+      "prohibited_hits": []
+    },
+    {
+      "ad_group": "Balloon Twisting - Birthday - LA",
+      "status": "ENABLED",
+      "approval_status": "APPROVED",
+      "review_status": "REVIEWED",
+      "disapproval_reasons": [],
+      "has_150_claim": false,
+      "prohibited_hits": []
+    },
+    {
+      "ad_group": "Glitter Tattoos - Birthday - LA",
+      "status": "ENABLED",
+      "approval_status": "APPROVED",
+      "review_status": "REVIEWED",
+      "disapproval_reasons": [],
+      "has_150_claim": false,
+      "prohibited_hits": []
+    },
+    {
+      "ad_group": "Face Gems - Birthday - LA",
+      "status": "ENABLED",
+      "approval_status": "APPROVED",
+      "review_status": "REVIEWED",
+      "disapproval_reasons": [],
+      "has_150_claim": false,
+      "prohibited_hits": []
+    }
+  ],
+  "conversion_eval": {
+    "generate_lead_primary": true,
+    "calls_from_ads_primary": true,
+    "phone_click_secondary": true,
+    "sms_click_secondary": true,
+    "sms_click_category_contact": true
+  },
+  "checks": {
+    "campaign_enabled": true,
+    "budget_20": true,
+    "pmax_paused": true,
+    "only_target_enabled": true,
+    "bidding_manual_cpc": true,
+    "enhanced_cpc_off": true,
+    "search_only": true,
+    "search_partners_off": true,
+    "display_off": true,
+    "presence_targeting": true,
+    "la_county_only": true,
+    "no_broad_match": true,
+    "all_five_adgroups_enabled": true,
+    "all_five_rsas_enabled": true,
+    "rsas_approved_reviewed": true,
+    "no_disapproval": true,
+    "no_unsupported_150": true,
+    "no_prohibited_copy": true,
+    "conversions_ok": true
+  },
+  "monitoring_checkpoint": {
+    "due_utc": "2026-06-01T23:47:21Z",
+    "inspect": [
+      "impressions",
+      "clicks",
+      "average_cpc",
+      "cost_micros",
+      "search_terms_report",
+      "conversions",
+      "disapprovals",
+      "keyword_match_type_drift",
+      "irrelevant_queries",
+      "budget_pacing"
+    ],
+    "note": "24h post-launch read-only checkpoint. Pause if unexpected spend spikes, broad match drift, or disapprovals detected."
+  },
+  "verdict": "LIVE SERVING READY \u2014 MONITORING PHASE ACTIVE"
+}

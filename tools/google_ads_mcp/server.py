@@ -648,6 +648,82 @@ def google_ads_update_bid_strategy(payload: dict) -> dict:
 
 
 @mcp.tool()
+def google_ads_import_ga4_conversion(payload: dict) -> dict:
+    """Import a GA4 custom event as a new conversion action (secondary by default).
+
+    Use this to import GA4 events such as phone_click or sms_click.
+    Set include_in_conversions_metric=False (the default) to keep it secondary
+    so it does not affect Smart Bidding or primary conversion counts.
+    """
+    inp = schemas.ImportGA4ConversionInput.model_validate(payload)
+    client = _client()
+    with mutations.with_safety(
+        CFG,
+        tool="google_ads_import_ga4_conversion",
+        reason=inp.reason,
+        risk_level="medium",
+        validate_only=inp.validate_only,
+        approval_token=inp.approval_token,
+        resources_touched=["<new conversion action>"],
+        before_data={"ga4_event_name": inp.ga4_event_name},
+    ) as plan:
+        op = client.get_type("ConversionActionOperation")
+        ca = op.create
+        ca.name = inp.conversion_name
+        ca.type_ = client.enums.ConversionActionTypeEnum.GOOGLE_ANALYTICS_4_CUSTOM
+        ca.category = client.enums.ConversionActionCategoryEnum[inp.category]
+        ca.status = client.enums.ConversionActionStatusEnum.ENABLED
+        ca.primary_for_goal = inp.include_in_conversions_metric
+        ca.counting_type = client.enums.ConversionActionCountingTypeEnum[
+            inp.counting_type
+        ]
+        ca.click_through_lookback_window_days = inp.click_through_lookback_window_days
+        ca.view_through_lookback_window_days = inp.view_through_lookback_window_days
+        ca.value_settings.default_value = inp.default_value
+        ca.value_settings.always_use_default_value = True
+        plan["operations"] = [
+            {
+                "service": "ConversionActionService",
+                "operation": "create",
+                "resource_name": "<new conversion action>",
+                "fields_changed": {
+                    "name": inp.conversion_name,
+                    "ga4_event_name": inp.ga4_event_name,
+                    "category": inp.category,
+                    "include_in_conversions_metric": inp.include_in_conversions_metric,
+                    "counting_type": inp.counting_type,
+                },
+                "old_values": {},
+                "new_values": inp.model_dump(exclude_none=True),
+            }
+        ]
+        resp = mutations.run_mutate(
+            client, "ConversionActionService", CFG.customer_id, [op], inp.validate_only
+        )
+        new_rn = (
+            resp.results[0].resource_name
+            if not inp.validate_only
+            else "<validate-only>"
+        )
+        plan["after"] = {
+            "validate_only": inp.validate_only,
+            "resource_name": new_rn,
+        }
+        return {
+            "plan": plan["plan"],
+            "plan_path": plan["plan_path"],
+            "validate_only": inp.validate_only,
+            "resource_name": new_rn,
+            "note": (
+                "Conversion action created as secondary (include_in_conversions_metric=False). "
+                "It will not affect Smart Bidding or primary conversion counts."
+                if not inp.include_in_conversions_metric
+                else "Conversion action created as PRIMARY — verify this was intended."
+            ),
+        }
+
+
+@mcp.tool()
 def google_ads_update_conversion_action(payload: dict) -> dict:
     """Update a conversion action's editable fields."""
     inp = schemas.ConversionActionInput.model_validate(payload)
@@ -913,19 +989,69 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         resources_touched=["<new campaign>"],
         before_data={"name": inp.name},
     ) as plan:
-        # 1) budget
-        b_op = client.get_type("CampaignBudgetOperation")
-        b_op.create.name = f"Budget for {inp.name}"
-        b_op.create.amount_micros = mutations.budget_usd_to_micros(inp.daily_budget_usd)
-        b_op.create.delivery_method = client.enums.BudgetDeliveryMethodEnum.STANDARD
-        b_resp = mutations.run_mutate(
-            client, "CampaignBudgetService", CFG.customer_id, [b_op], inp.validate_only
+        # 1) budget — upsert by name to tolerate retry after partial failure
+        budget_name = f"Budget for {inp.name}"
+        existing_budgets = gaql.stream_to_dicts(
+            client,
+            CFG.customer_id,
+            f"SELECT campaign_budget.resource_name, campaign_budget.name "
+            f"FROM campaign_budget "
+            f"WHERE campaign_budget.name = '{budget_name}' "
+            f"LIMIT 1",
         )
-        budget_rn = (
-            b_resp.results[0].resource_name
-            if not inp.validate_only
-            else "<validate-only>"
-        )
+        if existing_budgets and not inp.validate_only:
+            budget_rn = existing_budgets[0]["campaign_budget"]["resource_name"]
+            b_resp = None
+            log.info("Reusing existing budget %s", budget_rn)
+        else:
+            b_op = client.get_type("CampaignBudgetOperation")
+            b_op.create.name = budget_name
+            b_op.create.amount_micros = mutations.budget_usd_to_micros(
+                inp.daily_budget_usd
+            )
+            b_op.create.delivery_method = client.enums.BudgetDeliveryMethodEnum.STANDARD
+            b_resp = mutations.run_mutate(
+                client,
+                "CampaignBudgetService",
+                CFG.customer_id,
+                [b_op],
+                inp.validate_only,
+            )
+            budget_rn = (
+                b_resp.results[0].resource_name
+                if b_resp.results
+                else f"customers/{CFG.customer_id}/campaignBudgets/-1"
+            )
+
+        if inp.validate_only:
+            # validate_only: budget structure validated OK. Campaign service validation
+            # is skipped — campaign_budget is a cross-service reference that requires a
+            # real resource name, which only exists after the budget is created. To
+            # create the campaign, call again with validate_only=false + approval_token.
+            plan["operations"] = [
+                {
+                    "service": "CampaignBudgetService",
+                    "operation": "create (validate only)",
+                    "resource_name": "<not created>",
+                    "fields_changed": {"amount_usd": inp.daily_budget_usd},
+                    "old_values": {},
+                    "new_values": {
+                        "name": b_op.create.name,
+                        "amount_usd": inp.daily_budget_usd,
+                    },
+                }
+            ]
+            plan["after"] = {"validate_only": True}
+            return {
+                "validate_only": True,
+                "note": (
+                    "Budget structure validated OK. Campaign service validation skipped "
+                    "(cross-service temp resource names are not supported in separate validate_only calls). "
+                    "Ready to execute: call again with validate_only=false and approval_token."
+                ),
+            }
+
+        # budget_rn already set above (either reused or from b_resp.results)
 
         # 2) campaign — always PAUSED
         c_op = client.get_type("CampaignOperation")
@@ -934,8 +1060,10 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         c_op.create.advertising_channel_type = (
             client.enums.AdvertisingChannelTypeEnum.SEARCH
         )
-        if not inp.validate_only:
-            c_op.create.campaign_budget = budget_rn
+        c_op.create.campaign_budget = budget_rn
+        c_op.create._pb.contains_eu_political_advertising = (
+            3  # DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING
+        )
         if inp.bidding == "MANUAL_CPC":
             c_op.create.manual_cpc._pb.SetInParent()  # type: ignore[attr-defined]
         else:
@@ -945,18 +1073,18 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         c_op.create.network_settings.target_content_network = False
         c_op.create.network_settings.target_partner_search_network = False
         c_resp = mutations.run_mutate(
-            client, "CampaignService", CFG.customer_id, [c_op], inp.validate_only
+            client, "CampaignService", CFG.customer_id, [c_op], False
         )
 
         plan["operations"] = [
             {
                 "service": "CampaignBudgetService",
-                "operation": "create",
+                "operation": "reused" if b_resp is None else "create",
                 "resource_name": budget_rn,
                 "fields_changed": {"amount_usd": inp.daily_budget_usd},
                 "old_values": {},
                 "new_values": {
-                    "name": b_op.create.name,
+                    "name": budget_name,
                     "amount_usd": inp.daily_budget_usd,
                 },
             },
@@ -976,13 +1104,15 @@ def google_ads_create_search_campaign(payload: dict) -> dict:
         ]
         plan["after"] = {
             "validate_only": inp.validate_only,
-            "budget_results": [str(r) for r in b_resp.results],
+            "budget_results": []
+            if b_resp is None
+            else [str(r) for r in b_resp.results],
             "campaign_results": [str(r) for r in c_resp.results],
         }
         return {
-            "plan": plan["plan"],
-            "plan_path": plan["plan_path"],
             "validate_only": inp.validate_only,
+            "budget_resource_name": budget_rn,
+            "campaign_results": [str(r) for r in c_resp.results],
             "note": "Campaign created PAUSED. Use google_ads_update_campaign_status with reason containing 'ENABLE' to activate.",
         }
 

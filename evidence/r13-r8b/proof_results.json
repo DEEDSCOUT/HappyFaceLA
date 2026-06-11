@@ -1,0 +1,253 @@
+[
+  {
+    "label": "P1_open_confirmed",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "status": "instant-book",
+      "reasons": [],
+      "capacityResult": {
+        "requiredArtistCount": 1,
+        "serviceWindowMinutes": 100
+      },
+      "pricing": {
+        "eventTotalCents": 27500,
+        "retainerCents": 5500,
+        "travelFeeCents": 0,
+        "pricingModel": "fixed-package"
+      },
+      "availability": {
+        "status": "confirmed",
+        "paymentAllowed": true,
+        "message": "Availability is confirmed for this requested time.",
+        "safeSlotId": "slot_testproof_open_001"
+      }
+    }
+  },
+  {
+    "label": "P2_nomatch_failclosed",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "status": "instant-book",
+      "reasons": [],
+      "capacityResult": {
+        "requiredArtistCount": 1,
+        "serviceWindowMinutes": 100
+      },
+      "pricing": {
+        "eventTotalCents": 27500,
+        "retainerCents": 5500,
+        "travelFeeCents": 0,
+        "pricingModel": "fixed-package"
+      },
+      "availability": {
+        "status": "unavailable",
+        "paymentAllowed": false,
+        "message": "That time is no longer available. Please choose another time or request a manual quote."
+      }
+    }
+  },
+  {
+    "label": "P4_malformed",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "status": "instant-book",
+      "reasons": [],
+      "capacityResult": {
+        "requiredArtistCount": 1,
+        "serviceWindowMinutes": 100
+      },
+      "pricing": {
+        "eventTotalCents": 27500,
+        "retainerCents": 5500,
+        "travelFeeCents": 0,
+        "pricingModel": "fixed-package"
+      },
+      "availability": {
+        "status": "unknown",
+        "paymentAllowed": false,
+        "message": "We could not confirm availability right now. Please request a manual quote and we'll follow up."
+      }
+    }
+  },
+  {
+    "label": "P4_blocked",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "status": "instant-book",
+      "reasons": [],
+      "capacityResult": {
+        "requiredArtistCount": 1,
+        "serviceWindowMinutes": 100
+      },
+      "pricing": {
+        "eventTotalCents": 27500,
+        "retainerCents": 5500,
+        "travelFeeCents": 0,
+        "pricingModel": "fixed-package"
+      },
+      "availability": {
+        "status": "unavailable",
+        "paymentAllowed": false,
+        "message": "That time is no longer available. Please choose another time or request a manual quote."
+      }
+    }
+  },
+  {
+    "label": "P4_held",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "status": "instant-book",
+      "reasons": [],
+      "capacityResult": {
+        "requiredArtistCount": 1,
+        "serviceWindowMinutes": 100
+      },
+      "pricing": {
+        "eventTotalCents": 27500,
+        "retainerCents": 5500,
+        "travelFeeCents": 0,
+        "pricingModel": "fixed-package"
+      },
+      "availability": {
+        "status": "unavailable",
+        "paymentAllowed": false,
+        "message": "That time is no longer available. Please choose another time or request a manual quote."
+      }
+    }
+  },
+  {
+    "label": "P4_reserved",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "status": "instant-book",
+      "reasons": [],
+      "capacityResult": {
+        "requiredArtistCount": 1,
+        "serviceWindowMinutes": 100
+      },
+      "pricing": {
+        "eventTotalCents": 27500,
+        "retainerCents": 5500,
+        "travelFeeCents": 0,
+        "pricingModel": "fixed-package"
+      },
+      "availability": {
+        "status": "unavailable",
+        "paymentAllowed": false,
+        "message": "That time is no longer available. Please choose another time or request a manual quote."
+      }
+    }
+  },
+  {
+    "label": "P4_expired",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "status": "instant-book",
+      "reasons": [],
+      "capacityResult": {
+        "requiredArtistCount": 1,
+        "serviceWindowMinutes": 100
+      },
+      "pricing": {
+        "eventTotalCents": 27500,
+        "retainerCents": 5500,
+        "travelFeeCents": 0,
+        "pricingModel": "fixed-package"
+      },
+      "availability": {
+        "status": "unavailable",
+        "paymentAllowed": false,
+        "message": "That time is no longer available. Please choose another time or request a manual quote."
+      }
+    }
+  },
+  {
+    "label": "P4_unavailable",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "status": "instant-book",
+      "reasons": [],
+      "capacityResult": {
+        "requiredArtistCount": 1,
+        "serviceWindowMinutes": 100
+      },
+      "pricing": {
+        "eventTotalCents": 27500,
+        "retainerCents": 5500,
+        "travelFeeCents": 0,
+        "pricingModel": "fixed-package"
+      },
+      "availability": {
+        "status": "unavailable",
+        "paymentAllowed": false,
+        "message": "That time is no longer available. Please choose another time or request a manual quote."
+      }
+    }
+  },
+  {
+    "label": "P5_checkout_blocked",
+    "status": 503,
+    "body": {
+      "ok": false,
+      "error": "Booking storage is not configured"
+    }
+  },
+  {
+    "label": "P7_checkout_nomatch",
+    "status": 503,
+    "body": {
+      "ok": false,
+      "error": "Booking storage is not configured"
+    }
+  },
+  {
+    "label": "P6_checkout_open",
+    "status": 503,
+    "body": {
+      "ok": false,
+      "hasCheckoutUrl": false,
+      "checkoutUrlHost": null,
+      "sessionIdPrefix": null
+    }
+  },
+  {
+    "label": "P8a_webhook_no_sig",
+    "status": 400,
+    "body": {
+      "ok": false,
+      "error": "Missing stripe-signature header"
+    }
+  },
+  {
+    "label": "P8a_webhook_bad_sig",
+    "status": 401,
+    "body": {
+      "ok": false,
+      "error": "Invalid signature"
+    }
+  },
+  {
+    "label": "P10_admin_no_token",
+    "status": 401,
+    "body": {
+      "ok": false,
+      "error": "Unauthorized"
+    }
+  },
+  {
+    "label": "P10_admin_wrong_token",
+    "status": 401,
+    "body": {
+      "ok": false,
+      "error": "Unauthorized"
+    }
+  }
+]

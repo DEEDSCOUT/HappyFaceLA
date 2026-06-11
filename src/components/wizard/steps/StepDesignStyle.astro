@@ -1,0 +1,48 @@
+<!-- Step 4: Design Style — with inline speed guidance. Managed by WizardShell client-side script. -->
+<div class="wizard-step" data-wizard-step="4">
+  <h2 class="text-2xl font-bold text-slate-900">What kind of designs are you imagining?</h2>
+  <p class="mt-2 text-slate-600">
+    Design style affects how many children we can serve per hour — here's what to expect.
+  </p>
+
+  <div class="mt-6 flex flex-col gap-3" role="radiogroup" aria-label="Design style" id="step4-options">
+    <label class="wizard-option" data-value="quick-cheek-arm">
+      <input type="radio" name="designStyle" value="quick-cheek-arm" aria-label="Quick cheek or arm designs" />
+      <span>
+        <span class="block font-semibold text-slate-900">Quick cheek or arm designs</span>
+        <span class="text-sm text-slate-500">Fastest — most kids served per hour</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="standard-party">
+      <input type="radio" name="designStyle" value="standard-party" aria-label="Standard party designs" />
+      <span>
+        <span class="block font-semibold text-slate-900">Standard party designs</span>
+        <span class="text-sm text-slate-500">Balanced — our most popular choice</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="full-face">
+      <input type="radio" name="designStyle" value="full-face" aria-label="Wow or full-face designs" />
+      <span>
+        <span class="block font-semibold text-slate-900">Wow or full-face designs</span>
+        <span class="text-sm text-slate-500">Detailed — fewer kids per hour; stunning results</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="fast-event-menu">
+      <input type="radio" name="designStyle" value="fast-event-menu" aria-label="Fast event menu" />
+      <span>
+        <span class="block font-semibold text-slate-900">Fast event menu</span>
+        <span class="text-sm text-slate-500">High-throughput preset designs for large events</span>
+      </span>
+    </label>
+    <label class="wizard-option" data-value="not-sure">
+      <input type="radio" name="designStyle" value="not-sure" aria-label="Not sure, recommend for me" />
+      <span>
+        <span class="block font-semibold text-slate-900">Not sure — recommend for me</span>
+        <span class="text-sm text-slate-500">We'll pick the best style for your group</span>
+      </span>
+    </label>
+  </div>
+
+  <!-- Speed guidance — populated by JS when an option is selected -->
+  <p id="step4-guidance" class="mt-4 wizard-guidance hidden" aria-live="polite"></p>
+</div>
