@@ -1,0 +1,780 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import BookingCtaBlock from "../components/sections/BookingCtaBlock.astro";
+import FAQAccordion from "../components/content/FAQAccordion.astro";
+import {
+  localBusinessJsonLd,
+  breadcrumbJsonLd,
+  faqJsonLd,
+  articleJsonLd,
+} from "../utils/schema";
+import type { FaqItem } from "../data/faqs";
+
+const canonicalPath = "/face-painting-cost-los-angeles/";
+const pageUrl = `https://happyfacesla.com${canonicalPath}`;
+const heroImage =
+  "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.webp";
+
+const faqs: FaqItem[] = [
+  {
+    question:
+      "How much does face painting cost for a kids' birthday party in Los Angeles?",
+    answer:
+      "Face painting party packages from Happy Faces LA start from $150. A 90-minute session is $215 and a 2-hour session is $275. Two-service party mix packages start from $180. Pricing depends on event length, guest count, add-ons, and travel distance. Request availability and get a custom quote for accurate pricing for your event.",
+  },
+  {
+    question: "Is there a travel fee for face painting in Los Angeles?",
+    answer:
+      "No travel fee is charged for events within 20 miles of the service origin. Events 20–40 miles away include a $25 travel fee. Events 40–60 miles away include a $50 travel fee and require manual booking approval. Events beyond 60 miles require a custom quote. The travel fee is listed as a separate labeled line item in your quote before your Booking Retainer is requested.",
+  },
+  {
+    question: "What is included in a professional face painting booking?",
+    answer:
+      "A face painting booking includes a professional artist, setup and breakdown, professional kid-friendly face painting products, and a design menu for guests to choose from. Your personalized quote confirms what is included based on your event details and service mix.",
+  },
+  {
+    question: "How do I book face painting for my child's birthday party?",
+    answer:
+      "Start by requesting availability through the quote form at happyfacesla.com/plan-my-party/. Once availability is confirmed, you will receive a personalized quote. A Booking Retainer of 20% of your approved total is required to hold your date. Checkout and Booking Retainer payment are available only after availability is confirmed.",
+  },
+  {
+    question: "Can I add face gems or glitter tattoos to a face painting party?",
+    answer:
+      "Yes. Face gems are available as an add-on starting from $50. Two-service party mix packages combining face painting with another service start from $180. Glitter tattoos and balloon twisting can also be requested. Availability and add-on pricing are confirmed by quote.",
+  },
+  {
+    question: "How many children can be face painted per hour?",
+    answer:
+      "Throughput depends on design complexity. Simple cheek art typically takes 3–5 minutes per child. Detailed full-face designs take longer. A 90-minute or 2-hour session allows more guests to receive face painting. For larger parties, adding a second service station helps manage lines and keeps the event moving.",
+  },
+  {
+    question: "Are the face paints safe for children?",
+    answer:
+      "Happy Faces LA uses professional, kid-friendly face painting products. Please disclose any known skin sensitivities before service begins. Service may be adjusted or declined for guests with visibly sensitive, irritated, or broken skin. General information about cosmetic product safety is available at the FDA cosmetics page.",
+  },
+  {
+    question: "What is a Booking Retainer and how does it work?",
+    answer:
+      "A Booking Retainer is a 20% payment of your approved booking total. It is required to confirm and hold your event date. Your date is not reserved until the retainer is received. Checkout and Booking Retainer payment are available only after availability is confirmed. See the booking policy page at happyfacesla.com/booking-policy/ for full details.",
+  },
+];
+---
+
+<BaseLayout
+  title="How Much Does Face Painting Cost in Los Angeles for Kids' Birthday Parties?"
+  description="Face painting costs in Los Angeles range from $150–$325+ depending on party length, guests, and add-ons. Learn pricing factors and book with Happy Faces LA."
+  canonicalPath={canonicalPath}
+  jsonLd={[
+    localBusinessJsonLd(),
+    articleJsonLd({
+      headline:
+        "How much does face painting cost in Los Angeles for kids' birthday parties",
+      description:
+        "Face painting costs in Los Angeles range from $150–$325+ depending on party length, guests, and add-ons. Learn pricing factors and book with Happy Faces LA.",
+      datePublished: "2026-06-11",
+      dateModified: "2026-06-11",
+      image: `https://happyfacesla.com${heroImage}`,
+      url: pageUrl,
+    }),
+    breadcrumbJsonLd([
+      { name: "Home", url: "https://happyfacesla.com/" },
+      {
+        name: "Face Painting Cost in Los Angeles",
+        url: pageUrl,
+      },
+    ]),
+    faqJsonLd(faqs),
+  ]}
+>
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Face Painting Cost", href: canonicalPath },
+    ]}
+  />
+
+  <!-- H1 + Hero Image -->
+  <section class="mx-auto w-full max-w-6xl px-4 pt-10">
+    <div class="aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-100">
+      <img
+        src={heroImage}
+        alt="Child with colorful face painting at a Los Angeles birthday party"
+        class="h-full w-full object-cover object-center"
+        width="1400"
+        height="2488"
+        loading="eager"
+        decoding="async"
+      />
+    </div>
+    <h1 class="mt-8 text-4xl font-extrabold text-slate-900 md:text-5xl">
+      How much does face painting cost in Los Angeles for kids' birthday parties
+    </h1>
+    <p class="mt-4 max-w-3xl text-lg text-slate-700">
+      Planning a kids' birthday party in Los Angeles and wondering about face painting costs?
+      Prices typically range from $150 to $325 or more, depending on how long you need the
+      artist, how many children will be attending, whether you add services like
+      <a class="text-orange-600 underline" href="/face-gems-face-jewelry-los-angeles/"
+        >face gems</a
+      >, and how far the artist travels to your venue. This guide breaks down exactly what
+      affects the price and what you can expect when booking
+      <a class="text-orange-600 underline" href="/face-painting-los-angeles/"
+        >face painting</a
+      >
+      in LA.
+    </p>
+  </section>
+
+  <!-- H2: Quick Answer -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <h2 class="text-2xl font-bold text-slate-900">
+      Quick Answer: Face Painting Pricing in Los Angeles
+    </h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+      For most birthday parties, face painting in Los Angeles costs between $150 and $275
+      depending on package length. Two-service party packages that combine face painting with
+      another service start from $180 and go up to $325. Travel fees may apply depending on
+      your event location.
+    </p>
+    <ul class="mt-4 space-y-2 text-sm text-slate-700">
+      <li>
+        <strong>Face painting party:</strong> from $150
+      </li>
+      <li>
+        <strong>90-minute face painting:</strong> $215
+      </li>
+      <li>
+        <strong>2-hour face painting:</strong> $275
+      </li>
+      <li>
+        <strong>Two-service party mix:</strong> $180 / $255 / $325
+      </li>
+      <li>
+        <strong>Face gems add-on:</strong> from $50
+      </li>
+    </ul>
+    <p class="mt-4 text-sm text-slate-600">
+      Exact pricing is confirmed by personalized quote based on your event date, location, and
+      guest count. See the <a class="text-orange-600 underline" href="/pricing/">pricing page</a>
+      for details on how quotes work.
+    </p>
+
+    <!-- TOP CTA -->
+    <div class="mt-8">
+      <BookingCtaBlock
+        title="Request availability and get a custom quote before booking."
+        description="Share your event date, city, and guest count. Happy Faces LA will confirm availability and send a personalized quote."
+        primaryHref="/plan-my-party/"
+        primaryLabel="Request Availability & Quote"
+      />
+    </div>
+  </section>
+
+  <!-- H2: Happy Faces LA Face Painting Pricing -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <h2 class="text-2xl font-bold text-slate-900">Happy Faces LA Face Painting Pricing</h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+      Below are the listed prices for face painting and party services from Happy Faces LA.
+      All prices are confirmed by personalized quote and may vary based on your event details,
+      travel, and service mix.
+    </p>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-orange-500">
+          Face Painting
+        </p>
+        <p class="mt-2 text-2xl font-bold text-slate-900">From $150</p>
+        <p class="mt-1 text-sm text-slate-600">Face painting party</p>
+        <ul class="mt-3 space-y-1 text-sm text-slate-700">
+          <li>Entry-level face painting party</li>
+          <li>Suited for smaller guest counts</li>
+          <li>Design menu provided at event</li>
+        </ul>
+      </div>
+
+      <div class="rounded-2xl border border-orange-200 bg-orange-50 p-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-orange-500">
+          Face Painting
+        </p>
+        <p class="mt-2 text-2xl font-bold text-slate-900">$215</p>
+        <p class="mt-1 text-sm text-slate-600">90-minute face painting</p>
+        <ul class="mt-3 space-y-1 text-sm text-slate-700">
+          <li>90 minutes of face painting</li>
+          <li>Popular for mid-size birthday parties</li>
+          <li>Design menu provided at event</li>
+        </ul>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-orange-500">
+          Face Painting
+        </p>
+        <p class="mt-2 text-2xl font-bold text-slate-900">$275</p>
+        <p class="mt-1 text-sm text-slate-600">2-hour face painting</p>
+        <ul class="mt-3 space-y-1 text-sm text-slate-700">
+          <li>2 hours of face painting</li>
+          <li>Fits larger birthday party guest lists</li>
+          <li>Design menu provided at event</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-orange-500">
+          Party Mix Packages
+        </p>
+        <p class="mt-2 text-2xl font-bold text-slate-900">$180 / $255 / $325</p>
+        <p class="mt-1 text-sm text-slate-600">Two-service party mix</p>
+        <ul class="mt-3 space-y-1 text-sm text-slate-700">
+          <li>Combines face painting with a second party service</li>
+          <li>
+            Three tier options based on duration and coverage
+          </li>
+          <li>
+            Available with
+            <a class="text-orange-600 underline" href="/balloon-twisting-los-angeles/"
+              >balloon twisting</a
+            >,
+            <a class="text-orange-600 underline" href="/glitter-tattoos-los-angeles/"
+              >glitter tattoos</a
+            >, or
+            <a
+              class="text-orange-600 underline"
+              href="/face-gems-face-jewelry-los-angeles/">face gems</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-orange-500">Add-On</p>
+        <p class="mt-2 text-2xl font-bold text-slate-900">From $50</p>
+        <p class="mt-1 text-sm text-slate-600">Face gems add-on</p>
+        <ul class="mt-3 space-y-1 text-sm text-slate-700">
+          <li>Crystal face gem application</li>
+          <li>Popular with older kids and teens</li>
+          <li>Available alongside face painting</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="mt-6 rounded-xl bg-slate-100 px-5 py-4 text-sm text-slate-700">
+      <strong>Important:</strong> Checkout and
+      <a class="text-orange-600 underline" href="/booking-policy/">Booking Retainer</a>
+      payment are available only after availability is confirmed. Submit your event details
+      first to receive your personalized quote.
+    </p>
+  </section>
+
+  <!-- H2: What Affects the Cost -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <h2 class="text-2xl font-bold text-slate-900">What Affects the Cost of Face Painting?</h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+      Several factors determine what you will pay for face painting at a birthday party in Los
+      Angeles. Understanding these helps you choose the right package for your event and budget.
+    </p>
+
+    <div class="mt-8 space-y-8">
+      <div>
+        <h3 class="text-lg font-bold text-slate-900">Event Length</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-700">
+          Longer sessions cost more because the artist dedicates more time to your event. A
+          90-minute session allows more children to be painted than a shorter entry-level
+          booking. If you have a larger guest list, booking a 2-hour session helps ensure more
+          guests get served before the party ends.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold text-slate-900">Number of Children</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-700">
+          Guest count affects how long the service needs to run. For parties with 10–15
+          children, a 90-minute session is usually sufficient. For 20 or more guests, a 2-hour
+          session or a two-service party mix gives more coverage. Your quote will reflect the
+          service length recommended for your expected attendance.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold text-slate-900">Design Complexity</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-700">
+          Simple cheek art and small designs take 3–5 minutes per child. Full-face designs,
+          detailed characters, and elaborate themes take longer, which reduces total throughput
+          during a fixed session. A design menu is provided at each event so guests can choose
+          from available options that fit the pace of the party.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold text-slate-900">Add-On Services</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-700">
+          Adding services like
+          <a
+            class="text-orange-600 underline"
+            href="/face-gems-face-jewelry-los-angeles/">face gems</a
+          >,
+          <a class="text-orange-600 underline" href="/glitter-tattoos-los-angeles/"
+            >glitter tattoos</a
+          >, or
+          <a class="text-orange-600 underline" href="/balloon-twisting-los-angeles/"
+            >balloon twisting</a
+          >
+          increases the total package price. Two-service party mix packages bundle face painting
+          with a second service at a combined rate starting from $180. Add-ons are priced and
+          confirmed in your personalized quote.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold text-slate-900">Travel Distance</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-700">
+          Happy Faces LA travels throughout Los Angeles and nearby cities. Travel fees apply
+          based on distance from the service origin:
+        </p>
+        <ul class="mt-3 space-y-2 text-sm text-slate-700">
+          <li class="flex items-start gap-2">
+            <span
+              class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+              aria-hidden="true"></span>
+            <span><strong>0–20 miles:</strong> No travel fee</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span
+              class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+              aria-hidden="true"></span>
+            <span><strong>20–40 miles:</strong> $25 travel fee</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span
+              class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+              aria-hidden="true"></span>
+            <span
+              ><strong>40–60 miles:</strong> $50 travel fee with manual approval required</span
+            >
+          </li>
+          <li class="flex items-start gap-2">
+            <span
+              class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+              aria-hidden="true"></span>
+            <span><strong>Over 60 miles:</strong> Custom quote required</span>
+          </li>
+        </ul>
+        <p class="mt-3 text-sm text-slate-600">
+          The travel fee is disclosed as a separate labeled line item in your quote before your
+          Booking Retainer is requested.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- H2: Which Package? -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <h2 class="text-2xl font-bold text-slate-900">
+      Which Face Painting Package Should You Choose?
+    </h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+      The right package depends on your guest count, how long the party runs, and whether you
+      want to add extra services. Here is a general guide by party size.
+    </p>
+
+    <div class="mt-8 space-y-6">
+      <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <h3 class="text-lg font-bold text-slate-900">
+          Small Birthday Party (under 12 children)
+        </h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-700">
+          An entry-level face painting party starting from $150 is typically sufficient for a
+          small gathering. All children can usually be painted within a shorter session window.
+          Adding
+          <a
+            class="text-orange-600 underline"
+            href="/face-gems-face-jewelry-los-angeles/">face gems</a
+          >
+          from $50 gives older kids or guests who prefer a subtler look an alternative option.
+        </p>
+      </div>
+
+      <div class="rounded-2xl border border-orange-200 bg-orange-50 p-6">
+        <h3 class="text-lg font-bold text-slate-900">
+          Medium Birthday Party (12–20 children)
+        </h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-700">
+          A 90-minute face painting session at $215 works well for most mid-size birthday
+          parties. It gives enough time to paint the majority of guests without rushing. If you
+          want to offer more variety, a two-service party mix starting from $255 adds a second
+          entertainment station.
+        </p>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <h3 class="text-lg font-bold text-slate-900">
+          Larger Party or School Event (20+ children)
+        </h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-700">
+          A 2-hour face painting session at $275 accommodates larger guest counts and keeps
+          lines moving through the event. For school events, community gatherings, or parties
+          with 30 or more guests, a two-service party mix at $325 provides two active stations
+          and significantly increases total guest throughput. Explore
+          <a
+            class="text-orange-600 underline"
+            href="/kids-birthday-party-entertainment-los-angeles/"
+            >kids' birthday party entertainment in Los Angeles</a
+          >
+          for full multi-service event options.
+        </p>
+      </div>
+    </div>
+
+    <!-- MIDDLE CTA -->
+    <div class="mt-8">
+      <BookingCtaBlock
+        title="Not sure which package fits your guest count?"
+        description="Share your event details and Happy Faces LA will recommend the right option for your party size and budget."
+        primaryHref="/plan-my-party/"
+        primaryLabel="Get a Personalized Recommendation"
+      />
+    </div>
+  </section>
+
+  <!-- H2: Face Painting vs Two-Service -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <h2 class="text-2xl font-bold text-slate-900">
+      Face Painting vs. Two-Service Party Packages
+    </h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+      A standalone face painting booking is the simplest option. The artist sets up one station
+      and works through the line of guests for the full session duration.
+    </p>
+    <p class="mt-3 text-sm leading-relaxed text-slate-700">
+      A two-service party mix adds a second station — such as
+      <a class="text-orange-600 underline" href="/balloon-twisting-los-angeles/"
+        >balloon twisting</a
+      >,
+      <a class="text-orange-600 underline" href="/glitter-tattoos-los-angeles/"
+        >glitter tattoos</a
+      >, or
+      <a class="text-orange-600 underline" href="/face-gems-face-jewelry-los-angeles/"
+        >face gems</a
+      >
+      — to the event. Two stations running simultaneously serve more guests faster and reduce
+      individual wait times. For parties where some guests prefer face painting and others want
+      something different, having two options makes the experience more inclusive.
+    </p>
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <p class="font-semibold text-slate-900">Face Painting Only</p>
+        <ul class="mt-3 space-y-1 text-sm text-slate-700">
+          <li>One artist, one station</li>
+          <li>From $150 (entry) to $275 (2-hour)</li>
+          <li>Best for smaller, focused events</li>
+          <li>Simpler logistics and setup</li>
+        </ul>
+      </div>
+      <div class="rounded-2xl border border-orange-200 bg-orange-50 p-6">
+        <p class="font-semibold text-slate-900">Two-Service Party Mix</p>
+        <ul class="mt-3 space-y-1 text-sm text-slate-700">
+          <li>Two entertainment stations</li>
+          <li>$180 / $255 / $325 by tier</li>
+          <li>Best for medium to large parties</li>
+          <li>Higher throughput for busy guest lines</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Article Image 2 -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-4">
+    <div class="aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-100">
+      <img
+        src="/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-05.webp"
+        alt="Happy Faces LA face painting setup for a kids party"
+        class="h-full w-full object-cover object-center"
+        width="1400"
+        height="2488"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <!-- H2: What Is Included -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <h2 class="text-2xl font-bold text-slate-900">
+      What Is Included in a Professional Face Painting Booking?
+    </h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+      A professional face painting booking with Happy Faces LA includes the following:
+    </p>
+    <ul class="mt-4 space-y-2 text-sm text-slate-700">
+      <li class="flex items-start gap-2">
+        <span
+          class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+          aria-hidden="true"></span>
+        <span>A professional face painting artist</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span
+          class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+          aria-hidden="true"></span>
+        <span>Professional, kid-friendly face painting products</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span
+          class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+          aria-hidden="true"></span>
+        <span>Setup and breakdown handled by the artist</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span
+          class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+          aria-hidden="true"></span>
+        <span>A design menu for guests to choose from at the event</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span
+          class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+          aria-hidden="true"></span>
+        <span
+          >A clear quote before booking, with quoted event fees listed before the
+          Booking Retainer is requested</span
+        >
+      </li>
+      <li class="flex items-start gap-2">
+        <span
+          class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+          aria-hidden="true"></span>
+        <span>Fast communication throughout the booking process</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span
+          class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+          aria-hidden="true"></span>
+        <span>A clean setup appropriate for birthday parties and family events</span>
+      </li>
+    </ul>
+    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+      Your personalized quote will confirm exactly what is included for your specific event
+      based on the services, duration, and guest count you request.
+    </p>
+  </section>
+
+  <!-- H2: Safety, Comfort, Parent Expectations -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <h2 class="text-2xl font-bold text-slate-900">Safety, Comfort, and Parent Expectations</h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+      Happy Faces LA uses professional, kid-friendly face painting products at every event.
+      Parents and guardians can expect a clean setup and a polished party experience.
+    </p>
+    <p class="mt-3 text-sm leading-relaxed text-slate-700">
+      Please disclose any known skin sensitivities, allergies, or skin conditions before service
+      begins. Service may be adjusted or declined for guests with visibly sensitive, irritated,
+      or broken skin, or for guests whose parent or guardian requests it.
+    </p>
+    <p class="mt-3 text-sm leading-relaxed text-slate-700">
+      For reference on cosmetic product safety, the
+      <a
+        class="text-orange-600 underline"
+        href="https://www.fda.gov/cosmetics"
+        target="_blank"
+        rel="noopener noreferrer"
+        >FDA cosmetics page</a
+      >
+      provides general guidance on face paints and cosmetic safety. For hygiene practices at
+      events, the
+      <a
+        class="text-orange-600 underline"
+        href="https://www.cdc.gov/hand-hygiene/"
+        target="_blank"
+        rel="noopener noreferrer"
+        >CDC hand hygiene guidance</a
+      >
+      is a useful reference.
+    </p>
+    <p class="mt-3 text-sm leading-relaxed text-slate-700">
+      Outdoor events require a shaded, covered setup area with stable ground, reasonable working
+      space, and safe access. Please share parking, access, and setup details before your
+      booking is confirmed.
+    </p>
+  </section>
+
+  <!-- H2: How to Get the Most Value -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <h2 class="text-2xl font-bold text-slate-900">
+      How to Get the Most Value From Your Budget
+    </h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+      Getting the most from your face painting budget comes down to matching the right package
+      to your actual guest count and party timeline.
+    </p>
+    <ul class="mt-4 space-y-4 text-sm text-slate-700">
+      <li class="flex items-start gap-3">
+        <span
+          class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+          aria-hidden="true"></span>
+        <span>
+          <strong>Book the right duration.</strong> A session that is too short will leave
+          some guests without face painting. A 90-minute or 2-hour session is usually more
+          cost-effective per child than booking a shorter session and needing to extend.
+        </span>
+      </li>
+      <li class="flex items-start gap-3">
+        <span
+          class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+          aria-hidden="true"></span>
+        <span>
+          <strong>Consider a two-service mix for larger parties.</strong> Two stations running
+          simultaneously means fewer children waiting in line. The two-service party mix starts
+          from $180 and handles more guests than a single-service booking of the same duration.
+        </span>
+      </li>
+      <li class="flex items-start gap-3">
+        <span
+          class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+          aria-hidden="true"></span>
+        <span>
+          <strong>Check if a travel fee applies.</strong> If your event location is within 20
+          miles, there is no travel fee. For events further out, the $25 or $50 travel fee is
+          a clearly disclosed addition to the total.
+        </span>
+      </li>
+      <li class="flex items-start gap-3">
+        <span
+          class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+          aria-hidden="true"></span>
+        <span>
+          <strong>Request a quote early.</strong> Availability on popular weekends fills up.
+          Requesting a quote early gives you more date options and time to finalize your
+          booking without pressure.
+        </span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- H2: Booking Process -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <h2 class="text-2xl font-bold text-slate-900">Booking Process With Happy Faces LA</h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+      Booking a
+      <a class="text-orange-600 underline" href="/face-painting-los-angeles/"
+        >face painting party</a
+      >
+      with Happy Faces LA follows a straightforward process:
+    </p>
+    <ol class="mt-6 space-y-4 text-sm text-slate-700">
+      <li class="flex items-start gap-4">
+        <span
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white"
+          >1</span
+        >
+        <span>
+          <strong>Request availability.</strong> Submit your event date, city, approximate
+          guest count, and services you are considering using the
+          <a class="text-orange-600 underline" href="/plan-my-party/"
+            >request availability and get a custom quote</a
+          >
+          form.
+        </span>
+      </li>
+      <li class="flex items-start gap-4">
+        <span
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white"
+          >2</span
+        >
+        <span>
+          <strong>Receive your personalized quote.</strong> Once Happy Faces LA confirms
+          availability, you will receive a quote that includes your service total, any
+          applicable travel fee as a separate labeled line item, and the Booking Retainer
+          amount.
+        </span>
+      </li>
+      <li class="flex items-start gap-4">
+        <span
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white"
+          >3</span
+        >
+        <span>
+          <strong>Pay the Booking Retainer.</strong> Checkout and
+          <a class="text-orange-600 underline" href="/booking-policy/">Booking Retainer</a>
+          payment are available only after availability is confirmed. A 20% Booking Retainer
+          of your approved total is required to hold your date. Your event date is not reserved
+          until the Booking Retainer is received.
+        </span>
+      </li>
+      <li class="flex items-start gap-4">
+        <span
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white"
+          >4</span
+        >
+        <span>
+          <strong>Your event date is confirmed.</strong> Once the Booking Retainer is received,
+          your event date is reserved and removed from availability. You will receive event
+          confirmation details to help prepare for the day.
+        </span>
+      </li>
+    </ol>
+    <p class="mt-6 text-sm text-slate-600">
+      Questions before submitting a quote request? You can also
+      <a class="text-orange-600 underline" href="/contact/">Contact Happy Faces LA</a>
+      directly for help.
+    </p>
+  </section>
+
+  <!-- Article Image 3 -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-4">
+    <div class="aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-100">
+      <img
+        src="/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-09.webp"
+        alt="Face painting and party entertainment for children in Los Angeles"
+        class="h-full w-full object-cover object-center"
+        width="1400"
+        height="2488"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <!-- H2: FAQ -->
+  <div class="mx-auto w-full max-w-6xl px-4 py-10">
+    <FAQAccordion items={faqs} />
+  </div>
+
+  <!-- H2: Final Recommendation -->
+  <section class="mx-auto w-full max-w-6xl px-4 py-10">
+    <h2 class="text-2xl font-bold text-slate-900">Final Recommendation</h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+      For most kids' birthday parties in Los Angeles, a 90-minute face painting session at $215
+      or a 2-hour session at $275 provides the best balance of coverage and value. If your
+      party has 20 or more children, a two-service party mix — starting from $255 — gives you
+      two active stations, shorter wait times, and a more polished party experience overall.
+    </p>
+    <p class="mt-3 text-sm leading-relaxed text-slate-700">
+      Not sure which option is right for your event? Submit your details and Happy Faces LA
+      will help you choose. All prices are confirmed by personalized quote, and all fees —
+      including any travel fee — are disclosed before your Booking Retainer is requested.
+    </p>
+    <p class="mt-3 text-sm leading-relaxed text-slate-700">
+      Explore the full range of
+      <a
+        class="text-orange-600 underline"
+        href="/kids-birthday-party-entertainment-los-angeles/"
+        >kids' birthday party entertainment in Los Angeles</a
+      >
+      for more service combinations, or visit the
+      <a class="text-orange-600 underline" href="/pricing/">pricing page</a>
+      for more details on how quotes work.
+    </p>
+
+    <!-- BOTTOM CTA -->
+    <div class="mt-8">
+      <BookingCtaBlock
+        title="Ready to plan your party?"
+        description="Request availability and get a custom quote from Happy Faces LA. Pricing is confirmed by personalized quote based on your event date, location, and guest count."
+        primaryHref="/plan-my-party/"
+        primaryLabel="Request Availability & Quote"
+      />
+    </div>
+  </section>
+</BaseLayout>
