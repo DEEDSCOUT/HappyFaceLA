@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "target_routes": [
+    "/face-painting-los-angeles/",
+    "/balloon-twisting-los-angeles/",
+    "/glitter-tattoos-los-angeles/",
+    "/face-gems-face-jewelry-los-angeles/"
+  ],
+  "changes": {
+    "service_page_embedded_quote_form_removed": true,
+    "service_page_primary_cta_routes_to_plan_my_party": true,
+    "legacy_get_availability_and_pricing_copy_removed": true,
+    "legacy_request_availability_and_pricing_copy_removed": true,
+    "unsafe_booking_retainer_hold_date_copy_removed": true,
+    "replacement_copy_model": "No payment is required when you submit a quote request. Happy Faces LA will confirm availability and send your official quote. If an Availability Hold is offered, a 20% retainer may be authorized only after quote review. Your booking is not confirmed until Happy Faces LA confirms artist availability and sends confirmation."
+  },
+  "preserved": {
+    "plan_my_party_route": true,
+    "durable_quote_request_endpoint_source": true,
+    "exact_child_count_behavior_source": true,
+    "homepage_gallery_v03_baseline": true,
+    "stripe_checkout_source_unchanged": true
+  }
+}

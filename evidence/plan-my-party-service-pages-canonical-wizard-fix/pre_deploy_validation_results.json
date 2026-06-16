@@ -1,0 +1,71 @@
+{
+  "ok": true,
+  "phase": "P0 production source regression plus legacy service-page quote form cleanup",
+  "branch": "p0-plan-my-party-service-canonical-wizard-20260616",
+  "base": "origin/main / 50ed379",
+  "checks": {
+    "npm_run_astro_check": {
+      "exitCode": 0,
+      "result": "passed",
+      "notes": "0 errors; existing warnings/hints only"
+    },
+    "npm_run_build": {
+      "exitCode": 0,
+      "result": "passed"
+    },
+    "npm_run_qa_postbuild": {
+      "exitCode": 0,
+      "result": "passed"
+    },
+    "homepage_visual_image_lock_review": {
+      "exitCode": 0,
+      "result": "passed"
+    },
+    "live_homepage_visual_lock": {
+      "exitCode": 0,
+      "result": "passed"
+    },
+    "source_public_functions_dist_unsafe_copy_scan": {
+      "exitCode": 0,
+      "result": "NO_MATCHES",
+      "terms": [
+        "Availability confirmed",
+        "Reserve Today",
+        "Reserve with 20% Retainer",
+        "reserve your date",
+        "reserves your date",
+        "Booking Retainer reserves your date",
+        "hold your date",
+        "date is guaranteed",
+        "artist is confirmed",
+        "booking is confirmed",
+        "non-refundable"
+      ]
+    },
+    "built_service_pages_legacy_cta_scan": {
+      "exitCode": 0,
+      "result": "NO_MATCHES",
+      "terms": [
+        "Get Availability & Pricing",
+        "Request Availability & Pricing"
+      ]
+    },
+    "built_service_pages_embedded_legacy_form_scan": {
+      "exitCode": 0,
+      "result": "NO_MATCHES",
+      "terms": [
+        "QuoteForm",
+        "data-quote-form",
+        "Request My Quote"
+      ]
+    }
+  },
+  "boundary": {
+    "deploy_before_validation": false,
+    "stripe_access": false,
+    "payment_or_card_proof": false,
+    "homepage_gallery_or_image_change": false,
+    "dns_seo_ads_gbp_change": false,
+    "production_data_mutation": false
+  }
+}
