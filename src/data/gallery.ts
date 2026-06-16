@@ -38,6 +38,88 @@ export type GalleryItem = {
 // ---------------------------------------------------------------------------
 
 export const galleryItems: GalleryItem[] = [
+  // ── Owner-selected homepage gallery baseline — 2026-06-16 ───────────────
+  {
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-easter-eggs-cherry-blossom-01.webp",
+    alt: "Easter egg and cherry blossom cheek face painting by Happy Faces LA",
+    category: "Face Painting",
+    service: "Face Painting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: true,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-superhero-web-eye-cheek-art-01.webp",
+    alt: "Superhero web eye cheek face painting by Happy Faces LA",
+    category: "Face Painting",
+    service: "Face Painting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: true,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-yellow-superhero-mask-full-face-01.webp",
+    alt: "Yellow superhero mask full face painting by Happy Faces LA",
+    category: "Face Painting",
+    service: "Face Painting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: true,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-black-tribal-swirl-eye-design-01.webp",
+    alt: "Black tribal swirl eye face painting design by Happy Faces LA",
+    category: "Face Painting",
+    service: "Face Painting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: true,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/face-painting/happy-faces-la-face-painting-rainbow-unicorn-full-face-glitter-flowers-01.webp",
+    alt: "Rainbow unicorn full face painting with glitter and flowers by Happy Faces LA",
+    category: "Face Painting",
+    service: "Face Painting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: true,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-red-balloon-sword-outdoor-party-01.webp",
+    alt: "Red balloon sword at an outdoor party by Happy Faces LA",
+    category: "Balloon Twisting",
+    service: "Balloon Twisting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: true,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-blue-balloon-animal-outdoor-party-01.webp",
+    alt: "Blue balloon animal at an outdoor party by Happy Faces LA",
+    category: "Balloon Twisting",
+    service: "Balloon Twisting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: false,
+    permissionConfirmed: true,
+  },
+  {
+    src: "/images/gallery/balloon-twisting/happy-faces-la-balloon-artist-table-bounce-house-party-01.webp",
+    alt: "Balloon artist table at a bounce house party by Happy Faces LA",
+    category: "Balloon Twisting",
+    service: "Balloon Twisting",
+    eventType: "Birthday Party",
+    location: "Los Angeles",
+    featured: false,
+    permissionConfirmed: true,
+  },
+
   // ── Face Painting — 12 real photos ───────────────────────────────────────
   {
     src: "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.webp",
@@ -46,7 +128,7 @@ export const galleryItems: GalleryItem[] = [
     service: "Face Painting",
     eventType: "Birthday Party",
     location: "Los Angeles",
-    featured: true,
+    featured: false,
     permissionConfirmed: true,
   },
   {
@@ -56,7 +138,7 @@ export const galleryItems: GalleryItem[] = [
     service: "Face Painting",
     eventType: "Birthday Party",
     location: "Los Angeles",
-    featured: true,
+    featured: false,
     permissionConfirmed: true,
   },
   {
@@ -66,7 +148,7 @@ export const galleryItems: GalleryItem[] = [
     service: "Face Painting",
     eventType: "Birthday Party",
     location: "Los Angeles",
-    featured: true,
+    featured: false,
     permissionConfirmed: true,
   },
   {
@@ -168,7 +250,7 @@ export const galleryItems: GalleryItem[] = [
     service: "Balloon Twisting",
     eventType: "Birthday Party",
     location: "Los Angeles",
-    featured: true,
+    featured: false,
     permissionConfirmed: true,
   },
   {
@@ -201,7 +283,7 @@ export const galleryItems: GalleryItem[] = [
     service: "Face Gems & Face Jewelry",
     eventType: "Birthday Party",
     location: "Los Angeles",
-    featured: true,
+    featured: false,
     permissionConfirmed: true,
   },
   {
@@ -211,7 +293,7 @@ export const galleryItems: GalleryItem[] = [
     service: "Face Gems & Face Jewelry",
     eventType: "Birthday Party",
     location: "Los Angeles",
-    featured: true,
+    featured: false,
     permissionConfirmed: true,
   },
   {

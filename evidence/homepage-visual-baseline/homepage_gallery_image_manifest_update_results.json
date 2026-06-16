@@ -1,0 +1,32 @@
+{
+  "ok": true,
+  "manifestPath": "evidence/homepage-visual-baseline/homepage_image_manifest.json",
+  "baselineVersion": "homepage-visual-baseline-v0.3-owner-gallery-20260616",
+  "manifestStatus": "OWNER_SELECTED_SOURCE_BASELINE_PENDING_AUDITOR_REVIEW",
+  "homepageGalleryCount": 6,
+  "extraOwnerSelectedGalleryAssetsStaged": 2,
+  "approvedOrPendingHomepageGalleryImages": [
+    "/images/gallery/face-painting/happy-faces-la-face-painting-easter-eggs-cherry-blossom-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-superhero-web-eye-cheek-art-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-yellow-superhero-mask-full-face-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-black-tribal-swirl-eye-design-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-rainbow-unicorn-full-face-glitter-flowers-01.webp",
+    "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-red-balloon-sword-outdoor-party-01.webp"
+  ],
+  "stagedExtraOwnerSelectedImages": [
+    "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-blue-balloon-animal-outdoor-party-01.webp",
+    "/images/gallery/balloon-twisting/happy-faces-la-balloon-artist-table-bounce-house-party-01.webp"
+  ],
+  "forbiddenOldHomepageGalleryImages": [
+    "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-02.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-03.webp",
+    "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-01.webp",
+    "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-01.webp",
+    "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-02.webp"
+  ],
+  "oldGalleryFilesDeleted": false,
+  "guardExpectedToFailIfForbiddenOldHomepageGalleryPathReturns": true,
+  "canMoveFromDraftUnknownToOwnerSelectedForHomepageGallery": true,
+  "closureNote": "Source manifest can move the homepage gallery images out of unknown_requires_owner_approval because the owner selected these Drive assets. The live homepage visual/image regression blocker remains open until owner/auditor acceptance and live custom-domain proof."
+}

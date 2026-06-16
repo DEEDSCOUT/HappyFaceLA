@@ -1,7 +1,9 @@
 {
-  "baselineVersion": "homepage-visual-baseline-v0.2-draft-20260615",
-  "status": "DRAFT_OWNER_APPROVAL_REQUIRED",
-  "generatedAt": "2026-06-15T17:22:34-07:00",
+  "baselineVersion": "homepage-visual-baseline-v0.3-owner-gallery-20260616",
+  "status": "OWNER_SELECTED_SOURCE_BASELINE_PENDING_AUDITOR_REVIEW",
+  "generatedAt": "2026-06-16T06:57:52-07:00",
+  "homepageGalleryCount": 6,
+  "extraOwnerSelectedGalleryAssetsStaged": 2,
   "images": [
     {
       "path": "/_astro/happy-faces-la-logo.xGzHiFEJ_Z2tXGb0.webp",
@@ -53,52 +55,68 @@
       "notes": "Owner decision: keep current face gems image content. Service-card rendering uses a scoped 4:5 cover frame so it visually matches the other service cards without stretching."
     },
     {
-      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.webp",
-      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.webp",
-      "sha256": "1dd0731425694112cbcd32ed4a6d7cd938ff3fc1f7d65b01e53191b8e705b222",
-      "status": "unknown_requires_owner_approval",
-      "whereUsed": "homepage recent events gallery",
-      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-easter-eggs-cherry-blossom-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-easter-eggs-cherry-blossom-01.webp",
+      "sha256": "a176c29b696ce88ba7c264afb529b587284fe85a4d0e3c385a31733517dcd6f5",
+      "status": "owner_selected_homepage_gallery_pending_auditor_review_20260616",
+      "whereUsed": "homepage recent events gallery, position 1",
+      "notes": "GALLERY-01 owner-selected Drive asset converted to local WebP. Homepage grid uses 4:5 cover crop; no stretching."
     },
     {
-      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-02.webp",
-      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-02.webp",
-      "sha256": "4e45ef61efed4ac7b8b49144be3ec074f326bbeb453e98272d2880f8b9f824ba",
-      "status": "unknown_requires_owner_approval",
-      "whereUsed": "homepage recent events gallery",
-      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-superhero-web-eye-cheek-art-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-superhero-web-eye-cheek-art-01.webp",
+      "sha256": "fa1f872817927a440dbf892a2a6541d60a2ff17c2d72ba02fd6f8c56849af546",
+      "status": "owner_selected_homepage_gallery_pending_auditor_review_20260616",
+      "whereUsed": "homepage recent events gallery, position 2",
+      "notes": "GALLERY-02 owner-selected Drive asset converted to local WebP with neutral public filename/alt text. Homepage grid uses 4:5 cover crop; no stretching."
     },
     {
-      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-03.webp",
-      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-03.webp",
-      "sha256": "2f2a3c247cb6ba31d080000775fbc2276fee86e005037c5eed3c7762e0e52d01",
-      "status": "unknown_requires_owner_approval",
-      "whereUsed": "homepage recent events gallery",
-      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-yellow-superhero-mask-full-face-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-yellow-superhero-mask-full-face-01.webp",
+      "sha256": "054c4d93ad471989646a8875f2d6c126c6f623f146a4c0699d83167306c69f82",
+      "status": "owner_selected_homepage_gallery_pending_auditor_review_20260616",
+      "whereUsed": "homepage recent events gallery, position 3",
+      "notes": "GALLERY-03 owner-selected Drive asset converted to local WebP with neutral public filename/alt text. Homepage grid uses 4:5 cover crop; no stretching."
     },
     {
-      "path": "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-01.webp",
-      "sourceFilePath": "public/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-01.webp",
-      "sha256": "e9c677e11fffe8a6bd2fe873aefff3743b9cc0c96b58cd31389c8715dd468801",
-      "status": "unknown_requires_owner_approval",
-      "whereUsed": "homepage recent events gallery",
-      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-black-tribal-swirl-eye-design-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-black-tribal-swirl-eye-design-01.webp",
+      "sha256": "fc330c80b51bfc2ff169bbc221888fd9aa0fc21555d42395b02121c219ca588b",
+      "status": "owner_selected_homepage_gallery_pending_auditor_review_20260616",
+      "whereUsed": "homepage recent events gallery, position 4",
+      "notes": "GALLERY-04 owner-selected Drive asset converted to local WebP. Homepage grid uses 4:5 cover crop; no stretching."
     },
     {
-      "path": "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-01.webp",
-      "sourceFilePath": "public/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-01.webp",
-      "sha256": "3aad15bdb287292775090661070f7ad91ca642fb6e85737f380e70461554efd3",
-      "status": "unknown_requires_owner_approval",
-      "whereUsed": "homepage recent events gallery",
-      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-rainbow-unicorn-full-face-glitter-flowers-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-rainbow-unicorn-full-face-glitter-flowers-01.webp",
+      "sha256": "03dbca202e3f604ae9c42f7c2ae8609dd3ae3a122b1aaf6b3340070dc9774538",
+      "status": "owner_selected_homepage_gallery_pending_auditor_review_20260616",
+      "whereUsed": "homepage recent events gallery, position 5",
+      "notes": "GALLERY-05 owner-selected Drive asset converted from HEIC to local WebP. Homepage grid uses 4:5 cover crop; no stretching."
     },
     {
-      "path": "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-02.webp",
-      "sourceFilePath": "public/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-02.webp",
-      "sha256": "139ae01a17f31aeca93be7eaf978d1e75e86a951632f1e277e75afe94484f943",
-      "status": "unknown_requires_owner_approval",
-      "whereUsed": "homepage recent events gallery",
-      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+      "path": "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-red-balloon-sword-outdoor-party-01.webp",
+      "sourceFilePath": "public/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-red-balloon-sword-outdoor-party-01.webp",
+      "sha256": "687463ecf286f67e65418afd2b493fb1820dd11282d32fe2ceb1fa1bb2984856",
+      "status": "owner_selected_homepage_gallery_pending_auditor_review_20260616",
+      "whereUsed": "homepage recent events gallery, position 6",
+      "notes": "GALLERY-06 owner-selected Drive asset converted from HEIF to local WebP. Homepage grid uses 4:5 cover crop; no stretching."
+    },
+    {
+      "path": "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-blue-balloon-animal-outdoor-party-01.webp",
+      "sourceFilePath": "public/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-blue-balloon-animal-outdoor-party-01.webp",
+      "sha256": "714f877e8b68dcceb0c21fb402f453584f533be157d7bbf0578acda5924962c8",
+      "status": "owner_selected_extra_gallery_asset_staged_20260616",
+      "whereUsed": "gallery data staged extra; not homepage featured in current six-image layout",
+      "notes": "GALLERY-07 owner-selected Drive asset converted from HEIF to local WebP. Staged for later use if owner authorizes homepage expansion."
+    },
+    {
+      "path": "/images/gallery/balloon-twisting/happy-faces-la-balloon-artist-table-bounce-house-party-01.webp",
+      "sourceFilePath": "public/images/gallery/balloon-twisting/happy-faces-la-balloon-artist-table-bounce-house-party-01.webp",
+      "sha256": "f2c7e66948bcb67c69079b5fe5c4cbcfdd1f036e47b3662a6f2e6e81e52f58fe",
+      "status": "owner_selected_extra_gallery_asset_staged_20260616",
+      "whereUsed": "gallery data staged extra; not homepage featured in current six-image layout",
+      "notes": "GALLERY-08 owner-selected Drive asset converted to local WebP. Staged for later use if owner authorizes homepage expansion."
     }
   ],
   "forbiddenOldImages": [
@@ -109,6 +127,54 @@
       "status": "forbidden_replaced_by_owner_selected_balloon_asset_20260615",
       "wherePreviouslyUsed": "homepage and services page balloon twisting service card",
       "notes": "Do not delete without separate cleanup authorization; visual guard fails if this path returns as a homepage image."
+    },
+    {
+      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.webp",
+      "sha256": "1dd0731425694112cbcd32ed4a6d7cd938ff3fc1f7d65b01e53191b8e705b222",
+      "status": "forbidden_replaced_by_owner_selected_gallery_baseline_20260616",
+      "wherePreviouslyUsed": "homepage recent events gallery",
+      "notes": "Old homepage gallery image replaced by owner-selected GALLERY-01 through GALLERY-06 baseline. Keep file unless separate cleanup is authorized."
+    },
+    {
+      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-02.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-02.webp",
+      "sha256": "4e45ef61efed4ac7b8b49144be3ec074f326bbeb453e98272d2880f8b9f824ba",
+      "status": "forbidden_replaced_by_owner_selected_gallery_baseline_20260616",
+      "wherePreviouslyUsed": "homepage recent events gallery",
+      "notes": "Old homepage gallery image replaced by owner-selected GALLERY-01 through GALLERY-06 baseline. Keep file unless separate cleanup is authorized."
+    },
+    {
+      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-03.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-03.webp",
+      "sha256": "2f2a3c247cb6ba31d080000775fbc2276fee86e005037c5eed3c7762e0e52d01",
+      "status": "forbidden_replaced_by_owner_selected_gallery_baseline_20260616",
+      "wherePreviouslyUsed": "homepage recent events gallery",
+      "notes": "Old homepage gallery image replaced by owner-selected GALLERY-01 through GALLERY-06 baseline. Keep file unless separate cleanup is authorized."
+    },
+    {
+      "path": "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-01.webp",
+      "sourceFilePath": "public/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-01.webp",
+      "sha256": "e9c677e11fffe8a6bd2fe873aefff3743b9cc0c96b58cd31389c8715dd468801",
+      "status": "forbidden_replaced_by_owner_selected_gallery_baseline_20260616",
+      "wherePreviouslyUsed": "homepage recent events gallery",
+      "notes": "Old homepage gallery image replaced by owner-selected GALLERY-01 through GALLERY-06 baseline. Keep file unless separate cleanup is authorized."
+    },
+    {
+      "path": "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-01.webp",
+      "sourceFilePath": "public/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-01.webp",
+      "sha256": "3aad15bdb287292775090661070f7ad91ca642fb6e85737f380e70461554efd3",
+      "status": "forbidden_replaced_by_owner_selected_gallery_baseline_20260616",
+      "wherePreviouslyUsed": "homepage recent events gallery",
+      "notes": "Old homepage gallery image replaced by owner-selected GALLERY-01 through GALLERY-06 baseline. Keep file unless separate cleanup is authorized."
+    },
+    {
+      "path": "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-02.webp",
+      "sourceFilePath": "public/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-02.webp",
+      "sha256": "139ae01a17f31aeca93be7eaf978d1e75e86a951632f1e277e75afe94484f943",
+      "status": "forbidden_replaced_by_owner_selected_gallery_baseline_20260616",
+      "wherePreviouslyUsed": "homepage recent events gallery",
+      "notes": "Old homepage gallery image replaced by owner-selected GALLERY-01 through GALLERY-06 baseline. Keep file unless separate cleanup is authorized."
     }
   ],
   "forbiddenOldCopyPatterns": [
@@ -117,5 +183,5 @@
     "Request Availability & Pricing",
     "homepage without Plan My Party"
   ],
-  "closureRequired": "Owner-approved service-card image decisions are recorded. Gallery/recent-event images remain unknown until separately approved."
+  "closureRequired": "Owner-selected gallery replacement is prepared in source only and pending owner/auditor acceptance. BLK-PUBLIC-LIVE-HOMEPAGE-VISUAL-IMAGE-REGRESSION-001 remains OPEN until accepted and live custom-domain visual/image proof passes."
 }
