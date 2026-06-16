@@ -7,6 +7,7 @@ import FAQAccordion from "../components/content/FAQAccordion.astro";
 import ServiceAreaLinks from "../components/sections/ServiceAreaLinks.astro";
 import TestimonialsSection from "../components/sections/TestimonialsSection.astro";
 import GoogleReviewsSection from "../components/sections/GoogleReviewsSection.astro";
+import BookingCtaBlock from "../components/sections/BookingCtaBlock.astro";
 import CTASection from "../components/sections/CTASection.astro";
 import { services } from "../data/services";
 import { commonFaqs } from "../data/faqs";
@@ -60,6 +61,15 @@ const featuredGallery = galleryItems
 				))
 			}
 		</div>
+	</section>
+
+	<section class="mx-auto w-full max-w-6xl px-4 pb-2">
+		<BookingCtaBlock
+			title="Now booking soccer fan face painting and matchday fan paint bars."
+			description="Fast, photo-ready country-color face painting, cheek flags, glitter, and gems for watch parties, fan zones, restaurants, bars, hotels, and sponsor activations across Los Angeles."
+			primaryHref="/soccer-fan-face-painting-los-angeles/"
+			primaryLabel="Book a Fan Paint Bar"
+		/>
 	</section>
 
 	<section class="mx-auto w-full max-w-6xl px-4 py-10">

@@ -1,0 +1,400 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import FAQAccordion from "../components/content/FAQAccordion.astro";
+import QuoteForm from "../components/conversion/QuoteForm.astro";
+import {
+  localBusinessJsonLd,
+  serviceJsonLd,
+  breadcrumbJsonLd,
+  faqJsonLd,
+} from "../utils/schema";
+
+const canonicalPath = "/soccer-fan-face-painting-los-angeles/";
+const serviceName = "Soccer Fan Face Painting";
+
+const whatWeOffer = [
+  {
+    title: "Country-color face painting",
+    body: "Bold country-color looks fans can wear with pride on matchday.",
+  },
+  {
+    title: "Fast cheek flags and eye stripes",
+    body: "Quick cheek flags and under-eye stripes that move a line fast.",
+  },
+  {
+    title: "Glitter and gems",
+    body: "Add-on glitter and gems for extra sparkle and photo appeal.",
+  },
+  {
+    title: "Kids and adults",
+    body: "Designs scaled for the whole crowd — little fans to grown-up supporters.",
+  },
+  {
+    title: "High-throughput event setup",
+    body: "Built for volume so big watch crowds keep moving between goals.",
+  },
+  {
+    title: "Insured entertainment",
+    body: "Professional, insured event service your venue can book with confidence.",
+  },
+];
+
+const bestFor = [
+  "Watch parties",
+  "Restaurants and bars",
+  "Hotels",
+  "Private pregame parties",
+  "Soccer clubs",
+  "Community events",
+  "Sponsor activations",
+  "Fan-zone style events",
+];
+
+const packages = [
+  {
+    name: "Pregame Mini Bar",
+    blurb:
+      "Compact setup for private pregame parties and home watch gatherings. Fast cheek flags, eye stripes, and glitter to get fans photo-ready before kickoff.",
+  },
+  {
+    name: "Venue Fan Paint Bar",
+    blurb:
+      "A staffed fan paint bar for restaurants, bars, and hotels on matchday. High-throughput country-color designs that keep guests entertained and posting.",
+  },
+  {
+    name: "Premium Matchday Activation",
+    blurb:
+      "Multi-artist, high-volume coverage for larger fan-zone style events and community gatherings. Country colors, glitter, and gems with fast line management.",
+  },
+  {
+    name: "Sponsor-Branded Activation",
+    blurb:
+      "Brand-aligned color palettes and add-ons for sponsor and marketing activations. QR or prepaid payment options and clean, on-brand presentation.",
+  },
+  {
+    name: "Final Weekend Package",
+    blurb:
+      "Premium multi-day or final-weekend coverage for peak matchdays. Priority scheduling, extra artists, and the full self-contained event kit.",
+  },
+];
+
+// Country-color designs are represented with simple color swatches only —
+// no federation crests, logos, or protected event branding.
+const designs = [
+  { label: "USA", colors: ["#b22234", "#ffffff", "#3c3b6e"] },
+  { label: "Türkiye", colors: ["#e30a17", "#ffffff", "#e30a17"] },
+  { label: "Switzerland", colors: ["#d52b1e", "#ffffff", "#d52b1e"] },
+  { label: "Bosnia", colors: ["#002395", "#fecb00", "#ffffff"] },
+  { label: "Belgium", colors: ["#000000", "#fdda24", "#ef3340"] },
+  { label: "Iran color stripe", colors: ["#239f40", "#ffffff", "#da0000"] },
+  { label: "New Zealand", colors: ["#00247d", "#ffffff", "#cc142b"] },
+  { label: "Soccer ball", icon: "⚽" },
+  { label: "Champion glitter", icon: "✨" },
+  { label: "Gems", icon: "💎" },
+];
+
+const compliance = [
+  "Insured entertainment",
+  "Clean, professional setup",
+  "Sanitation protocol with single-use applicators",
+  "Self-contained event kit",
+  "QR payment capable",
+  "Family-friendly designs",
+];
+
+const serviceAreas = [
+  "Los Angeles",
+  "Inglewood",
+  "Hollywood Park",
+  "L.A. Live",
+  "Downtown LA",
+  "Burbank",
+  "Venice",
+  "San Pedro",
+  "Pomona",
+  "South Bay",
+  "Palos Verdes",
+  "Torrance",
+  "Long Beach",
+];
+
+const faqs = [
+  {
+    question: "Do you paint country colors for both kids and adults?",
+    answer:
+      "Yes. We paint fan designs for every age, from little supporters to grown-up fans, with country-color looks, cheek flags, and eye stripes for matchday.",
+  },
+  {
+    question: "How fast is the fan paint bar line?",
+    answer:
+      "Our fan paint bar is built for high throughput. Quick cheek flags and eye stripes keep the line moving so large watch-party and fan-zone crowds get painted between matches.",
+  },
+  {
+    question:
+      "Can you set up at a restaurant, bar, hotel, or fan-zone style event?",
+    answer:
+      "Yes. We bring a self-contained event kit with a clean, professional setup that works for restaurants, bars, hotels, private pregame parties, and community events across Los Angeles.",
+  },
+  {
+    question: "Are you insured and is your setup sanitary?",
+    answer:
+      "Yes. We are insured and follow a sanitation protocol with single-use applicators and a clean station. We are QR payment capable and family-friendly.",
+  },
+  {
+    question: "Do you offer sponsor-branded activations?",
+    answer:
+      "Yes. We can align color palettes and add-ons to a sponsor's own brand for marketing activations. Request matchday pricing and share your activation details to get started.",
+  },
+];
+---
+
+<BaseLayout
+  title="Soccer Fan Face Painting Los Angeles | HappyFacesLA"
+  description="Fast soccer fan face painting in Los Angeles for watch parties, fan zones, restaurants, bars, hotels, private events, and sponsor activations. Country-color designs, glitter, gems, and insured event service."
+  canonicalPath={canonicalPath}
+  jsonLd={[
+    localBusinessJsonLd(),
+    serviceJsonLd(serviceName, `https://happyfacesla.com${canonicalPath}`),
+    breadcrumbJsonLd([
+      { name: "Home", url: "https://happyfacesla.com/" },
+      {
+        name: "Soccer Fan Face Painting",
+        url: `https://happyfacesla.com${canonicalPath}`,
+      },
+    ]),
+    faqJsonLd(faqs),
+  ]}
+>
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Soccer Fan Face Painting", href: canonicalPath },
+    ]}
+  />
+
+  <!-- Hero -->
+  <section class="mx-auto w-full max-w-6xl px-4 pt-10">
+    <p class="text-sm font-semibold uppercase tracking-wider text-orange-600">
+      Matchday Fan Paint Bars · Los Angeles
+    </p>
+    <h1 class="mt-2 text-4xl font-extrabold text-slate-900 md:text-5xl">
+      Soccer Fan Face Painting in Los Angeles
+    </h1>
+    <p class="mt-4 max-w-3xl text-lg text-slate-700">
+      Fast, photo-ready fan face painting for watch parties, fan zones,
+      restaurants, bars, hotels, private events, and sponsor activations.
+    </p>
+    <div class="mt-6 flex flex-wrap gap-3">
+      <a
+        class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600"
+        href="#book"
+        data-track-event="soccer_book_click"
+      >
+        Book a Fan Paint Bar
+      </a>
+      <a
+        class="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900 hover:border-orange-500 hover:text-orange-600"
+        href="/plan-my-party/"
+      >
+        Request Matchday Pricing
+      </a>
+      <a
+        class="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900"
+        href="tel:+18186195506"
+        data-track-event="phone_click"
+      >
+        Call/Text 818-619-5506
+      </a>
+    </div>
+    <p class="mt-4 text-sm text-slate-600">
+      Insured · High-throughput setup · Family-friendly · Booking matchday
+      activations now.
+    </p>
+  </section>
+
+  <div class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-10">
+    <!-- What We Offer -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="text-2xl font-bold text-slate-900">What We Offer</h2>
+      <div class="mt-5 grid gap-4 md:grid-cols-2">
+        {
+          whatWeOffer.map((item) => (
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <h3 class="text-base font-semibold text-slate-900">
+                {item.title}
+              </h3>
+              <p class="mt-1 text-sm leading-relaxed text-slate-700">
+                {item.body}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+      <p class="mt-5 text-sm text-slate-600">
+        Often paired with{" "}
+        <a class="text-orange-600 hover:underline" href="/face-painting-los-angeles/">
+          face painting
+        </a>,{" "}
+        <a class="text-orange-600 hover:underline" href="/glitter-tattoos-los-angeles/">
+          glitter tattoos
+        </a>, and{" "}
+        <a
+          class="text-orange-600 hover:underline"
+          href="/face-gems-face-jewelry-los-angeles/"
+        >
+          face gems
+        </a>
+        for a full fan look.
+      </p>
+    </section>
+
+    <!-- Best For -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="text-2xl font-bold text-slate-900">Best For</h2>
+      <div class="mt-4 flex flex-wrap gap-2">
+        {
+          bestFor.map((item) => (
+            <span class="rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-sm text-slate-700">
+              {item}
+            </span>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Packages -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="text-2xl font-bold text-slate-900">Packages</h2>
+      <p class="mt-2 text-sm text-slate-600">
+        Choose a starting point, then we tailor artists, timing, and add-ons to
+        your venue and crowd size.
+      </p>
+      <div class="mt-5 grid gap-4 md:grid-cols-2">
+        {
+          packages.map((pkg) => (
+            <div class="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-5">
+              <h3 class="text-lg font-bold text-slate-900">{pkg.name}</h3>
+              <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-700">
+                {pkg.blurb}
+              </p>
+              <a
+                class="mt-4 inline-block text-sm font-semibold text-orange-600 hover:underline"
+                href="#book"
+              >
+                Book this package →
+              </a>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Fast Fan Designs -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="text-2xl font-bold text-slate-900">Fast Fan Designs</h2>
+      <p class="mt-2 text-sm text-slate-600">
+        Generic country-color looks and fan favorites — quick to paint, great
+        for photos.
+      </p>
+      <div class="mt-5 flex flex-wrap gap-3">
+        {
+          designs.map((design) => (
+            <span class="flex items-center gap-2 rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-800">
+              {design.colors ? (
+                <span
+                  class="flex h-4 w-6 overflow-hidden rounded-sm ring-1 ring-slate-300"
+                  aria-hidden="true"
+                >
+                  {design.colors.map((color) => (
+                    <span class="flex-1" style={`background:${color}`} />
+                  ))}
+                </span>
+              ) : (
+                <span aria-hidden="true">{design.icon}</span>
+              )}
+              {design.label}
+            </span>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Compliance / Professional Setup -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="text-2xl font-bold text-slate-900">
+        Compliance &amp; Professional Setup
+      </h2>
+      <ul class="mt-4 grid gap-2 text-sm text-slate-700 md:grid-cols-2">
+        {
+          compliance.map((item) => (
+            <li class="flex items-start gap-2">
+              <span class="mt-0.5 text-orange-500" aria-hidden="true">✓</span>
+              {item}
+            </li>
+          ))
+        }
+      </ul>
+      <p class="mt-5 text-xs leading-relaxed text-slate-500">
+        Happy Faces LA is an independent entertainment service. We are not an
+        official partner, sponsor, or affiliate of any soccer federation,
+        tournament organizer, league, stadium, or event sponsor, and we do not
+        use protected event logos, mascots, or crests.
+      </p>
+    </section>
+
+    <!-- Service Areas -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="text-2xl font-bold text-slate-900">Service Areas</h2>
+      <p class="mt-2 text-sm text-slate-600">
+        Bringing matchday fan paint bars to Los Angeles and nearby
+        communities. Share your venue or ZIP code for availability.
+      </p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        {
+          serviceAreas.map((area) => (
+            <span class="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-700">
+              {area}
+            </span>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <FAQAccordion items={faqs} />
+
+    <!-- CTA -->
+    <section class="rounded-2xl bg-slate-900 px-6 py-10 text-white md:px-10">
+      <h2 class="text-2xl font-bold md:text-3xl">
+        Booking matchday activations now.
+      </h2>
+      <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-200">
+        Lock in a fan paint bar for your watch party, venue, or sponsor
+        activation. Tell us your matchday and crowd size and we will confirm
+        availability fast.
+      </p>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <a
+          class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600"
+          href="#book"
+          data-track-event="soccer_book_click"
+        >
+          Book a Fan Paint Bar
+        </a>
+        <a
+          class="rounded-xl border border-slate-500 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+          href="tel:+18186195506"
+          data-track-event="phone_click"
+        >
+          Call/Text 818-619-5506
+        </a>
+      </div>
+    </section>
+
+    <!-- Lead capture -->
+    <section id="book" class="scroll-mt-24">
+      <QuoteForm />
+    </section>
+  </div>
+</BaseLayout>

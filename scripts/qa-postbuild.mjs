@@ -19,6 +19,7 @@ const requiredHtmlRoutes = [
     "kids-birthday-party-entertainment-los-angeles/index.html",
     "corporate-event-face-painting-los-angeles/index.html",
     "school-festival-face-painting-los-angeles/index.html",
+    "soccer-fan-face-painting-los-angeles/index.html",
     "pricing/index.html",
     "gallery/index.html",
     "faq/index.html",
