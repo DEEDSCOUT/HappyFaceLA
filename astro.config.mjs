@@ -16,7 +16,14 @@ export default defineConfig({
           '/share-your-experience/',
           '/corporate-event-face-painting-los-angeles/',
           '/school-festival-face-painting-los-angeles/',
-          '/service-areas/'
+          '/service-areas/',
+          // /reviews/ redirects to /gallery/ — exclude both slash variants
+          // so the filter holds even if trailingSlash/redirect behavior changes.
+          '/reviews',
+          '/reviews/',
+          // /booking-confirmed/ is a noindex post-payment utility page.
+          '/booking-confirmed',
+          '/booking-confirmed/'
         ];
         return !excludedPaths.some((p) => page.includes(p));
       }

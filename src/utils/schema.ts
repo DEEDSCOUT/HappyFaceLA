@@ -9,8 +9,10 @@ export function organizationJsonLd() {
     return {
         "@context": "https://schema.org",
         "@type": "Organization",
+        "@id": `${business.url}/#organization`,
         name: business.name,
         url: business.url,
+        logo: `${business.url}/images/happy-faces-la-logo.png`,
         telephone: business.phone,
         sameAs: [business.instagramUrl]
     };
@@ -20,8 +22,10 @@ export function localBusinessJsonLd() {
     return {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
+        "@id": `${business.url}/#localbusiness`,
         name: business.name,
         url: business.url,
+        image: `${business.url}/images/services/happy-faces-la-face-painting-service.webp`,
         telephone: business.phone,
         areaServed: business.areaServed,
         sameAs: [business.instagramUrl],
@@ -39,6 +43,7 @@ export function websiteJsonLd() {
     return {
         "@context": "https://schema.org",
         "@type": "WebSite",
+        "@id": `${business.url}/#website`,
         name: business.name,
         url: business.url
     };

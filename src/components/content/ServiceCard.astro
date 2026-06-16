@@ -5,9 +5,17 @@ interface Props {
   href: string;
   image?: string;
   imageAlt?: string;
+  linkLabel?: string;
 }
 
-const { title, description, href, image, imageAlt = title } = Astro.props;
+const {
+  title,
+  description,
+  href,
+  image,
+  imageAlt = title,
+  linkLabel = `Explore ${title}`,
+} = Astro.props;
 ---
 
 <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
@@ -25,6 +33,6 @@ const { title, description, href, image, imageAlt = title } = Astro.props;
   <div class="p-6">
     <h3 class="text-xl font-semibold text-slate-900">{title}</h3>
     <p class="mt-3 text-sm leading-relaxed text-slate-700">{description}</p>
-    <a class="mt-4 inline-block text-sm font-semibold text-orange-600 hover:text-orange-700" href={href}>Explore service</a>
+    <a class="mt-4 inline-block text-sm font-semibold text-orange-600 hover:text-orange-700" href={href}>{linkLabel}</a>
   </div>
 </article>
