@@ -16,6 +16,7 @@ import {
 	organizationJsonLd,
 	localBusinessJsonLd,
 	websiteJsonLd,
+	faqJsonLd,
 } from "../utils/schema";
 
 // Show six owner-selected featured gallery items on the homepage — real photos only
@@ -31,10 +32,10 @@ const featuredGallery = galleryItems
 ---
 
 <BaseLayout
-	title="Face Painting, Balloon Twisting & Glitter Tattoos in Los Angeles | Happy Faces LA"
-	description="Book Happy Faces LA for professional face painting, balloon twisting, glitter tattoos, and face gems in Los Angeles. Call/text 818-619-5506 for availability and pricing."
+	title="LA Face Painting & Kids Party Entertainment | Happy Faces LA"
+	description="Professional face painting, balloons, glitter tattoos & face gems for kids' parties across Los Angeles. Call or text 818-619-5506 for availability & pricing."
 	canonicalPath="/"
-	jsonLd={[organizationJsonLd(), localBusinessJsonLd(), websiteJsonLd()]}
+	jsonLd={[organizationJsonLd(), localBusinessJsonLd(), websiteJsonLd(), faqJsonLd(commonFaqs)]}
 	homepageVisualBaseline="homepage-visual-baseline-v0.3-owner-gallery-20260616"
 >
 	<Hero
@@ -47,8 +48,14 @@ const featuredGallery = galleryItems
 	/>
 
 	<section class="mx-auto w-full max-w-6xl px-4 py-10">
-		<h2 class="text-2xl font-bold text-slate-900">Core services</h2>
-		<div class="mt-4 grid gap-4 md:grid-cols-2">
+		<h2 class="text-2xl font-bold text-slate-900">Kids Party Entertainment Services in Los Angeles</h2>
+		<p class="mt-4 max-w-3xl text-base leading-relaxed text-slate-700">
+			Happy Faces LA brings professional, fully insured party entertainment to birthdays, school
+			events, festivals, and corporate family days across Los Angeles — including Burbank, Glendale,
+			Pasadena, Sherman Oaks, Studio City, and Encino. Every artist uses skin-safe,
+			professional-grade paints and keeps lines moving so no child waits long.
+		</p>
+		<div class="mt-6 grid gap-4 md:grid-cols-2">
 			{
 				services.map((service) => (
 					<ServiceCard
@@ -57,6 +64,11 @@ const featuredGallery = galleryItems
 						href={`/${service.slug}/`}
 						image={service.image}
 						imageAlt={service.imageAlt}
+						linkLabel={
+							service.slug === "face-gems-face-jewelry-los-angeles"
+								? "Face Gems for Parties in Los Angeles"
+								: `${service.name} in Los Angeles`
+						}
 					/>
 				))
 			}
@@ -73,7 +85,7 @@ const featuredGallery = galleryItems
 	</section>
 
 	<section class="mx-auto w-full max-w-6xl px-4 py-10">
-		<GalleryGrid title="Recent events" images={featuredGallery} />
+		<GalleryGrid title="Recent Los Angeles Parties" images={featuredGallery} />
 	</section>
 
 	<GoogleReviewsSection

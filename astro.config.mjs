@@ -16,7 +16,11 @@ export default defineConfig({
           '/share-your-experience/',
           '/corporate-event-face-painting-los-angeles/',
           '/school-festival-face-painting-los-angeles/',
-          '/service-areas/'
+          '/service-areas/',
+          // /reviews/ redirects to /gallery/ — keep it out of the sitemap.
+          '/reviews/',
+          // /booking-confirmed/ is a noindex post-payment utility page.
+          '/booking-confirmed/'
         ];
         return !excludedPaths.some((p) => page.includes(p));
       }
