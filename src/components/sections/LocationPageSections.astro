@@ -1,7 +1,6 @@
 ---
 import type { LocationItem } from "../../data/locations";
 import FAQAccordion from "../content/FAQAccordion.astro";
-import QuoteForm from "../conversion/QuoteForm.astro";
 
 interface Props {
   location: LocationItem;
@@ -70,8 +69,8 @@ const faqs = [
         >See all services</a
       >
       <span class="mx-2 text-slate-300">|</span>
-      <a href="/contact/" class="text-orange-600 hover:underline"
-        >Contact us</a
+      <a href="/plan-my-party/" class="text-orange-600 hover:underline"
+        >Plan My Party</a
       >
       <span class="mx-2 text-slate-300">|</span>
       <a href="/pricing/" class="text-orange-600 hover:underline"
@@ -137,5 +136,33 @@ const faqs = [
   </section>
 
   <FAQAccordion items={faqs} />
-  <QuoteForm />
+
+  <section class="rounded-2xl border border-orange-200 bg-orange-50 p-6">
+    <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+      <div>
+        <h2 class="text-2xl font-bold text-orange-950">
+          Ready to plan an event in {location.city}?
+        </h2>
+        <p class="mt-2 text-sm leading-relaxed text-orange-900">
+          Use Plan My Party for the canonical planning flow, or call/text the
+          team if you prefer to talk through your event.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3 md:justify-end">
+        <a
+          class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600"
+          href="/plan-my-party/"
+        >
+          Plan My Party
+        </a>
+        <a
+          class="rounded-xl border border-orange-300 px-5 py-3 text-sm font-semibold text-orange-950 hover:bg-orange-100"
+          href="tel:+18186195506"
+          data-track-event="phone_click"
+        >
+          Call/Text 818-619-5506
+        </a>
+      </div>
+    </div>
+  </section>
 </section>
