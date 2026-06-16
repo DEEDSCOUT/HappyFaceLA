@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "regressionConfirmedBeforeFix": true,
+  "preFixLiveDeployment": "94d10a52-52c2-45e2-b593-1a9e9dcfb0d2",
+  "preFixFindings": {
+    "requiredGallery01Through06Present": false,
+    "forbiddenOldGalleryPathsPresent": true,
+    "baselineMarkerPresent": false,
+    "planMyPartyPresent": true,
+    "googleDriveHotlinksPresent": false,
+    "cfCacheStatus": "DYNAMIC"
+  },
+  "postFixFindings": {
+    "requiredGallery01Through06Present": true,
+    "gallery07And08HomepageFeatured": false,
+    "forbiddenOldGalleryPathsPresent": false,
+    "baselineMarkerPresent": true,
+    "planMyPartyPresent": true,
+    "googleDriveHotlinksPresent": false,
+    "allSixGalleryImageUrlsReturnWebp": true
+  }
+}

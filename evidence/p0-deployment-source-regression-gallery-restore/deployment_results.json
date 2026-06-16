@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "finalDeployment": {
+    "project": "happyfacesla",
+    "environment": "Production",
+    "branch": "main",
+    "deploymentId": "e8f11ebc-f9c1-48ca-a953-b78b32a08780",
+    "deploymentUrl": "https://e8f11ebc.happyfacesla.pages.dev",
+    "sourceLabel": "8339378",
+    "sourceCommit": "8339378ba716bbcb455ac4aaed39f1e9c2106f9f"
+  },
+  "intermediateSupersededDeployment": {
+    "deploymentId": "5eaf9eac-7ad0-4679-8373-87e3d235e376",
+    "reason": "Deploy-mode live visual lock rejected manifest status before accepted baseline metadata was reconciled."
+  },
+  "manualPartialDistUsed": false,
+  "staleBranchUsed": false,
+  "secretsPrinted": false
+}

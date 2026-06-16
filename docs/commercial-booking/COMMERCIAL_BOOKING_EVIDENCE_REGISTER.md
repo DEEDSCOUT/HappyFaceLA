@@ -1,43 +1,79 @@
 # Commercial Booking Evidence Register
 
-Date: 2026-06-11
-Release state: NO_GO
+Date: 2026-06-16
+Release state: GO
+
+Final state: `P0 DEPLOYMENT SOURCE REGRESSION FIX PASSED — GALLERY V0.3 RESTORED AND QUOTE-REQUEST PROOF PRESERVED — RELEASE STATE GO`
 
 ## Evidence Records
 
-| Evidence ID | Evidence Type | Status | Accepted? | Auditor Verdict | Next Dependency | What It Proves |
-| --- | --- | --- | --- | --- | --- | --- |
-| EVD-PUBLIC-BOOKING-R13-R9-001 | Admin slot workflow and browser QA proof | BLOCKED / Not Submitted | No | Not submitted | Provide Preview `ADMIN_SLOT_TOKEN` through a non-exposing runtime environment variable | Missing/wrong admin token fail closed; fresh Preview deployment exists; correct-token admin create/read/update, browser QA, checkout hold, webhook/simulation, idempotency, and cleanup proof are blocked. |
-| EVD-PUBLIC-BOOKING-R13-R8D-001 | Preview `BOOKINGS_KV` binding recheck, current-code Preview redeploy, checkout/webhook proof rerun | Accepted | Yes | Accepted | R13-R9 authorization basis satisfied | Preview `BOOKINGS_KV` is bound after fresh current-code Preview redeploy; checkout fail-closed/no-url behavior, Stripe TEST checkout hold creation, webhook fail-closed behavior, approved TEST reservation/idempotency simulation, cleanup, and leak scans were rerun. |
-| EVD-PUBLIC-BOOKING-R13-R8-001 | Full R13-R8 public booking Preview proof | Accepted for R13-R9 authorization basis | Yes for R13-R9 entry | Accepted for R13-R9 entry | Complete R13-R9 after admin-token blocker is resolved | R13-R8 proof chain is sufficient to authorize R13-R9, per owner confirmation. |
+| Evidence ID | Evidence Type | Status | Accepted? | Next Dependency | What It Proves |
+| --- | --- | --- | --- | --- | --- |
+| EVD-PUBLIC-WEBSITE-P0-DEPLOYMENT-SOURCE-REGRESSION-GALLERY-RESTORE-001 | P0 deployment-source regression fix, gallery v0.3 restore, and quote-request proof preservation | PASS / live proof complete | Yes | Preserve; real card/payment proof requires separate owner authorization | Reconciled deployment `e8f11ebc-f9c1-48ca-a953-b78b32a08780` from source `8339378` restored PR #11 gallery v0.3 after hotfix deployment `94d10a52-52c2-45e2-b593-1a9e9dcfb0d2` regressed homepage gallery source. Live visual lock passed against `homepage-visual-baseline-v0.3-owner-gallery-20260616`; synthetic proof `HFLA-P0-MAINRECONCILE-20260616T171704` returned durable endpoint/D1/Gmail/Sheets proof with exact child count `18`. |
+| EVD-PUBLIC-BOOKING-P0-QUOTE-REQUEST-ENDPOINT-RECONCILIATION-EXACT-COUNT-001 | P0 endpoint reconciliation, exact child count deploy, and real lead delivery proof | PASS / real lead delivery proven | Yes | Preserve; real card/payment proof requires separate owner authorization | Controlled deployment `94d10a52-52c2-45e2-b593-1a9e9dcfb0d2` reconciled production `/api/quote-request` to the durable handler and deployed the exact child-count UX fix. Synthetic proof `HFLA-P0-ENDPOINTFIX-20260616-092836` returned `ok=true`, `received=true`, `persisted=true`, and lead `lead_9ab40aac964c41f18f42c5168c39`; D1 exact count `18` and confidence `exact` passed; Gmail destination `info@happyfacesla.com` and approved Google Sheets row passed; no raw secrets, Make webhook, Gmail body, Sheet URL, broad records, PII, card/payment, or Stripe access occurred. |
+| EVD-PUBLIC-BOOKING-POST-DEPLOY-P1-SOURCE-BASELINE-RESTORATION-001 | Source baseline restoration / reconciliation | PASS / accepted | Yes (auditor accepted 2026-06-14) | None — accepted | Candidate ZIP was unpacked/restored locally; minimal quote-request wrapper was reconstructed and contract-proven; quote-classification module was reconstructed; contracts, Astro check, build, postbuild QA, and no-leak scans pass. |
+| EVD-PUBLIC-BOOKING-POST-DEPLOY-P1-QUOTE-CLASSIFICATION-001 | Quote-classification module restoration / audited reconstruction | PASS / accepted | Yes (auditor accepted 2026-06-14) | None — accepted | Exact module was not recoverable; reconstructed from restored WizardShell/source contract only. |
+| EVD-PUBLIC-BOOKING-POST-DEPLOY-P1-CONDITIONAL-RETAINER-HOLD-001 | Conditional retainer hold implementation | BLOCKED / superseded by non-seeded remediation | No | Superseded by non-seeded remediation | Auditor review found this source still required seeded D1 availability before checkout and retained the old `$150/$30` proof-only live policy. |
+| EVD-PUBLIC-BOOKING-POST-DEPLOY-P1-CONDITIONAL-RETAINER-HOLD-NON-SEEDED-001 | Conditional retainer hold non-seeded model remediation | PASS / accepted | Yes (2026-06-15) | Resume remaining controlled deploy non-payment checks | Non-seeded deterministic birthday-party Availability Hold source remediation passes: checkout 18/18, manual-capture 10/10, artist-confirmed 8/8, artist-unavailable 9/9, pricing 6/6, exclusions 7/7, copy 13/13, canonical 26/26, endpoints 17/17, delivery 12/12, metadata 12/12, astro/build/QA/no-leak/homepage lock pass; included in controlled deploy rerun. |
+| EVD-PUBLIC-BOOKING-POST-DEPLOY-P1-CONTROLLED-DEPLOY-EXECUTION-001 | Controlled production deploy + migration + live non-payment verification | PASS / live non-payment verification complete | Yes for non-payment verification | Preserve; real card/payment proof requires separate owner authorization | Pre-deploy validation, environment gate, D1 migration `0004`, Cloudflare Pages deploy `e598a7a9-835f-4aee-848c-0008e3960023`, homepage/nav/CTA checks, scoped D1 synthetic lead persistence, final Gmail/Sheets proof, no-card non-seeded Availability Hold reachability, live copy verification, and admin endpoint guard checks passed. No card entry, payment authorization, capture, refund, production slot creation, or availability seeding occurred. |
+| EVD-PUBLIC-BOOKING-POST-DEPLOY-P1-GMAIL-SHEETS-FINAL-DESTINATION-RECONCILIATION-001 | Gmail/Sheets final-destination proof reconciliation | BLOCKED | No | Fix/reconcile Make final-destination mapping or destination target | Reconciliation of the already-submitted synthetic lead confirmed D1 field predicates pass and Make-derived flags are set, but owner Gmail final destination has field labels without expected values and bounded known-sheet searches did not find the synthetic lead. No additional synthetic lead was submitted. |
+| EVD-PUBLIC-BOOKING-POST-DEPLOY-P1-MAKE-GMAIL-SHEETS-MAPPING-REPAIR-V2-001 | Make/Gmail/Sheets final-destination mapping repair V2 | PASS / final-destination proof passed | Yes | Preserve | Manual/API safe-mode Make repair corrected Gmail canonical-field template, Sheets Search Rows canonical `lead_id` lookup, Sheets Add Row A:AP canonical mapping, and Add Row filter. One synthetic Plan My Party proof lead proved owner Gmail and approved lead sheet field-level delivery. |
+| EVD-PUBLIC-BOOKING-POST-DEPLOY-P1-CONTROLLED-DEPLOY-VERIFICATION-RESUME-NON-PAYMENT-001 | Controlled deploy verification resume - non-payment checks | PASS | Yes | Preserve; do not run real payment/card proof without separate owner authorization | Live deterministic birthday-party Availability Hold reachability works without a pre-seeded slot; the live API returned a Stripe-hosted Checkout URL with pending artist confirmation and a 20% retainer, but no URL/session ID was recorded and no card/payment occurred. Live customer copy passed and closed the instant-quote copy blocker. Admin booking and slot endpoints failed closed with missing/wrong tokens. |
+| EVD-PUBLIC-WEBSITE-CANONICAL-HOMEPAGE-BASELINE-001 | Homepage/nav/image baseline reconciliation | BLOCKED / Auditor Review Required | No | Superseded by reconstruction patch | No exact source reproduces the live "Plan My Party" homepage nav; local main + hflpub@c33233f are old inquiry-style; hero image present; service-picker images only in hflpub (uncommitted); no protected file edited; no deploy; live fetch 403 (screenshot used). |
+| EVD-PUBLIC-WEBSITE-CANONICAL-HOMEPAGE-PATCH-001 | Homepage/nav/image baseline minimal reconstruction patch | PASS / accepted | Yes (auditor accepted 2026-06-15) | Live verified in blocked controlled deploy rerun | Plan My Party added to nav + homepage hero primary CTA → /plan-my-party/ (built homepage: 3 Plan My Party / 3 plan-my-party hrefs); butterfly hero preserved; no images changed; only navigation.ts + index.astro changed; astro check/build/QA + no-leak pass; live homepage/nav verified in blocked controlled deploy rerun. |
+| EVD-PUBLIC-WEBSITE-LIVE-HOMEPAGE-VISUAL-IMAGE-REGRESSION-001 | Live homepage visual/image regression diagnosis + guard plan | PASS / closed by PR #11 live proof | Yes (2026-06-16) | Preserve | Read-only diagnosis found the earlier visual/image blocker root cause: prior homepage lock was too narrow and no full canonical image manifest existed. PR #11 later merged the owner-selected gallery v0.3 baseline and live visual proof passed, closing `BLK-PUBLIC-LIVE-HOMEPAGE-VISUAL-IMAGE-REGRESSION-001`. |
+| EVD-PUBLIC-WEBSITE-HOMEPAGE-VISUAL-GUARD-MOBILE-CTA-001 | Homepage visual/image guard + mobile CTA source patch | PASS / accepted and live-proven by PR #11 | Yes (2026-06-16) | Preserve | Source-only patch: mobile sticky booking CTA is `Plan My Party -> /plan-my-party/`; homepage baseline meta marker added; `dist/build-manifest.json` generated by build; build/live homepage visual guards added; manifest lists homepage images. PR #11 finalized the owner-selected gallery v0.3 baseline and live visual lock passed. |
+| EVD-PUBLIC-WEBSITE-HOMEPAGE-SERVICES-IMAGE-UPDATE-001 | Homepage + services service-card image update | PASS / accepted in source | Yes | Preserve | Face painting and glitter tattoos unchanged; Balloon Twisting uses owner-selected local WebP with no Google Drive hotlink; Face Gems content preserved and service-card rendering normalized to 4:5 frame on homepage and `/services/`; old balloon path is forbidden in manifest; Astro/build/QA/review-mode visual-lock/no-secret checks pass. |
+| EVD-PUBLIC-WEBSITE-HOMEPAGE-GALLERY-V03-LIVE-PROOF-001 | PR #11 homepage gallery v0.3 owner-selected image baseline live proof | PASS / accepted | Yes (2026-06-16) | Preserve; real card/payment proof requires separate owner authorization | PR #11 merged into `main` at `31b3ea03940ec49f905a770674c20b342cb99e81`; Cloudflare Production deployment `ba0824b5-c317-49ae-9456-27f842005994` from `main` / `31b3ea0` passed live proof. Homepage, `/plan-my-party/`, and `/soccer-fan-face-painting-los-angeles/` returned 200; Plan My Party CTAs were live; old `Get Quote -> /contact/` sticky CTA was absent; GALLERY-01 through GALLERY-06 appeared live; GALLERY-07 and GALLERY-08 were not homepage-featured; old forbidden gallery paths and Google Drive hotlinks were absent; all six gallery image URLs returned 200 as WebP; live visual lock passed against `homepage-visual-baseline-v0.3-owner-gallery-20260616`. No card/payment proof was run. |
 
-## R13-R9 Evidence Pointers
+| EVD-PUBLIC-BOOKING-POST-DEPLOY-P1-PLAN-MY-PARTY-LEAD-DATA-001 | Plan My Party lead data completeness remediation | PASS / accepted | Yes (auditor accepted 2026-06-15) | Preserve; resume remaining live verification | Both lead paths unified onto canonical model; complete canonical payload; child never blank; customer budget vs system pricing separate; `preferredContactMethod` type-contract fixed; canonical 26/26, endpoints 17/17, delivery + metadata preserved 12/12; astro/build/QA + no-leak pass; migration `0004` applied, scoped D1 persistence passed, and final Gmail/Sheets field-level verification now passes by V2 mapping repair. |
+
+## Evidence Pointers
 
 | Artifact | Purpose |
 | --- | --- |
-| `docs/commercial-booking/PUBLIC_BOOKING_R13_R9_ADMIN_SLOT_WORKFLOW_AND_BROWSER_QA_PROOF_REPORT.md` | Canonical R13-R9 blocked execution report |
-| `https://ff381b9f.happyfacesla.pages.dev` | Fresh R13-R9 Preview deployment |
-| `https://r13-r9-proof.happyfacesla.pages.dev` | Fresh R13-R9 Preview alias |
-
-## R13-R8D Evidence Pointers
-
-| Artifact | Purpose |
-| --- | --- |
-| `docs/commercial-booking/PUBLIC_BOOKING_R13_R8D_PREVIEW_BOOKINGS_KV_BINDING_RECHECK_CURRENT_CODE_PREVIEW_REDEPLOY_CHECKOUT_WEBHOOK_PROOF_RERUN_REPORT.md` | Canonical R13-R8D continuation report |
-| `evidence/r13-r8d/run_continuation_proofs.mjs` | HTTP proof runner for fresh Preview deployment |
-| `evidence/r13-r8d/continuation_http_results.json` | P1/P2/P5/P6/P7/P8a/P10 runtime evidence |
-| `evidence/r13-r8d/continuation_seed.sql` | Preview-only synthetic D1 seed |
-| `evidence/r13-r8d/continuation_p8_simulate.sql` | Approved TEST reservation simulation |
-| `evidence/r13-r8d/continuation_p9_duplicate_attempt.sql` | Duplicate/idempotency simulation |
-| `evidence/r13-r8d/continuation_cleanup.sql` | Preview-only synthetic D1 cleanup |
+| `docs/commercial-booking/PUBLIC_WEBSITE_P0_DEPLOYMENT_SOURCE_REGRESSION_GALLERY_RESTORE_REPORT.md` | P0 deployment-source regression fix report: gallery v0.3 restored and quote-request proof preserved |
+| `evidence/p0-deployment-source-regression-gallery-restore/` | Sanitized evidence for deployment diagnosis, source reconciliation, validation, deployment, live visual proof, quote-request proof, deployment policy guard, and no-secret boundary |
+| `docs/commercial-booking/PUBLIC_BOOKING_POST_DEPLOY_P1_CONDITIONAL_RETAINER_HOLD_IMPLEMENTATION_REPORT.md` | Prior seeded-slot P1 implementation report (BLOCKED / superseded by non-seeded model remediation; do not treat as accepted or deployable) |
+| `evidence/post-deploy-p1-conditional-retainer-hold-implementation/` | Prior seeded-slot P1 proof package (superseded by non-seeded model remediation; retained as historical evidence only) |
+| `docs/commercial-booking/PUBLIC_BOOKING_POST_DEPLOY_P1_CONDITIONAL_RETAINER_HOLD_NON_SEEDED_MODEL_REMEDIATION_REPORT.md` | Non-seeded conditional hold remediation report (PASS / accepted in source; included in blocked controlled deploy rerun) |
+| `evidence/post-deploy-p1-conditional-retainer-hold-non-seeded-model/` | Non-seeded remediation proofs: live policy replacement, non-seeded checkout, seeded-slot safety, manual-review fail-closed, manual capture, admin workflows, copy, preserved contracts, validation, no-leak, homepage lock |
+| `docs/commercial-booking/PUBLIC_BOOKING_POST_DEPLOY_P1_CONTROLLED_DEPLOY_EXECUTION_REPORT.md` | Controlled deploy rerun report (historically BLOCKED during live verification; deploy and migration completed, D1 scoped proof passed; final Gmail/Sheets blocker later closed by V2 mapping repair) |
+| `evidence/post-deploy-p1-controlled-deploy-execution/` | Controlled deploy rerun evidence: validation, env gate, migration, deployment, homepage/nav, scoped D1 lead proof, blocked Gmail/Sheets final-destination proof, not-run stop artifacts, rollback decision, no-leak |
+| `docs/commercial-booking/PUBLIC_BOOKING_POST_DEPLOY_P1_LIVE_GMAIL_SHEETS_FINAL_DESTINATION_PROOF_RECONCILIATION_REPORT.md` | Final-destination proof reconciliation report (BLOCKED; Gmail notification found with blank values, Sheets row not found in bounded searches) |
+| `evidence/post-deploy-p1-live-gmail-sheets-final-destination-proof/` | Reconciliation evidence: Gmail final-destination booleans, Sheets bounded-search results, Make-derived flag analysis, synthetic lead disposition, field presence matrix, boundary review |
+| `docs/commercial-booking/PUBLIC_BOOKING_POST_DEPLOY_P1_MAKE_GMAIL_SHEETS_MAPPING_REPAIR_V2_REPORT.md` | Make/Gmail/Sheets mapping repair V2 report (PASS; final owner Gmail and approved lead sheet field-level proof passed) |
+| `evidence/post-deploy-p1-make-gmail-sheets-mapping-repair-v2/` | V2 repair evidence: Make mapping repair booleans, Gmail template proof, Sheets Search Rows/Add Row/filter proof, one synthetic submission result, Gmail/Sheets final-destination proof, field presence matrix, boundary review |
+| `docs/commercial-booking/PUBLIC_BOOKING_POST_DEPLOY_P1_CONTROLLED_DEPLOY_VERIFICATION_RESUME_NON_PAYMENT_REPORT.md` | Controlled deploy verification resume report (PASS; no-card non-seeded hold reachability, live copy, and admin guards passed) |
+| `evidence/post-deploy-p1-controlled-deploy-verification-resume-non-payment/` | Non-payment verification evidence: checkout reachability without card entry, live copy verification, admin endpoint guards, payment boundary, and no-secret boundary review |
+| `docs/commercial-booking/PUBLIC_WEBSITE_LIVE_HOMEPAGE_VISUAL_IMAGE_REGRESSION_DIAGNOSIS_REPORT.md` | Live homepage visual/image regression diagnosis and owner decision report |
+| `docs/commercial-booking/PUBLIC_WEBSITE_HOMEPAGE_VISUAL_IMAGE_BASELINE_GUARD_AND_MOBILE_CTA_PATCH_REPORT.md` | Source-only homepage visual/image guard + mobile CTA patch report |
+| `docs/commercial-booking/PUBLIC_WEBSITE_HOMEPAGE_AND_SERVICES_IMAGE_UPDATE_REPORT.md` | Homepage + services service-card image update report (PASS / accepted in source) |
+| `evidence/homepage-services-image-update/` | Homepage/services image-update evidence: Drive asset conversion metadata, service image hashes, homepage/services render checks, manifest update, visual-lock results, validation, and no-secret boundary review |
+| `docs/commercial-booking/PUBLIC_WEBSITE_HOMEPAGE_GALLERY_IMAGE_REPLACEMENT_REPORT.md` | Homepage gallery v0.3 owner-selected image replacement report (PASS / accepted in source; PR #11 live proof passed) |
+| `evidence/homepage-gallery-image-replacement/` | Gallery v0.3 evidence: owner-selected Drive asset conversion metadata, gallery manifest update, render proof, visual-lock results, validation, and no-secret boundary review |
+| `docs/commercial-booking/HOMEPAGE_CANONICAL_VISUAL_BASELINE.md` | Canonical homepage visual baseline updated to `homepage-visual-baseline-v0.3-owner-gallery-20260616` |
+| `evidence/homepage-visual-regression/` | Read-only live fetch, deployment, image inventory, root-cause, visual-lock design, and no-secret evidence |
+| `evidence/homepage-visual-baseline/homepage_image_manifest.json` | Homepage image manifest with owner-selected gallery v0.3 images approved and old replaced gallery paths forbidden/historical |
+| `docs/commercial-booking/PUBLIC_BOOKING_POST_DEPLOY_P1_SOURCE_BASELINE_RESTORATION_RECONCILIATION_REPORT.md` | Canonical source-baseline restoration/reconciliation blocked report |
+| `evidence/post-deploy-p1-source-baseline-restoration/source_baseline_inventory_results.json` | Current source inventory |
+| `evidence/post-deploy-p1-source-baseline-restoration/accepted_p0_artifact_presence_results.json` | Accepted P0 artifact search result |
+| `evidence/post-deploy-p1-source-baseline-restoration/quote_request_contract_results.json` | Quote-request contract test status |
+| `evidence/post-deploy-p1-source-baseline-restoration/stripe_webhook_metadata_contract_results.json` | Stripe webhook metadata contract test status |
+| `evidence/post-deploy-p1-source-baseline-restoration/validation_results.json` | Validation status |
+| `evidence/post-deploy-p1-source-baseline-restoration/no_leak_scan_results.json` | No-leak scan status |
 
 ## Blocker Register Summary
 
-| Blocker ID | Status | Wording |
-| --- | --- | --- |
-| BLK-PUBLIC-R13-R8-PREVIEW-KV-BINDING-001 | CLOSED / Accepted for closure | Fresh current-code Preview no-seed checkout gate returned 409 fail-closed with no checkout URL, not 503 `Booking storage is not configured`; Cloudflare metadata shows Preview `BOOKINGS_KV`; P6 Stripe TEST checkout succeeded through KV write path. |
-| BLK-PUBLIC-R13-R8-PREVIEW-FUNCTIONS-CURRENT-CODE-001 | CLOSED / Accepted for closure | Fresh deployment `c5d78321` from commit `2431c8b` uploaded the Functions bundle and served current booking functions. |
-| BLK-PUBLIC-R13-R9-ADMIN-SLOT-TOKEN-RUNTIME-001 | OPEN | Correct-token admin workflow cannot run because `ADMIN_SLOT_TOKEN` is not available to the execution environment through a non-exposing runtime variable. |
-| BLK-R9-001 | OPEN until auditor confirms R13-R9 and later R13-R10 closure criteria | R13-R9 is blocked before submission. |
-| BLK-R9-002 | OPEN | Future R9 blocker remains open. |
-| BLK-R9-003 | OPEN | Future R9 blocker remains open. |
+| Blocker ID | Status |
+| --- | --- |
+| BLK-PUBLIC-POST-DEPLOY-P1-CONDITIONAL-RETAINER-HOLD-SOURCE-BASELINE-MISMATCH-001 | CLOSED by P1 source baseline + quote-classification restoration |
+| BLK-PUBLIC-POST-DEPLOY-AVAILABILITY-SLOTS-NOT-SEEDED-001 | CLOSED as hard checkout prerequisite by accepted non-seeded conditional hold model; optional seeded slots may still be used later for capacity optimization and conflict protection |
+| BLK-PUBLIC-POST-DEPLOY-INSTANT-QUOTE-COPY-OVERPROMISE-001 | CLOSED by live non-payment customer-copy verification |
+| BLK-PUBLIC-POST-DEPLOY-P1-LIVE-GMAIL-SHEETS-FIELD-VERIFICATION-001 | CLOSED by Make/Gmail/Sheets mapping repair V2 final-destination proof |
+| BLK-PUBLIC-LIVE-HOMEPAGE-VISUAL-IMAGE-REGRESSION-001 | CLOSED by PR #11 homepage gallery v0.3 live visual proof |
+| BLK-PUBLIC-CANONICAL-HOMEPAGE-NAV-IMAGE-BASELINE-MISMATCH-001 | CLOSED by canonical homepage/nav minimal reconstruction patch (auditor accepted 2026-06-15) |
+| BLK-PUBLIC-PLAN-MY-PARTY-LEAD-DATA-ENDPOINT-AMBIGUITY-001 | CLOSED by canonical Plan My Party lead model unification (auditor accepted 2026-06-15) |
+| BLK-PUBLIC-POST-DEPLOY-QUOTE-REQUEST-FIELD-MAPPING-001 | CLOSED |
+| BLK-PUBLIC-POST-DEPLOY-LIVE-PRODUCTION-UI-REGRESSION-001 | CLOSED |
+| BLK-PUBLIC-POST-DEPLOY-STRIPE-WEBHOOK-CHECKOUT-METADATA-INVALID-001 | CLOSED |

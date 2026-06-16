@@ -1,0 +1,100 @@
+{
+  "ok": true,
+  "mode": "review",
+  "baselineVersion": "homepage-visual-baseline-v0.3-owner-gallery-20260616",
+  "generatedAt": "2026-06-16T17:14:20.021Z",
+  "planMyPartyAnchorCount": 5,
+  "mobileStickyBookingCta": {
+    "label": "Plan My Party",
+    "href": "/plan-my-party/"
+  },
+  "imageResults": [
+    {
+      "src": "/_astro/happy-faces-la-logo.xGzHiFEJ_Z2tXGb0.webp",
+      "manifestPath": "/_astro/happy-faces-la-logo.xGzHiFEJ_Z2tXGb0.webp",
+      "status": "approved_existing_brand_logo",
+      "hashMatches": true,
+      "sourceFilePath": "src/assets/happy-faces-la-logo.png"
+    },
+    {
+      "src": "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-red-balloon-sword-outdoor-party-01.webp",
+      "manifestPath": "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-red-balloon-sword-outdoor-party-01.webp",
+      "status": "approved_owner_selected_homepage_gallery_20260616",
+      "hashMatches": true,
+      "sourceFilePath": "public/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-red-balloon-sword-outdoor-party-01.webp"
+    },
+    {
+      "src": "/images/gallery/face-painting/happy-faces-la-face-painting-black-tribal-swirl-eye-design-01.webp",
+      "manifestPath": "/images/gallery/face-painting/happy-faces-la-face-painting-black-tribal-swirl-eye-design-01.webp",
+      "status": "approved_owner_selected_homepage_gallery_20260616",
+      "hashMatches": true,
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-black-tribal-swirl-eye-design-01.webp"
+    },
+    {
+      "src": "/images/gallery/face-painting/happy-faces-la-face-painting-easter-eggs-cherry-blossom-01.webp",
+      "manifestPath": "/images/gallery/face-painting/happy-faces-la-face-painting-easter-eggs-cherry-blossom-01.webp",
+      "status": "approved_owner_selected_homepage_gallery_20260616",
+      "hashMatches": true,
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-easter-eggs-cherry-blossom-01.webp"
+    },
+    {
+      "src": "/images/gallery/face-painting/happy-faces-la-face-painting-rainbow-unicorn-full-face-glitter-flowers-01.webp",
+      "manifestPath": "/images/gallery/face-painting/happy-faces-la-face-painting-rainbow-unicorn-full-face-glitter-flowers-01.webp",
+      "status": "approved_owner_selected_homepage_gallery_20260616",
+      "hashMatches": true,
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-rainbow-unicorn-full-face-glitter-flowers-01.webp"
+    },
+    {
+      "src": "/images/gallery/face-painting/happy-faces-la-face-painting-superhero-web-eye-cheek-art-01.webp",
+      "manifestPath": "/images/gallery/face-painting/happy-faces-la-face-painting-superhero-web-eye-cheek-art-01.webp",
+      "status": "approved_owner_selected_homepage_gallery_20260616",
+      "hashMatches": true,
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-superhero-web-eye-cheek-art-01.webp"
+    },
+    {
+      "src": "/images/gallery/face-painting/happy-faces-la-face-painting-yellow-superhero-mask-full-face-01.webp",
+      "manifestPath": "/images/gallery/face-painting/happy-faces-la-face-painting-yellow-superhero-mask-full-face-01.webp",
+      "status": "approved_owner_selected_homepage_gallery_20260616",
+      "hashMatches": true,
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-yellow-superhero-mask-full-face-01.webp"
+    },
+    {
+      "src": "/images/hero/happy-faces-la-hero-face-painting-butterfly-01.webp",
+      "manifestPath": "/images/hero/happy-faces-la-hero-face-painting-butterfly-01.webp",
+      "status": "approved_previous_minimal_baseline_hero",
+      "hashMatches": true,
+      "sourceFilePath": "public/images/hero/happy-faces-la-hero-face-painting-butterfly-01.webp"
+    },
+    {
+      "src": "/images/services/happy-faces-la-balloon-twisting-pink-yellow-balloon-animals-outdoor-party-01.webp",
+      "manifestPath": "/images/services/happy-faces-la-balloon-twisting-pink-yellow-balloon-animals-outdoor-party-01.webp",
+      "status": "approved_owner_selected_replacement_20260615",
+      "hashMatches": true,
+      "sourceFilePath": "public/images/services/happy-faces-la-balloon-twisting-pink-yellow-balloon-animals-outdoor-party-01.webp"
+    },
+    {
+      "src": "/images/services/happy-faces-la-face-gems-service.webp",
+      "manifestPath": "/images/services/happy-faces-la-face-gems-service.webp",
+      "status": "approved_owner_retained_with_scoped_service_card_cover_20260615",
+      "hashMatches": true,
+      "sourceFilePath": "public/images/services/happy-faces-la-face-gems-service.webp"
+    },
+    {
+      "src": "/images/services/happy-faces-la-face-painting-service.webp",
+      "manifestPath": "/images/services/happy-faces-la-face-painting-service.webp",
+      "status": "approved_owner_retained_20260615",
+      "hashMatches": true,
+      "sourceFilePath": "public/images/services/happy-faces-la-face-painting-service.webp"
+    },
+    {
+      "src": "/images/services/happy-faces-la-glitter-tattoo-service.webp",
+      "manifestPath": "/images/services/happy-faces-la-glitter-tattoo-service.webp",
+      "status": "approved_owner_retained_20260615",
+      "hashMatches": true,
+      "sourceFilePath": "public/images/services/happy-faces-la-glitter-tattoo-service.webp"
+    }
+  ],
+  "unknownImages": [],
+  "reviewFindings": [],
+  "failures": []
+}

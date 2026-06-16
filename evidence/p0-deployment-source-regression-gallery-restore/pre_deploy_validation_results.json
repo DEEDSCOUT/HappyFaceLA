@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "commands": [
+    {
+      "command": "npm run astro -- check",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run qa:postbuild",
+      "exitCode": 0
+    },
+    {
+      "command": "HFLA_HOMEPAGE_VISUAL_LOCK_MODE=review node tests/post-release/homepage-visual-image-lock.mjs",
+      "exitCode": 0
+    }
+  ],
+  "noSecretScan": {
+    "ok": true,
+    "realFindingCount": 0
+  },
+  "notes": "Astro check reported hints only; no errors."
+}

@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "branch": "p0-main-reconcile-quote-request-and-gallery-v03-20260616",
+  "base": "origin/main",
+  "baseCommit": "31b3ea03940ec49f905a770674c20b342cb99e81",
+  "finalCommit": "8339378ba716bbcb455ac4aaed39f1e9c2106f9f",
+  "reconciledSourceIncludes": {
+    "pr11GalleryV03Baseline": true,
+    "gallery01Through06HomepageFeatured": true,
+    "gallery07And08StagedExtrasOnly": true,
+    "forbiddenOldGalleryPathsInManifest": true,
+    "planMyPartyCtasPreserved": true,
+    "soccerPagePreserved": true,
+    "durableQuoteRequestEndpoint": true,
+    "failClosedEndpointBehavior": true,
+    "exactChildCountUxFix": true,
+    "buildManifestBaselineV03": true
+  },
+  "excluded": {
+    "cardPaymentProof": true,
+    "stripeAccess": true,
+    "d1KvBroadExport": true,
+    "makeWebhookExposure": true,
+    "dnsSeoAdsGbpAction": true
+  }
+}

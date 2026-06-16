@@ -1,0 +1,61 @@
+{
+  "ok": true,
+  "proofToken": "HFLA-P0-MAINRECONCILE-20260616T171704",
+  "leadId": "lead_789c0656c43d48ca86d89dd26641",
+  "endpoint": {
+    "url": "https://happyfacesla.com/api/quote-request",
+    "status": 200,
+    "ok": true,
+    "received": true,
+    "persisted": true,
+    "leadIdReturned": true,
+    "ownerNotificationSent": true,
+    "sheetWritten": true,
+    "crmPosted": true
+  },
+  "d1ScopedProof": {
+    "databaseLabel": "hfla-availability-production",
+    "matchingRows": 1,
+    "leadIdMatches": 1,
+    "exactChildCount18Matches": 1,
+    "childCountConfidenceExactMatches": 1,
+    "canonicalTokenMatches": 1,
+    "ownerNotificationSentMatches": 1,
+    "sheetWrittenMatches": 1,
+    "crmPostedMatches": 1,
+    "broadExportOccurred": false
+  },
+  "makeProof": {
+    "receivedPayloadInferredByEndpointFlagsAndFinalDestinations": true,
+    "gmailModuleRanInferred": true,
+    "sheetsModuleRanInferred": true,
+    "webhookUrlExposed": false,
+    "scenarioPrivateUrlExposed": false,
+    "rawPayloadDumped": false
+  },
+  "gmailProof": {
+    "proofTokenFound": true,
+    "leadIdFound": true,
+    "recipientInfoAtHappyFacesLa": true,
+    "exactChildCountAppears": true,
+    "childConfidenceAppears": true,
+    "designDurationTravelContactSourceFieldsAppear": true,
+    "rawBodyRecordedInEvidence": false
+  },
+  "sheetsProof": {
+    "approvedSheetLabel": "Happy Faces LA Leads / Leads",
+    "proofTokenFound": true,
+    "leadIdFound": true,
+    "rowFound": true,
+    "exactChildCountAppears": true,
+    "childConfidenceAppears": true,
+    "designDurationTravelContactSourceFieldsAppear": true,
+    "privateSheetUrlRecorded": false,
+    "unrelatedRowsDumped": false
+  },
+  "failClosedProbe": {
+    "malformedIdempotencyKeyRequestReturnedReceivedFalsePersistedFalse": true,
+    "leadIdReturned": false,
+    "d1MutationOccurred": false
+  }
+}

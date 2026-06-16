@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "deploymentId": "e8f11ebc-f9c1-48ca-a953-b78b32a08780",
+  "baselineVersion": "homepage-visual-baseline-v0.3-owner-gallery-20260616",
+  "liveVisualLockPassed": true,
+  "routes": {
+    "/": 200,
+    "/plan-my-party/": 200,
+    "/soccer-fan-face-painting-los-angeles/": 200
+  },
+  "planMyPartyCtasLive": true,
+  "oldGetQuoteContactStickyAbsent": true,
+  "gallery01Through06Live": true,
+  "gallery07And08NotHomepageFeatured": true,
+  "forbiddenOldGalleryPathsAbsent": true,
+  "googleDriveHotlinksAbsent": true,
+  "allSixGalleryImageUrlsReturn200Webp": true,
+  "cfCacheStatus": "DYNAMIC"
+}

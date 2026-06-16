@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "checkedAt": "2026-06-16T17:15:00Z",
+  "regressedProductionDeployment": {
+    "deploymentId": "94d10a52-52c2-45e2-b593-1a9e9dcfb0d2",
+    "environment": "Production",
+    "branch": "main",
+    "sourceLabel": "47b789a",
+    "diagnosis": "P0 quote-request hotfix source did not include PR #11 gallery v0.3 baseline."
+  },
+  "priorKnownGoodGalleryDeployment": {
+    "deploymentId": "ba0824b5-c317-49ae-9456-27f842005994",
+    "sourceLabel": "31b3ea0",
+    "baselineVersion": "homepage-visual-baseline-v0.3-owner-gallery-20260616"
+  },
+  "finalProductionDeployment": {
+    "deploymentId": "e8f11ebc-f9c1-48ca-a953-b78b32a08780",
+    "environment": "Production",
+    "branch": "main",
+    "sourceLabel": "8339378",
+    "deploymentUrl": "https://e8f11ebc.happyfacesla.pages.dev"
+  },
+  "secretsPrinted": false,
+  "privateUrlsRecorded": false
+}

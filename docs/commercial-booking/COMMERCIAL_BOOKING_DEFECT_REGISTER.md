@@ -1,29 +1,38 @@
 # Commercial Booking Defect Register
 
-Date: 2026-06-11
-Release state: NO_GO
+Date: 2026-06-16
+Release state: GO
 
-## R13-R9 Defect Status
+Final state: `P0 DEPLOYMENT SOURCE REGRESSION FIX PASSED — GALLERY V0.3 RESTORED AND QUOTE-REQUEST PROOF PRESERVED — RELEASE STATE GO`
 
-| Defect ID | Status | Evidence | Notes |
+## P0 Real Lead Delivery Defects
+
+| Defect ID | Status | Evidence | Required Handling |
 | --- | --- | --- | --- |
-| BLK-PUBLIC-R13-R9-ADMIN-SLOT-TOKEN-RUNTIME-001 | OPEN | `$env:ADMIN_SLOT_TOKEN` absent; no alternate admin-token environment variable name present; missing/wrong token runtime checks returned 401. | Blocks correct-token admin slot create/read/update, browser QA, checkout hold, webhook/simulation, idempotency, and cleanup proof. |
+| BLK-PUBLIC-LIVE-HOMEPAGE-VISUAL-IMAGE-REGRESSION-001 | CLOSED by P0 deployment source regression fix restoring gallery v0.3 and preserving quote-request proof | The blocker was reopened after P0 endpoint hotfix deployment `94d10a52-52c2-45e2-b593-1a9e9dcfb0d2` from source `47b789a` regressed the homepage gallery. Reconciled deployment `e8f11ebc-f9c1-48ca-a953-b78b32a08780` from source `8339378` restored GALLERY-01 through GALLERY-06 live, kept GALLERY-07/GALLERY-08 unfeatured, removed forbidden old gallery paths, preserved Plan My Party CTAs and soccer route, and passed live visual lock. Synthetic quote proof `HFLA-P0-MAINRECONCILE-20260616T171704` also passed endpoint, D1, Gmail, and Sheets proof. | Closed. Future hotfix deploys must be reconciled against latest `main` and prove both homepage visual lock and quote-request delivery before acceptance. |
+| BLK-PUBLIC-P0-REAL-PLAN-MY-PARTY-LEAD-DELIVERY-UNPROVEN-001 | CLOSED by P0 quote-request endpoint reconciliation and exact child count deploy proof | Production endpoint mismatch was reconciled by controlled deployment `94d10a52-52c2-45e2-b593-1a9e9dcfb0d2` from P0 hotfix source label `47b789a`. Synthetic proof `HFLA-P0-ENDPOINTFIX-20260616-092836` returned `ok=true`, `received=true`, `persisted=true`, and lead ID `lead_9ab40aac964c41f18f42c5168c39`; scoped D1 row exists with exact child count `18` and confidence `exact`; Make-derived delivery flags passed; Gmail arrived at `info@happyfacesla.com`; approved Google Sheets row was found. | Closed. Preserve durable endpoint fail-closed behavior and exact child-count UX. Real card/payment proof was not run. |
 
-## R13-R8D Defect Status
+## P1 Blockers (Source-Baseline Blocker Closed)
 
-| Defect ID | Status | Evidence | Notes |
+| Defect ID | Status | Evidence | Required Handling |
 | --- | --- | --- | --- |
-| BLK-PUBLIC-R13-R8-PREVIEW-KV-BINDING-001 | CLOSED / Accepted for closure | Fresh Preview no-seed checkout returned 409 fail-closed with no checkout URL; P6 created Stripe TEST checkout hold; Cloudflare metadata shows Preview `BOOKINGS_KV` bound to owner namespace ID. | Owner confirms R13-R8D auditor accepted. |
-| BLK-PUBLIC-R13-R8-PREVIEW-FUNCTIONS-CURRENT-CODE-001 | CLOSED / Accepted for closure | Fresh Preview deployment `c5d78321` on branch `r13-r8d-proof`, source `2431c8b`, Functions bundle uploaded. | Owner confirms R13-R8D auditor accepted. |
+| BLK-PUBLIC-POST-DEPLOY-P1-CONDITIONAL-RETAINER-HOLD-SOURCE-BASELINE-MISMATCH-001 | CLOSED by P1 source baseline + quote-classification restoration | `src/lib/wizard/quote-classification.ts` was not exactly recoverable and was reconstructed from the restored source contract. Quote-classification contract, quote-request contract (12/12), Stripe metadata contract (12/12), Astro check, build, and postbuild QA pass; no-leak/release-boundary scan passes. Auditor accepted 2026-06-14. | Closed. P1 conditional retainer hold implementation may resume only under separate owner authorization; not started in this closure step. |
+| BLK-PUBLIC-POST-DEPLOY-AVAILABILITY-SLOTS-NOT-SEEDED-001 | CLOSED as hard checkout prerequisite by accepted non-seeded conditional hold model | Auditor review accepted that deterministic birthday-party Availability Hold checkout no longer requires a pre-seeded D1 slot. Seeded open slots remain optional for capacity optimization and conflict protection; unsafe matching slots still fail closed. | Closed for hard checkout prerequisite only. Optional seeded-slot rollout remains a separate controlled action if the owner wants capacity optimization. |
+| BLK-PUBLIC-POST-DEPLOY-INSTANT-QUOTE-COPY-OVERPROMISE-001 | CLOSED by live non-payment customer-copy verification | Live `/plan-my-party/` and synthetic confirmation-page copy contain Availability Hold, Not confirmed yet, artist availability confirmation within 1 hour, authorization canceled/refund initiated language, and booking confirmed only after Happy Faces LA confirmation. Forbidden pre-confirmation wording for confirmed artist/booking, guaranteed/reserved date, non-refundable retainer, and money back within 1 hour is absent. See `PUBLIC_BOOKING_POST_DEPLOY_P1_CONTROLLED_DEPLOY_VERIFICATION_RESUME_NON_PAYMENT_REPORT.md`. | Closed for live copy. This closure does not authorize real payment/card proof and does not close the homepage visual/image blocker. |
+| BLK-PUBLIC-POST-DEPLOY-P1-LIVE-GMAIL-SHEETS-FIELD-VERIFICATION-001 | CLOSED by Make/Gmail/Sheets mapping repair V2 final-destination proof | V2 repaired stale Make final-destination mappings in manual/API safe mode: Gmail template uses canonical top-level fields with explicit fallbacks; Sheets Search Rows uses canonical `lead_id`; Sheets Add Row maps canonical columns A:AP; Add Row filter passes canonical leads only when no existing matching `lead_id` row exists. One synthetic non-customer Plan My Party lead (`HFLA-P1-FINALDEST-20260615-204623`) proved final owner Gmail and approved lead sheet field-level delivery. See `PUBLIC_BOOKING_POST_DEPLOY_P1_MAKE_GMAIL_SHEETS_MAPPING_REPAIR_V2_REPORT.md`. | Closed. Later non-payment verification also closed the instant-quote copy blocker. This closure does not close the homepage visual/image blocker. |
+| BLK-PUBLIC-LIVE-HOMEPAGE-VISUAL-IMAGE-REGRESSION-001 | CLOSED by PR #11 homepage gallery v0.3 live visual proof; later reclosed by P0 deployment source regression fix | PR #11 originally closed the blocker via deployment `ba0824b5-c317-49ae-9456-27f842005994`. The blocker was later reopened when hotfix deployment `94d10a52-52c2-45e2-b593-1a9e9dcfb0d2` regressed gallery source, then closed again by reconciled deployment `e8f11ebc-f9c1-48ca-a953-b78b32a08780` from source `8339378`, which restored gallery v0.3 and preserved quote-request proof. | Closed. Preserve the homepage/gallery baseline and visual-lock guard. Real card/payment proof was not run. |
+| BLK-PUBLIC-CANONICAL-HOMEPAGE-NAV-IMAGE-BASELINE-MISMATCH-001 | CLOSED by canonical homepage/nav minimal reconstruction patch (auditor accepted 2026-06-15) | Minimal reconstruction patch (owner-authorized): `Plan My Party` added to nav + homepage hero primary CTA retargeted to `/plan-my-party/`; butterfly hero + global styles + images preserved; only `navigation.ts` + `index.astro` changed; astro check/build/QA + no-leak pass; live homepage/nav verified in the blocked controlled deploy rerun. See `PUBLIC_WEBSITE_CANONICAL_HOMEPAGE_NAV_IMAGE_BASELINE_MINIMAL_RECONSTRUCTION_PATCH_REPORT.md`. | Closed. No exact upstream source existed; this is the reconstructed minimum baseline. |
 
-## Release Blockers
+| BLK-PUBLIC-PLAN-MY-PARTY-LEAD-DATA-ENDPOINT-AMBIGUITY-001 | CLOSED by canonical Plan My Party lead model unification (auditor accepted 2026-06-15) | Resolved by unifying `/api/quote-request` and `/api/lead` onto the canonical lead model (canonical 26/26, endpoints 17/17; complete Gmail/Sheets payload; child never blank; budget vs pricing separate; `preferredContactMethod` type-contract fixed; astro/build/QA/no-leak pass). See `PUBLIC_BOOKING_POST_DEPLOY_P1_PLAN_MY_PARTY_LEAD_DATA_COMPLETENESS_REMEDIATION_REPORT.md`. | Closed for source/build. Controlled deploy and migration 0004 require separate owner approval. |
 
-| Defect ID | Status | Required Handling |
-| --- | --- | --- |
-| BLK-R9-001 | OPEN until auditor confirms R13-R9 and later R13-R10 closure criteria | Keep open. R13-R9 is blocked before submission. |
-| BLK-R9-002 | OPEN | Keep open. Must close before future R13-R11 final live pre-public test. |
-| BLK-R9-003 | OPEN | Keep open. Must close before future R13-R11 final live pre-public test. |
+## Preserved Closed P0 Defects
+
+| Defect ID | Status |
+| --- | --- |
+| BLK-PUBLIC-POST-DEPLOY-QUOTE-REQUEST-FIELD-MAPPING-001 | CLOSED |
+| BLK-PUBLIC-POST-DEPLOY-LIVE-PRODUCTION-UI-REGRESSION-001 | CLOSED |
+| BLK-PUBLIC-POST-DEPLOY-STRIPE-WEBHOOK-CHECKOUT-METADATA-INVALID-001 | CLOSED |
 
 ## Prohibited Actions Preserved
 
-No production D1 mutation, production D1 binding, production slot seeding, production KV mutation, live Stripe/payment collection, live checkout, production deploy, happyfacesla.com publication, DNS change, Ads/social/GBP, SEO/indexing source work, workbook/Sheets mutation, Git/GitHub action, gallery R4, gallery go-live planning, customer-facing release, controlled deploy prompt, secret value read/exposure, or R13-R10/R13-R11 execution occurred in R13-R9.
+The P1 controlled deploy completed the remaining non-payment live verification sequence. Final Gmail/Google Sheets field-level proof passed by Make/Gmail/Sheets mapping repair V2, non-seeded Availability Hold reachability was proven without card entry, live customer copy was verified, and admin endpoints failed closed with missing/wrong tokens. PR #11 later merged the owner-selected homepage gallery v0.3 baseline and Cloudflare Production deployment `ba0824b5-c317-49ae-9456-27f842005994` passed live visual proof, closing the homepage visual/image blocker. Real card/payment proof was not run. No Stripe access, slot creation, availability seeding, D1/KV mutation, Make/Gmail/Sheets action, DNS/SEO/Ads/GBP action, cache purge, secret exposure, or PII dump occurred.
