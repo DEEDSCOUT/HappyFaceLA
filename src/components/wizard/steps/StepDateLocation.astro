@@ -18,19 +18,40 @@
       <span id="eventDate-error" class="text-rose-600 text-xs hidden" role="alert"></span>
     </label>
 
-    <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+    <div class="flex flex-col gap-2 text-sm font-medium text-slate-700">
       Preferred start time <span class="text-rose-600">*</span>
-      <input
-        id="field-eventTime"
-        type="time"
-        name="eventTime"
+      <select
+        id="field-eventTimePreset"
+        name="eventTimePreset"
         required
-        class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+        class="mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
         aria-required="true"
         aria-describedby="eventTime-error"
+      >
+        <option value="">Select a start time</option>
+        <option value="09:00">9:00 AM</option>
+        <option value="10:00">10:00 AM</option>
+        <option value="11:00">11:00 AM</option>
+        <option value="12:00">12:00 PM</option>
+        <option value="13:00">1:00 PM</option>
+        <option value="14:00">2:00 PM</option>
+        <option value="15:00">3:00 PM</option>
+        <option value="16:00">4:00 PM</option>
+        <option value="17:00">5:00 PM</option>
+        <option value="18:00">6:00 PM</option>
+        <option value="custom">Custom time</option>
+      </select>
+      <input
+        id="field-eventTimeCustom"
+        type="time"
+        name="eventTimeCustom"
+        class="hidden rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+        aria-describedby="eventTime-error"
       />
+      <input id="field-eventTime" type="hidden" name="eventTime" required />
+      <span class="text-xs text-slate-500">Choose a common party time or use custom time.</span>
       <span id="eventTime-error" class="text-rose-600 text-xs hidden" role="alert"></span>
-    </label>
+    </div>
 
     <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
       Event city or neighborhood <span class="text-rose-600">*</span>
@@ -68,7 +89,6 @@
         class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 resize-none"
       ></textarea>
     </label>
-  </div>
 
     <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
       Approximate distance from Los Angeles <span class="text-slate-400 font-normal">(optional — helps us estimate travel)</span>
@@ -89,8 +109,12 @@
   <!-- Required payment boundary notices -->
   <div class="mt-5 flex flex-col gap-3">
     <div class="wizard-notice">
-      <strong>Date not reserved yet.</strong> Your date is not reserved until your Booking Retainer is received.
-      Once we confirm availability and you approve your quote, we'll lock it in.
+      <strong>No payment is required at this stage.</strong> We'll confirm availability and send your
+      official quote.
+    </div>
+    <div class="wizard-notice">
+      <strong>Your date is not reserved yet.</strong> Your booking is not confirmed until Happy Faces LA
+      confirms artist availability and sends confirmation.
     </div>
     <div class="wizard-notice wizard-notice-amber">
       <strong>Travel fee may apply.</strong> A travel fee may apply depending on your location —

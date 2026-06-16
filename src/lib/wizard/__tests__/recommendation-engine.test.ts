@@ -35,6 +35,7 @@ function makeAnswers(overrides: Partial<WizardAnswers> = {}): WizardAnswers {
     lastName: 'Smith',
     email: 'jane@example.com',
     phone: '',
+    preferredContactMethod: 'any',
     ...overrides,
   };
 }

@@ -303,7 +303,7 @@ const DURATION_SOURCE_LABEL: Record<DurationSource, string> = {
 
 const CONTACT_METHOD_LABEL: Record<PreferredContactMethod, string> = {
   text: 'Text',
-  phone: 'Phone call',
+  phone: 'Call',
   email: 'Email',
   any: 'Any is fine',
   not_provided: 'Not provided',

@@ -28,30 +28,32 @@
             <p id="rec-price-display" class="text-3xl font-bold text-slate-900 mt-0.5"></p>
           </div>
           <div class="text-right">
-            <p class="text-xs font-semibold text-orange-700 uppercase tracking-wide">Reserve Today For</p>
+            <p class="text-xs font-semibold text-orange-700 uppercase tracking-wide">20% Availability Hold</p>
             <p id="rec-retainer-display" class="text-2xl font-bold text-orange-600 mt-0.5"></p>
           </div>
         </div>
         <p id="rec-pricing-detail" class="mt-2 text-xs text-slate-600"></p>
         <div class="mt-4 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-800">
-          <strong>Availability confirmed for this request.</strong> Secure checkout collects a 20% Booking Retainer to reserve your date.
+          <strong>Availability Hold available.</strong> Happy Faces LA will confirm artist availability before
+          sending booking confirmation.
         </div>
         <button
           id="btn-stripe-reserve"
           type="button"
           class="mt-4 w-full rounded-xl bg-orange-500 px-6 py-3.5 text-sm font-bold text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          aria-label="Reserve with 20% retainer via secure payment"
+          aria-label="Start 20 percent availability hold"
         >
-          Reserve with 20% Retainer →
+          Start 20% Availability Hold →
         </button>
-        <p class="mt-2 text-center text-xs text-slate-500">Secure payment via Stripe · No charge until you click Pay</p>
+        <p class="mt-2 text-center text-xs text-slate-500">Secure Stripe authorization · Booking is not final yet</p>
       </div>
     </div>
 
     <!-- Standard notice (shown when NOT eligible for instant-book) -->
     <div id="rec-standard-notice" class="mt-5 wizard-notice">
       No payment is due yet. We'll confirm availability and send your official quote.
-      Once you approve, a <strong>20% Booking Retainer</strong> reserves your date.
+      Your date is not reserved, and your booking is not confirmed, until Happy Faces LA confirms
+      artist availability and sends confirmation.
     </div>
   </div>
 
@@ -70,7 +72,8 @@
     <!-- Payment boundary -->
     <div class="mt-5 wizard-notice">
       Our team will review your details and send a tailored plan. No payment is due at this stage.
-      Once you approve your quote, a <strong>20% Booking Retainer</strong> reserves your date.
+      Your date is not reserved, and your booking is not confirmed, until Happy Faces LA confirms
+      artist availability and sends confirmation.
     </div>
   </div>
 

@@ -85,7 +85,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       </li>
       <li class="flex items-start gap-2">
         <span class="text-orange-500 font-bold mt-0.5" aria-hidden="true">•</span>
-        <span>When an instant quote is available, a <strong>20% Availability Hold</strong> authorizes the retainer. Booking is confirmed only after Happy Faces LA sends confirmation.</span>
+        <span>When an instant quote is available, a <strong>20% Availability Hold</strong> authorizes the retainer. Happy Faces LA confirms artist availability and sends confirmation before the booking is final.</span>
       </li>
     </ul>
     <p id="wizard-confirm-email" class="mt-4 text-sm text-slate-600"></p>
@@ -135,7 +135,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   type Kids      = '1-10'|'11-18'|'19-25'|'26-40'|'40-plus'|'not-sure';
   type Style     = 'quick-cheek-arm'|'standard-party'|'full-face'|'fast-event-menu'|'not-sure';
   type Duration  = 60|90|120|180|240|'custom'|null;
-  type PreferredContactMethod = 'any'|'text'|'phone'|'email';
+  type PreferredContactMethod = 'text'|'phone'|'email'|'any';
 
   interface LookbookInspiration {
     publicLookSlug: string;
@@ -165,7 +165,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     lastName: string;
     email: string;
     phone: string;
-    preferredContactMethod: PreferredContactMethod;
+    preferredContactMethod: PreferredContactMethod|null;
     lookbookService: string;
     lookbookDesignStyle: string;
     publicLookSlug: string;
@@ -195,7 +195,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     lastName: '',
     email: '',
     phone: '',
-    preferredContactMethod: 'any',
+    preferredContactMethod: null,
     lookbookService: '',
     lookbookDesignStyle: '',
     publicLookSlug: '',
@@ -376,7 +376,6 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
 
     const fieldValues: Array<[string, string | number | null]> = [
       ['eventDate', answers.eventDate],
-      ['eventTime', answers.eventTime],
       ['eventCity', answers.eventCity],
       ['venueName', answers.venueName],
       ['specialRequests', answers.specialRequests],
@@ -390,6 +389,8 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       const field = qs<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`#field-${id}`);
       if (field && value !== null && value !== undefined) field.value = String(value);
     });
+    hydrateTimeControls();
+    hydratePreferredContactControl();
   }
 
   // Item 8: clear the step-level validation error as soon as the customer acts,
@@ -415,6 +416,97 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
 
   function sanitizeText(value: unknown, maxLength = 120): string {
     return String(value ?? '').replace(/[^\w\s.,/&()+-]/g, '').trim().slice(0, maxLength);
+  }
+
+  function isPreferredContactMethod(value: string): value is PreferredContactMethod {
+    return value === 'text' || value === 'phone' || value === 'email' || value === 'any';
+  }
+
+  function formatDisplayTime(value: string | null): string {
+    if (!value) return '';
+    const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value);
+    if (!match) return value;
+    const hour24 = Number(match[1]);
+    const period = hour24 >= 12 ? 'PM' : 'AM';
+    const hour12 = hour24 % 12 || 12;
+    return `${hour12}:${match[2]} ${period}`;
+  }
+
+  const PRESET_EVENT_TIMES = new Set([
+    '09:00', '10:00', '11:00', '12:00', '13:00',
+    '14:00', '15:00', '16:00', '17:00', '18:00',
+  ]);
+
+  function setEventTimeValue(value: string | null) {
+    answers.eventTime = value;
+    const hidden = qs<HTMLInputElement>('#field-eventTime');
+    if (hidden) hidden.value = value ?? '';
+  }
+
+  function syncEventTimeFromControls() {
+    const preset = qs<HTMLSelectElement>('#field-eventTimePreset');
+    const custom = qs<HTMLInputElement>('#field-eventTimeCustom');
+    if (!preset) return;
+    if (preset.value === 'custom') {
+      show(custom);
+      setEventTimeValue(custom?.value || null);
+    } else {
+      hide(custom);
+      if (custom) custom.value = '';
+      setEventTimeValue(preset.value || null);
+    }
+  }
+
+  function hydrateTimeControls() {
+    const preset = qs<HTMLSelectElement>('#field-eventTimePreset');
+    const custom = qs<HTMLInputElement>('#field-eventTimeCustom');
+    const hidden = qs<HTMLInputElement>('#field-eventTime');
+    if (!preset) return;
+    if (!answers.eventTime) {
+      preset.value = '';
+      if (custom) {
+        custom.value = '';
+        hide(custom);
+      }
+      if (hidden) hidden.value = '';
+      return;
+    }
+    if (PRESET_EVENT_TIMES.has(answers.eventTime)) {
+      preset.value = answers.eventTime;
+      if (custom) {
+        custom.value = '';
+        hide(custom);
+      }
+    } else {
+      preset.value = 'custom';
+      if (custom) {
+        custom.value = answers.eventTime;
+        show(custom);
+      }
+    }
+    if (hidden) hidden.value = answers.eventTime;
+  }
+
+  function updatePreferredContactRequirement() {
+    const requiresPhone = answers.preferredContactMethod === 'text' || answers.preferredContactMethod === 'phone';
+    const phone = qs<HTMLInputElement>('#field-phone');
+    if (phone) {
+      phone.required = requiresPhone;
+      phone.setAttribute('aria-required', requiresPhone ? 'true' : 'false');
+    }
+    if (requiresPhone) {
+      show(qs('#phone-required-marker'));
+      hide(qs('#phone-optional-marker'));
+    } else {
+      hide(qs('#phone-required-marker'));
+      show(qs('#phone-optional-marker'));
+    }
+  }
+
+  function hydratePreferredContactControl() {
+    const select = qs<HTMLSelectElement>('#field-contact-method');
+    if (select) select.value = answers.preferredContactMethod ?? '';
+    updatePreferredContactRequirement();
   }
 
   function sanitizeLookbookInspiration(raw: unknown): LookbookInspiration | null {
@@ -1097,10 +1189,12 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     });
   }
   bindField('eventDate', 'eventDate', (v) => v || null);
-  bindField('eventTime', 'eventTime', (v) => v || null);
   bindField('eventCity', 'eventCity');
   bindField('venueName', 'venueName');
   bindField('specialRequests', 'specialRequests');
+
+  qs<HTMLSelectElement>('#field-eventTimePreset')?.addEventListener('change', syncEventTimeFromControls);
+  qs<HTMLInputElement>('#field-eventTimeCustom')?.addEventListener('input', syncEventTimeFromControls);
 
   // Travel band select → travelMiles
   qs<HTMLSelectElement>('#field-travelBand')?.addEventListener('change', (e) => {
@@ -1147,7 +1241,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     if (answers.travelMiles !== null) {
       rowsEl.appendChild(buildSummaryRow('Travel', TRAVEL_BAND_LABELS[answers.travelMiles] ?? `${answers.travelMiles} miles`));
     }
-    if (answers.eventDate) rowsEl.appendChild(buildSummaryRow('Date', `${answers.eventDate}${answers.eventTime ? ' at ' + answers.eventTime : ''}`));
+    if (answers.eventDate) rowsEl.appendChild(buildSummaryRow('Date', `${answers.eventDate}${answers.eventTime ? ' at ' + formatDisplayTime(answers.eventTime) : ''}`));
     if (answers.eventCity) rowsEl.appendChild(buildSummaryRow('Location', answers.eventCity));
     rowsEl.appendChild(buildSummaryRow('Quote outcome', opts.outcomeLabel));
   }
@@ -1406,7 +1500,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       const errEl = qs('#wizard-validation-error');
       if (errEl) { errEl.textContent = msg; show(errEl); }
       btn.disabled = false;
-      btn.textContent = 'Place 20% Availability Hold →';
+      btn.textContent = 'Start 20% Availability Hold →';
     }
   }
 
@@ -1414,8 +1508,16 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   qs<HTMLInputElement>('#field-firstName')?.addEventListener('input', (e) => { answers.firstName = (e.target as HTMLInputElement).value; });
   qs<HTMLInputElement>('#field-lastName')?.addEventListener('input', (e) => { answers.lastName = (e.target as HTMLInputElement).value; });
   qs<HTMLInputElement>('#field-email')?.addEventListener('input', (e) => { answers.email = (e.target as HTMLInputElement).value; });
-  qs<HTMLInputElement>('#field-phone')?.addEventListener('input', (e) => { answers.phone = (e.target as HTMLInputElement).value; });
-  qs<HTMLSelectElement>('#field-contact-method')?.addEventListener('change', (e) => { answers.preferredContactMethod = (e.target as HTMLSelectElement).value as PreferredContactMethod; });
+  qs<HTMLInputElement>('#field-phone')?.addEventListener('input', (e) => {
+    answers.phone = (e.target as HTMLInputElement).value;
+    if (answers.phone.trim()) hide(qs('#phone-error'));
+  });
+  qs<HTMLSelectElement>('#field-contact-method')?.addEventListener('change', (e) => {
+    const value = (e.target as HTMLSelectElement).value;
+    answers.preferredContactMethod = isPreferredContactMethod(value) ? value : null;
+    updatePreferredContactRequirement();
+    hide(qs('#preferredContactMethod-error'));
+  });
 
   // First-touch attribution capture (Plan My Party lead-data completeness): record
   // gclid/utm/source_page on load so they survive to submission.
@@ -1448,6 +1550,14 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     // Check honeypot
     const honeypot = (qs<HTMLInputElement>('#wizard-quote-form input[name="honeypot"]'))?.value?.trim() ?? '';
     if (honeypot !== '') {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Send My Quote Request →'; }
+      return;
+    }
+
+    const selectedPreferredContactMethod = answers.preferredContactMethod;
+    if (!selectedPreferredContactMethod) {
+      const errEl = qs('#step8-error');
+      if (errEl) { errEl.textContent = 'Please choose your preferred contact method.'; show(errEl); }
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Send My Quote Request →'; }
       return;
     }
@@ -1491,7 +1601,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       })),
       wizardVersion: 'guided-wizard-v1',
       submittedAt: new Date().toISOString(),
-      preferredContactMethod: answers.preferredContactMethod || 'any',
+      preferredContactMethod: selectedPreferredContactMethod,
       ...(() => {
         let stored: Record<string, string> = {};
         try { stored = JSON.parse(sessionStorage.getItem('hfla_attribution') || '{}'); } catch {}
@@ -1574,7 +1684,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       }
       const emailEl = qs('#wizard-confirm-email');
       if (emailEl) {
-        emailEl.textContent = 'Not confirmed yet — booking is confirmed only after Happy Faces LA sends confirmation.';
+        emailEl.textContent = 'Not confirmed yet — Happy Faces LA confirms your booking only after artist availability is verified and confirmation is sent.';
       }
       show(conf);
     }

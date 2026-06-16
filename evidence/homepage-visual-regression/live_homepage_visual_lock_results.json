@@ -1,11 +1,11 @@
 {
   "ok": true,
   "mode": "deploy",
-  "checkedUrl": "https://happyfacesla.com/?visual-proof=2026-06-16T171522552Z",
+  "checkedUrl": "https://happyfacesla.com/?visual-proof=2026-06-16T191243493Z",
   "httpStatus": 200,
   "cfCacheStatus": "DYNAMIC",
   "baselineVersion": "homepage-visual-baseline-v0.3-owner-gallery-20260616",
-  "generatedAt": "2026-06-16T17:15:23.915Z",
+  "generatedAt": "2026-06-16T19:12:44.679Z",
   "planMyPartyAnchorCount": 5,
   "imageResults": [
     {

@@ -104,7 +104,7 @@ export const glitterTattooFaqs: FaqItem[] = [
             "Yes. Glitter tattoos move quickly and work well alongside other party services. Happy Faces LA can set up a dedicated glitter tattoo station or combine it with face painting, face gems, or balloon twisting at the same event, with pricing confirmed by quote."
     },
     {
-        question: "How is availability confirmed?",
+        question: "How does Happy Faces LA confirm availability?",
         answer:
             "Availability and final service details are confirmed during the booking process. Share your event date, location, and guest count when requesting a quote."
     }

@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-06-16T19:13:36.0527603Z",
+  "production_url_tested": "https://happyfacesla.com/plan-my-party/",
+  "cache_busting_used": true,
+  "route_status": 200,
+  "cf_cache_status": "DYNAMIC",
+  "unsafe_phrase_matches": {
+    "Reserve Today For": false,
+    "Availability confirmed for this request": false,
+    "Secure checkout collects a 20% Booking Retainer to reserve your date": false,
+    "Reserve with 20% Retainer": false,
+    "reserves your date": false,
+    "reserve your date": false
+  },
+  "expected_safe_copy_present": {
+    "availability_hold_available": true,
+    "start_20_percent_availability_hold": true,
+    "not_reserved_not_confirmed_summary": true
+  },
+  "result": "NO_MATCHES on production pre-confirmation wizard copy"
+}

@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-06-16T19:04:13.4260219Z",
+  "astro_check": {
+    "exit_code": 0,
+    "command": "npm run astro -- check",
+    "result": "pass",
+    "notes": "0 errors; existing warnings/hints only"
+  },
+  "build": {
+    "exit_code": 0,
+    "command": "npm run build",
+    "result": "pass"
+  },
+  "qa_postbuild": {
+    "exit_code": 0,
+    "command": "npm run qa:postbuild",
+    "result": "pass"
+  },
+  "homepage_visual_lock": {
+    "exit_code": 0,
+    "command": "HFLA_HOMEPAGE_VISUAL_LOCK_MODE=review node tests/post-release/homepage-visual-image-lock.mjs",
+    "result": "pass"
+  },
+  "unsafe_copy_scan": {
+    "exit_code": 1,
+    "command": "rg -n -i \"Availability confirmed|Reserve Today|Reserve with 20% Retainer|reserve your date|date is guaranteed|artist is confirmed|booking is confirmed|non-refundable\" src functions",
+    "result": "pass_no_matches"
+  },
+  "no_secret_release_boundary_scan": {
+    "real_findings": 0,
+    "result": "pass",
+    "notes": "Only known documentation/code references and mock/test prefixes appeared; no real secret values, webhook URLs, card data, raw Gmail bodies, private Sheet URLs, broad D1 exports, or PII dumps were recorded."
+  }
+}

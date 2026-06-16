@@ -18,6 +18,7 @@ export function createInitialState(): WizardState {
       lastName: '',
       email: '',
       phone: '',
+      preferredContactMethod: null,
     },
     recommendation: null,
     isSubmitting: false,

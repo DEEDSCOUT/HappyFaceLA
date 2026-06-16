@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-06-16T19:13:36.0364059Z",
+  "deployment_target": "Production",
+  "cloudflare_project": "happyfacesla",
+  "production_deployment_id": "baf672f4-4f6a-4a7c-977e-8e51c9a7d993",
+  "deployment_url": "https://baf672f4.happyfacesla.pages.dev",
+  "production_custom_domain": "https://happyfacesla.com",
+  "branch": "main",
+  "source_label": "b14e2e4",
+  "local_source_branch": "p0-main-reconcile-quote-request-and-gallery-v03-20260616",
+  "local_source_head": "b14e2e41c1198a9f466beb94eae73bf6172bd134",
+  "note": "Cloudflare source label reflects the local HEAD used by direct Pages deploy. The deploy command warned the worktree had uncommitted A2Z patch changes; production proof verifies the deployed artifact on the custom domain.",
+  "preview_only": false
+}

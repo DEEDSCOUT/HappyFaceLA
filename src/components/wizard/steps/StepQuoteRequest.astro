@@ -54,14 +54,36 @@
     </label>
 
     <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
-      Phone number <span class="text-slate-400 font-normal">(optional)</span>
+      Preferred contact method <span class="text-rose-600">*</span>
+      <select
+        id="field-contact-method"
+        name="preferredContactMethod"
+        required
+        class="mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+        aria-required="true"
+        aria-describedby="preferredContactMethod-error"
+      >
+        <option value="">Choose one</option>
+        <option value="text">Text</option>
+        <option value="phone">Call</option>
+        <option value="email">Email</option>
+        <option value="any">Any is fine</option>
+      </select>
+      <span id="preferredContactMethod-error" class="text-rose-600 text-xs hidden" role="alert"></span>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+      Phone number <span id="phone-required-marker" class="hidden text-rose-600">*</span>
+      <span id="phone-optional-marker" class="text-slate-400 font-normal">(optional)</span>
       <input
         id="field-phone"
         type="tel"
         name="phone"
         autocomplete="tel"
         class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+        aria-describedby="phone-error"
       />
+      <span id="phone-error" class="text-rose-600 text-xs hidden" role="alert"></span>
     </label>
 
     <!-- Honeypot — hidden from real users -->
@@ -70,12 +92,12 @@
     <!-- Payment boundary notices -->
     <div class="wizard-notice mt-2">
       <strong>No payment is required at this stage.</strong> We'll confirm availability, then send your
-      official quote. Once you approve it, a <strong>20% Booking Retainer</strong> is required to reserve
-      your date.
+      official quote.
     </div>
     <div class="wizard-notice mt-1">
-      <strong>Your date is not reserved until your Booking Retainer is received</strong> after you approve
-      your quote.
+      <strong>Your date is not reserved yet.</strong> If an instant quote is available, a 20% Availability
+      Hold authorizes the retainer. Your booking is not confirmed until Happy Faces LA confirms artist
+      availability and sends confirmation.
     </div>
 
     <button

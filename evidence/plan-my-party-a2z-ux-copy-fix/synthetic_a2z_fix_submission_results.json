@@ -1,0 +1,43 @@
+{
+  "proofToken": "HFLA-A2Z-FIX-AUDIT-20260616-1158",
+  "route": "https://happyfacesla.com/plan-my-party/",
+  "screenshots": {
+    "step6": "C:\\HappyFaceLA-p0-main-reconcile-quote-request-and-gallery-v03-20260616\\evidence\\plan-my-party-a2z-ux-copy-fix\\step6-time-picker.png",
+    "step7": "C:\\HappyFaceLA-p0-main-reconcile-quote-request-and-gallery-v03-20260616\\evidence\\plan-my-party-a2z-ux-copy-fix\\step7-summary-safe-copy.png",
+    "step8": "C:\\HappyFaceLA-p0-main-reconcile-quote-request-and-gallery-v03-20260616\\evidence\\plan-my-party-a2z-ux-copy-fix\\step8-contact-method.png",
+    "success": "C:\\HappyFaceLA-p0-main-reconcile-quote-request-and-gallery-v03-20260616\\evidence\\plan-my-party-a2z-ux-copy-fix\\success-not-confirmed.png"
+  },
+  "checks": {
+    "routeStatus": 200,
+    "timePresetValue": "11:00",
+    "normalizedEventTime": "11:00",
+    "nativeTimeHiddenForPreset": true,
+    "summaryNoPayment": true,
+    "summaryAvailabilityCheckOrHold": true,
+    "summaryNoUnsafeReserveCopy": true,
+    "preferredContactVisible": true,
+    "phoneRequiredForText": true,
+    "successDateNotReserved": true,
+    "successNotConfirmed": true,
+    "noStripeNavigation": true
+  },
+  "endpoint": {
+    "status": 200,
+    "ok": true,
+    "json": {
+      "ok": true,
+      "received": true,
+      "leadId": "lead_ea79f1bb4c51440186d0afe5da9f",
+      "persisted": true,
+      "ownerNotificationQueued": true,
+      "ownerNotificationSent": true,
+      "sheetWritten": true,
+      "crmPosted": true,
+      "duplicate": false,
+      "message": "Your request was received."
+    }
+  },
+  "leadId": "lead_ea79f1bb4c51440186d0afe5da9f",
+  "quoteOutcomeText": "✨\nHere's your Happy Party Plan!\n\nBased on your answers, here's what we think will make your party amazing.\n\nEvent\nBirthday party\nServices\nFace painting\nChildren\n18\nDesign style\nStandard party designs\nService window\n1.5 hours\nTravel\nWithin 20 miles — no travel fee\nDate\n2026-06-27 at 11:00 AM\nLocation\nTorrance\nQuote outcome\nAvailability check needed\n\nA lively group! 1.5 hours helps keep a quality design pace without the line feeling endless. Most families with this group size love this option.\n\nNo payment is due yet. We'll confirm availability and send your official quote. Your date is not reserved, and your booking is not confirmed, until Happy Faces LA confirms artist availability and sends confirmation.\nRequest This Quote →",
+  "errors": []
+}

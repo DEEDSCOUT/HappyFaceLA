@@ -48,7 +48,11 @@ export function validateStep(step: number, answers: WizardAnswers): StepValidati
     case 6: {
       const errors: string[] = [];
       if (!answers.eventDate) errors.push('Please enter your preferred event date.');
-      if (!answers.eventTime) errors.push('Please enter your preferred start time.');
+      if (!answers.eventTime) {
+        errors.push('Please enter your preferred start time.');
+      } else if (!isValidPartyStartTime(answers.eventTime)) {
+        errors.push('Please choose a valid party start time.');
+      }
       if (!answers.eventCity.trim()) errors.push('Please enter your event city or neighborhood.');
       return { valid: errors.length === 0, errors };
     }
@@ -63,12 +67,28 @@ export function validateStep(step: number, answers: WizardAnswers): StepValidati
       if (!answers.email.trim()) errors.push('Email address is required.');
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(answers.email))
         errors.push('Please enter a valid email address.');
+      if (!answers.preferredContactMethod) {
+        errors.push('Please choose your preferred contact method.');
+      }
+      if (
+        (answers.preferredContactMethod === 'text' || answers.preferredContactMethod === 'phone') &&
+        !answers.phone.trim()
+      ) {
+        errors.push('Phone number is required when you prefer text or call.');
+      }
       return { valid: errors.length === 0, errors };
     }
 
     default:
       return { valid: true, errors: [] };
   }
+}
+
+function isValidPartyStartTime(value: string): boolean {
+  const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value);
+  if (!match) return false;
+  const minutes = Number(match[1]) * 60 + Number(match[2]);
+  return minutes >= 6 * 60 && minutes <= 23 * 60;
 }
 
 export function isDateInPast(dateStr: string): boolean {

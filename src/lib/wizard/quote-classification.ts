@@ -31,7 +31,7 @@ const CUSTOM_REVIEW_REASONS = new Set([
 ]);
 
 export const CLASSIFICATION_LABELS: Record<QuoteClassification, string> = {
-  'instant-quote-eligible': 'Instant quote ready',
+  'instant-quote-eligible': 'Availability Hold available',
   'unavailable-no-checkout': 'Availability check needed',
   'manual-approval-required': 'Manual review needed',
   'custom-quote-required': 'Custom quote needed',

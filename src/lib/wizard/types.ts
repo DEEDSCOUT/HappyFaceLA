@@ -33,6 +33,8 @@ export type DurationOption = 60 | 90 | 120 | 180 | 240 | 'custom' | null;
 
 export type WizardBranch = 'fast-quote' | 'custom-quote';
 
+export type PreferredContactMethod = 'text' | 'phone' | 'email' | 'any';
+
 export interface WizardAnswers {
   eventType: EventType | null;
   services: Service[];
@@ -50,6 +52,7 @@ export interface WizardAnswers {
   lastName: string;
   email: string;
   phone: string;
+  preferredContactMethod: PreferredContactMethod | null;
 }
 
 export interface WizardRecommendation {
@@ -88,6 +91,7 @@ export interface QuoteRequestPayload {
   lastName: string;
   email: string;
   phone: string | null;
+  preferredContactMethod: PreferredContactMethod;
   specialRequests: string | null;
   service?: string | null;
   design_style?: string | null;
