@@ -1,0 +1,121 @@
+{
+  "baselineVersion": "homepage-visual-baseline-v0.2-draft-20260615",
+  "status": "DRAFT_OWNER_APPROVAL_REQUIRED",
+  "generatedAt": "2026-06-15T17:22:34-07:00",
+  "images": [
+    {
+      "path": "/_astro/happy-faces-la-logo.xGzHiFEJ_Z2tXGb0.webp",
+      "generatedPathPrefix": "/_astro/happy-faces-la-logo.",
+      "sourceFilePath": "src/assets/happy-faces-la-logo.png",
+      "sha256": "37eb46cf622bcbfaf45a6848721ddad4a1da53412509db1e7af936136c80cf3f",
+      "status": "approved_existing_brand_logo",
+      "whereUsed": "site header logo on homepage",
+      "notes": "Brand logo source asset. Built Astro path may include a generated hash; guard matches by prefix and verifies the source hash."
+    },
+    {
+      "path": "/images/hero/happy-faces-la-hero-face-painting-butterfly-01.webp",
+      "sourceFilePath": "public/images/hero/happy-faces-la-hero-face-painting-butterfly-01.webp",
+      "sha256": "54c231e0496a73c732922d2311ed44718a3ea6b629c4d86d7cf7093be39bf418",
+      "status": "approved_previous_minimal_baseline_hero",
+      "whereUsed": "homepage hero",
+      "notes": "Only homepage image path previously accepted by minimal homepage baseline."
+    },
+    {
+      "path": "/images/services/happy-faces-la-face-painting-service.webp",
+      "sourceFilePath": "public/images/services/happy-faces-la-face-painting-service.webp",
+      "sha256": "ac9f0b6a7adf396d3649281cfa955278800a9fa3c112e7785c55489afe06d33f",
+      "status": "approved_owner_retained_20260615",
+      "whereUsed": "homepage core services",
+      "notes": "Owner decision: keep current face painting image unchanged."
+    },
+    {
+      "path": "/images/services/happy-faces-la-balloon-twisting-pink-yellow-balloon-animals-outdoor-party-01.webp",
+      "sourceFilePath": "public/images/services/happy-faces-la-balloon-twisting-pink-yellow-balloon-animals-outdoor-party-01.webp",
+      "sha256": "ff626a329ac0f0ee7db27e51729e65783ad9f5bedd9ab7a30e5f425da3cf041a",
+      "status": "approved_owner_selected_replacement_20260615",
+      "whereUsed": "homepage core services and services page service card",
+      "notes": "Owner-selected Drive asset converted from HEIC to 1200x1500 WebP. Do not hotlink Google Drive."
+    },
+    {
+      "path": "/images/services/happy-faces-la-glitter-tattoo-service.webp",
+      "sourceFilePath": "public/images/services/happy-faces-la-glitter-tattoo-service.webp",
+      "sha256": "fb67fbb98cf4a3054623bbbc13fe006c781cb32c3080b8668ada03bf5cc7f9ae",
+      "status": "approved_owner_retained_20260615",
+      "whereUsed": "homepage core services",
+      "notes": "Owner decision: keep current glitter tattoos image unchanged."
+    },
+    {
+      "path": "/images/services/happy-faces-la-face-gems-service.webp",
+      "sourceFilePath": "public/images/services/happy-faces-la-face-gems-service.webp",
+      "sha256": "7ccd61ccc3e57568feaa7564d8d5256444a0d1bc17507f675407834d9d2436bf",
+      "status": "approved_owner_retained_with_scoped_service_card_cover_20260615",
+      "whereUsed": "homepage core services",
+      "notes": "Owner decision: keep current face gems image content. Service-card rendering uses a scoped 4:5 cover frame so it visually matches the other service cards without stretching."
+    },
+    {
+      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.webp",
+      "sha256": "1dd0731425694112cbcd32ed4a6d7cd938ff3fc1f7d65b01e53191b8e705b222",
+      "status": "unknown_requires_owner_approval",
+      "whereUsed": "homepage recent events gallery",
+      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+    },
+    {
+      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-02.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-02.webp",
+      "sha256": "4e45ef61efed4ac7b8b49144be3ec074f326bbeb453e98272d2880f8b9f824ba",
+      "status": "unknown_requires_owner_approval",
+      "whereUsed": "homepage recent events gallery",
+      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+    },
+    {
+      "path": "/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-03.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-03.webp",
+      "sha256": "2f2a3c247cb6ba31d080000775fbc2276fee86e005037c5eed3c7762e0e52d01",
+      "status": "unknown_requires_owner_approval",
+      "whereUsed": "homepage recent events gallery",
+      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+    },
+    {
+      "path": "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-01.webp",
+      "sourceFilePath": "public/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-kids-party-los-angeles-01.webp",
+      "sha256": "e9c677e11fffe8a6bd2fe873aefff3743b9cc0c96b58cd31389c8715dd468801",
+      "status": "unknown_requires_owner_approval",
+      "whereUsed": "homepage recent events gallery",
+      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+    },
+    {
+      "path": "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-01.webp",
+      "sourceFilePath": "public/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-01.webp",
+      "sha256": "3aad15bdb287292775090661070f7ad91ca642fb6e85737f380e70461554efd3",
+      "status": "unknown_requires_owner_approval",
+      "whereUsed": "homepage recent events gallery",
+      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+    },
+    {
+      "path": "/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-02.webp",
+      "sourceFilePath": "public/images/gallery/face-gems/happy-faces-la-face-gems-birthday-party-los-angeles-02.webp",
+      "sha256": "139ae01a17f31aeca93be7eaf978d1e75e86a951632f1e277e75afe94484f943",
+      "status": "unknown_requires_owner_approval",
+      "whereUsed": "homepage recent events gallery",
+      "notes": "Current homepage featured gallery image; not yet owner-approved as canonical."
+    }
+  ],
+  "forbiddenOldImages": [
+    {
+      "path": "/images/services/happy-faces-la-balloon-twisting-service.webp",
+      "sourceFilePath": "public/images/services/happy-faces-la-balloon-twisting-service.webp",
+      "sha256": "aa712166ea4932196fafd200d4b88fc4da3e53e90509823799c39d7ed568c957",
+      "status": "forbidden_replaced_by_owner_selected_balloon_asset_20260615",
+      "wherePreviouslyUsed": "homepage and services page balloon twisting service card",
+      "notes": "Do not delete without separate cleanup authorization; visual guard fails if this path returns as a homepage image."
+    }
+  ],
+  "forbiddenOldCopyPatterns": [
+    "Get Quote -> /contact/",
+    "Get Availability & Pricing -> /contact/",
+    "Request Availability & Pricing",
+    "homepage without Plan My Party"
+  ],
+  "closureRequired": "Owner-approved service-card image decisions are recorded. Gallery/recent-event images remain unknown until separately approved."
+}
