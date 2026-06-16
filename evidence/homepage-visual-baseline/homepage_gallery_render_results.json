@@ -1,0 +1,32 @@
+{
+  "ok": true,
+  "renderTarget": "dist/index.html",
+  "homepageGalleryCount": 6,
+  "homepageGalleryLayout": {
+    "frameClass": "aspect-[4/5]",
+    "imageClassContains": [
+      "h-full",
+      "w-full",
+      "object-cover",
+      "object-top"
+    ],
+    "stretchingExpected": false
+  },
+  "featuredHomepageImagesPresentInBuiltHomepage": [
+    "/images/gallery/face-painting/happy-faces-la-face-painting-easter-eggs-cherry-blossom-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-superhero-web-eye-cheek-art-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-yellow-superhero-mask-full-face-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-black-tribal-swirl-eye-design-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-rainbow-unicorn-full-face-glitter-flowers-01.webp",
+    "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-red-balloon-sword-outdoor-party-01.webp"
+  ],
+  "stagedExtraImagesNotRenderedOnHomepage": [
+    "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-blue-balloon-animal-outdoor-party-01.webp",
+    "/images/gallery/balloon-twisting/happy-faces-la-balloon-artist-table-bounce-house-party-01.webp"
+  ],
+  "forbiddenOldHomepageGalleryImagesAbsentFromBuiltHomepage": true,
+  "planMyPartyCtasPreserved": true,
+  "mobileStickyOldContactCtaAbsent": true,
+  "soccerPageSourcePreserved": true,
+  "ownerSelectedBalloonServiceImagePreserved": true
+}

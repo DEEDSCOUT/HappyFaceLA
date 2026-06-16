@@ -1,0 +1,48 @@
+{
+  "ok": true,
+  "status": "HOMEPAGE_GALLERY_OWNER_SELECTED_IMAGE_REPLACEMENT_PASSED_PENDING_OWNER_AUDITOR_REVIEW",
+  "releaseState": "GO",
+  "baselineVersion": "homepage-visual-baseline-v0.3-owner-gallery-20260616",
+  "homepageGalleryCount": 6,
+  "ownerSelectedAssetsProcessed": 8,
+  "homepageFeaturedGalleryIds": [
+    "GALLERY-01",
+    "GALLERY-02",
+    "GALLERY-03",
+    "GALLERY-04",
+    "GALLERY-05",
+    "GALLERY-06"
+  ],
+  "stagedExtraGalleryIds": [
+    "GALLERY-07",
+    "GALLERY-08"
+  ],
+  "decision": "The homepage currently renders six featured gallery images, so GALLERY-01 through GALLERY-06 are the homepage set. GALLERY-07 and GALLERY-08 are staged as owner-selected extra gallery assets with featured=false.",
+  "driveHotlinksUsed": false,
+  "oldGalleryFilesDeleted": false,
+  "sourceUpdates": [
+    "src/data/gallery.ts",
+    "src/pages/index.astro",
+    "tests/post-release/homepage-visual-image-lock.mjs",
+    "tests/post-release/live-homepage-visual-lock.mjs",
+    "evidence/homepage-visual-baseline/homepage_image_manifest.json",
+    "docs/commercial-booking/HOMEPAGE_CANONICAL_VISUAL_BASELINE.md"
+  ],
+  "newLocalWebpAssets": [
+    "/images/gallery/face-painting/happy-faces-la-face-painting-easter-eggs-cherry-blossom-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-superhero-web-eye-cheek-art-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-yellow-superhero-mask-full-face-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-black-tribal-swirl-eye-design-01.webp",
+    "/images/gallery/face-painting/happy-faces-la-face-painting-rainbow-unicorn-full-face-glitter-flowers-01.webp",
+    "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-red-balloon-sword-outdoor-party-01.webp",
+    "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-blue-balloon-animal-outdoor-party-01.webp",
+    "/images/gallery/balloon-twisting/happy-faces-la-balloon-artist-table-bounce-house-party-01.webp"
+  ],
+  "oldHomepageGalleryPathsForbidden": true,
+  "bookingPaymentStripeD1MakeGmailSheetsTouched": false,
+  "deployOccurred": false,
+  "productionMutationOccurred": false,
+  "blockerState": {
+    "BLK-PUBLIC-LIVE-HOMEPAGE-VISUAL-IMAGE-REGRESSION-001": "OPEN pending owner/auditor acceptance and live proof"
+  }
+}

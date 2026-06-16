@@ -1,0 +1,63 @@
+{
+  "ok": true,
+  "releaseState": "GO",
+  "phase": "HOMEPAGE_GALLERY_OWNER_SELECTED_IMAGE_REPLACEMENT",
+  "commands": [
+    {
+      "command": "npm run astro -- check",
+      "exitCode": 0,
+      "result": "pass",
+      "notes": "Astro check completed with existing warnings/hints only; no blocking errors."
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "result": "pass",
+      "notes": "Build completed and generated dist/build-manifest.json."
+    },
+    {
+      "command": "npm run qa:postbuild",
+      "exitCode": 0,
+      "result": "pass",
+      "notes": "Postbuild QA completed, including soccer page output."
+    },
+    {
+      "command": "HFLA_HOMEPAGE_VISUAL_LOCK_MODE=review node tests/post-release/homepage-visual-image-lock.mjs",
+      "exitCode": 0,
+      "result": "pass",
+      "notes": "Review-mode homepage visual/image lock passed for baseline homepage-visual-baseline-v0.3-owner-gallery-20260616."
+    },
+    {
+      "command": "scoped no-secret and release-boundary scan over changed source/docs/evidence/tests and built homepage",
+      "exitCode": 0,
+      "result": "pass",
+      "notes": "No real findings. Scoped pattern scan had zero matches; broad historical scan only found an existing unrelated inspector bundle vocabulary string and no value exposure."
+    }
+  ],
+  "preservedMarkers": {
+    "planMyPartyNavAndCtas": true,
+    "mobileStickyPlanMyParty": true,
+    "oldGetQuoteContactStickyAbsent": true,
+    "soccerPagePreserved": true,
+    "ownerSelectedBalloonServiceImagePreserved": true,
+    "serviceCard4x5NormalizationPreserved": true,
+    "buildManifestGenerationPreserved": true,
+    "homepageVisualGuardScriptsPreserved": true
+  },
+  "prohibitedActions": {
+    "deploy": false,
+    "merge": false,
+    "cachePurge": false,
+    "productionMutation": false,
+    "checkoutPaymentCardProof": false,
+    "stripeAccess": false,
+    "productionSlotCreation": false,
+    "availabilitySeeding": false,
+    "d1KvMutation": false,
+    "makeGmailSheetsAction": false,
+    "dnsSeoAdsGbpAction": false,
+    "secretExposure": false,
+    "piiDump": false,
+    "rawCustomerDataExport": false
+  }
+}

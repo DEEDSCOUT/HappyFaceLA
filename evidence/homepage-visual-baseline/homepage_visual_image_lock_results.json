@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "mode": "review",
+  "baselineVersion": "homepage-visual-baseline-v0.3-owner-gallery-20260616",
+  "command": "HFLA_HOMEPAGE_VISUAL_LOCK_MODE=review node tests/post-release/homepage-visual-image-lock.mjs",
+  "exitCode": 0,
+  "planMyPartyAnchorCount": 5,
+  "mobileStickyBookingCta": {
+    "label": "Plan My Party",
+    "href": "/plan-my-party/"
+  },
+  "unknownImages": [],
+  "reviewFindings": [],
+  "failures": [],
+  "hashMatches": true,
+  "scriptOutputPath": "evidence/homepage-visual-regression/homepage_visual_image_lock_results.json"
+}

@@ -1,0 +1,120 @@
+{
+  "ok": true,
+  "downloadMethod": "Google Drive connector raw-file fetch, followed by local conversion to WebP",
+  "temporaryDownloadValuesRecorded": false,
+  "googleDriveHotlinksInSource": false,
+  "temporaryDownloadFolderRemoved": true,
+  "conversionNotes": [
+    "JPEG assets were converted with Sharp.",
+    "HEIC/HEIF assets were decoded locally with ffmpeg to an intermediate image and then converted with Sharp to WebP.",
+    "No Drive URL is referenced by website source or built HTML."
+  ],
+  "assets": [
+    {
+      "galleryId": "GALLERY-01",
+      "driveFileId": "1Fb9M_gIfnkNcu3uVERWXkGqoD8YTMl_y",
+      "sourceTitle": "Face Painting - Easter Eggs with Cherry Blossom Flowers.jpeg",
+      "mimeType": "image/jpeg",
+      "finalPublicPath": "/images/gallery/face-painting/happy-faces-la-face-painting-easter-eggs-cherry-blossom-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-easter-eggs-cherry-blossom-01.webp",
+      "sha256": "a176c29b696ce88ba7c264afb529b587284fe85a4d0e3c385a31733517dcd6f5",
+      "width": 1600,
+      "height": 2845,
+      "bytes": 508772,
+      "homepageRole": "homepage_featured"
+    },
+    {
+      "galleryId": "GALLERY-02",
+      "driveFileId": "1ssWyZPQ51BEZIGHL1lKkpK3dtCI5mT1W",
+      "sourceTitle": "Face Painting - Spider-Man Web Eye Cheek Art.jpeg",
+      "mimeType": "image/jpeg",
+      "finalPublicPath": "/images/gallery/face-painting/happy-faces-la-face-painting-superhero-web-eye-cheek-art-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-superhero-web-eye-cheek-art-01.webp",
+      "sha256": "fa1f872817927a440dbf892a2a6541d60a2ff17c2d72ba02fd6f8c56849af546",
+      "width": 960,
+      "height": 1280,
+      "bytes": 105374,
+      "homepageRole": "homepage_featured",
+      "publicNamingNote": "Public filename and alt text use neutral superhero wording."
+    },
+    {
+      "galleryId": "GALLERY-03",
+      "driveFileId": "1EtK60uHdYzNKT-YgoYzwiH0UsFYMGf8n",
+      "sourceTitle": "Face Painting - Wolverine Mask Full Face.jpeg",
+      "mimeType": "image/jpeg",
+      "finalPublicPath": "/images/gallery/face-painting/happy-faces-la-face-painting-yellow-superhero-mask-full-face-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-yellow-superhero-mask-full-face-01.webp",
+      "sha256": "054c4d93ad471989646a8875f2d6c126c6f623f146a4c0699d83167306c69f82",
+      "width": 1200,
+      "height": 1600,
+      "bytes": 91828,
+      "homepageRole": "homepage_featured",
+      "publicNamingNote": "Public filename and alt text use neutral superhero wording."
+    },
+    {
+      "galleryId": "GALLERY-04",
+      "driveFileId": "1P1ZpTPoOZFxQKCNegFriJjvhxS4Ahxw5",
+      "sourceTitle": "Face Painting - Black Tribal Swirl Eye Design.jpg",
+      "mimeType": "image/jpeg",
+      "finalPublicPath": "/images/gallery/face-painting/happy-faces-la-face-painting-black-tribal-swirl-eye-design-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-black-tribal-swirl-eye-design-01.webp",
+      "sha256": "fc330c80b51bfc2ff169bbc221888fd9aa0fc21555d42395b02121c219ca588b",
+      "width": 1600,
+      "height": 2133,
+      "bytes": 168404,
+      "homepageRole": "homepage_featured"
+    },
+    {
+      "galleryId": "GALLERY-05",
+      "driveFileId": "1uEUV2F1z8b0QGQovQVvrRe5_gEgqxGe-",
+      "sourceTitle": "Face Painting - Rainbow Unicorn Full Face with Glitter and Flowers 03.HEIC",
+      "mimeType": "image/heif",
+      "finalPublicPath": "/images/gallery/face-painting/happy-faces-la-face-painting-rainbow-unicorn-full-face-glitter-flowers-01.webp",
+      "sourceFilePath": "public/images/gallery/face-painting/happy-faces-la-face-painting-rainbow-unicorn-full-face-glitter-flowers-01.webp",
+      "sha256": "03dbca202e3f604ae9c42f7c2ae8609dd3ae3a122b1aaf6b3340070dc9774538",
+      "width": 1600,
+      "height": 2133,
+      "bytes": 138756,
+      "homepageRole": "homepage_featured"
+    },
+    {
+      "galleryId": "GALLERY-06",
+      "driveFileId": "1HphTzDXToiiTj3hjs9GaWopaGyWZNvuK",
+      "sourceTitle": "Balloon Twisting - Red Balloon Sword Outdoor Party.HEIC",
+      "mimeType": "image/heif",
+      "finalPublicPath": "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-red-balloon-sword-outdoor-party-01.webp",
+      "sourceFilePath": "public/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-red-balloon-sword-outdoor-party-01.webp",
+      "sha256": "687463ecf286f67e65418afd2b493fb1820dd11282d32fe2ceb1fa1bb2984856",
+      "width": 1600,
+      "height": 2133,
+      "bytes": 351372,
+      "homepageRole": "homepage_featured"
+    },
+    {
+      "galleryId": "GALLERY-07",
+      "driveFileId": "1LiJBa0V7z-j0Karjmlua18dkf_eEDmQy",
+      "sourceTitle": "Balloon Twisting - Blue Balloon Animal Outdoor Party.HEIC",
+      "mimeType": "image/heif",
+      "finalPublicPath": "/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-blue-balloon-animal-outdoor-party-01.webp",
+      "sourceFilePath": "public/images/gallery/balloon-twisting/happy-faces-la-balloon-twisting-blue-balloon-animal-outdoor-party-01.webp",
+      "sha256": "714f877e8b68dcceb0c21fb402f453584f533be157d7bbf0578acda5924962c8",
+      "width": 1600,
+      "height": 2844,
+      "bytes": 727332,
+      "homepageRole": "staged_extra_not_homepage_featured"
+    },
+    {
+      "galleryId": "GALLERY-08",
+      "driveFileId": "1QZAfTF7XE8w6UasYEiZrRBoTlp-G0uY0",
+      "sourceTitle": "Balloon Twisting - Balloon Artist Table at Bounce House Party.jpeg",
+      "mimeType": "image/jpeg",
+      "finalPublicPath": "/images/gallery/balloon-twisting/happy-faces-la-balloon-artist-table-bounce-house-party-01.webp",
+      "sourceFilePath": "public/images/gallery/balloon-twisting/happy-faces-la-balloon-artist-table-bounce-house-party-01.webp",
+      "sha256": "f2c7e66948bcb67c69079b5fe5c4cbcfdd1f036e47b3662a6f2e6e81e52f58fe",
+      "width": 1600,
+      "height": 2133,
+      "bytes": 593114,
+      "homepageRole": "staged_extra_not_homepage_featured"
+    }
+  ]
+}

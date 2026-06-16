@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 const rootDir = process.cwd();
 const mode = process.env.HFLA_HOMEPAGE_VISUAL_LOCK_MODE || "deploy";
 const baseUrl = process.env.HFLA_LIVE_HOMEPAGE_URL || "https://happyfacesla.com/";
-const baselineVersion = "homepage-visual-baseline-v0.2-draft-20260615";
+const baselineVersion = "homepage-visual-baseline-v0.3-owner-gallery-20260616";
 const manifestPath = join(
   rootDir,
   "evidence",
