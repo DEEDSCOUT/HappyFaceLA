@@ -73,6 +73,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     <div class="wizard-confirmation-icon" aria-hidden="true">🎉</div>
     <h2 class="text-2xl font-bold text-slate-900">Quote request received!</h2>
     <p id="wizard-confirm-name" class="mt-3 text-slate-700 leading-relaxed"></p>
+    <p id="wizard-confirm-reference" class="mt-3 rounded-lg bg-orange-50 px-3 py-2 text-sm font-semibold text-orange-900 hidden"></p>
     <ul class="mt-5 flex flex-col gap-2 text-sm text-slate-700">
       <li class="flex items-start gap-2">
         <span class="text-orange-500 font-bold mt-0.5" aria-hidden="true">•</span>
@@ -84,7 +85,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       </li>
       <li class="flex items-start gap-2">
         <span class="text-orange-500 font-bold mt-0.5" aria-hidden="true">•</span>
-        <span>Once you approve, a <strong>20% Booking Retainer</strong> reserves your date.</span>
+        <span>When an instant quote is available, a <strong>20% Availability Hold</strong> authorizes the retainer. Booking is confirmed only after Happy Faces LA sends confirmation.</span>
       </li>
     </ul>
     <p id="wizard-confirm-email" class="mt-4 text-sm text-slate-600"></p>
@@ -107,13 +108,14 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
 </div>
 
 <script>
-  // Happy Faces LA — Guided Selling Wizard controller — PUBLIC-BOOKING-R8
+  // Happy Faces LA guided selling wizard controller.
 
   import {
     computeRecommendation,
     getRecommendedDuration,
     getConflictWarning,
     formatDurationLabel,
+    bucketFromCount,
     CAPACITY_GUIDANCE,
     SPEED_GUIDANCE,
     KIDS_LABELS,
@@ -121,6 +123,11 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   import { validateStep, isDateInPast } from '../../lib/wizard/validation.ts';
   import { calculateCapacity, resolveKidsCount } from '../../lib/booking/capacity-engine.ts';
   import { assessEligibility } from '../../lib/booking/eligibility.ts';
+  import {
+    classifyQuoteOutcome,
+    CLASSIFICATION_LABELS,
+    CUSTOM_PLAN_COPY,
+  } from '../../lib/wizard/quote-classification.ts';
 
   // ── Types (inline for bundler compatibility) ──────────────────
   type EventType = 'birthday-party'|'school-event'|'corporate-family-day'|'festival-community'|'other';
@@ -128,6 +135,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   type Kids      = '1-10'|'11-18'|'19-25'|'26-40'|'40-plus'|'not-sure';
   type Style     = 'quick-cheek-arm'|'standard-party'|'full-face'|'fast-event-menu'|'not-sure';
   type Duration  = 60|90|120|180|240|'custom'|null;
+  type PreferredContactMethod = 'any'|'text'|'phone'|'email';
 
   interface LookbookInspiration {
     publicLookSlug: string;
@@ -157,6 +165,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     lastName: string;
     email: string;
     phone: string;
+    preferredContactMethod: PreferredContactMethod;
     lookbookService: string;
     lookbookDesignStyle: string;
     publicLookSlug: string;
@@ -186,6 +195,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     lastName: '',
     email: '',
     phone: '',
+    preferredContactMethod: 'any',
     lookbookService: '',
     lookbookDesignStyle: '',
     publicLookSlug: '',
@@ -196,6 +206,8 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   };
   let recommendedDuration: Duration = null;
   let initialized = false;
+  const WIZARD_PROGRESS_KEY = 'hflaWizardProgressV1';
+  const WIZARD_QUOTE_IDEMPOTENCY_KEY = 'hflaWizardQuoteRequestIdempotencyV1';
 
   // ── Display labels ────────────────────────────────────────────
   const EVENT_LABELS: Record<string, string> = {
@@ -216,6 +228,25 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   const DURATION_VALUES: Record<string, Duration> = {
     '60': 60, '90': 90, '120': 120, '180': 180, '240': 240, 'custom': 'custom',
   };
+  const STYLE_LABELS: Record<string, string> = {
+    'quick-cheek-arm': 'Quick cheek or arm designs',
+    'standard-party':  'Standard party designs',
+    'full-face':       'Wow or full-face designs',
+    'fast-event-menu': 'Fast event menu',
+    'not-sure':        'Recommended designs',
+  };
+  // Per-range placeholder hint for the exact/estimated child-count field.
+  const EXACT_PLACEHOLDER: Record<string, string> = {
+    '1-10': 'e.g. 8', '11-18': 'e.g. 14', '19-25': 'e.g. 22',
+    '26-40': 'e.g. 28', '40-plus': 'e.g. 80', 'not-sure': 'e.g. 28',
+  };
+  // Customer-safe label for each travel band value emitted by the Step 6 select.
+  const TRAVEL_BAND_LABELS: Record<number, string> = {
+    0:  'Within 20 miles — no travel fee',
+    30: 'More than 20–40 miles — $25 travel fee',
+    50: 'More than 40–60 miles — manual approval required',
+    70: 'More than 60 miles — custom quote',
+  };
 
   // ── Helpers ───────────────────────────────────────────────────
   function qs<T extends Element>(sel: string): T|null {
@@ -223,6 +254,147 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   }
   function hide(el: Element|null) { el?.classList.add('hidden'); }
   function show(el: Element|null) { el?.classList.remove('hidden'); }
+
+  function persistWizardProgress() {
+    try {
+      sessionStorage.setItem(WIZARD_PROGRESS_KEY, JSON.stringify({
+        currentStep,
+        answers: {
+          ...answers,
+          lookbookInspirations: answers.lookbookInspirations.slice(0, 6),
+        },
+      }));
+    } catch {
+      // Ignore storage access issues.
+    }
+  }
+
+  function clearWizardProgress() {
+    try {
+      sessionStorage.removeItem(WIZARD_PROGRESS_KEY);
+      sessionStorage.removeItem(WIZARD_QUOTE_IDEMPOTENCY_KEY);
+    } catch {
+      // Ignore storage access issues.
+    }
+  }
+
+  function getQuoteRequestIdempotencyKey(): string {
+    try {
+      const existing = sessionStorage.getItem(WIZARD_QUOTE_IDEMPOTENCY_KEY);
+      if (existing && /^qrq_[a-z0-9-]{16,90}$/i.test(existing)) return existing;
+      const random = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const key = `qrq_${String(random).toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 80)}`;
+      sessionStorage.setItem(WIZARD_QUOTE_IDEMPOTENCY_KEY, key);
+      return key;
+    } catch {
+      const random = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      return `qrq_${String(random).toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 80)}`;
+    }
+  }
+
+  function restoreWizardProgress(): boolean {
+    try {
+      const raw = sessionStorage.getItem(WIZARD_PROGRESS_KEY);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw) as { currentStep?: unknown; answers?: Partial<Answers> };
+      if (!parsed.answers) return false;
+      Object.assign(answers, parsed.answers);
+      const savedStep = Number(parsed.currentStep);
+      if (Number.isInteger(savedStep) && savedStep >= 1 && savedStep <= TOTAL_STEPS) {
+        currentStep = savedStep;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function hydrateWizardControls() {
+    if (answers.eventType) {
+      const input = qs<HTMLInputElement>(`#step1-options input[value="${answers.eventType}"]`);
+      if (input) input.checked = true;
+      markOptionSelected('step1-options', answers.eventType);
+      const fb = qs('#step1-feedback');
+      if (fb) {
+        fb.textContent = STEP1_FEEDBACK[answers.eventType] ?? '';
+        show(fb);
+      }
+    }
+
+    document.querySelectorAll<HTMLInputElement>('#step2-options input[type="checkbox"]').forEach((input) => {
+      input.checked = answers.services.includes(input.value as Service);
+    });
+    if (answers.services.length) markOptionSelected('step2-options', answers.services[0], true);
+
+    if (answers.kidsCountBucket) {
+      const input = qs<HTMLInputElement>(`#step3-options input[value="${answers.kidsCountBucket}"]`);
+      if (input) input.checked = true;
+      markOptionSelected('step3-options', answers.kidsCountBucket);
+      const exactWrapper = qs('#step3-exact-count');
+      const exactInput = qs<HTMLInputElement>('#field-kidsExact');
+      if (exactInput) {
+        exactInput.value = typeof answers.kidsCountActual === 'number' ? String(answers.kidsCountActual) : '';
+        exactInput.placeholder = EXACT_PLACEHOLDER[answers.kidsCountBucket] ?? 'e.g. 12';
+        exactInput.required = answers.kidsCountBucket !== 'not-sure';
+      }
+      const reqMark = qs('#step3-exact-required');
+      if (answers.kidsCountBucket === 'not-sure') {
+        hide(exactWrapper);
+        hide(reqMark);
+        hide(qs('#step3-estimate-hint'));
+      } else {
+        show(exactWrapper);
+        show(reqMark);
+        show(qs('#step3-estimate-hint'));
+      }
+      updateKidsGuidance();
+    }
+
+    if (answers.designStyle) {
+      const input = qs<HTMLInputElement>(`#step4-options input[value="${answers.designStyle}"]`);
+      if (input) input.checked = true;
+      markOptionSelected('step4-options', answers.designStyle);
+      const guidance = qs('#step4-guidance');
+      if (guidance) {
+        guidance.textContent = SPEED_GUIDANCE[answers.designStyle] ?? '';
+        show(guidance);
+      }
+    }
+
+    if (answers.selectedDurationOption !== null) {
+      const value = String(answers.selectedDurationOption);
+      const input = qs<HTMLInputElement>(`#step5-options input[value="${value}"]`);
+      if (input) {
+        input.checked = true;
+        markOptionSelected('step5-options', value);
+      }
+    }
+
+    const fieldValues: Array<[string, string | number | null]> = [
+      ['eventDate', answers.eventDate],
+      ['eventTime', answers.eventTime],
+      ['eventCity', answers.eventCity],
+      ['venueName', answers.venueName],
+      ['specialRequests', answers.specialRequests],
+      ['travelBand', answers.travelMiles],
+      ['firstName', answers.firstName],
+      ['lastName', answers.lastName],
+      ['email', answers.email],
+      ['phone', answers.phone],
+    ];
+    fieldValues.forEach(([id, value]) => {
+      const field = qs<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`#field-${id}`);
+      if (field && value !== null && value !== undefined) field.value = String(value);
+    });
+  }
+
+  // Item 8: clear the step-level validation error as soon as the customer acts,
+  // so a resolved error never lingers after the field/selection is fixed.
+  function clearValidationError() { hide(qs('#wizard-validation-error')); }
 
   function track(eventName: string, params: Record<string, unknown> = {}) {
     const trackedWindow = window as Window & {
@@ -478,23 +650,23 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     const cap = calculateCapacity({ kidsCount, designStyle: style, bookedDurationMinutes: durationMinutes });
 
     if (cap.requiredArtistCount > 4) {
-      return { label: 'Custom event plan', cls: 'wizard-badge-red' };
+      return { label: 'Custom plan recommended', cls: 'wizard-badge-red' };
     }
     if (cap.requiredArtistCount > 1) {
       // Check if quick designs would fit with 1 artist
       const quickCap = calculateCapacity({ kidsCount, designStyle: 'quick-cheek-arm', bookedDurationMinutes: durationMinutes });
       if (quickCap.requiredArtistCount === 1) {
-        return { label: 'Possible with quick designs', cls: 'wizard-badge-amber' };
+        return { label: 'Best with faster designs', cls: 'wizard-badge-amber' };
       }
-      return { label: 'Add another artist', cls: 'wizard-badge-amber' };
+      return { label: 'May need a second artist', cls: 'wizard-badge-amber' };
     }
     // 1 artist fits — check how comfortable
-    const margin = cap.usableMinutesPerArtist / Math.max(1, cap.requiredArtistMinutes);
+    const capacityRatio = cap.usableMinutesPerArtist / Math.max(1, cap.requiredArtistMinutes);
     const recMinutes = typeof recommendedDuration === 'number' ? recommendedDuration : null;
     if (recMinutes !== null && durationMinutes === recMinutes) {
       return { label: 'Best fit', cls: 'wizard-badge-green' };
     }
-    if (margin < 1.05) {
+    if (capacityRatio < 1.05) {
       return { label: 'Too tight', cls: 'wizard-badge-amber' };
     }
     if (durationMinutes > (recMinutes ?? 0)) {
@@ -529,7 +701,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     const nav = qs('#wizard-nav');
     const backBtn = qs<HTMLButtonElement>('#btn-back');
 
-    // Steps 7 (recommendation) and 8 (contact form) hide the standard nav
+    // Steps 7 (recommendation) and 8 (contact details) hide the standard nav
     if (step === 7 || step === 8) {
       hide(nav);
     } else {
@@ -543,6 +715,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
 
     // Clear validation error
     hide(qs('#wizard-validation-error'));
+    persistWizardProgress();
   }
 
   // ── Option selection UI helpers ───────────────────────────────
@@ -634,42 +807,103 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     }
   });
 
-  // ── Step 3 — Kids Count ───────────────────────────────────────
+  // ── Step 3 — Kids Count (range card + exact/estimated count) ───
+  // Effective bucket for guidance: an entered exact count drives it; else range.
+  function effectiveKidsBucketLocal(): Kids | null {
+    return typeof answers.kidsCountActual === 'number' && answers.kidsCountActual > 0
+      ? (bucketFromCount(answers.kidsCountActual) as Kids)
+      : answers.kidsCountBucket;
+  }
+
+  function updateKidsGuidance() {
+    const guidance = qs('#step3-guidance');
+    if (guidance && answers.kidsCountBucket) {
+      guidance.textContent = CAPACITY_GUIDANCE[answers.kidsCountBucket] ?? '';
+      show(guidance);
+    }
+    const selling = qs('#step3-selling');
+    if (selling) {
+      const effBucket = effectiveKidsBucketLocal();
+      const rec = getRecommendedDuration(effBucket, answers.designStyle ?? 'standard-party');
+      const recLabel = formatDurationLabel(rec);
+      selling.textContent = recLabel !== 'Not selected' && recLabel !== 'Custom plan'
+        ? `Most parents with a similar group choose ${recLabel} and love the results.`
+        : "A larger group may need a custom plan — a fast event menu, a longer service window, or an additional artist. We'll confirm the best setup before booking.";
+      show(selling);
+    }
+  }
+
   qs('#step3-options')?.addEventListener('change', (e) => {
     const radio = e.target as HTMLInputElement;
     answers.kidsCountBucket = radio.value as Kids;
     // Reset exact count when bucket changes
     answers.kidsCountActual = null;
     const exactInput = qs<HTMLInputElement>('#field-kidsExact');
-    if (exactInput) exactInput.value = '';
+    if (exactInput) {
+      exactInput.value = '';
+      exactInput.placeholder = EXACT_PLACEHOLDER[radio.value] ?? 'e.g. 12';
+    }
     markOptionSelected('step3-options', radio.value);
 
-    // Show exact count input only for 40+ bucket
-    const exactBlock = qs('#step3-exact-count');
-    if (exactBlock) {
-      radio.value === '40-plus' ? show(exactBlock) : hide(exactBlock);
+    const requiresExactCount = radio.value !== 'not-sure';
+    const exactWrapper = qs('#step3-exact-count');
+    const reqMark = qs('#step3-exact-required');
+    const estimateHint = qs('#step3-estimate-hint');
+    if (exactInput) exactInput.required = requiresExactCount;
+    if (requiresExactCount) {
+      show(exactWrapper);
+      show(reqMark);
+      show(estimateHint);
+    } else {
+      hide(exactWrapper);
+      hide(reqMark);
+      hide(estimateHint);
     }
+    hide(qs('#step3-exact-error'));
+    hide(qs('#step3-count-conflict'));
 
-    const guidance = qs('#step3-guidance');
-    const selling = qs('#step3-selling');
-    if (guidance) {
-      guidance.textContent = CAPACITY_GUIDANCE[radio.value as Kids] ?? '';
-      show(guidance);
-    }
-    if (selling) {
-      const rec = getRecommendedDuration(answers.kidsCountBucket, answers.designStyle ?? 'standard-party');
-      const recLabel = formatDurationLabel(rec);
-      selling.textContent = recLabel !== 'Not selected' && recLabel !== 'Custom plan'
-        ? `Most parents with a similar group choose ${recLabel} and love the results.`
-        : 'Want shorter lines? Glitter tattoos or a fast face-painting menu can serve more kids in less time.';
-      show(selling);
-    }
+    updateKidsGuidance();
   });
 
-  // Capture exact kids count when 40+ is selected
+  // Capture exact/estimated kids count for any range, with whole-number/range
+  // validation and a friendly range/count mismatch correction.
   qs<HTMLInputElement>('#field-kidsExact')?.addEventListener('input', (e) => {
-    const val = parseInt((e.target as HTMLInputElement).value, 10);
-    answers.kidsCountActual = Number.isFinite(val) && val > 0 ? val : null;
+    const raw = (e.target as HTMLInputElement).value.trim();
+    const errEl = qs('#step3-exact-error');
+    const conflictEl = qs('#step3-count-conflict');
+    const estimateHint = qs('#step3-estimate-hint');
+
+    if (raw === '') {
+      answers.kidsCountActual = null;
+      hide(errEl); hide(conflictEl); show(estimateHint);
+      updateKidsGuidance();
+      return;
+    }
+
+    const n = Number(raw);
+    if (!Number.isInteger(n) || n < 1 || n > 200) {
+      answers.kidsCountActual = null;
+      if (errEl) { errEl.textContent = 'Please enter a whole number of children between 1 and 200.'; show(errEl); }
+      hide(conflictEl); hide(estimateHint);
+      updateKidsGuidance();
+      return;
+    }
+
+    answers.kidsCountActual = n;
+    hide(errEl); hide(estimateHint);
+
+    // Do not silently accept a count that conflicts with the chosen range.
+    const selected = answers.kidsCountBucket;
+    const derived = bucketFromCount(n) as Kids;
+    if (conflictEl && selected && selected !== 'not-sure' && derived !== selected) {
+      conflictEl.textContent =
+        `That number looks closer to ${KIDS_LABELS[derived]}. We'll use ${n} children for the recommendation.`;
+      show(conflictEl);
+    } else {
+      hide(conflictEl);
+    }
+
+    updateKidsGuidance();
   });
 
   // ── Step 4 — Design Style ─────────────────────────────────────
@@ -687,35 +921,69 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
 
   // ── Step 5 — Duration (pre-selection runs on entering the step) ──
   function initDurationStep() {
-    recommendedDuration = getRecommendedDuration(answers.kidsCountBucket, answers.designStyle);
+    // An exact/estimated child count drives the recommendation via its range.
+    const effBucket = effectiveKidsBucketLocal();
+    recommendedDuration = getRecommendedDuration(effBucket, answers.designStyle);
+    const customPlanRecommended = recommendedDuration === 'custom';
 
     // Update subheading
     const subheading = qs('#step5-subheading');
     if (subheading) {
-      const kLabel = answers.kidsCountBucket ? KIDS_LABELS[answers.kidsCountBucket] : 'your group';
+      const kLabel = typeof answers.kidsCountActual === 'number'
+        ? `${answers.kidsCountActual} children`
+        : (effBucket ? KIDS_LABELS[effBucket] : 'your group');
       const dLabel = answers.designStyle?.replace(/-/g, ' ') ?? 'your design choice';
       const recLabel = formatDurationLabel(recommendedDuration);
-      if (recLabel !== 'Not selected') {
+      if (customPlanRecommended) {
+        subheading.textContent =
+          `Choose the service window you have in mind for ${kLabel} — we'll plan around it.`;
+      } else if (recLabel !== 'Not selected') {
         subheading.textContent =
           `Based on ${kLabel} and ${dLabel}, we recommend ${recLabel}. You can adjust if your party window is different.`;
       }
     }
 
+    // Custom-plan planning recommendation — informational only; never forces
+    // or promotes the long custom window or 'recommend a time' option.
+    const planningNote = qs('#step5-planning-note');
+    if (planningNote) {
+      if (customPlanRecommended) {
+        const largeEvent = effBucket === '40-plus';
+        planningNote.innerHTML = largeEvent
+          ? '<strong>Large-event custom plan recommended.</strong> For more than 40 children we build a ' +
+            'custom entertainment plan — often with a second artist or a faster design menu — before ' +
+            "confirming availability. Pick the window you have in mind and we'll plan around it."
+          : '<strong>Custom plan recommended.</strong> For this group size and design style, we may ' +
+            'recommend a second artist, a longer service window, or a faster design menu before ' +
+            "confirming availability. Pick the window you have in mind and we'll plan around it.";
+        show(planningNote);
+      } else {
+        hide(planningNote);
+      }
+    }
+
     // Show capacity-aware badge on each duration option
-    ['60','90','120','180','240','custom'].forEach(v => {
+    ['60','90','120','180','240','custom','recommend'].forEach(v => {
       const badge = qs(`#badge-${v}`);
       if (!badge) return;
-      const durationMin = v === 'custom' ? null : parseInt(v, 10);
-      if (durationMin === null) {
-        // For 'custom', only show badge if it's the recommended duration
-        const matches = recommendedDuration === 'custom';
-        if (matches) {
-          badge.textContent = 'Best fit';
+      if (v === 'recommend') {
+        // 'Not sure — recommend a time for me' surfaces the engine's suggested
+        // window so the customer knows what they'll get. Hidden when the
+        // suggestion is itself a custom plan.
+        if (typeof recommendedDuration === 'number') {
+          badge.textContent = `We suggest ${formatDurationLabel(recommendedDuration)}`;
           badge.className = 'wizard-recommended-badge wizard-badge-green';
           show(badge);
         } else {
           hide(badge);
         }
+        return;
+      }
+      const durationMin = v === 'custom' ? null : parseInt(v, 10);
+      if (durationMin === null) {
+        // '5+ hours / full event coverage' is a long custom window — never
+        // auto-promoted as a best fit; the custom-plan note covers it instead.
+        hide(badge);
         return;
       }
       // Capacity-aware badge for numeric durations
@@ -737,10 +1005,12 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       }
     });
 
-    // Pre-select the recommended option if nothing is selected yet
-    // For 180 and 240, map 'custom' recommendation to the first available large option
+    // Pre-select the recommended option if nothing is selected yet.
+    // Only numeric recommendations pre-select; a custom-plan recommendation
+    // never auto-selects the long custom window or the 'recommend a time'
+    // option — the customer chooses their own requested window.
     const recForSelect = recommendedDuration;
-    if (answers.selectedDurationOption === null && recForSelect !== null) {
+    if (answers.selectedDurationOption === null && typeof recForSelect === 'number') {
       const input = document.querySelector<HTMLInputElement>(
         `#step5-options input[value="${recForSelect}"]`
       );
@@ -750,13 +1020,58 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
         markOptionSelected('step5-options', String(recForSelect));
       }
     }
+
+    updateBadgeNote();
+  }
+
+  // Item 4: explain a conditional (amber/red) badge for the currently selected
+  // window so a caution badge never silently undermines confidence. Reassuring
+  // 'Best fit' / 'More relaxed' badges need no caveat.
+  function updateBadgeNote() {
+    const note = qs('#step5-badge-note');
+    if (!note) return;
+    const sel = answers.selectedDurationOption;
+    if (typeof sel !== 'number') {
+      // 'custom' / 'recommend' are explained by the planning note / suggestion badge
+      hide(note);
+      return;
+    }
+    const badgeInfo = getDurationBadge(sel);
+    if (!badgeInfo || badgeInfo.cls === 'wizard-badge-green' || badgeInfo.cls === 'wizard-badge-blue') {
+      hide(note);
+      return;
+    }
+    const selLabel = formatDurationLabel(sel);
+    let msg: string;
+    if (badgeInfo.label === 'May need a second artist') {
+      msg = `Heads up: for your group size and design style, ${selLabel} may need a second artist to keep a comfortable pace. We'll confirm staffing in your quote.`;
+    } else if (badgeInfo.label === 'Best with faster designs') {
+      msg = `Heads up: ${selLabel} fits best with quicker designs for your group size. A fast event menu helps keep the line moving.`;
+    } else if (badgeInfo.label === 'Too tight') {
+      msg = `Heads up: ${selLabel} may feel tight for your group size and design style. A longer window or faster designs gives a more comfortable pace.`;
+    } else if (badgeInfo.label === 'Custom plan recommended') {
+      msg = `For your group size and design style, ${selLabel} needs a custom plan — possibly a second artist or a faster design menu. We'll plan it with you.`;
+    } else {
+      msg = `For ${selLabel}, final capacity depends on design style, time window, and staffing. We'll confirm in your quote.`;
+    }
+    note.textContent = msg;
+    show(note);
   }
 
   qs('#step5-options')?.addEventListener('change', (e) => {
     const radio = e.target as HTMLInputElement;
-    answers.selectedDurationOption = DURATION_VALUES[radio.value] ?? null;
+    if (radio.value === 'recommend') {
+      // Adopt the engine's recommendation: numeric where one exists, otherwise
+      // a custom plan. Never leaves the selection ambiguous or null.
+      answers.selectedDurationOption = typeof recommendedDuration === 'number'
+        ? recommendedDuration
+        : 'custom';
+    } else {
+      answers.selectedDurationOption = DURATION_VALUES[radio.value] ?? null;
+    }
     markOptionSelected('step5-options', radio.value);
     updateConflictWarning();
+    updateBadgeNote();
   });
 
   function updateConflictWarning() {
@@ -801,9 +1116,46 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     return row;
   }
 
+  // Item 5/6: render a clear, consistent plan summary across every result
+  // variant — event, services, guest count, design style, service window,
+  // travel bucket, optional artist count, date/location, and the quote outcome.
+  function appendPlanSummary(
+    rowsEl: Element,
+    opts: { durationLabel: string; outcomeLabel: string; artistCount?: number },
+  ) {
+    rowsEl.innerHTML = '';
+    if (answers.eventType) rowsEl.appendChild(buildSummaryRow('Event', EVENT_LABELS[answers.eventType] ?? answers.eventType));
+    if (answers.services.length) rowsEl.appendChild(buildSummaryRow('Services', answers.services.map(s => SERVICE_LABELS[s] ?? s).join(', ')));
+    // Show the exact count when entered; mark it "estimated" when it was a
+    // not-sure range or it differs from the selected range. Never bucket-only
+    // once an exact count exists.
+    let kidsLabel = '';
+    if (typeof answers.kidsCountActual === 'number') {
+      const selected = answers.kidsCountBucket;
+      const derived = bucketFromCount(answers.kidsCountActual) as Kids;
+      const estimated = selected === 'not-sure' || (!!selected && derived !== selected);
+      kidsLabel = `${answers.kidsCountActual}${estimated ? ' estimated' : ''}`;
+    } else if (answers.kidsCountBucket) {
+      kidsLabel = KIDS_LABELS[answers.kidsCountBucket] ?? answers.kidsCountBucket;
+    }
+    if (kidsLabel) rowsEl.appendChild(buildSummaryRow('Children', kidsLabel));
+    if (answers.designStyle) rowsEl.appendChild(buildSummaryRow('Design style', STYLE_LABELS[answers.designStyle] ?? answers.designStyle));
+    if (opts.durationLabel && opts.durationLabel !== 'Not selected') {
+      rowsEl.appendChild(buildSummaryRow('Service window', opts.durationLabel));
+    }
+    if (typeof opts.artistCount === 'number') rowsEl.appendChild(buildSummaryRow('Artists needed', `${opts.artistCount}`));
+    if (answers.travelMiles !== null) {
+      rowsEl.appendChild(buildSummaryRow('Travel', TRAVEL_BAND_LABELS[answers.travelMiles] ?? `${answers.travelMiles} miles`));
+    }
+    if (answers.eventDate) rowsEl.appendChild(buildSummaryRow('Date', `${answers.eventDate}${answers.eventTime ? ' at ' + answers.eventTime : ''}`));
+    if (answers.eventCity) rowsEl.appendChild(buildSummaryRow('Location', answers.eventCity));
+    rowsEl.appendChild(buildSummaryRow('Quote outcome', opts.outcomeLabel));
+  }
+
   // Current eligibility result — populated by renderRecommendation, read by wireStep7Cta
   let currentEligibility: ReturnType<typeof assessEligibility> | null = null;
-  let currentAvailabilityStatus: 'confirmed' | 'unknown' = 'unknown';
+  let currentAvailabilityStatus: 'confirmed' | 'pending_artist_confirmation' | 'unknown' = 'unknown';
+  let currentClassification: ReturnType<typeof classifyQuoteOutcome> | null = null;
 
   async function renderRecommendation() {
     const rec = computeRecommendation(answers as Parameters<typeof computeRecommendation>[0]);
@@ -842,6 +1194,8 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
           designStyle: answers.designStyle ?? '',
           durationMinutes: durationMin,
           travelMiles: answers.travelMiles ?? 0,
+          eventDate: answers.eventDate,
+          startTime: answers.eventTime,
         }),
       });
       const data = await res.json() as {
@@ -851,6 +1205,13 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       };
       if (res.ok && data.ok && data.availability?.status === 'confirmed' && data.availability.paymentAllowed === true) {
         currentAvailabilityStatus = 'confirmed';
+      } else if (
+        res.ok &&
+        data.ok &&
+        data.availability?.status === 'pending_artist_confirmation' &&
+        data.availability.paymentAllowed === true
+      ) {
+        currentAvailabilityStatus = 'pending_artist_confirmation';
       }
     } catch {
       currentAvailabilityStatus = 'unknown';
@@ -859,26 +1220,30 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     const fastEl = qs('#rec-fast');
     const customEl = qs('#rec-custom');
 
-    if (eligibility.status === 'instant-book' && eligibility.pricing && currentAvailabilityStatus === 'confirmed') {
+    // Classify the outcome as exactly one of: instant quote eligible,
+    // manual approval required, custom quote required, unavailable/no checkout.
+    const classification = classifyQuoteOutcome({
+      eligibilityStatus: eligibility.status,
+      reasons: eligibility.reasons,
+      travelMiles: answers.travelMiles ?? 0,
+      availabilityConfirmed: currentAvailabilityStatus === 'confirmed',
+      conditionalHoldAvailable: currentAvailabilityStatus === 'pending_artist_confirmation',
+      customPlanReason: rec.customQuoteTrigger ?? null,
+    });
+    currentClassification = classification;
+
+    if (classification === 'instant-quote-eligible' && eligibility.pricing) {
       // ── Instant-book eligible with server-confirmed availability: show pricing + Stripe button ─────
       show(fastEl);
       hide(customEl);
 
       // Summary rows
       const rowsEl = qs('#rec-summary-rows');
-      if (rowsEl) {
-        rowsEl.innerHTML = '';
-        if (answers.eventType) rowsEl.appendChild(buildSummaryRow('Event', EVENT_LABELS[answers.eventType] ?? answers.eventType));
-        if (answers.services.length) rowsEl.appendChild(buildSummaryRow('Services', answers.services.map(s => SERVICE_LABELS[s] ?? s).join(', ')));
-        const kidsLabel = answers.kidsCountActual
-          ? `${answers.kidsCountActual} children`
-          : (answers.kidsCountBucket ? (KIDS_LABELS[answers.kidsCountBucket] ?? answers.kidsCountBucket) : '');
-        if (kidsLabel) rowsEl.appendChild(buildSummaryRow('Children', kidsLabel));
-        rowsEl.appendChild(buildSummaryRow('Duration', formatDurationLabel(answers.selectedDurationOption)));
-        rowsEl.appendChild(buildSummaryRow('Artists needed', `${capacity.requiredArtistCount}`));
-        if (answers.eventDate) rowsEl.appendChild(buildSummaryRow('Date', `${answers.eventDate}${answers.eventTime ? ' at ' + answers.eventTime : ''}`));
-        if (answers.eventCity) rowsEl.appendChild(buildSummaryRow('Location', answers.eventCity));
-      }
+      if (rowsEl) appendPlanSummary(rowsEl, {
+        durationLabel: formatDurationLabel(answers.selectedDurationOption),
+        outcomeLabel: CLASSIFICATION_LABELS['instant-quote-eligible'],
+        artistCount: capacity.requiredArtistCount,
+      });
 
       const sellingEl = qs('#rec-selling-copy');
       if (sellingEl) sellingEl.textContent = rec.sellingCopy;
@@ -903,60 +1268,58 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
         const travelNote = eligibility.pricing.travelFeeCents > 0 ? ` · Travel fee: ${formatCents(eligibility.pricing.travelFeeCents)}` : '';
         detailEl.textContent = `${modelNote} · ${capacity.requiredArtistCount} artist${capacity.requiredArtistCount > 1 ? 's' : ''}${travelNote}`;
       }
-    } else {
-      // ── Custom review or non-eligible fast-quote ─────────────────
-      // Determine display variant: use old recommendation engine copy
-      if (rec.branch === 'fast-quote') {
-        show(fastEl);
-        hide(customEl);
+    } else if (classification === 'unavailable-no-checkout') {
+      // ── Availability not server-confirmed: no checkout offered ───
+      show(fastEl);
+      hide(customEl);
 
-        const rowsEl = qs('#rec-summary-rows');
-        if (rowsEl) {
-          rowsEl.innerHTML = '';
-          if (answers.eventType) rowsEl.appendChild(buildSummaryRow('Event', EVENT_LABELS[answers.eventType] ?? answers.eventType));
-          if (answers.services.length) rowsEl.appendChild(buildSummaryRow('Services', answers.services.map(s => SERVICE_LABELS[s] ?? s).join(', ')));
-          if (answers.kidsCountBucket) rowsEl.appendChild(buildSummaryRow('Children', KIDS_LABELS[answers.kidsCountBucket] ?? answers.kidsCountBucket));
-          rowsEl.appendChild(buildSummaryRow('Recommended', rec.recommendedDurationLabel));
-          if (answers.eventDate) rowsEl.appendChild(buildSummaryRow('Date', `${answers.eventDate}${answers.eventTime ? ' at ' + answers.eventTime : ''}`));
-          if (answers.eventCity) rowsEl.appendChild(buildSummaryRow('Location', answers.eventCity));
-        }
+      const rowsEl = qs('#rec-summary-rows');
+      if (rowsEl) appendPlanSummary(rowsEl, {
+        durationLabel: formatDurationLabel(answers.selectedDurationOption) !== 'Not selected'
+          ? formatDurationLabel(answers.selectedDurationOption)
+          : rec.recommendedDurationLabel,
+        outcomeLabel: CLASSIFICATION_LABELS['unavailable-no-checkout'],
+      });
 
-        const sellingEl = qs('#rec-selling-copy');
-        if (sellingEl) sellingEl.textContent = rec.sellingCopy;
+      const sellingEl = qs('#rec-selling-copy');
+      if (sellingEl) sellingEl.textContent = rec.sellingCopy;
 
-        const conflictEl = qs('#rec-conflict-warning');
-        if (conflictEl) {
-          if (rec.conflictWarning) { conflictEl.textContent = rec.conflictWarning; show(conflictEl); }
-          else { hide(conflictEl); }
-        }
-
-        // Show standard notice, hide pricing panel. Option A: availability is unknown,
-        // so online retainer checkout remains unavailable.
-        hide(qs('#rec-pricing-panel'));
-        show(qs('#rec-standard-notice'));
-      } else {
-        hide(fastEl);
-        show(customEl);
-
-        const customCopyEl = qs('#rec-custom-copy');
-        if (customCopyEl) {
-          // Show eligibility reasons if available
-          const reasonNote = eligibility.reasons.length
-            ? ` (${eligibility.reasons.join(', ').replace(/-/g, ' ')})`
-            : '';
-          customCopyEl.textContent = (rec.customQuoteCopy ?? '') + reasonNote;
-        }
-
-        const customRowsEl = qs('#rec-custom-summary-rows');
-        if (customRowsEl) {
-          customRowsEl.innerHTML = '';
-          if (answers.eventType) customRowsEl.appendChild(buildSummaryRow('Event', EVENT_LABELS[answers.eventType] ?? answers.eventType));
-          if (answers.services.length) customRowsEl.appendChild(buildSummaryRow('Services', answers.services.map(s => SERVICE_LABELS[s] ?? s).join(', ')));
-          if (answers.kidsCountBucket) customRowsEl.appendChild(buildSummaryRow('Children', KIDS_LABELS[answers.kidsCountBucket] ?? answers.kidsCountBucket));
-          if (answers.eventDate) customRowsEl.appendChild(buildSummaryRow('Date', `${answers.eventDate}${answers.eventTime ? ' at ' + answers.eventTime : ''}`));
-          if (answers.eventCity) customRowsEl.appendChild(buildSummaryRow('Location', answers.eventCity));
-        }
+      const conflictEl = qs('#rec-conflict-warning');
+      if (conflictEl) {
+        if (rec.conflictWarning) { conflictEl.textContent = rec.conflictWarning; show(conflictEl); }
+        else { hide(conflictEl); }
       }
+
+      // Show standard notice, hide pricing panel. Option A: availability is unknown,
+      // so online retainer checkout remains unavailable.
+      hide(qs('#rec-pricing-panel'));
+      show(qs('#rec-standard-notice'));
+    } else {
+      // ── Manual approval required or custom quote required: no checkout ──
+      hide(fastEl);
+      show(customEl);
+
+      const classificationEl = qs('#rec-classification');
+      if (classificationEl) classificationEl.textContent = CLASSIFICATION_LABELS[classification];
+
+      const customCopyEl = qs('#rec-custom-copy');
+      if (customCopyEl) customCopyEl.textContent = CUSTOM_PLAN_COPY;
+
+      // Customer-safe context for the specific scenario. Internal eligibility
+      // reason codes are never rendered.
+      const contextEl = qs('#rec-custom-context');
+      if (contextEl) {
+        if (rec.customQuoteCopy) { contextEl.textContent = rec.customQuoteCopy; show(contextEl); }
+        else { hide(contextEl); }
+      }
+
+      const customRowsEl = qs('#rec-custom-summary-rows');
+      if (customRowsEl) appendPlanSummary(customRowsEl, {
+        durationLabel: formatDurationLabel(answers.selectedDurationOption) !== 'Not selected'
+          ? formatDurationLabel(answers.selectedDurationOption)
+          : rec.recommendedDurationLabel,
+        outcomeLabel: CLASSIFICATION_LABELS[classification],
+      });
     }
   }
 
@@ -965,9 +1328,11 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     if (target.id === 'btn-edit-answers') {
-      // Return to step 1 with all answers preserved
-      currentStep = 1;
-      showStep(1);
+      // Return to the most recent answer step (date/time/location) so the
+      // customer can revise without restarting from Step 1. Back still walks
+      // through every earlier step with all answers preserved.
+      currentStep = 6;
+      showStep(6);
     }
   });
 
@@ -1001,7 +1366,8 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     const btn = qs<HTMLButtonElement>('#btn-stripe-reserve');
     if (!btn) return;
     if (!currentEligibility || currentEligibility.status !== 'instant-book') return;
-    if (currentAvailabilityStatus !== 'confirmed') return;
+    if (currentAvailabilityStatus !== 'confirmed' && currentAvailabilityStatus !== 'pending_artist_confirmation') return;
+    if (currentClassification !== 'instant-quote-eligible') return;
 
     btn.disabled = true;
     btn.textContent = 'Preparing secure checkout…';
@@ -1040,7 +1406,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       const errEl = qs('#wizard-validation-error');
       if (errEl) { errEl.textContent = msg; show(errEl); }
       btn.disabled = false;
-      btn.textContent = 'Reserve with 20% Retainer →';
+      btn.textContent = 'Place 20% Availability Hold →';
     }
   }
 
@@ -1049,6 +1415,21 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   qs<HTMLInputElement>('#field-lastName')?.addEventListener('input', (e) => { answers.lastName = (e.target as HTMLInputElement).value; });
   qs<HTMLInputElement>('#field-email')?.addEventListener('input', (e) => { answers.email = (e.target as HTMLInputElement).value; });
   qs<HTMLInputElement>('#field-phone')?.addEventListener('input', (e) => { answers.phone = (e.target as HTMLInputElement).value; });
+  qs<HTMLSelectElement>('#field-contact-method')?.addEventListener('change', (e) => { answers.preferredContactMethod = (e.target as HTMLSelectElement).value as PreferredContactMethod; });
+
+  // First-touch attribution capture (Plan My Party lead-data completeness): record
+  // gclid/utm/source_page on load so they survive to submission.
+  try {
+    const ap = new URLSearchParams(location.search);
+    const cur = JSON.parse(sessionStorage.getItem('hfla_attribution') || '{}') as Record<string, string>;
+    let changed = false;
+    for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid', 'msclkid']) {
+      const v = ap.get(k);
+      if (v && !cur[k]) { cur[k] = v; changed = true; }
+    }
+    if (!cur.source_page) { cur.source_page = location.pathname; changed = true; }
+    if (changed) sessionStorage.setItem('hfla_attribution', JSON.stringify(cur));
+  } catch {}
 
   qs('#wizard-quote-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1062,12 +1443,12 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
 
     const submitBtn = qs<HTMLButtonElement>('#btn-submit-quote');
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending your request…'; }
+    hide(qs('#step8-fallback-cta'));
 
     // Check honeypot
     const honeypot = (qs<HTMLInputElement>('#wizard-quote-form input[name="honeypot"]'))?.value?.trim() ?? '';
     if (honeypot !== '') {
-      // Silently succeed for bots
-      showConfirmation();
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Send My Quote Request →'; }
       return;
     }
 
@@ -1098,6 +1479,9 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       public_look_title: answers.publicLookTitle || null,
       category: answers.lookbookCategory || null,
       inspiration_image_id: answers.inspirationImageId || null,
+      quoteOutcome: currentClassification,
+      quoteRequestIdempotencyKey: getQuoteRequestIdempotencyKey(),
+      consentAcknowledgement: true,
       lookbook_inspirations: answers.lookbookInspirations.map((item) => ({
         public_look_slug: item.publicLookSlug,
         public_look_title: item.publicTitle,
@@ -1105,8 +1489,26 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
         design_style: item.designStyle,
         category: item.category || null,
       })),
-      wizardVersion: 'public-booking-r8',
+      wizardVersion: 'guided-wizard-v1',
       submittedAt: new Date().toISOString(),
+      preferredContactMethod: answers.preferredContactMethod || 'any',
+      ...(() => {
+        let stored: Record<string, string> = {};
+        try { stored = JSON.parse(sessionStorage.getItem('hfla_attribution') || '{}'); } catch {}
+        const ap = new URLSearchParams(location.search);
+        const pick = (k: string) => ap.get(k) || stored[k] || null;
+        return {
+          source_page: location.pathname || stored.source_page || null,
+          utm_source: pick('utm_source'),
+          utm_medium: pick('utm_medium'),
+          utm_campaign: pick('utm_campaign'),
+          utm_term: pick('utm_term'),
+          utm_content: pick('utm_content'),
+          gclid: pick('gclid'),
+          fbclid: pick('fbclid'),
+          msclkid: pick('msclkid'),
+        };
+      })(),
     };
 
     try {
@@ -1115,8 +1517,14 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json() as { ok: boolean; message: string };
-      if (!res.ok || !data.ok) {
+      const data = await res.json() as {
+        ok: boolean;
+        received?: boolean;
+        persisted?: boolean;
+        leadId?: string;
+        message: string;
+      };
+      if (!res.ok || !data.ok || data.received !== true || data.persisted !== true) {
         throw new Error(data.message ?? 'Submission failed');
       }
       track('hfla_quote_submit', {
@@ -1124,18 +1532,25 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
         public_look_slug: answers.publicLookSlug || undefined,
         inspiration_count: answers.lookbookInspirations.length || undefined,
       });
-      showConfirmation();
+      showConfirmation(data.leadId);
     } catch (err) {
       const errEl = qs('#step8-error');
       if (errEl) {
-        errEl.textContent = 'Something went wrong. Please try again or call us directly.';
+        const msg = err instanceof Error && err.message
+          ? err.message
+          : 'We could not submit your request. Please call/text 818-619-5506.';
+        errEl.textContent = msg.includes('call/text')
+          ? msg
+          : 'We could not submit your request. Please call/text 818-619-5506.';
         show(errEl);
       }
+      show(qs('#step8-fallback-cta'));
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Send My Quote Request →'; }
     }
   });
 
-  function showConfirmation() {
+  function showConfirmation(leadId?: string) {
+    clearWizardProgress();
     hide(qs('#wizard-steps-container'));
     hide(qs('#wizard-nav'));
     hide(qs('#wizard-progress-wrapper'));
@@ -1144,18 +1559,30 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     if (conf) {
       const nameEl = qs('#wizard-confirm-name');
       if (nameEl) {
-        nameEl.innerHTML =
-          `Thank you, <strong>${answers.firstName}</strong>! We've received your party plan request and we'll ` +
-          `be in touch within 1–2 business days to confirm availability and send your official quote.`;
+        nameEl.textContent =
+          `Thank you, ${answers.firstName}! Your party plan request was received. ` +
+          `Happy Faces LA will review it and follow up about availability and your official quote.`;
+      }
+      const referenceEl = qs('#wizard-confirm-reference');
+      if (referenceEl) {
+        if (leadId) {
+          referenceEl.textContent = `Reference: ${leadId}`;
+          show(referenceEl);
+        } else {
+          hide(referenceEl);
+        }
       }
       const emailEl = qs('#wizard-confirm-email');
-      if (emailEl) emailEl.textContent = `Check ${answers.email} for our response.`;
+      if (emailEl) {
+        emailEl.textContent = 'Not confirmed yet — booking is confirmed only after Happy Faces LA sends confirmation.';
+      }
       show(conf);
     }
   }
 
   // "Plan Another Party" resets the wizard
   qs('#btn-plan-another')?.addEventListener('click', () => {
+    clearWizardProgress();
     window.location.reload();
   });
 
@@ -1205,16 +1632,40 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     showStep(currentStep);
   });
 
-  function initWizard() {
+  // Item 9: Step 8 has no standard nav, so give it its own visible Back control
+  // that returns to the plan summary (Step 7) without losing any answers.
+  qs('#btn-step8-back')?.addEventListener('click', () => {
+    currentStep = 7;
+    showStep(7);
+  });
+
+  // Item 8: clear a lingering step error the moment the customer changes any
+  // selection or field on the current step.
+  const stepsContainer = qs('#wizard-steps-container');
+  stepsContainer?.addEventListener('change', clearValidationError);
+  stepsContainer?.addEventListener('input', clearValidationError);
+  stepsContainer?.addEventListener('change', persistWizardProgress);
+  stepsContainer?.addEventListener('input', persistWizardProgress);
+
+  async function initWizard() {
     if (initialized) return;
     initialized = true;
+    restoreWizardProgress();
     applyLookbookPrefill();
+    hydrateWizardControls();
     track('hfla_quote_start', {
       source: answers.lookbookInspirations.length ? 'party_lookbook' : 'wizard',
       public_look_slug: answers.publicLookSlug || undefined,
       inspiration_count: answers.lookbookInspirations.length || undefined,
     });
-    showStep(1);
+    if (currentStep >= 5) {
+      initDurationStep();
+    }
+    if (currentStep >= 7) {
+      await renderRecommendation();
+      wireStep7Cta();
+    }
+    showStep(currentStep);
   }
 
   // ── Initialize ────────────────────────────────────────────────

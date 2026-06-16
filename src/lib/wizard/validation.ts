@@ -17,10 +17,23 @@ export function validateStep(step: number, answers: WizardAnswers): StepValidati
         ? { valid: true, errors: [] }
         : { valid: false, errors: ['Please select at least one service.'] };
 
-    case 3:
-      return answers.kidsCountBucket !== null
-        ? { valid: true, errors: [] }
-        : { valid: false, errors: ['Please select the number of participating children.'] };
+    case 3: {
+      if (answers.kidsCountBucket === null) {
+        return { valid: false, errors: ['Please select the number of participating children.'] };
+      }
+      const actual = answers.kidsCountActual;
+      if (actual !== null && actual !== undefined) {
+        // Exact/estimated count entered — whole number, 1–200.
+        if (!Number.isInteger(actual) || actual < 1 || actual > 200) {
+          return { valid: false, errors: ['Please enter a whole number of children between 1 and 200.'] };
+        }
+      } else if (answers.kidsCountBucket !== 'not-sure') {
+        // Numeric ranges must include an exact or best-estimate count. The
+        // separate "not sure" option is the explicit needs-confirmation path.
+        return { valid: false, errors: ['Please enter the exact child count or your best estimate, or choose Not sure yet.'] };
+      }
+      return { valid: true, errors: [] };
+    }
 
     case 4:
       return answers.designStyle !== null

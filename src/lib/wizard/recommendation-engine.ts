@@ -81,8 +81,33 @@ export function getRecommendedDuration(
   return DURATION_MATRIX[kidsCount][style];
 }
 
+// Map an exact/estimated child count to the matching range bucket. Mirrors the
+// range cards so an entered count drives the same recommendation as its range.
+export function bucketFromCount(count: number): KidsCountBucket {
+  if (count <= 10) return '1-10';
+  if (count <= 18) return '11-18';
+  if (count <= 25) return '19-25';
+  if (count <= 40) return '26-40';
+  return '40-plus';
+}
+
+// Effective bucket used for recommendation logic: when a valid exact/estimated
+// child count is entered it drives the recommendation (mapped to its range);
+// otherwise the selected range bucket is used. Backward compatible — answers
+// without an exact count resolve to the selected bucket unchanged.
+export function effectiveKidsBucket(answers: WizardAnswers): KidsCountBucket | null {
+  const actual = answers.kidsCountActual;
+  if (typeof actual === 'number' && Number.isFinite(actual) && actual > 0) {
+    return bucketFromCount(actual);
+  }
+  return answers.kidsCountBucket;
+}
+
 export function isCustomQuotePath(answers: WizardAnswers): { isCustom: boolean; reason: string | null } {
-  const { eventType, services, kidsCountBucket, designStyle } = answers;
+  const { eventType, services, designStyle } = answers;
+  // Use the effective bucket so an exact/estimated count (e.g. 45 entered under
+  // a smaller selected range) routes to the correct custom-plan path.
+  const kidsCountBucket = effectiveKidsBucket(answers);
 
   if (kidsCountBucket === '40-plus') {
     return { isCustom: true, reason: 'large-event' };
@@ -121,33 +146,33 @@ export function getConflictWarning(
   if (recommended === 'custom') return null; // custom is always sufficient
   if (!durationLessThan(selected, recommended)) return null;
   return (
-    `For ${kidsLabel}, ${selectedLabel} may feel rushed — every child deserves their moment! ` +
-    `We recommend at least ${recommendedLabel} for the best experience.`
+    `For ${kidsLabel}, ${selectedLabel} may feel rushed and lines may be tight. ` +
+    `We recommend at least ${recommendedLabel} for a more comfortable pace. ` +
+    `Capacity depends on design style, time window, and final staffing.`
   );
 }
 
-function buildSellingCopy(answers: WizardAnswers, recommendedDuration: DurationOption): string {
-  const { kidsCountBucket } = answers;
+function buildSellingCopy(kidsCountBucket: KidsCountBucket | null, recommendedDuration: DurationOption): string {
   const dLabel = formatDurationLabel(recommendedDuration);
 
   if (kidsCountBucket === '1-10') {
-    return "A cozy party size — we can take our time and make each design special. Every child gets a moment to shine.";
+    return "A cozy party size — we can take our time and make each design special, with a relaxed pace.";
   }
   if (kidsCountBucket === '11-18') {
-    return `A lively group! ${dLabel} gives every child a quality design without the line feeling endless. Most families with this group size love this option.`;
+    return `A lively group! ${dLabel} helps keep a quality design pace without the line feeling endless. Most families with this group size love this option.`;
   }
   if (kidsCountBucket === '19-25') {
-    return `For 19–25 children, ${dLabel} is our sweet spot — enough time for beautiful designs and happy kids. Most parents with a similar group choose this option and love the results.`;
+    return `For 19–25 children, ${dLabel} is our sweet spot — a comfortable window for beautiful designs. Most parents with a similar group choose this option and love the results.`;
   }
   if (kidsCountBucket === '26-40') {
-    return `A bigger group needs a bigger plan — ${dLabel} keeps the line moving and every child smiling. Want shorter lines? A fast event menu can serve more kids in the same window.`;
+    return `A bigger group needs a bigger plan — ${dLabel} helps keep the line moving and reduce rushed lines. Want a more comfortable pace? A fast event menu can help reduce wait pressure in the same window.`;
   }
   return `${dLabel} is the right choice for your group. We'll confirm the final details when we send your official quote.`;
 }
 
 function buildCustomCopy(reason: string | null): string {
   if (reason === 'large-event') {
-    return "Wow, what a party! For events with more than 40 children, we build a custom entertainment plan — possibly with a second artist — so no child waits too long. Our team will reach out with a tailored plan.";
+    return "Wow, what a party! For events with more than 40 children, we build a custom entertainment plan — possibly with a second artist — to help reduce rushed lines and wait times. Capacity depends on design style, time window, and final staffing. Our team will reach out with a tailored plan.";
   }
   if (reason === 'institutional-event') {
     return "School, corporate, and festival events deserve a custom plan. We'll review your details and put together something that fits your event perfectly.";
@@ -156,17 +181,20 @@ function buildCustomCopy(reason: string | null): string {
     return "Multi-service events need a little more planning to make sure everything runs smoothly. Our team will confirm the best combination and timing for your event.";
   }
   if (reason === 'full-face-large-group') {
-    return "Detailed full-face designs for a larger group need a custom schedule to give every child the wow experience. We'll plan the perfect timeline for you.";
+    return "Detailed full-face designs for a larger group need a custom schedule — possibly with a second artist or a faster design menu. We'll plan a comfortable timeline for you.";
   }
   return "This looks like a special event — our team will review your details and build a plan that fits perfectly.";
 }
 
 export function computeRecommendation(answers: WizardAnswers): WizardRecommendation {
+  // Effective bucket lets an exact/estimated child count drive the duration,
+  // custom-plan, and selling-copy logic; falls back to the selected range.
+  const effBucket = effectiveKidsBucket(answers);
   const { isCustom, reason } = isCustomQuotePath(answers);
-  const recommendedDuration = getRecommendedDuration(answers.kidsCountBucket, answers.designStyle);
+  const recommendedDuration = getRecommendedDuration(effBucket, answers.designStyle);
   const recommendedLabel = formatDurationLabel(recommendedDuration);
   const selectedLabel = formatDurationLabel(answers.selectedDurationOption);
-  const kidsLabel = answers.kidsCountBucket ? KIDS_LABELS[answers.kidsCountBucket] : 'your group';
+  const kidsLabel = effBucket ? KIDS_LABELS[effBucket] : 'your group';
 
   const conflictWarning = isCustom
     ? null
@@ -182,7 +210,7 @@ export function computeRecommendation(answers: WizardAnswers): WizardRecommendat
     recommendedDuration,
     recommendedDurationLabel: recommendedLabel,
     branch: isCustom ? 'custom-quote' : 'fast-quote',
-    sellingCopy: isCustom ? '' : buildSellingCopy(answers, recommendedDuration),
+    sellingCopy: isCustom ? '' : buildSellingCopy(effBucket, recommendedDuration),
     conflictWarning,
     customQuoteTrigger: reason, // stored in state only — never rendered to customer UI
     customQuoteCopy: isCustom ? buildCustomCopy(reason) : null,

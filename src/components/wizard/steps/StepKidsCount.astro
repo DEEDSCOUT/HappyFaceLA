@@ -32,21 +32,24 @@
     </label>
   </div>
 
-  <!-- Exact count input for 40+ groups (shown by JS when '40-plus' is selected) -->
+  <!-- Exact count input for known-count groups; "Not sure yet" is the explicit fallback. -->
   <div id="step3-exact-count" class="hidden mt-4">
     <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">
-      Approximately how many children? <span class="text-rose-600">*</span>
+      Exact or best-estimate child count <span id="step3-exact-required" class="text-rose-600">*</span>
       <input
         id="field-kidsExact"
         type="number"
         name="kidsCountActual"
-        min="41"
+        min="1"
         max="200"
-        placeholder="e.g. 80"
+        placeholder="e.g. 18"
         class="mt-1 w-40 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
-        aria-describedby="step3-exact-hint"
+        aria-describedby="step3-exact-hint step3-exact-error step3-count-conflict"
       />
-      <span id="step3-exact-hint" class="text-xs text-slate-500">Enter 41–200. Up to 160 may qualify for instant booking depending on design and duration.</span>
+      <span id="step3-estimate-hint" class="text-xs text-slate-500">Enter the actual count if you know it, or your best estimate. If you do not know yet, choose “Not sure yet.”</span>
+      <span id="step3-exact-hint" class="text-xs text-slate-500">Enter 1–200. Up to 160 may qualify for instant booking depending on design and duration.</span>
+      <span id="step3-exact-error" class="hidden text-xs font-semibold text-rose-700" aria-live="polite"></span>
+      <span id="step3-count-conflict" class="hidden text-xs font-semibold text-amber-700" aria-live="polite"></span>
     </label>
   </div>
 
