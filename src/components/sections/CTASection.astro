@@ -2,11 +2,15 @@
 interface Props {
   title?: string;
   description?: string;
+  ctaPrimaryLabel?: string;
+  ctaPrimaryHref?: string;
 }
 
 const {
   title = "Ready to lock in your event date?",
   description = "Share your event details and Happy Faces LA will confirm availability and next steps.",
+  ctaPrimaryLabel = "Get Availability & Pricing",
+  ctaPrimaryHref = "/contact/",
 } = Astro.props;
 ---
 
@@ -16,7 +20,7 @@ const {
   <div class="mt-5 flex flex-wrap gap-3">
     <a
       class="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white"
-      href="/contact/">Get Availability & Pricing</a
+      href={ctaPrimaryHref}>{ctaPrimaryLabel}</a
     >
     <a
       class="rounded-xl border border-slate-500 px-5 py-3 text-sm font-semibold"

@@ -77,8 +77,8 @@ export const services: ServiceItem[] = [
             "Private events in Los Angeles",
         ],
         addOns: ["Face painting", "Glitter tattoos", "Face gems"],
-        image: "/images/services/happy-faces-la-balloon-twisting-service.webp",
-        imageAlt: "Happy Faces LA artist at a birthday party with balloon flowers",
+        image: "/images/services/happy-faces-la-balloon-twisting-pink-yellow-balloon-animals-outdoor-party-01.webp",
+        imageAlt: "Child holding pink and yellow balloon animals at an outdoor Happy Faces LA party",
     },
     {
         slug: "glitter-tattoos-los-angeles",
