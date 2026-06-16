@@ -58,28 +58,54 @@ const serviceFaqs = [
       <article class="rounded-2xl border border-slate-200 bg-white p-5">
         <h3 class="text-lg font-semibold text-slate-900">Los Angeles County</h3>
         <p class="mt-2 text-sm text-slate-700">
-          Los Angeles County events remain a core service area for birthdays and
-          family events. For city-level details, review available local pages
-          and request confirmation by city or ZIP code.
+          Los Angeles County events remain the core service-area cluster for
+          birthdays, school events, community celebrations and private family
+          parties. City pages below give more context for local planning.
         </p>
       </article>
       <article class="rounded-2xl border border-slate-200 bg-white p-5">
         <h3 class="text-lg font-semibold text-slate-900">Orange County</h3>
         <p class="mt-2 text-sm text-slate-700">
-          Orange County requests are reviewed by date, location and service mix.
-          Availability is confirmed for each event after city or ZIP code
-          review.
+          Orange County requests are reviewed by date, city, drive time, guest
+          count and service mix. Share the event city or ZIP code so the team
+          can recommend practical next steps.
         </p>
       </article>
       <article class="rounded-2xl border border-slate-200 bg-white p-5">
         <h3 class="text-lg font-semibold text-slate-900">Ventura County</h3>
         <p class="mt-2 text-sm text-slate-700">
-          Ventura County requests are also supported on an
-          availability-confirmed basis. Share event details so Happy Faces LA
-          can confirm next steps.
+          Ventura County requests are supported when timing, travel, setup and
+          service needs align. Include event details so Happy Faces LA can
+          respond with a clear plan.
         </p>
       </article>
     </div>
+
+    <article class="mt-8 rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="text-2xl font-bold text-slate-900">
+        What to include with a service-area request
+      </h2>
+      <div class="mt-4 grid gap-4 md:grid-cols-2">
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h3 class="text-base font-semibold text-slate-900">
+            Location details
+          </h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-700">
+            Share the city, ZIP code, nearest cross streets, venue type, parking
+            notes, and whether setup is indoors or outdoors.
+          </p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h3 class="text-base font-semibold text-slate-900">
+            Event details
+          </h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-700">
+            Include the event date, start time, expected guest count, child age
+            range, and services you are considering.
+          </p>
+        </div>
+      </div>
+    </article>
 
     <article class="mt-8 rounded-2xl border border-slate-200 bg-white p-6">
       <h2 class="text-2xl font-bold text-slate-900">
@@ -147,7 +173,7 @@ const serviceFaqs = [
     </article>
 
     <article class="mt-8 rounded-2xl border border-orange-200 bg-orange-50 p-6">
-      <h2 class="text-2xl font-bold text-orange-900">Request a quote</h2>
+      <h2 class="text-2xl font-bold text-orange-900">Send event details</h2>
       <p class="mt-3 text-sm text-orange-900">
         Share your event date, city or ZIP code and requested services. Happy
         Faces LA will confirm availability and next steps.
@@ -156,7 +182,7 @@ const serviceFaqs = [
         class="mt-4 inline-block rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600"
         href="/contact/"
       >
-        Get availability and quote details
+        Send event details
       </a>
     </article>
 
@@ -191,8 +217,7 @@ const serviceFaqs = [
                 {location.city}
               </h3>
               <p class="mt-2 text-sm text-slate-600">
-                Face painting, balloons, glitter tattoos, and face gems for
-                events in {location.city}.
+                {location.metaDescription}
               </p>
             </a>
           ))

@@ -1,31 +1,5 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import Breadcrumbs from "../../components/seo/Breadcrumbs.astro";
-import PageIntro from "../../components/sections/PageIntro.astro";
-import LocationPageSections from "../../components/sections/LocationPageSections.astro";
-import { priorityLocations } from "../../data/locations";
-import { localBusinessJsonLd, serviceJsonLd, breadcrumbJsonLd } from "../../utils/schema";
-
-const location = priorityLocations.find((item) => item.slug === "los-angeles")!;
-const canonicalPath = "/service-areas/los-angeles/";
+import ServiceAreaPage from "../../components/pages/ServiceAreaPage.astro";
 ---
 
-<BaseLayout
-  title="Face Painting in Los Angeles | Happy Faces LA"
-  description="Happy Faces LA offers face painting, balloon twisting, glitter tattoos, and face gems for events in Los Angeles."
-  canonicalPath={canonicalPath}
-  noindex={true}
-  jsonLd={[
-    localBusinessJsonLd(),
-    serviceJsonLd(`Party Entertainment in ${location.city}`, `https://happyfacesla.com${canonicalPath}`),
-    breadcrumbJsonLd([
-      { name: "Home", url: "https://happyfacesla.com/" },
-      { name: "Service Areas", url: "https://happyfacesla.com/service-areas/" },
-      { name: location.city, url: `https://happyfacesla.com${canonicalPath}` }
-    ])
-  ]}
->
-  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Service Areas", href: "/service-areas/" }, { label: "Los Angeles", href: canonicalPath }]} />
-  <PageIntro title="Face Painting, Balloon Twisting & Glitter Tattoos in Los Angeles" description="Happy Faces LA provides face painting, balloon twisting, glitter tattoos, and face jewelry for birthdays, school events, and private celebrations in Los Angeles." />
-  <LocationPageSections location={location} />
-</BaseLayout>
+<ServiceAreaPage slug="los-angeles" />
