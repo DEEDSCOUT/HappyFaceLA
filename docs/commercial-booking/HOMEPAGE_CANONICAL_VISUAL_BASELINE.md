@@ -1,13 +1,13 @@
 # HOMEPAGE CANONICAL VISUAL BASELINE
 
-Status: OWNER-SELECTED SOURCE BASELINE / Auditor Review Required
+Status: APPROVED OWNER ACCEPTED / Live Proof Required For Closure
 Release state: GO
 Date: 2026-06-16
 Baseline version: `homepage-visual-baseline-v0.3-owner-gallery-20260616`
 
 ## Purpose
 
-This file defines the homepage visual/image baseline that future deploy gates must enforce. The v0.3 baseline replaces the previous unapproved recent-event/gallery homepage images with owner-selected Drive assets converted to local WebP files. This is source-only until owner/auditor acceptance and controlled live proof.
+This file defines the homepage visual/image baseline that future deploy gates must enforce. The v0.3 baseline replaces the previous unapproved recent-event/gallery homepage images with owner-selected Drive assets converted to local WebP files. Owner/auditor source acceptance is recorded; live custom-domain proof is required for blocker closure.
 
 ## Required Homepage Structure
 
@@ -123,7 +123,7 @@ Captured evidence from the prior visual regression diagnosis:
 
 Required before closure:
 
-- Owner/auditor acceptance of the v0.3 source baseline.
+- Owner/auditor acceptance of the v0.3 source baseline: complete.
 - Controlled live desktop and mobile screenshot proof after deploy.
 - Live visual lock proof against `homepage-visual-baseline-v0.3-owner-gallery-20260616`.
 - Image manifest hashes accepted by owner/auditor.
