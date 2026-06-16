@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-const baselineVersion = "homepage-visual-baseline-v0.2-draft-20260615";
+const baselineVersion = "homepage-visual-baseline-v0.3-owner-gallery-20260616";
 const rootDir = process.cwd();
 const distDir = join(rootDir, "dist");
 const imageManifestPath = join(
