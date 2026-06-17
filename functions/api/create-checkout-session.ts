@@ -201,9 +201,9 @@ export const onRequestPost = async (
             currency: 'usd',
             unit_amount: retainerCents,
             product_data: {
-              name: '20% Booking Retainer - Happy Faces LA',
+              name: '20% Availability Hold - Happy Faces LA',
               description:
-                `Face painting · ${durationMinutes / 60}h · ${artistCount} artist${artistCount > 1 ? 's' : ''} · ${kidsCount} children`,
+                `Availability Hold only. Happy Faces LA sends final confirmation after artist availability review. Face painting · ${durationMinutes / 60}h · ${artistCount} artist${artistCount > 1 ? 's' : ''} · ${kidsCount} children`,
             },
           },
           quantity: 1,
@@ -228,7 +228,7 @@ export const onRequestPost = async (
       success_url: `${origin}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/plan-my-party`,
       payment_intent_data: {
-        description: `Happy Faces LA booking retainer - ${bookingId}`,
+        description: `Happy Faces LA availability hold - ${bookingId}`,
       },
     });
   } catch (error) {

@@ -1,6 +1,6 @@
 ---
-import QuoteForm from "../conversion/QuoteForm.astro";
 import FAQAccordion from "../content/FAQAccordion.astro";
+import BookingCtaBlock from "./BookingCtaBlock.astro";
 
 interface Props {
   eventType: string;
@@ -28,8 +28,8 @@ const faqs = [
     <p class="mt-3 text-sm text-slate-700">
       School events, corporate gatherings, and institutional or community events
       are available by custom quote only. Pricing, availability, and services
-      depend on event scale, location, and specific requirements. Contact us to
-      discuss your event and receive a customized proposal.
+      depend on event scale, location, and specific requirements. Use Plan My
+      Party to share your event details and receive next steps.
     </p>
   </section>
 
@@ -75,5 +75,10 @@ const faqs = [
   </section>
 
   <FAQAccordion items={faqs} />
-  <QuoteForm />
+  <BookingCtaBlock
+    title={`Ready to plan ${eventType}?`}
+    description="Use Plan My Party to send your event date, location, guest count, and service interests through the current intake flow."
+    primaryHref="/plan-my-party/"
+    primaryLabel="Plan My Party"
+  />
 </section>

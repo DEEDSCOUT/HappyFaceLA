@@ -2,7 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
 import PageIntro from "../components/sections/PageIntro.astro";
-import QuoteForm from "../components/conversion/QuoteForm.astro";
+import BookingCtaBlock from "../components/sections/BookingCtaBlock.astro";
 import { serviceJsonLd, faqJsonLd } from "../utils/schema";
 
 const canonicalPath = "/pricing/";
@@ -27,7 +27,7 @@ const pricingFaqs = [
 
 <BaseLayout
   title="Pricing for Face Painting & Party Entertainment in Los Angeles | Happy Faces LA"
-  description="Pricing depends on event date, location, guest count, and services requested. Request availability and pricing from Happy Faces LA."
+  description="Pricing depends on event date, location, guest count, and services requested. Plan your party with Happy Faces LA."
   canonicalPath={canonicalPath}
   jsonLd={[
     serviceJsonLd(
@@ -95,7 +95,12 @@ const pricingFaqs = [
       </p>
     </section>
 
-    <QuoteForm />
+    <BookingCtaBlock
+      title="Ready to plan your party?"
+      description="Use Plan My Party to share your event date, city, guest count, and services. Happy Faces LA will review your request and send next steps."
+      primaryHref="/plan-my-party/"
+      primaryLabel="Plan My Party"
+    />
   </section>
 
   <script is:inline>

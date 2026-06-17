@@ -1,8 +1,8 @@
 export const trackingEvents = {
     phoneClick: "phone_click",
     smsClick: "sms_click",
-    quoteFormStart: "quote_form_start",
-    quoteFormSubmit: "quote_form_submit",
+    planMyPartyStart: "plan_my_party_start",
+    planMyPartySubmit: "plan_my_party_submit",
     generateLead: "generate_lead",
     galleryView: "gallery_view",
     pricingView: "pricing_view",

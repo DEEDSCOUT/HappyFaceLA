@@ -1,6 +1,6 @@
 ---
-import QuoteForm from "../conversion/QuoteForm.astro";
 import FAQAccordion from "../content/FAQAccordion.astro";
+import BookingCtaBlock from "./BookingCtaBlock.astro";
 
 const faqs = [
     {
@@ -73,8 +73,8 @@ const faqs = [
         </h2>
         <p class="mt-3 text-sm text-slate-700">
             Tell us your event date, city or ZIP code and preferred services.
-            Browse our gallery for design inspiration, then request availability
-            and next steps.
+            Browse our gallery for design inspiration, then use Plan My Party
+            for next steps.
         </p>
         <p class="mt-3 text-sm text-slate-700">
             Wondering <a
@@ -90,5 +90,10 @@ const faqs = [
     </section>
 
     <FAQAccordion items={faqs} />
-    <QuoteForm />
+    <BookingCtaBlock
+        title="Ready to plan your birthday party?"
+        description="Use Plan My Party to share your event date, city, child count, and preferred services. Happy Faces LA will review your request and send next steps."
+        primaryHref="/plan-my-party/"
+        primaryLabel="Plan My Party"
+    />
 </section>

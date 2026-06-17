@@ -1,9 +1,8 @@
 // src/lib/quote-request/canonical-lead.ts
 // PUBLIC-BOOKING POST-DEPLOY P1 — Canonical Plan My Party lead model.
 //
-// One canonical lead shape that BOTH endpoints feed:
-//   - /api/quote-request (rich wizard)  -> buildCanonicalLead from the sanitized wizard payload
-//   - /api/lead (legacy contact form)   -> buildCanonicalLead from the mapped legacy payload
+// One canonical lead shape for the Plan My Party wizard and any internal adapters:
+//   - /api/quote-request (rich wizard) -> buildCanonicalLead from the sanitized wizard payload
 //
 // Pure: no I/O, no Stripe, no secrets. Every customer-entered field and every
 // system-recommended value is captured here, plus truthful derivations:
