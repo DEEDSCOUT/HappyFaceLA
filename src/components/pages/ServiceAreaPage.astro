@@ -1,0 +1,52 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../seo/Breadcrumbs.astro";
+import PageIntro from "../sections/PageIntro.astro";
+import LocationPageSections from "../sections/LocationPageSections.astro";
+import { priorityLocations } from "../../data/locations";
+import {
+  breadcrumbJsonLd,
+  localBusinessJsonLd,
+  serviceJsonLd,
+} from "../../utils/schema";
+
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const location = priorityLocations.find((item) => item.slug === slug);
+
+if (!location) {
+  throw new Error(`Unknown service-area slug: ${slug}`);
+}
+
+const canonicalPath = `/service-areas/${location.slug}/`;
+const canonicalUrl = `https://happyfacesla.com${canonicalPath}`;
+---
+
+<BaseLayout
+  title={location.metaTitle}
+  description={location.metaDescription}
+  canonicalPath={canonicalPath}
+  noindex={true}
+  jsonLd={[
+    localBusinessJsonLd(),
+    serviceJsonLd(`Party Entertainment in ${location.city}`, canonicalUrl),
+    breadcrumbJsonLd([
+      { name: "Home", url: "https://happyfacesla.com/" },
+      { name: "Service Areas", url: "https://happyfacesla.com/service-areas/" },
+      { name: location.city, url: canonicalUrl },
+    ]),
+  ]}
+>
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Service Areas", href: "/service-areas/" },
+      { label: location.city, href: canonicalPath },
+    ]}
+  />
+  <PageIntro title={location.heroTitle} description={location.heroDescription} />
+  <LocationPageSections location={location} />
+</BaseLayout>
