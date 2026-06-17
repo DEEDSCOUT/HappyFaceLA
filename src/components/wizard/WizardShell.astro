@@ -71,7 +71,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   <!-- Confirmation screen (shown after successful submission) -->
   <div id="wizard-confirmation" class="wizard-confirmation hidden" aria-live="polite">
     <div class="wizard-confirmation-icon" aria-hidden="true">🎉</div>
-    <h2 class="text-2xl font-bold text-slate-900">Quote request received!</h2>
+    <h2 class="text-2xl font-bold text-slate-900">Party details received!</h2>
     <p id="wizard-confirm-name" class="mt-3 text-slate-700 leading-relaxed"></p>
     <p id="wizard-confirm-reference" class="mt-3 rounded-lg bg-orange-50 px-3 py-2 text-sm font-semibold text-orange-900 hidden"></p>
     <ul class="mt-5 flex flex-col gap-2 text-sm text-slate-700">
@@ -81,11 +81,11 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       </li>
       <li class="flex items-start gap-2">
         <span class="text-orange-500 font-bold mt-0.5" aria-hidden="true">•</span>
-        <span>No payment is due until you approve your quote.</span>
+        <span>No payment is due at this stage.</span>
       </li>
       <li class="flex items-start gap-2">
         <span class="text-orange-500 font-bold mt-0.5" aria-hidden="true">•</span>
-        <span>When an instant quote is available, a <strong>20% Availability Hold</strong> authorizes the retainer. Happy Faces LA confirms artist availability and sends confirmation before the booking is final.</span>
+        <span>Happy Faces LA will review your party details and confirm availability before your booking is final.</span>
       </li>
     </ul>
     <p id="wizard-confirm-email" class="mt-4 text-sm text-slate-600"></p>
@@ -245,7 +245,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     0:  'Within 20 miles — no travel fee',
     30: 'More than 20–40 miles — $25 travel fee',
     50: 'More than 40–60 miles — manual approval required',
-    70: 'More than 60 miles — custom quote',
+    70: 'More than 60 miles — custom plan',
   };
 
   // ── Helpers ───────────────────────────────────────────────────
@@ -888,7 +888,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     const fb = qs('#step2-feedback');
     if (fb) {
       if (answers.services.includes('combo')) {
-        fb.textContent = "Great choice — combos keep more guests entertained at once. We'll confirm the best combination in your quote.";
+        fb.textContent = "Great choice — combos keep more guests entertained at once. We'll confirm the best combination when we follow up.";
         show(fb);
       } else if (answers.services.includes('not-sure')) {
         fb.textContent = "No worries — we'll recommend what works best for your event.";
@@ -1136,7 +1136,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     const selLabel = formatDurationLabel(sel);
     let msg: string;
     if (badgeInfo.label === 'May need a second artist') {
-      msg = `Heads up: for your group size and design style, ${selLabel} may need a second artist to keep a comfortable pace. We'll confirm staffing in your quote.`;
+      msg = `Heads up: for your group size and design style, ${selLabel} may need a second artist to keep a comfortable pace. We'll confirm staffing when we follow up.`;
     } else if (badgeInfo.label === 'Best with faster designs') {
       msg = `Heads up: ${selLabel} fits best with quicker designs for your group size. A fast event menu helps keep the line moving.`;
     } else if (badgeInfo.label === 'Too tight') {
@@ -1144,7 +1144,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     } else if (badgeInfo.label === 'Custom plan recommended') {
       msg = `For your group size and design style, ${selLabel} needs a custom plan — possibly a second artist or a faster design menu. We'll plan it with you.`;
     } else {
-      msg = `For ${selLabel}, final capacity depends on design style, time window, and staffing. We'll confirm in your quote.`;
+      msg = `For ${selLabel}, final capacity depends on design style, time window, and staffing. We'll confirm the details when we follow up.`;
     }
     note.textContent = msg;
     show(note);
@@ -1243,7 +1243,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     }
     if (answers.eventDate) rowsEl.appendChild(buildSummaryRow('Date', `${answers.eventDate}${answers.eventTime ? ' at ' + formatDisplayTime(answers.eventTime) : ''}`));
     if (answers.eventCity) rowsEl.appendChild(buildSummaryRow('Location', answers.eventCity));
-    rowsEl.appendChild(buildSummaryRow('Quote outcome', opts.outcomeLabel));
+    rowsEl.appendChild(buildSummaryRow('Plan outcome', opts.outcomeLabel));
   }
 
   // Current eligibility result — populated by renderRecommendation, read by wireStep7Cta
@@ -1446,8 +1446,8 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'wizard-step7-cta mt-5 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-colors';
-      btn.textContent = id === 'rec-fast' ? 'Request This Quote →' : 'Request My Custom Plan →';
-      btn.setAttribute('aria-label', id === 'rec-fast' ? 'Request this quote' : 'Request a custom plan');
+      btn.textContent = id === 'rec-fast' ? 'Send My Party Details →' : 'Request My Custom Plan →';
+      btn.setAttribute('aria-label', id === 'rec-fast' ? 'Send my party details' : 'Request a custom plan');
       btn.addEventListener('click', () => {
         currentStep = 8;
         showStep(8);
@@ -1500,11 +1500,11 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       const errEl = qs('#wizard-validation-error');
       if (errEl) { errEl.textContent = msg; show(errEl); }
       btn.disabled = false;
-      btn.textContent = 'Start 20% Availability Hold →';
+      btn.textContent = 'Continue to Availability Hold →';
     }
   }
 
-  // ── Step 8 — Quote Request Form ───────────────────────────────
+  // ── Step 8 — Party Details Form ───────────────────────────────
   qs<HTMLInputElement>('#field-firstName')?.addEventListener('input', (e) => { answers.firstName = (e.target as HTMLInputElement).value; });
   qs<HTMLInputElement>('#field-lastName')?.addEventListener('input', (e) => { answers.lastName = (e.target as HTMLInputElement).value; });
   qs<HTMLInputElement>('#field-email')?.addEventListener('input', (e) => { answers.email = (e.target as HTMLInputElement).value; });
@@ -1550,7 +1550,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     // Check honeypot
     const honeypot = (qs<HTMLInputElement>('#wizard-quote-form input[name="honeypot"]'))?.value?.trim() ?? '';
     if (honeypot !== '') {
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Send My Quote Request →'; }
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit My Party Plan →'; }
       return;
     }
 
@@ -1558,7 +1558,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     if (!selectedPreferredContactMethod) {
       const errEl = qs('#step8-error');
       if (errEl) { errEl.textContent = 'Please choose your preferred contact method.'; show(errEl); }
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Send My Quote Request →'; }
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit My Party Plan →'; }
       return;
     }
 
@@ -1655,7 +1655,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
         show(errEl);
       }
       show(qs('#step8-fallback-cta'));
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Send My Quote Request →'; }
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit My Party Plan →'; }
     }
   });
 
@@ -1671,7 +1671,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       if (nameEl) {
         nameEl.textContent =
           `Thank you, ${answers.firstName}! Your party plan request was received. ` +
-          `Happy Faces LA will review it and follow up about availability and your official quote.`;
+          `Happy Faces LA will review it and follow up about availability and next steps.`;
       }
       const referenceEl = qs('#wizard-confirm-reference');
       if (referenceEl) {

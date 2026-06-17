@@ -34,11 +34,11 @@ export const CLASSIFICATION_LABELS: Record<QuoteClassification, string> = {
   'instant-quote-eligible': 'Availability Hold available',
   'unavailable-no-checkout': 'Availability check needed',
   'manual-approval-required': 'Manual review needed',
-  'custom-quote-required': 'Custom quote needed',
+  'custom-quote-required': 'Custom plan needed',
 };
 
 export const CUSTOM_PLAN_COPY =
-  'No payment is due yet. We will review your details and follow up with an official quote and next steps.';
+  'No payment is due yet. We will review your party details, confirm availability, and follow up with next steps.';
 
 export function classifyQuoteOutcome(input: QuoteClassificationInput): QuoteClassification {
   if (input.eligibilityStatus === 'instant-book') {

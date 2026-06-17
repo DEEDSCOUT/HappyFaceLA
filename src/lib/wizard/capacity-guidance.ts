@@ -18,7 +18,7 @@ export const CAPACITY_GUIDANCE: Record<KidsCountBucket, string> = {
     "so no child waits too long. Request your plan and we'll be in touch.",
   'not-sure':
     "No problem — give us your best estimate and we'll make sure the plan fits. " +
-    "We'll confirm the final details when we send your official quote.",
+    "We'll confirm the final details when we follow up.",
 };
 
 export const SPEED_GUIDANCE: Record<DesignStyle, string> = {

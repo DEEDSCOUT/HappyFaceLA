@@ -121,7 +121,7 @@ export const onRequestPost = async (
   if (!checkoutCanProceed(lookup.response) || !lookup.slot) {
     return json({
       ok: false,
-      error: 'Availability is not confirmed for online retainer checkout',
+      error: 'Availability is not confirmed for Availability Hold checkout',
       availability: lookup.response,
     }, 409);
   }
@@ -201,7 +201,7 @@ export const onRequestPost = async (
             currency: 'usd',
             unit_amount: retainerCents,
             product_data: {
-              name: '20% Availability Hold - Happy Faces LA',
+              name: 'Availability Hold - Happy Faces LA',
               description:
                 `Availability Hold only. Happy Faces LA sends final confirmation after artist availability review. Face painting · ${durationMinutes / 60}h · ${artistCount} artist${artistCount > 1 ? 's' : ''} · ${kidsCount} children`,
             },

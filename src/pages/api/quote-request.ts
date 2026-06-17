@@ -17,7 +17,7 @@ const PROHIBITED_FIELDS = new Set([
   'customQuoteTrigger',
 ]);
 
-// Allowed fields in the quote request payload
+// Allowed fields in the party details payload
 const ALLOWED_FIELDS = new Set([
   'eventType', 'services', 'kidsCountBucket', 'designStyle',
   'selectedDurationMinutes', 'recommendedDurationMinutes', 'branch',
@@ -115,7 +115,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Safe stub — logs to console only; no CRM, no Sheets, no payment provider, no database write.
   // Authorization required before any external write is wired here.
-  console.info('[quote-request] Quote request received (stub — no external write)', {
+  console.info('[quote-request] Party details received (stub — no external write)', {
     firstName: body.firstName,
     eventType: body.eventType,
     eventDate: body.eventDate,
@@ -128,7 +128,7 @@ export const POST: APIRoute = async ({ request }) => {
     JSON.stringify({
       ok: true,
       message:
-        "Thank you! We've received your quote request and we'll be in touch within 1–2 business days.",
+        "Thank you! We've received your party details and we'll be in touch within 1–2 business days.",
     }),
     {
       status: 200,

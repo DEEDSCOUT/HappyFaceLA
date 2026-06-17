@@ -17,12 +17,12 @@ export const commonFaqs: FaqItem[] = [
     {
         question: "How is pricing calculated?",
         answer:
-            "Pricing depends on event date, location, number of guests, services requested, and artist count. Submit your event details for an accurate quote, including any applicable travel fee."
+            "Pricing depends on event date, location, number of guests, services requested, and artist count. Submit your party details so Happy Faces LA can review availability and any applicable travel fee."
     },
     {
-        question: "Can schools and companies request custom quotes?",
+        question: "Can schools and companies request custom plans?",
         answer:
-            "Yes. Schools, festivals, and corporate family events can request custom quotes based on attendance, service mix, setup needs, and timeline."
+            "Yes. Schools, festivals, and corporate family events can request custom plans based on attendance, service mix, setup needs, and timeline."
     }
 ];
 
@@ -40,7 +40,7 @@ export const facePaintingFaqs: FaqItem[] = [
     {
         question: "Is face painting safe for toddlers and younger children?",
         answer:
-            "Please share any sensitivities or event requirements when requesting a quote. For very young children or guests with known skin conditions, parents can request that designs be skipped or adjusted. Service details are confirmed before booking."
+            "Please share any sensitivities or event requirements in Plan My Party. For very young children or guests with known skin conditions, parents can request that designs be skipped or adjusted. Service details are confirmed before booking."
     },
     {
         question: "What should guests do to prepare for face painting?",
@@ -50,7 +50,7 @@ export const facePaintingFaqs: FaqItem[] = [
     {
         question: "What is the minimum booking for face painting?",
         answer:
-            "Face painting pricing is provided in your personalized quote. Package and add-on prices are confirmed by quote."
+            "Face painting pricing depends on your party details, location, and timing. Submit your party plan so Happy Faces LA can review availability and follow up."
     }
 ];
 
@@ -91,22 +91,22 @@ export const glitterTattooFaqs: FaqItem[] = [
     {
         question: "Can glitter tattoos be added to face painting or balloon twisting?",
         answer:
-            "Yes. Glitter tattoos pair well with face painting and balloon twisting as part of a multi-station event setup. Availability and pricing are included in your personalized quote."
+            "Yes. Glitter tattoos pair well with face painting and balloon twisting as part of a multi-station event setup. Availability and pricing are reviewed after you submit your party details."
     },
     {
         question: "How do I request glitter tattoos for my event?",
         answer:
-            "Submit your event details using the quote form or contact page. Include your event date, location, approximate guest count, and any services you want to combine. Availability and pricing are confirmed before booking."
+            "Submit your event details through Plan My Party. Include your event date, location, approximate guest count, and any services you want to combine. Availability and pricing are confirmed before booking."
     },
     {
         question: "Are glitter tattoos a good add-on for birthday party lines?",
         answer:
-            "Yes. Glitter tattoos move quickly and work well alongside other party services. Happy Faces LA can set up a dedicated glitter tattoo station or combine it with face painting, face gems, or balloon twisting at the same event, with pricing confirmed by quote."
+            "Yes. Glitter tattoos move quickly and work well alongside other party services. Happy Faces LA can set up a dedicated glitter tattoo station or combine it with face painting, face gems, or balloon twisting at the same event."
     },
     {
         question: "How does Happy Faces LA confirm availability?",
         answer:
-            "Availability and final service details are confirmed during the booking process. Share your event date, location, and guest count when requesting a quote."
+            "Availability and final service details are confirmed during the booking process. Share your event date, location, and guest count through Plan My Party."
     }
 ];
 
@@ -119,17 +119,17 @@ export const faceGemsFaqs: FaqItem[] = [
     {
         question: "Can face gems be combined with face painting or glitter tattoos?",
         answer:
-            "Yes. Face gems are frequently paired with face painting as a finishing detail, or offered alongside glitter tattoos as a separate station. Availability and pricing are included in your personalized quote."
+            "Yes. Face gems are frequently paired with face painting as a finishing detail, or offered alongside glitter tattoos as a separate station. Availability and pricing are reviewed after you submit your party details."
     },
     {
         question: "Are face gems a good option for older kids and teens?",
         answer:
-            "Face gems are popular with older kids, teens, and adults who prefer a subtler option compared to full face painting. They work well as a standalone station or quoted add-on at events with a mixed age range."
+            "Face gems are popular with older kids, teens, and adults who prefer a subtler option compared to full face painting. They work well as a standalone station or add-on at events with a mixed age range."
     },
     {
         question: "How do I request face gems for my event?",
         answer:
-            "Submit your event details through the quote form or contact page. Include your event date, location, guest count, and any other services you want to combine. Availability and service details are confirmed before booking."
+            "Submit your event details through Plan My Party. Include your event date, location, guest count, and any other services you want to combine. Availability and service details are confirmed before booking."
     },
     {
         question: "What events are face gems best for?",

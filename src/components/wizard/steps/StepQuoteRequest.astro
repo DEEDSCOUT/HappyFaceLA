@@ -1,8 +1,9 @@
-<!-- Step 8: Contact / Quote Request. Managed by WizardShell client-side script. -->
+<!-- Step 8: Contact / Party Details. Managed by WizardShell client-side script. -->
 <div class="wizard-step" data-wizard-step="8">
-  <h2 class="text-2xl font-bold text-slate-900">Almost there — let's get your quote request in.</h2>
+  <p class="text-xs font-semibold uppercase tracking-wide text-orange-600">Step 8 of 8</p>
+  <h2 class="mt-1 text-2xl font-bold text-slate-900">Almost there — send your party details.</h2>
   <p class="mt-2 text-slate-600">
-    Enter your contact details. No payment is due — we'll review your request and send your official quote.
+    Enter your contact details so Happy Faces LA can review your party plan and confirm availability.
   </p>
 
   <form id="wizard-quote-form" novalidate class="mt-5 flex flex-col gap-4">
@@ -91,22 +92,20 @@
 
     <!-- Payment boundary notices -->
     <div class="wizard-notice mt-2">
-      <strong>No payment is required at this stage.</strong> We'll confirm availability, then send your
-      official quote.
+      <strong>No payment is required at this stage.</strong> We will review your party details and confirm availability.
     </div>
     <div class="wizard-notice mt-1">
-      <strong>Your date is not reserved yet.</strong> If an instant quote is available, a 20% Availability
-      Hold authorizes the retainer. Your booking is not confirmed until Happy Faces LA confirms artist
-      availability and sends confirmation.
+      <strong>Your date is not reserved yet.</strong> Your booking is not confirmed until Happy Faces LA confirms
+      artist availability and sends confirmation.
     </div>
 
     <button
       id="btn-submit-quote"
       type="submit"
       class="mt-2 rounded-xl bg-orange-500 px-6 py-3 text-base font-semibold text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-      aria-label="Send my quote request"
+      aria-label="Submit my party plan"
     >
-      Send My Quote Request →
+      Submit My Party Plan →
     </button>
 
     <p id="step8-error" class="text-rose-700 text-sm hidden" role="alert"></p>

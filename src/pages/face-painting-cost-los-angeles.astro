@@ -26,22 +26,22 @@ const faqs: FaqItem[] = [
   {
     question: "Is there a travel fee for face painting in Los Angeles?",
     answer:
-      "No travel fee is charged for events within 20 miles of the service origin. Events 20–40 miles away include a $25 travel fee. Events 40–60 miles away include a $50 travel fee and require manual booking approval. Events beyond 60 miles require a custom quote. The travel fee is listed as a separate labeled line item in your quote before any retainer is requested.",
+      "No travel fee is charged for events within 20 miles of the service origin. Events 20–40 miles away include a $25 travel fee. Events 40–60 miles away include a $50 travel fee and require manual approval. Events beyond 60 miles need a custom plan. Any travel fee is listed as a separate labeled line item before an Availability Hold is offered.",
   },
   {
     question: "What is included in a professional face painting booking?",
     answer:
-      "A face painting booking includes a professional artist, setup and breakdown, professional kid-friendly face painting products, and a design menu for guests to choose from. Your personalized quote confirms what is included based on your event details and service mix.",
+      "A face painting booking includes a professional artist, setup and breakdown, professional kid-friendly face painting products, and a design menu for guests to choose from. Happy Faces LA confirms what is included based on your event details and service mix.",
   },
   {
     question: "How do I book face painting for my child's birthday party?",
     answer:
-      "Start by using the Plan My Party wizard at happyfacesla.com/plan-my-party/. No payment is required when you submit a quote request. Happy Faces LA will confirm availability and send your official quote. If an Availability Hold is offered, a 20% retainer may be authorized only after quote review.",
+      "Start by using the Plan My Party wizard at happyfacesla.com/plan-my-party/. No payment is required when you submit your party details. Happy Faces LA will review availability and follow up with next steps.",
   },
   {
     question: "Can I add face gems or glitter tattoos to a face painting party?",
     answer:
-      "Yes. Face gems are available as an add-on starting from $50. Two-service party mix packages combining face painting with another service start from $180. Glitter tattoos and balloon twisting can also be requested. Availability and add-on pricing are confirmed by quote.",
+      "Yes. Face gems are available as an add-on starting from $50. Two-service party mix packages combining face painting with another service start from $180. Glitter tattoos and balloon twisting can also be requested. Availability and add-on pricing are reviewed after you submit your party details.",
   },
   {
     question: "How many children can be face painted per hour?",
@@ -56,7 +56,7 @@ const faqs: FaqItem[] = [
   {
     question: "What is an Availability Hold and how does it work?",
     answer:
-      "No payment is required when you submit a quote request. Happy Faces LA will confirm availability and send your official quote. If an Availability Hold is offered, a 20% retainer may be authorized only after quote review. Your booking is not confirmed until Happy Faces LA confirms artist availability and sends confirmation.",
+      "No payment is required when you submit your party details. Happy Faces LA reviews availability first. Availability Hold and retainer details are explained in the Booking Policy.",
   },
 ];
 ---
@@ -154,16 +154,16 @@ const faqs: FaqItem[] = [
       </li>
     </ul>
     <p class="mt-4 text-sm text-slate-600">
-      Exact pricing is confirmed by personalized quote based on your event date, location, and
-      guest count. See the <a class="text-orange-600 underline" href="/pricing/">pricing page</a>
-      for details on how quotes work.
+      Exact pricing depends on your event date, location, and guest count. See the
+      <a class="text-orange-600 underline" href="/pricing/">pricing page</a>
+      for details on how pricing is reviewed.
     </p>
 
     <!-- TOP CTA -->
     <div class="mt-8">
       <BookingCtaBlock
         title="Plan your party before booking."
-        description="Share your event date, city, and guest count. Happy Faces LA will confirm availability and send a personalized quote."
+        description="Share your event date, city, and guest count. Happy Faces LA will review availability and follow up."
         primaryHref="/plan-my-party/"
         primaryLabel="Plan My Party"
       />
@@ -175,7 +175,7 @@ const faqs: FaqItem[] = [
     <h2 class="text-2xl font-bold text-slate-900">Happy Faces LA Face Painting Pricing</h2>
     <p class="mt-4 text-sm leading-relaxed text-slate-700">
       Below are the listed prices for face painting and party services from Happy Faces LA.
-      All prices are confirmed by personalized quote and may vary based on your event details,
+      Final pricing may vary based on your event details,
       travel, and service mix.
     </p>
 
@@ -261,9 +261,9 @@ const faqs: FaqItem[] = [
     </div>
 
     <p class="mt-6 rounded-xl bg-slate-100 px-5 py-4 text-sm text-slate-700">
-      <strong>Important:</strong> Checkout and
-      retainer payment is available only after Happy Faces LA confirms artist availability. Submit your event details
-      first to receive your personalized quote.
+      <strong>Important:</strong> No payment is required when you submit your party details.
+      Happy Faces LA reviews availability first; Availability Hold details are explained in the
+      Booking Policy.
     </p>
   </section>
 
@@ -291,7 +291,7 @@ const faqs: FaqItem[] = [
         <p class="mt-2 text-sm leading-relaxed text-slate-700">
           Guest count affects how long the service needs to run. For parties with 10–15
           children, a 90-minute session is usually sufficient. For 20 or more guests, a 2-hour
-          session or a two-service party mix gives more coverage. Your quote will reflect the
+          session or a two-service party mix gives more coverage. Happy Faces LA will review the
           service length recommended for your expected attendance.
         </p>
       </div>
@@ -321,8 +321,8 @@ const faqs: FaqItem[] = [
             >balloon twisting</a
           >
           increases the total package price. Two-service party mix packages bundle face painting
-          with a second service at a combined rate starting from $180. Add-ons are priced and
-          confirmed in your personalized quote.
+          with a second service at a combined rate starting from $180. Add-ons are reviewed
+          after you submit your party details.
         </p>
       </div>
 
@@ -357,12 +357,12 @@ const faqs: FaqItem[] = [
             <span
               class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
               aria-hidden="true"></span>
-            <span><strong>Over 60 miles:</strong> Custom quote required</span>
+            <span><strong>Over 60 miles:</strong> Custom plan required</span>
           </li>
         </ul>
         <p class="mt-3 text-sm text-slate-600">
-          The travel fee is disclosed as a separate labeled line item in your quote before any
-          retainer is requested.
+          Any travel fee is disclosed as a separate labeled line item before an Availability Hold
+          is offered.
         </p>
       </div>
     </div>
@@ -535,10 +535,7 @@ const faqs: FaqItem[] = [
         <span
           class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
           aria-hidden="true"></span>
-        <span
-          >A clear quote before booking, with quoted event fees listed before any
-          retainer is requested</span
-        >
+        <span>Clear pricing details before booking, with any travel fee listed separately</span>
       </li>
       <li class="flex items-start gap-2">
         <span
@@ -554,8 +551,8 @@ const faqs: FaqItem[] = [
       </li>
     </ul>
     <p class="mt-4 text-sm leading-relaxed text-slate-700">
-      Your personalized quote will confirm exactly what is included for your specific event
-      based on the services, duration, and guest count you request.
+      Happy Faces LA will confirm exactly what is included for your specific event based on the
+      services, duration, and guest count you request.
     </p>
   </section>
 
@@ -643,8 +640,8 @@ const faqs: FaqItem[] = [
           class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
           aria-hidden="true"></span>
         <span>
-          <strong>Request a quote early.</strong> Availability on popular weekends fills up.
-          Requesting a quote early gives you more date options and time to finalize your
+          <strong>Plan early.</strong> Availability on popular weekends fills up.
+          Sending your party details early gives you more date options and time to finalize your
           booking without pressure.
         </span>
       </li>
@@ -682,10 +679,9 @@ const faqs: FaqItem[] = [
           >2</span
         >
         <span>
-          <strong>Receive your personalized quote.</strong> Once Happy Faces LA confirms
-          artist availability, you will receive a quote that includes your service total, any
-          applicable travel fee as a separate labeled line item, and any available retainer
-          amount.
+          <strong>Review availability and pricing.</strong> Once Happy Faces LA reviews your party
+          details, the team will follow up with service pricing, any applicable travel fee as a
+          separate labeled line item, and next steps.
         </span>
       </li>
       <li class="flex items-start gap-4">
@@ -694,9 +690,9 @@ const faqs: FaqItem[] = [
           >3</span
         >
         <span>
-          <strong>Review any Availability Hold option.</strong> If an Availability Hold is offered,
-          a 20% retainer may be authorized only after quote review. Your booking is not confirmed
-          until Happy Faces LA confirms artist availability and sends confirmation.
+          <strong>Review the Booking Policy.</strong> Availability Hold and retainer details are
+          explained in the Booking Policy. Your booking is not confirmed until Happy Faces LA
+          confirms artist availability and sends confirmation.
         </span>
       </li>
       <li class="flex items-start gap-4">
@@ -711,7 +707,7 @@ const faqs: FaqItem[] = [
       </li>
     </ol>
     <p class="mt-6 text-sm text-slate-600">
-      Questions before submitting a quote request? You can also
+      Questions before sending your party details? You can also
       <a class="text-orange-600 underline" href="/contact/">Contact Happy Faces LA</a>
       directly for help.
     </p>
@@ -748,8 +744,8 @@ const faqs: FaqItem[] = [
     </p>
     <p class="mt-3 text-sm leading-relaxed text-slate-700">
       Not sure which option is right for your event? Submit your details and Happy Faces LA
-      will help you choose. All prices are confirmed by personalized quote, and all fees —
-      including any travel fee — are disclosed before any retainer is requested.
+      will help you choose. Pricing and any travel fee are reviewed after you submit your party
+      details.
     </p>
     <p class="mt-3 text-sm leading-relaxed text-slate-700">
       Explore the full range of
@@ -760,14 +756,14 @@ const faqs: FaqItem[] = [
       >
       for more service combinations, or visit the
       <a class="text-orange-600 underline" href="/pricing/">pricing page</a>
-      for more details on how quotes work.
+      for more details on how pricing is reviewed.
     </p>
 
     <!-- BOTTOM CTA -->
     <div class="mt-8">
       <BookingCtaBlock
         title="Ready to plan your party?"
-        description="Use Plan My Party to send your event details. Pricing is confirmed by personalized quote based on your event date, location, and guest count."
+        description="Use Plan My Party to send your event details. Happy Faces LA will review your date, location, guest count, and services."
         primaryHref="/plan-my-party/"
         primaryLabel="Plan My Party"
       />

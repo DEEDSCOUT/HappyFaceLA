@@ -7,7 +7,7 @@ const canonicalPath = "/booking-policy/";
 
 <BaseLayout
   title="Booking Policy | Happy Faces LA"
-  description="Booking, travel, and event policy details for Happy Faces LA."
+  description="Booking, travel, Availability Hold, and event policy details for Happy Faces LA."
   canonicalPath={canonicalPath}
 >
   <Breadcrumbs
@@ -20,15 +20,30 @@ const canonicalPath = "/booking-policy/";
     <h1 class="text-4xl font-extrabold text-slate-900">Booking Policy</h1>
     <div class="mt-6 space-y-8 text-sm leading-relaxed text-slate-700">
       <div>
-        <h2 class="text-base font-semibold text-slate-900">How to Book</h2>
+        <h2 class="text-base font-semibold text-slate-900">Planning vs. Confirming a Reservation</h2>
         <p class="mt-2">
-          Submit your event details, including your event date, location, estimated guest count, and services requested. We will provide a personalized quote based on your event requirements, including any applicable travel fee.
+          Plan My Party is the starting point. Submit your party details, including your event date,
+          location, estimated guest count, and services requested. Happy Faces LA reviews those details
+          and confirms whether an artist is available.
         </p>
         <p class="mt-2">
-          No payment is required when you submit a quote request. Happy Faces LA will confirm availability and send your official quote. If an Availability Hold is offered, a 20% retainer may be authorized only after quote review. Your booking is not confirmed until Happy Faces LA confirms artist availability and sends confirmation. The remaining balance is due before services begin on the day of your event.
+          Submitting your party plan does not place the date on our calendar and does not make the
+          booking final. Your booking becomes final only after Happy Faces LA confirms artist
+          availability and sends confirmation.
+        </p>
+      </div>
+      <div>
+        <h2 class="text-base font-semibold text-slate-900">Availability Holds and Retainers</h2>
+        <p class="mt-2">
+          No payment is required when you first submit your party details. If your party is eligible for
+          an Availability Hold, Happy Faces LA may offer a 20% retainer authorization after reviewing
+          your details. The retainer is collected only through the approved booking flow and is tied to
+          artist availability confirmation.
         </p>
         <p class="mt-2">
-          There is no online payment or checkout at the quote submission stage.
+          If artist availability cannot be confirmed, the authorization is canceled or a refund is
+          initiated if a payment has already been captured. The remaining balance is due before services
+          begin on the day of your event.
         </p>
       </div>
       <div>
@@ -42,10 +57,12 @@ const canonicalPath = "/booking-policy/";
           <li><strong>0–20 miles:</strong> No travel fee.</li>
           <li><strong>More than 20 through 40 miles:</strong> $25 flat travel fee.</li>
           <li><strong>More than 40 through 60 miles:</strong> $50 flat travel fee; manual booking approval is required.</li>
-          <li><strong>More than 60 miles:</strong> Custom quote required; manual approval is required.</li>
+          <li><strong>More than 60 miles:</strong> Custom plan and manual approval required.</li>
         </ul>
         <p class="mt-2">
-          Travel distance is measured as a one-way distance from our service origin. The exact travel fee will be disclosed as a separate labeled line item before any retainer is requested. Our service origin is not publicly disclosed.
+          Travel distance is measured as a one-way distance from our service origin. Any travel fee is
+          disclosed as a separate labeled line item before an Availability Hold is offered. Our service
+          origin is not publicly disclosed.
         </p>
       </div>
       <div>
@@ -90,7 +107,9 @@ const canonicalPath = "/booking-policy/";
           School, Corporate, and Institutional Events
         </h2>
         <p class="mt-2">
-          School events, corporate gatherings, and institutional or community events are available by custom quote only. Pricing, availability, and services depend on event scale, location, and specific requirements. Contact us to discuss your event and receive a customized proposal.
+          School events, corporate gatherings, and institutional or community events need custom planning.
+          Pricing, availability, and services depend on event scale, location, and specific requirements.
+          Use Plan My Party or contact us to discuss the event details.
         </p>
       </div>
     </div>

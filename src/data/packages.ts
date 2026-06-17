@@ -18,7 +18,7 @@ export const packages: PackageItem[] = [
         ],
         duration: "Varies by guest count",
         guestCapacity: "Varies by event",
-        startingPrice: "Custom quote required",
+        startingPrice: "Custom plan needed",
     },
     {
         name: "Face Painting + Balloons Package",
@@ -30,7 +30,7 @@ export const packages: PackageItem[] = [
         ],
         duration: "Varies by guest count",
         guestCapacity: "Varies by event",
-        startingPrice: "Request a quote",
+        startingPrice: "Submit party details",
     },
     {
         name: "Glitter + Gems Add-On",
@@ -42,7 +42,7 @@ export const packages: PackageItem[] = [
         ],
         duration: "Varies by guest count",
         guestCapacity: "Varies by event",
-        startingPrice: "Request a quote",
+        startingPrice: "Submit party details",
     },
     {
         name: "School / Festival Booth",
@@ -54,7 +54,7 @@ export const packages: PackageItem[] = [
         ],
         duration: "Varies by event",
         guestCapacity: "Varies by event",
-        startingPrice: "Quote required",
+        startingPrice: "Custom plan needed",
     },
     {
         name: "Corporate Family Event Booth",
@@ -65,7 +65,7 @@ export const packages: PackageItem[] = [
         ],
         duration: "Varies by event",
         guestCapacity: "Varies by event",
-        startingPrice: "Quote required",
+        startingPrice: "Custom plan needed",
     },
 ];
 

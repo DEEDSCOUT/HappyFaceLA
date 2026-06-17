@@ -167,7 +167,7 @@ function buildSellingCopy(kidsCountBucket: KidsCountBucket | null, recommendedDu
   if (kidsCountBucket === '26-40') {
     return `A bigger group needs a bigger plan — ${dLabel} helps keep the line moving and reduce rushed lines. Want a more comfortable pace? A fast event menu can help reduce wait pressure in the same window.`;
   }
-  return `${dLabel} is the right choice for your group. We'll confirm the final details when we send your official quote.`;
+  return `${dLabel} is the right choice for your group. We'll confirm the final details when we follow up.`;
 }
 
 function buildCustomCopy(reason: string | null): string {
