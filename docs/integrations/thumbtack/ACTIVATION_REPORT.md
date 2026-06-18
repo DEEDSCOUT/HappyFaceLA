@@ -4,7 +4,7 @@
 **Endpoint:** `https://happyfacesla.com/api/thumbtack-webhook`  
 **Auth method:** Custom Header  
 **Header name:** `X-HFL-Webhook-Token`  
-**Deployed code:** clean production release branch commit `0da0506360aa`
+**Deployed code:** Cloudflare production receiver/parser commit `0db2bb9785e4`; Apps Script source commit `075d0f6e` deployed as Web App Version 11.
 
 ## Status
 
@@ -15,6 +15,44 @@
 - Slack alerts land in `#thumbtack-leads`.
 - Ready-to-copy replies are generated internally only.
 - No customer-facing auto-send path exists.
+
+## Production Fix Addendum - 2026-06-18, 2:47-2:51 PM PT
+
+Fix scope:
+
+- Patched Apps Script so webhook writes start at column B. Column A is never included in append formatting, row scans, header insertion, upsert writes, or lead-ID lookup.
+- Removed `Lead ID` from the Apps Script write map. The Thumbtack external lead ID is stored in `Notes` as `Thumbtack external lead ID: ...`.
+- Added sheet date-value conversion for `Created Date`, `Next Follow-Up Date`, and `Last Contact Date` so the existing column-A formula can continue generating clean internal IDs.
+- Reconciled real Happy Faces LA Thumbtack payload parsing for customer name, event date/time/length, city/ZIP, service/add-ons, guest count, event type, lead fee, and message text.
+
+Column A proof:
+
+- Apps Script Web App updated in place to Version 11; existing `/exec` deployment URL was preserved.
+- `01_LEADS!A1` still contains the owner-controlled array formula.
+- Production proof row 47 has formula-generated `A47 = LEAD-REAL-20260618-046`.
+- Row 47 column A has no `userEnteredValue`; the webhook wrote values beginning at column B.
+- Row 47 `Notes` contains the external proof ID `prod-v11-sagar-20260618215121`.
+
+Production proof after fix:
+
+- Missing token: HTTP `401`.
+- Bad token: HTTP `401`.
+- Correct custom header token with sanitized Sagar-style payload: HTTP `200`, `verified: true`, `auth_method: token`.
+- Dispatch: Slack `sent`, Sheet `sent row 47`, SMS `skipped` because Twilio is not configured, CRM `skipped` because no CRM webhook is configured.
+- Sheet row 47 key fields: `Thumbtack`, `Sagar V11 Proof`, `Fullerton`, `2026-07-25`, `1:30 PM / 1 hour`, `Face Painting + Balloon Twisting`, `21`, quote `$215`.
+- Slack `#thumbtack-leads` alert visible at approximately 2:51 PM PT with Birthday party, Fullerton, `2026-07-25 1:30 PM`, Face Painting + Balloon Twisting, 21 guests, `$215` recommendation, follow-up schedule, and ready-to-copy reply draft.
+
+Sanitized real Happy Faces LA fixtures added:
+
+- `docs/integrations/thumbtack/sample-payloads/real-thumbtack-hfla-sagar-lead.sanitized.json`
+- `docs/integrations/thumbtack/sample-payloads/real-thumbtack-hfla-angela-lead.sanitized.json`
+- `docs/integrations/thumbtack/sample-payloads/real-thumbtack-hfla-angela-message.sanitized.json`
+
+Parser reconciliation proof:
+
+- Sagar lead now parses as Birthday party, Fullerton `92833`, `2026-07-25`, `1:30 PM`, `1 hour`, Face Painting + Balloon Twisting, 21 guests, lead fee `$11.57`, recommended quote `$215`.
+- Angela lead now parses as Community event, La Canada Flintridge `91011`, `2026-10-22`, `5:00 PM`, `2 hours`, Balloon Twisting + Face Painting, 71 guests, lead fee `$14.94`, custom quote/manual review.
+- Angela message payload is detected as `message.created` and preserves message text for the internal alert.
 
 ## Production Auth Proof
 
@@ -191,13 +229,14 @@ node tests/api/thumbtack-webhook.mjs
 Results:
 
 - Build passed.
-- `node tests/thumbtack/logic.test.mjs`: 68 passed, 0 failed.
-- `node tests/api/thumbtack-webhook.mjs`: 9 passed, 0 failed.
+- `node tests/thumbtack/logic.test.mjs`: 100 passed, 0 failed.
+- `node tests/api/thumbtack-webhook.mjs`: 12 passed, 0 failed.
 
 ## Remaining Risks
 
 - Thumbtack's test payload used a lawn-care sample category, not a real Happy Faces LA category. The parser now handles the field shape and forces unmapped categories to custom/manual quote.
 - Thumbtack did not expose separate real message/review payload samples in this test flow. Existing synthetic message/review fixtures still pass, but real message/review payloads should be captured when Thumbtack provides them.
 - Twilio SMS is not configured; Slack is the active urgent alert channel.
-- `01_LEADS` still shows an existing header/formula `#REF!` artifact in the first lead-ID column area. Writes and updates succeeded, but the sheet formula/header structure should be reviewed separately before broader sheet cleanup.
+- Older weak Slack cards remain in channel history from before the parser reconciliation; new proof alerts show the corrected real-payload fields.
+- Production proof rows 46 and 47 are internal test rows and can be left as audit evidence or manually hidden/archived by the owner.
 - There is no retry queue for transient Slack or Apps Script outages. Dispatch failures are reported in the webhook response, but failed alerts are not replayed automatically.
