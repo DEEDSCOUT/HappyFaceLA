@@ -67,6 +67,39 @@ if (realPayload.body.includes('"lead_id":"582664010966958085"')) {
     console.log("FAIL  real payload lead_id not present in response");
     fail++;
 }
+const sagarPayload = await run(
+    "real HFLA Sagar lead fixture POST returns 200",
+    200,
+    post(load("real-thumbtack-hfla-sagar-lead.sanitized.json")),
+);
+if (sagarPayload.body.includes('"lead_id":"582659071778037765"') && sagarPayload.body.includes('"recommended":"$215"')) {
+    console.log("      Sagar lead details and quote confirmed");
+} else {
+    console.log("FAIL  Sagar parsed details/quote not present in response");
+    fail++;
+}
+const angelaPayload = await run(
+    "real HFLA Angela lead fixture POST returns 200",
+    200,
+    post(load("real-thumbtack-hfla-angela-lead.sanitized.json")),
+);
+if (angelaPayload.body.includes('"lead_id":"582664293680545809"') && angelaPayload.body.includes('"recommended":"Custom quote"')) {
+    console.log("      Angela lead details and custom quote confirmed");
+} else {
+    console.log("FAIL  Angela parsed details/custom quote not present in response");
+    fail++;
+}
+const angelaMessagePayload = await run(
+    "real HFLA Angela message fixture POST returns 200",
+    200,
+    post(load("real-thumbtack-hfla-angela-message.sanitized.json")),
+);
+if (angelaMessagePayload.body.includes('"event":"message.created"')) {
+    console.log("      Angela message event confirmed");
+} else {
+    console.log("FAIL  Angela message event not present in response");
+    fail++;
+}
 
 await run("GET health returns 200", 200, { method: "GET" });
 await run("PUT returns 405", 405, {

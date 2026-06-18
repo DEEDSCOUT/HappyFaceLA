@@ -24,9 +24,10 @@ var SCRIPT_SECRET_PROPERTY = 'SHEETS_WEBHOOK_SECRET';
 var SPREADSHEET_ID_PROPERTY = 'SHEETS_SPREADSHEET_ID';
 var DEFAULT_SPREADSHEET_ID = '';
 var TAB_NAME = '01_LEADS';
+var FIRST_WRITABLE_COLUMN = 2; // Column A is formula-controlled in 01_LEADS.
+var EXTERNAL_ID_NOTE_PREFIX = 'Thumbtack external lead ID: ';
 
 var REQUIRED_HEADERS = [
-  'Lead ID',
   'Created Date',
   'Lead Source',
   'Client Name',
@@ -48,7 +49,6 @@ var REQUIRED_HEADERS = [
 ];
 
 var HEADER_ALIASES = {
-  'Lead ID': ['lead id', 'lead_id', 'leadid'],
   'Created Date': ['created date', 'created_date', 'received_at', 'received at'],
   'Lead Source': ['lead source', 'source'],
   'Client Name': ['client name', 'customer_name', 'customer name'],
@@ -128,12 +128,11 @@ function upsertLead_(body) {
   if (!sheet) sheet = ss.insertSheet(TAB_NAME);
 
   var headerMap = ensureHeaders_(sheet);
-  var leadIdColumn = headerMap['Lead ID'];
   var leadId = String(((body.lead || {}).lead_id) || '').trim();
   if (!leadId) throw new Error('missing lead_id');
 
-  var existingRow = findLeadRow_(sheet, leadIdColumn, leadId);
-  var row = existingRow || appendPreparedRow_(sheet, leadIdColumn);
+  var existingRow = findLeadRow_(sheet, headerMap['Notes'], leadId);
+  var row = existingRow || appendPreparedRow_(sheet);
   var created = !existingRow;
   var values = toSheetValues_(body);
 
@@ -161,32 +160,25 @@ function getTargetSpreadsheet_() {
 
 function ensureHeaders_(sheet) {
   if (sheet.getLastRow() === 0 || sheet.getLastColumn() === 0) {
-    sheet.getRange(1, 1, 1, REQUIRED_HEADERS.length).setValues([REQUIRED_HEADERS]);
+    sheet.getRange(1, FIRST_WRITABLE_COLUMN, 1, REQUIRED_HEADERS.length).setValues([REQUIRED_HEADERS]);
     sheet.setFrozenRows(1);
   }
 
-  var lastCol = Math.max(sheet.getLastColumn(), REQUIRED_HEADERS.length);
+  var lastCol = Math.max(sheet.getLastColumn(), REQUIRED_HEADERS.length + FIRST_WRITABLE_COLUMN - 1);
   var headerRange = sheet.getRange(1, 1, 1, lastCol);
   var headerValues = headerRange.getDisplayValues()[0];
-  var headerFormulas = headerRange.getFormulas()[0];
   var allBlank = headerValues.join('').trim() === '';
   if (allBlank) {
-    sheet.getRange(1, 1, 1, REQUIRED_HEADERS.length).setValues([REQUIRED_HEADERS]);
+    sheet.getRange(1, FIRST_WRITABLE_COLUMN, 1, REQUIRED_HEADERS.length).setValues([REQUIRED_HEADERS]);
     sheet.setFrozenRows(1);
-    headerValues = REQUIRED_HEADERS.slice();
+    headerValues = [''].concat(REQUIRED_HEADERS.slice());
   }
 
   var normalizedToColumn = {};
   for (var c = 0; c < headerValues.length; c++) {
+    if (c + 1 < FIRST_WRITABLE_COLUMN) continue;
     var key = normalizeHeader_(headerValues[c]);
     if (key) normalizedToColumn[key] = c + 1;
-  }
-
-  // 01_LEADS currently uses an array formula in A1 that renders "#REF!" when
-  // blocked, but the formula itself still defines the Lead ID header. Prefer
-  // column A over duplicate later headers so webhook IDs stay in the lead table.
-  if (String(headerFormulas[0] || '').indexOf('Lead ID') !== -1) {
-    normalizedToColumn[normalizeHeader_('Lead ID')] = 1;
   }
 
   var headerMap = {};
@@ -199,7 +191,7 @@ function ensureHeaders_(sheet) {
       if (column) break;
     }
     if (!column) {
-      column = sheet.getLastColumn() + 1;
+      column = Math.max(sheet.getLastColumn() + 1, FIRST_WRITABLE_COLUMN);
       sheet.getRange(1, column).setValue(header);
       normalizedToColumn[normalizeHeader_(header)] = column;
     }
@@ -210,25 +202,26 @@ function ensureHeaders_(sheet) {
   return headerMap;
 }
 
-function appendPreparedRow_(sheet, leadIdColumn) {
-  var row = findNextAppendRow_(sheet, leadIdColumn);
+function appendPreparedRow_(sheet) {
+  var row = findNextAppendRow_(sheet);
   if (row > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), 1);
 
   var lastCol = sheet.getLastColumn();
   var sourceRow = row > 2 ? row - 1 : 1;
-  var source = sheet.getRange(sourceRow, 1, 1, lastCol);
-  var target = sheet.getRange(row, 1, 1, lastCol);
+  var width = Math.max(1, lastCol - FIRST_WRITABLE_COLUMN + 1);
+  var source = sheet.getRange(sourceRow, FIRST_WRITABLE_COLUMN, 1, width);
+  var target = sheet.getRange(row, FIRST_WRITABLE_COLUMN, 1, width);
   source.copyTo(target, { formatOnly: true });
   target.setDataValidations(source.getDataValidations());
   return row;
 }
 
-function findNextAppendRow_(sheet, leadIdColumn) {
+function findNextAppendRow_(sheet) {
   var maxRows = sheet.getMaxRows();
   if (maxRows < 2) return 2;
 
   var lastTableColumn = Math.min(sheet.getLastColumn(), 30);
-  var firstDataColumn = leadIdColumn === 1 ? 2 : 1;
+  var firstDataColumn = FIRST_WRITABLE_COLUMN;
   var width = Math.max(1, lastTableColumn - firstDataColumn + 1);
   var values = sheet.getRange(2, firstDataColumn, maxRows - 1, width).getDisplayValues();
 
@@ -253,13 +246,15 @@ function findNextAppendRow_(sheet, leadIdColumn) {
   return Math.max(lastDataRow + 1, 2);
 }
 
-function findLeadRow_(sheet, leadIdColumn, leadId) {
+function findLeadRow_(sheet, notesColumn, leadId) {
   var lastRow = sheet.getLastRow();
-  if (lastRow < 2) return 0;
+  if (lastRow < 2 || !notesColumn || notesColumn < FIRST_WRITABLE_COLUMN) return 0;
 
-  var values = sheet.getRange(2, leadIdColumn, lastRow - 1, 1).getDisplayValues();
+  var marker = EXTERNAL_ID_NOTE_PREFIX + leadId;
+  var values = sheet.getRange(2, notesColumn, lastRow - 1, 1).getDisplayValues();
   for (var i = 0; i < values.length; i++) {
-    if (String(values[i][0]).trim() === leadId) return i + 2;
+    var text = String(values[i][0] == null ? '' : values[i][0]);
+    if (text.indexOf(marker) !== -1) return i + 2;
   }
   return 0;
 }
@@ -274,6 +269,7 @@ function writeMappedValues_(sheet, row, headerMap, values, created) {
     if (!values.hasOwnProperty(field)) continue;
     var col = headerMap[field];
     if (!col) continue;
+    if (col < FIRST_WRITABLE_COLUMN) continue;
     if (formulas[col - 1]) continue;
 
     var next = values[field];
@@ -308,7 +304,6 @@ function toSheetValues_(body) {
   var lastContact = l.received_at || new Date().toISOString();
 
   return {
-    'Lead ID': l.lead_id,
     'Created Date': l.received_at,
     'Lead Source': 'Thumbtack',
     'Client Name': l.customer_name,
@@ -356,6 +351,7 @@ function buildNotes_(body, retainer) {
   var s = body.score || {};
   var p = body.pricing || {};
   var notes = [];
+  if (l.lead_id) notes.push(EXTERNAL_ID_NOTE_PREFIX + l.lead_id);
   notes.push('Thumbtack webhook event: ' + (l.event || 'unknown'));
   notes.push('Source dispatch: authenticated Cloudflare webhook');
   if (s.score) notes.push('Lead score: ' + s.score + ' (' + s.priority + ')');

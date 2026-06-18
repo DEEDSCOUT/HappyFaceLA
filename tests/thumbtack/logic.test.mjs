@@ -100,6 +100,62 @@ check("real payload follow-up schedule generated", realLeadCard.follow_ups.lengt
 check("real payload ready-to-copy draft generated", /Hi Test/.test(realLeadCard.reply_draft));
 check("real payload alert includes ready-to-copy draft", /Ready-to-copy Thumbtack reply:/i.test(realLeadCard.alert.slack_text));
 
+// --- Real Happy Faces LA lead payloads ----------------------------------------
+const sagarRaw = load("real-thumbtack-hfla-sagar-lead.sanitized.json");
+const sagarLead = parseThumbtackEvent(sagarRaw, NOW);
+const sagarCard = buildLeadCard(sagarRaw, NOW);
+console.log("\n# real-thumbtack-hfla-sagar-lead — normalized official payload");
+console.log(JSON.stringify(sagarLead, null, 2));
+
+check("Sagar lead_id from request.requestID", sagarLead.lead_id === "582659071778037765");
+check("Sagar customer parsed", sagarLead.customer_name === "Sagar Mandalia");
+check("Sagar event type parsed", sagarLead.event_type === "Birthday party");
+check("Sagar city parsed", sagarLead.event_city === "Fullerton");
+check("Sagar ZIP parsed", sagarLead.event_zip === "92833");
+check("Sagar scheduling date parsed from details", sagarLead.event_date === "2026-07-25");
+check("Sagar scheduling time parsed from details", sagarLead.event_time === "1:30 PM");
+check("Sagar scheduling length parsed from details", sagarLead.event_length === "1 hour");
+check("Sagar guest range parsed", sagarLead.guest_count === 21);
+check("Sagar lead fee parsed", sagarLead.lead_fee === 11.57);
+check(
+    "Sagar services include category plus add-on",
+    sagarLead.requested_services.join(",") === "Face Painting,Balloon Twisting",
+);
+check("Sagar no longer weak General inquiry", sagarLead.lead_type === "Face Painting");
+check("Sagar pricing is ladder-based with travel", sagarCard.pricing.recommended_display === "$215");
+check("Sagar Slack card has real details", /Birthday party.*Fullerton.*2026-07-25 1:30 PM/s.test(sagarCard.alert.slack_text));
+check("Sagar Slack card lists add-on", /Face Painting, Balloon Twisting/.test(sagarCard.alert.slack_text));
+
+const angelaRaw = load("real-thumbtack-hfla-angela-lead.sanitized.json");
+const angelaLead = parseThumbtackEvent(angelaRaw, NOW);
+const angelaCard = buildLeadCard(angelaRaw, NOW);
+console.log("\n# real-thumbtack-hfla-angela-lead — normalized official payload");
+console.log(JSON.stringify(angelaLead, null, 2));
+
+check("Angela lead_id from request.requestID", angelaLead.lead_id === "582664293680545809");
+check("Angela customer parsed", angelaLead.customer_name === "Angela Cho");
+check("Angela event type parsed", angelaLead.event_type === "Community event");
+check("Angela city parsed", angelaLead.event_city === "La Canada Flintridge");
+check("Angela ZIP parsed", angelaLead.event_zip === "91011");
+check("Angela scheduling date parsed from details", angelaLead.event_date === "2026-10-22");
+check("Angela scheduling time parsed from details", angelaLead.event_time === "5:00 PM");
+check("Angela scheduling length parsed from details", angelaLead.event_length === "2 hours");
+check("Angela guest range parsed", angelaLead.guest_count === 71);
+check("Angela lead fee parsed", angelaLead.lead_fee === 14.94);
+check(
+    "Angela services include balloon plus face painting",
+    angelaLead.requested_services.join(",") === "Balloon Twisting,Face Painting",
+);
+check("Angela community/high-volume is custom quote", angelaCard.pricing.custom_quote === true);
+check("Angela Slack card has real details", /Community event.*La Canada Flintridge.*2026-10-22 5:00 PM/s.test(angelaCard.alert.slack_text));
+
+const angelaMsgRaw = load("real-thumbtack-hfla-angela-message.sanitized.json");
+const angelaMsgCard = buildLeadCard(angelaMsgRaw, NOW);
+check("Angela message event detected", angelaMsgCard.lead.event === "message.created");
+check("Angela message customer parsed", angelaMsgCard.lead.customer_name === "Angela Cho");
+check("Angela message text parsed", /Open-to-the-public city event/i.test(angelaMsgCard.lead.message_text));
+check("Angela message alert is message-shaped", /new thumbtack message/i.test(angelaMsgCard.alert.slack_text));
+
 // --- Pricing ladder ------------------------------------------------------------
 function pricingPayload({ services, eventLength, guestCount = 12, eventType = "Birthday party", city = "Burbank" }) {
     return {

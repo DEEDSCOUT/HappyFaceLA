@@ -319,6 +319,105 @@ function durationFromRange(start: unknown, end: unknown): string {
     return `${minutes} minutes`;
 }
 
+type ParsedScheduling = { date: string; time: string; length: string };
+
+const MONTHS: Record<string, string> = {
+    jan: "01",
+    feb: "02",
+    mar: "03",
+    apr: "04",
+    may: "05",
+    jun: "06",
+    jul: "07",
+    aug: "08",
+    sep: "09",
+    sept: "09",
+    oct: "10",
+    nov: "11",
+    dec: "12",
+};
+
+function parseSchedulingText(v: unknown): ParsedScheduling {
+    const s = str(v);
+    const out: ParsedScheduling = { date: "", time: "", length: "" };
+    if (!s) return out;
+
+    const dateMatch = s.match(/\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)?\s*([A-Z][a-z]{2,8})\s+(\d{1,2})\s+(\d{4})\b/);
+    if (dateMatch) {
+        const month = MONTHS[dateMatch[1].slice(0, 3).toLowerCase()];
+        if (month) {
+            out.date = `${dateMatch[3]}-${month}-${dateMatch[2].padStart(2, "0")}`;
+        }
+    }
+
+    const timeMatch = s.match(/\bTime:\s*([0-9]{1,2}(?::[0-9]{2})?\s*[AP]M)\b/i);
+    if (timeMatch) out.time = timeMatch[1].replace(/\s+/g, " ").toUpperCase();
+
+    const lengthMatch = s.match(/\bLength:\s*([0-9]+(?:\.[0-9]+)?\s*(?:hours?|hrs?|hr|minutes?|mins?|min))\b/i);
+    if (lengthMatch) out.length = lengthMatch[1].replace(/\b1\s+hours\b/i, "1 hour");
+
+    return out;
+}
+
+function uniq(values: string[]): string[] {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const value of values) {
+        const label = str(value);
+        const key = label.toLowerCase();
+        if (!label || seen.has(key)) continue;
+        seen.add(key);
+        out.push(label);
+    }
+    return out;
+}
+
+function serviceLabelsFromText(v: unknown): string[] {
+    const s = str(v).replace(/&#39;/g, "'").toLowerCase();
+    const labels: string[] = [];
+    if (/(face\s*paint|face\s*painter)/i.test(s)) labels.push("Face Painting");
+    if (/(balloon\s*twist|balloon\s*art|balloon\s*twister)/i.test(s)) labels.push("Balloon Twisting");
+    if (/glitter\s*tattoo/i.test(s)) labels.push("Glitter Tattoos");
+    if (/face\s*gem/i.test(s)) labels.push("Face Gems");
+    return labels;
+}
+
+function serviceAnswersFromQA(qa: QA[], leadType: string): string[] {
+    const labels: string[] = [];
+    labels.push(...serviceLabelsFromText(leadType));
+
+    for (const { q, a } of qa) {
+        const ql = q.toLowerCase();
+        const al = a.toLowerCase();
+        if (ql.includes("frequency of services") || ql.includes("travel preferences")) continue;
+
+        if (
+            ql === "category" ||
+            ql.includes("which services") ||
+            ql.includes("what services") ||
+            ql.includes("additional services") ||
+            ql.includes("add-ons") ||
+            ql.includes("add ons")
+        ) {
+            labels.push(...serviceLabelsFromText(a));
+            if (!serviceLabelsFromText(a).length && a) labels.push(a);
+            continue;
+        }
+
+        if (ql.includes("face painting services") && !/(not|no|none)/i.test(al)) {
+            labels.push("Face Painting");
+            continue;
+        }
+
+        if (ql.includes("balloon art") && !/(not|no|none)/i.test(al)) {
+            labels.push("Balloon Twisting");
+            continue;
+        }
+    }
+
+    return uniq(labels);
+}
+
 function eventDurationMinutes(v: unknown): number | null {
     const s = str(v).toLowerCase();
     if (!s) return null;
@@ -346,7 +445,7 @@ export function detectEventType(raw: any): ThumbtackEventType {
     if (t.includes("lead") || t.includes("request")) return "lead.created";
     // Structural fallbacks
     if (raw?.review || raw?.rating != null) return "review.created";
-    if (raw?.message || raw?.messageText || raw?.message_text) return "message.created";
+    if (raw?.message || raw?.messageID || raw?.messageId || raw?.messageText || raw?.message_text) return "message.created";
     if (raw?.lead || raw?.request) return "lead.created";
     return "unknown";
 }
@@ -363,11 +462,12 @@ export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
     const proposedTime = firstArrayItem(requestObj.proposedTimes);
     const proposedStart = proposedTime.start;
     const proposedEnd = proposedTime.end;
+    const scheduling = parseSchedulingText(qaAnswer(qa, ["scheduling", "schedule"]));
 
     // NOTE: deliberately QA-first and avoids "eventType"/"event_type" keys — those
     // collide with the webhook envelope's own `eventType` (e.g. "LeadCreated").
     const eventTypeRaw =
-        qaAnswer(qa, ["type of event", "what type", "occasion", "kind of event"]) ||
+        qaAnswer(qa, ["event type", "type of event", "what type", "occasion", "kind of event"]) ||
         str(deepFind(raw, ["occasion", "eventOccasion"]));
 
     const lead_type =
@@ -377,9 +477,7 @@ export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
 
     const services =
         splitServices(deepFind(raw, ["requestedServices", "requested_services", "services"]));
-    const servicesFromQA = splitServices(
-        qaAnswer(qa, ["what services", "which services", "add-ons", "add ons"]),
-    );
+    const servicesFromQA = serviceAnswersFromQA(qa, lead_type);
     const requested_services = (services.length ? services : servicesFromQA.length ? servicesFromQA : splitServices(lead_type)).map((s) => s);
 
     const fulfillment = str(
@@ -408,6 +506,7 @@ export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
         qaAnswer(qa, ["age range", "ages of", "how old", "age of"]);
 
     const lengthRaw =
+        scheduling.length ||
         str(deepFind(raw, ["eventLength", "event_length", "duration", "hours"])) ||
         qaAnswer(qa, ["how long", "event length", "duration", "how many hours"]) ||
         durationFromRange(proposedStart, proposedEnd);
@@ -451,9 +550,9 @@ export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
             deepFind(raw, ["zipCode", "zip", "event_zip", "postalCode", "postal_code"]),
         ),
         event_date: toIsoDate(
-            firstString(proposedStart, scheduleObj.eventDate, deepFind(raw, ["eventDate", "event_date", "date", "startDate"])),
+            firstString(scheduling.date, proposedStart, scheduleObj.eventDate, deepFind(raw, ["eventDate", "event_date", "date", "startDate"])),
         ),
-        event_time: firstString(scheduleObj.startTime, deepFind(raw, ["startTime", "event_time", "eventTime"]), timeFromIso(proposedStart)),
+        event_time: firstString(scheduling.time, scheduleObj.startTime, deepFind(raw, ["startTime", "event_time", "eventTime"]), timeFromIso(proposedStart)),
         event_length: lengthRaw,
         event_type: eventTypeRaw,
         requested_services,
