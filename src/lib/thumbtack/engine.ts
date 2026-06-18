@@ -23,6 +23,8 @@ export type ThumbtackEventType =
     | "lead.updated"
     | "unknown";
 
+export type MessageDirection = "customer" | "business" | "unknown";
+
 /** The 16 normalized fields required by the spec, plus a little metadata. */
 export type NormalizedLead = {
     lead_id: string;
@@ -43,6 +45,11 @@ export type NormalizedLead = {
     reply_deadline: string;
     action_link: string;
     message_text: string;
+    message_from: string;
+    message_direction: MessageDirection;
+    negotiation_id: string;
+    customer_id: string;
+    business_id: string;
     // metadata (not part of the 16, used downstream)
     event: ThumbtackEventType;
     review_rating: number | null;
@@ -282,6 +289,14 @@ function fullName(first: unknown, last: unknown): string {
     return [str(first), str(last)].filter(Boolean).join(" ").trim();
 }
 
+function normalizeMessageDirection(v: unknown): MessageDirection {
+    const s = str(v).toLowerCase();
+    if (!s) return "unknown";
+    if (/\b(customer|client|consumer)\b/.test(s)) return "customer";
+    if (/\b(business|pro|professional|provider|company|merchant)\b/.test(s)) return "business";
+    return "unknown";
+}
+
 function firstArrayItem(v: unknown): Record<string, any> {
     return Array.isArray(v) && v[0] ? rec(v[0]) : {};
 }
@@ -516,21 +531,55 @@ export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
     const message_text =
         str(deepFind(raw, ["messageText", "message_text", "body", "text", "message"])) ||
         str(deepFind(raw, ["reviewText", "review_text", "comment", "reviewBody"]));
+    const message_from = firstString(
+        raw?.from,
+        raw?.senderType,
+        raw?.sender_type,
+        raw?.messageFrom,
+        raw?.message_from,
+        deepFind(raw, ["from", "senderType", "sender_type", "messageFrom", "message_from"]),
+    );
+    const message_direction = event === "message.created" ? normalizeMessageDirection(message_from) : "unknown";
+    const negotiation_id = firstString(
+        raw?.negotiationID,
+        raw?.negotiationId,
+        raw?.negotiation_id,
+        deepFind(raw, ["negotiationID", "negotiationId", "negotiation_id"]),
+    );
+    const customer_id = firstString(
+        customerObj.customerID,
+        customerObj.customerId,
+        customerObj.id,
+        raw?.customerID,
+        raw?.customerId,
+        raw?.customer_id,
+        deepFind(raw, ["customerID", "customerId", "customer_id"]),
+    );
+    const businessObj = rec(raw?.business ?? leadObj.business ?? requestObj.business);
+    const business_id = firstString(
+        businessObj.businessID,
+        businessObj.businessId,
+        businessObj.id,
+        raw?.businessID,
+        raw?.businessId,
+        raw?.business_id,
+        deepFind(raw, ["businessID", "businessId", "business_id"]),
+    );
+    const requestOrLeadId = firstString(
+        requestObj.requestID,
+        requestObj.requestId,
+        leadObj.leadID,
+        leadObj.leadId,
+        raw?.leadID,
+        raw?.lead_id,
+        raw?.leadId,
+        raw?.requestID,
+        raw?.requestId,
+        deepFind(raw, ["leadID", "lead_id", "leadId", "requestID", "requestId"]),
+    );
 
     return {
-        lead_id:
-            firstString(
-                requestObj.requestID,
-                requestObj.requestId,
-                leadObj.leadID,
-                leadObj.leadId,
-                raw?.leadID,
-                raw?.lead_id,
-                raw?.leadId,
-                raw?.id,
-                deepFind(raw, ["leadID", "lead_id", "leadId", "requestID", "requestId", "id"]),
-            ) ||
-            `tt_${now}`,
+        lead_id: requestOrLeadId || (event === "message.created" && negotiation_id ? `negotiation:${negotiation_id}` : firstString(raw?.id, deepFind(raw, ["id"]))) || `tt_${now}`,
         customer_name:
             firstString(
                 fullName(customerObj.firstName, customerObj.lastName),
@@ -564,6 +613,11 @@ export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
         ),
         action_link: str(deepFind(raw, ["actionLink", "actionUrl", "thumbtackUrl", "leadUrl"])),
         message_text,
+        message_from,
+        message_direction,
+        negotiation_id,
+        customer_id,
+        business_id,
         event,
         review_rating,
         received_at:
@@ -742,6 +796,8 @@ export function buildReplyDraft(
     lead: NormalizedLead,
     pricing: PricingRecommendation,
 ): string {
+    if (lead.event === "message.created" && lead.message_direction === "business") return "";
+
     const name = firstName(lead.customer_name);
     const pkg = PACKAGE_NAMES[pricing.tier];
     const occasion = lead.event_type || lead.lead_type || "your event";
@@ -780,6 +836,8 @@ const FOLLOWUP_STAGES: { label: string; offset: string; ms: number; action: stri
 ];
 
 export function buildFollowUps(lead: NormalizedLead, baseISO: string): FollowUp[] {
+    if (lead.event === "message.created" && lead.message_direction === "business") return [];
+
     const base = new Date(baseISO);
     const baseMs = Number.isNaN(base.getTime()) ? Date.now() : base.getTime();
     return FOLLOWUP_STAGES.map((s, i) => ({
@@ -804,7 +862,7 @@ function buildMetrics(lead: NormalizedLead, pricing: PricingRecommendation): Met
         response_time_min: null,
         quote_amount: pricing.recommended,
         estimate_sent: false,
-        customer_replied: false,
+        customer_replied: lead.event === "message.created" && lead.message_direction === "customer",
         retainer_requested: false,
         booked: false,
         booked_revenue: null,
@@ -837,6 +895,12 @@ function buildAlert(
     }
 
     if (lead.event === "message.created") {
+        if (lead.message_direction === "business") {
+            return {
+                slack_text: "",
+                sms_text: "",
+            };
+        }
         const slack_text = [
             `💬 *New Thumbtack message* from ${lead.customer_name} (${lead.lead_id})`,
             lead.message_text ? `> ${lead.message_text}` : "",

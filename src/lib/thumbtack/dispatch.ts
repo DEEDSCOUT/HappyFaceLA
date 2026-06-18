@@ -35,6 +35,10 @@ function clean(v: string | undefined): string {
     return String(v ?? "").trim();
 }
 
+function isBusinessMessage(card: LeadCard): boolean {
+    return card.lead.event === "message.created" && card.lead.message_direction === "business";
+}
+
 async function hmacHex(secret: string, body: string): Promise<string> {
     const key = await crypto.subtle.importKey(
         "raw",
@@ -50,6 +54,9 @@ async function hmacHex(secret: string, body: string): Promise<string> {
 }
 
 async function postSlack(env: DispatchEnv, card: LeadCard): Promise<ChannelResult> {
+    if (isBusinessMessage(card)) {
+        return { channel: "slack", status: "skipped", detail: "business outbound message" };
+    }
     const url = clean(env.SLACK_WEBHOOK_URL);
     if (!url) return { channel: "slack", status: "skipped", detail: "SLACK_WEBHOOK_URL not set" };
     try {
@@ -69,6 +76,9 @@ async function postSlack(env: DispatchEnv, card: LeadCard): Promise<ChannelResul
 }
 
 async function sendSms(env: DispatchEnv, card: LeadCard): Promise<ChannelResult> {
+    if (isBusinessMessage(card)) {
+        return { channel: "sms", status: "skipped", detail: "business outbound message" };
+    }
     const sid = clean(env.TWILIO_ACCOUNT_SID);
     const token = clean(env.TWILIO_AUTH_TOKEN);
     const from = clean(env.TWILIO_FROM || env.TWILIO_FROM_NUMBER);
@@ -151,6 +161,9 @@ async function appendSheet(env: DispatchEnv, card: LeadCard): Promise<ChannelRes
 }
 
 async function forwardCrm(env: DispatchEnv, card: LeadCard): Promise<ChannelResult> {
+    if (isBusinessMessage(card)) {
+        return { channel: "crm", status: "skipped", detail: "business outbound message" };
+    }
     const url = clean(env.THUMBTACK_CRM_WEBHOOK_URL);
     if (!url) return { channel: "crm", status: "skipped", detail: "CRM webhook not set" };
     const secret = clean(env.THUMBTACK_CRM_WEBHOOK_SECRET);

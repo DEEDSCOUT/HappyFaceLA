@@ -100,6 +100,20 @@ if (angelaMessagePayload.body.includes('"event":"message.created"')) {
     console.log("FAIL  Angela message event not present in response");
     fail++;
 }
+const angelaBusinessMessagePayload = await run(
+    "real HFLA Angela business message fixture POST returns 200",
+    200,
+    post(load("real-thumbtack-hfla-angela-business-message.sanitized.json")),
+);
+if (
+    angelaBusinessMessagePayload.body.includes('"event":"message.created"') &&
+    angelaBusinessMessagePayload.body.includes('"reply_draft":""')
+) {
+    console.log("      Angela outbound business message does not generate reply draft");
+} else {
+    console.log("FAIL  Angela outbound business message handling not present in response");
+    fail++;
+}
 
 await run("GET health returns 200", 200, { method: "GET" });
 await run("PUT returns 405", 405, {

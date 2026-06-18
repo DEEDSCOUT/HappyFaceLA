@@ -33,6 +33,17 @@ node tests/api/thumbtack-webhook.mjs
 - `tests/thumbtack/logic.test.mjs` includes source-level guardrail assertions
   for these rules.
 
+## Thumbtack Message Events
+
+- `message.created` events from `Customer` are internal urgent events: update
+  the matching lead, alert Slack/owner channels, and generate a ready-to-copy
+  draft.
+- `message.created` events from `Business` are outbound echoes: do not alert
+  Slack, do not generate a reply draft, and do not create a new lead row.
+- Standalone message events should match existing leads by request/lead ID,
+  negotiation ID, customer/business IDs, then customer name only as a last
+  fallback. Do not append a new row for a business outbound message.
+
 ## Customer-Send Boundary
 
 The webhook may generate internal drafts, follow-up schedules, Sheet rows,

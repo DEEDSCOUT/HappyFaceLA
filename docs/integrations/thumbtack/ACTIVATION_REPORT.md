@@ -238,5 +238,40 @@ Results:
 - Thumbtack did not expose separate real message/review payload samples in this test flow. Existing synthetic message/review fixtures still pass, but real message/review payloads should be captured when Thumbtack provides them.
 - Twilio SMS is not configured; Slack is the active urgent alert channel.
 - Older weak Slack cards remain in channel history from before the parser reconciliation; new proof alerts show the corrected real-payload fields.
-- Production proof rows 46 and 47 are internal test rows and can be left as audit evidence or manually hidden/archived by the owner.
 - There is no retry queue for transient Slack or Apps Script outages. Dispatch failures are reported in the webhook response, but failed alerts are not replayed automatically.
+
+## 2026-06-18 Cleanup And Message Filter Addendum
+
+Operational cleanup was completed on `01_LEADS` without editing column A:
+
+- Angela C. remains as the real Thumbtack lead row with `Details Received`,
+  `Customer replied`, `Quote Sent? = No`, quote amount `$575`, and travel fee
+  blank.
+- The duplicate Angela Cho message-only row was cleared in `B:AD`.
+- The `Sagar Parser Proof` and `Sagar V11 Proof` rows were cleared in `B:AD`.
+- The real Sagar Mandalia booking row remains intact and booked/confirmed.
+- `A1` still contains the owner-controlled array formula, no `#REF!` was
+  observed, and cleared rows return blank column-A output.
+
+Message-event behavior was reconciled:
+
+- Customer messages still generate internal urgent Slack alerts, update the
+  matching lead path, and keep the ready-to-copy draft internal.
+- Business outbound messages now skip urgent Slack, owner SMS, CRM forwarding,
+  reply-draft generation, and follow-up generation. Apps Script will append an
+  outbound note only when it can reliably match an existing lead; otherwise the
+  event is ignored without creating a lead row.
+- New sanitized fixture:
+  `docs/integrations/thumbtack/sample-payloads/real-thumbtack-hfla-angela-business-message.sanitized.json`.
+
+Regression evidence:
+
+```text
+npm run build
+node tests/thumbtack/logic.test.mjs
+node tests/api/thumbtack-webhook.mjs
+```
+
+- Build passed.
+- `node tests/thumbtack/logic.test.mjs`: 126 passed, 0 failed.
+- `node tests/api/thumbtack-webhook.mjs`: 13 passed, 0 failed.

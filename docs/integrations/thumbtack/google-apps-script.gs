@@ -26,6 +26,9 @@ var DEFAULT_SPREADSHEET_ID = '';
 var TAB_NAME = '01_LEADS';
 var FIRST_WRITABLE_COLUMN = 2; // Column A is formula-controlled in 01_LEADS.
 var EXTERNAL_ID_NOTE_PREFIX = 'Thumbtack external lead ID: ';
+var NEGOTIATION_ID_NOTE_PREFIX = 'Thumbtack negotiation ID: ';
+var CUSTOMER_ID_NOTE_PREFIX = 'Thumbtack customer ID: ';
+var BUSINESS_ID_NOTE_PREFIX = 'Thumbtack business ID: ';
 
 var REQUIRED_HEADERS = [
   'Created Date',
@@ -70,7 +73,17 @@ var HEADER_ALIASES = {
 };
 
 var DEFAULT_ONLY_FIELDS = {
+  'Created Date': true,
+  'Lead Source': true,
+  'Client Name': true,
+  'Event City': true,
+  'Event Date': true,
+  'Requested Time Frame': true,
+  'Service Requested': true,
+  'Estimated Kids / Guests': true,
   'Quote Sent?': true,
+  'Quote Amount': true,
+  'Travel Fee': true,
   'Retainer Requested?': true
 };
 
@@ -131,7 +144,13 @@ function upsertLead_(body) {
   var leadId = String(((body.lead || {}).lead_id) || '').trim();
   if (!leadId) throw new Error('missing lead_id');
 
-  var existingRow = findLeadRow_(sheet, headerMap['Notes'], leadId);
+  var lead = body.lead || {};
+  var existingRow = findBestLeadRow_(sheet, headerMap, lead);
+  if (isBusinessMessage_(lead)) {
+    if (existingRow) appendOutboundMessageNote_(sheet, existingRow, headerMap, body);
+    return { row: existingRow || 0, created: false, ignored: !existingRow };
+  }
+
   var row = existingRow || appendPreparedRow_(sheet);
   var created = !existingRow;
   var values = toSheetValues_(body);
@@ -247,16 +266,102 @@ function findNextAppendRow_(sheet) {
 }
 
 function findLeadRow_(sheet, notesColumn, leadId) {
+  return findLeadRowByMarker_(sheet, notesColumn, EXTERNAL_ID_NOTE_PREFIX, leadId);
+}
+
+function findLeadRowByMarker_(sheet, notesColumn, prefix, id) {
   var lastRow = sheet.getLastRow();
   if (lastRow < 2 || !notesColumn || notesColumn < FIRST_WRITABLE_COLUMN) return 0;
 
-  var marker = EXTERNAL_ID_NOTE_PREFIX + leadId;
+  var marker = prefix + String(id || '').trim();
+  if (!String(id || '').trim()) return 0;
   var values = sheet.getRange(2, notesColumn, lastRow - 1, 1).getDisplayValues();
   for (var i = 0; i < values.length; i++) {
     var text = String(values[i][0] == null ? '' : values[i][0]);
     if (text.indexOf(marker) !== -1) return i + 2;
   }
   return 0;
+}
+
+function findBestLeadRow_(sheet, headerMap, lead) {
+  var notesColumn = headerMap['Notes'];
+  var row = findLeadRow_(sheet, notesColumn, lead.lead_id);
+  if (row) return row;
+
+  row = findLeadRowByMarker_(sheet, notesColumn, NEGOTIATION_ID_NOTE_PREFIX, lead.negotiation_id);
+  if (row) return row;
+
+  row = findLeadRowByMarker_(sheet, notesColumn, CUSTOMER_ID_NOTE_PREFIX, lead.customer_id);
+  if (row) return row;
+
+  if (lead.event === 'message.created') {
+    row = findLeadRowByName_(sheet, headerMap['Client Name'], lead.customer_name);
+    if (row) return row;
+  }
+
+  return 0;
+}
+
+function findLeadRowByName_(sheet, nameColumn, name) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2 || !nameColumn || nameColumn < FIRST_WRITABLE_COLUMN) return 0;
+
+  var target = normalizeName_(name);
+  var first = firstNameKey_(name);
+  if (!target && !first) return 0;
+
+  var values = sheet.getRange(2, nameColumn, lastRow - 1, 1).getDisplayValues();
+  var matches = [];
+  for (var i = 0; i < values.length; i++) {
+    var current = String(values[i][0] == null ? '' : values[i][0]);
+    var currentNorm = normalizeName_(current);
+    if (!currentNorm) continue;
+    if (currentNorm === target || (first && firstNameKey_(current) === first)) {
+      matches.push(i + 2);
+    }
+  }
+  return matches.length === 1 ? matches[0] : 0;
+}
+
+function normalizeName_(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function firstNameKey_(value) {
+  var text = String(value || '').trim().toLowerCase();
+  var match = text.match(/[a-z0-9]+/);
+  return match ? match[0] : '';
+}
+
+function isBusinessMessage_(lead) {
+  if (!lead || lead.event !== 'message.created') return false;
+  var direction = normalizeHeader_(lead.message_direction || lead.message_from || '');
+  return direction.indexOf('business') !== -1 || direction.indexOf('pro') !== -1;
+}
+
+function appendOutboundMessageNote_(sheet, row, headerMap, body) {
+  var notesColumn = headerMap['Notes'];
+  if (!notesColumn || notesColumn < FIRST_WRITABLE_COLUMN) return;
+
+  var note = buildOutboundMessageNote_(body);
+  if (!note) return;
+
+  var cell = sheet.getRange(row, notesColumn);
+  var current = String(cell.getValue() == null ? '' : cell.getValue());
+  if (current.indexOf(note) !== -1) return;
+  cell.setValue(current ? current + '\n---\n' + note : note);
+}
+
+function buildOutboundMessageNote_(body) {
+  var l = body.lead || {};
+  var lines = [];
+  lines.push('Thumbtack outbound business message observed; no urgent alert and no reply draft generated.');
+  if (l.message_text) lines.push('Last outbound message: ' + l.message_text);
+  if (l.received_at) lines.push('Outbound message timestamp: ' + l.received_at);
+  if (l.negotiation_id) lines.push(NEGOTIATION_ID_NOTE_PREFIX + l.negotiation_id);
+  if (l.customer_id) lines.push(CUSTOMER_ID_NOTE_PREFIX + l.customer_id);
+  if (l.business_id) lines.push(BUSINESS_ID_NOTE_PREFIX + l.business_id);
+  return lines.join('\n');
 }
 
 function writeMappedValues_(sheet, row, headerMap, values, created) {
@@ -359,7 +464,11 @@ function buildNotes_(body, retainer) {
   var p = body.pricing || {};
   var notes = [];
   if (l.lead_id) notes.push(EXTERNAL_ID_NOTE_PREFIX + l.lead_id);
+  if (l.negotiation_id) notes.push(NEGOTIATION_ID_NOTE_PREFIX + l.negotiation_id);
+  if (l.customer_id) notes.push(CUSTOMER_ID_NOTE_PREFIX + l.customer_id);
+  if (l.business_id) notes.push(BUSINESS_ID_NOTE_PREFIX + l.business_id);
   notes.push('Thumbtack webhook event: ' + (l.event || 'unknown'));
+  if (l.message_from) notes.push('Thumbtack message from: ' + l.message_from);
   notes.push('Source dispatch: authenticated Cloudflare webhook');
   if (s.score) notes.push('Lead score: ' + s.score + ' (' + s.priority + ')');
   if (l.lead_fee) notes.push('Lead fee: $' + l.lead_fee);

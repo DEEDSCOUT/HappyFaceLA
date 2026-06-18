@@ -30,6 +30,23 @@ function check(label, cond) {
 }
 const load = (name) => JSON.parse(readFileSync(join(payloads, name), "utf8"));
 
+async function withMockFetch(fn) {
+    const originalFetch = globalThis.fetch;
+    const calls = [];
+    globalThis.fetch = async (url, init = {}) => {
+        calls.push({ url: String(url), method: init.method || "GET", body: String(init.body || "") });
+        return new Response(JSON.stringify({ ok: true, row: 12 }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+        });
+    };
+    try {
+        return await fn(calls);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+}
+
 // --- New lead: paid birthday with full details ---------------------------------
 const leadRaw = load("new-lead.json");
 const lead = parseThumbtackEvent(leadRaw, NOW);
@@ -153,9 +170,75 @@ check("Angela Slack card has real details", /Community event.*La Canada Flintrid
 const angelaMsgRaw = load("real-thumbtack-hfla-angela-message.sanitized.json");
 const angelaMsgCard = buildLeadCard(angelaMsgRaw, NOW);
 check("Angela message event detected", angelaMsgCard.lead.event === "message.created");
+check("Angela customer message direction parsed", angelaMsgCard.lead.message_direction === "customer");
 check("Angela message customer parsed", angelaMsgCard.lead.customer_name === "Angela Cho");
+check("Angela message negotiation id parsed", angelaMsgCard.lead.negotiation_id === "582664294715858949");
 check("Angela message text parsed", /Open-to-the-public city event/i.test(angelaMsgCard.lead.message_text));
 check("Angela message alert is message-shaped", /new thumbtack message/i.test(angelaMsgCard.alert.slack_text));
+
+const angelaBusinessMsgRaw = load("real-thumbtack-hfla-angela-business-message.sanitized.json");
+const angelaBusinessMsgCard = buildLeadCard(angelaBusinessMsgRaw, NOW);
+check("Angela business message event detected", angelaBusinessMsgCard.lead.event === "message.created");
+check("Angela business message direction parsed", angelaBusinessMsgCard.lead.message_direction === "business");
+check("Angela business message uses displayName", angelaBusinessMsgCard.lead.customer_name === "Angela Cho");
+check("Angela business message keeps negotiation id", angelaBusinessMsgCard.lead.negotiation_id === "582664294715858949");
+check("Angela business message has no reply draft", angelaBusinessMsgCard.reply_draft === "");
+check("Angela business message has no follow-up schedule", angelaBusinessMsgCard.follow_ups.length === 0);
+check("Angela business message has no urgent Slack text", angelaBusinessMsgCard.alert.slack_text === "");
+
+const messageDispatchEnv = {
+    SLACK_WEBHOOK_URL: "https://internal.invalid/slack",
+    SHEETS_WEBHOOK_URL: "https://internal.invalid/sheet",
+    SHEETS_WEBHOOK_SECRET: "test-secret",
+};
+
+const customerMessageDispatch = await withMockFetch(async (calls) => {
+    const results = await dispatchCard(messageDispatchEnv, angelaMsgCard);
+    return { results, calls };
+});
+check(
+    "Angela customer message sends urgent Slack alert",
+    customerMessageDispatch.results.some((r) => r.channel === "slack" && r.status === "sent") &&
+        customerMessageDispatch.calls.some((c) => c.url === messageDispatchEnv.SLACK_WEBHOOK_URL),
+);
+check(
+    "Angela customer message updates sheet path",
+    customerMessageDispatch.results.some((r) => r.channel === "sheet" && r.status === "sent"),
+);
+
+const businessMessageDispatch = await withMockFetch(async (calls) => {
+    const results = await dispatchCard(
+        {
+            ...messageDispatchEnv,
+            TWILIO_ACCOUNT_SID: "AC123",
+            TWILIO_AUTH_TOKEN: "token",
+            TWILIO_FROM: "+15550000000",
+            OWNER_SMS_TO: "+15550000001",
+            THUMBTACK_CRM_WEBHOOK_URL: "https://internal.invalid/crm",
+        },
+        angelaBusinessMsgCard,
+    );
+    return { results, calls };
+});
+check(
+    "Angela business message skips urgent Slack alert",
+    businessMessageDispatch.results.some((r) => r.channel === "slack" && r.status === "skipped") &&
+        !businessMessageDispatch.calls.some((c) => c.url === messageDispatchEnv.SLACK_WEBHOOK_URL),
+);
+check(
+    "Angela business message skips owner SMS",
+    businessMessageDispatch.results.some((r) => r.channel === "sms" && r.status === "skipped"),
+);
+check(
+    "Angela business message skips CRM noise",
+    businessMessageDispatch.results.some((r) => r.channel === "crm" && r.status === "skipped"),
+);
+check(
+    "Angela business message only offers sheet existing-row note path",
+    businessMessageDispatch.results.some((r) => r.channel === "sheet" && r.status === "sent") &&
+        businessMessageDispatch.calls.length === 1 &&
+        businessMessageDispatch.calls[0].url.startsWith(messageDispatchEnv.SHEETS_WEBHOOK_URL),
+);
 
 // --- Pricing ladder ------------------------------------------------------------
 function pricingPayload({ services, eventLength, guestCount = 12, eventType = "Birthday party", city = "Burbank" }) {
@@ -279,11 +362,15 @@ check(
 );
 check(
     "sheet writer searches external Thumbtack IDs in Notes",
-    /findLeadRow_\(sheet,\s*headerMap\['Notes'\],\s*leadId\)/.test(appsScriptSource),
+    /findBestLeadRow_\(sheet,\s*headerMap,\s*lead\)/.test(appsScriptSource),
 );
 check(
     "sheet writer stores external Thumbtack IDs in Notes",
     /EXTERNAL_ID_NOTE_PREFIX\s*\+\s*l\.lead_id/.test(appsScriptSource),
+);
+check(
+    "sheet writer stores negotiation IDs in Notes",
+    /NEGOTIATION_ID_NOTE_PREFIX\s*\+\s*l\.negotiation_id/.test(appsScriptSource),
 );
 check(
     "sheet writer skips any mapped column before B",
@@ -297,6 +384,14 @@ check(
 check(
     "sheet header writes start at column B",
     /getRange\(1,\s*FIRST_WRITABLE_COLUMN,\s*1,\s*REQUIRED_HEADERS\.length\)\.setValues/.test(appsScriptSource),
+);
+check(
+    "sheet writer ignores outbound business messages without a reliable row",
+    /if\s*\(isBusinessMessage_\(lead\)\)\s*{[\s\S]*return\s*{\s*row:\s*existingRow\s*\|\|\s*0,\s*created:\s*false,\s*ignored:\s*!existingRow\s*}/.test(appsScriptSource),
+);
+check(
+    "sheet writer finds existing rows before appending",
+    /var existingRow = findBestLeadRow_\(sheet,\s*headerMap,\s*lead\);[\s\S]*var row = existingRow \|\| appendPreparedRow_\(sheet\)/.test(appsScriptSource),
 );
 
 console.log(`\nResults: ${pass} passed, ${fail} failed`);
