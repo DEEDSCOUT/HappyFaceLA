@@ -9,6 +9,7 @@
  * Preferred secret storage:
  *   Project Settings -> Script Properties:
  *   SHEETS_WEBHOOK_SECRET = same value as Cloudflare SHEETS_WEBHOOK_SECRET
+ *   SHEETS_SPREADSHEET_ID = Booking Control Center spreadsheet ID
  *
  * Fallback:
  *   Replace SHARED_SECRET below with the same shared secret.
@@ -20,6 +21,8 @@
 
 var SHARED_SECRET = 'REPLACE_WITH_SHEETS_WEBHOOK_SECRET';
 var SCRIPT_SECRET_PROPERTY = 'SHEETS_WEBHOOK_SECRET';
+var SPREADSHEET_ID_PROPERTY = 'SHEETS_SPREADSHEET_ID';
+var DEFAULT_SPREADSHEET_ID = '';
 var TAB_NAME = '01_LEADS';
 
 var REQUIRED_HEADERS = [
@@ -118,7 +121,7 @@ function getSharedSecret_() {
 }
 
 function upsertLead_(body) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = getTargetSpreadsheet_();
   var sheet = ss.getSheetByName(TAB_NAME);
   if (!sheet) sheet = ss.insertSheet(TAB_NAME);
 
@@ -128,12 +131,30 @@ function upsertLead_(body) {
   if (!leadId) throw new Error('missing lead_id');
 
   var existingRow = findLeadRow_(sheet, leadIdColumn, leadId);
-  var row = existingRow || appendPreparedRow_(sheet);
+  var row = existingRow || appendPreparedRow_(sheet, leadIdColumn);
   var created = !existingRow;
   var values = toSheetValues_(body);
 
   writeMappedValues_(sheet, row, headerMap, values, created);
   return { row: row, created: created };
+}
+
+function getTargetSpreadsheet_() {
+  var spreadsheetId = '';
+  try {
+    spreadsheetId = PropertiesService.getScriptProperties().getProperty(SPREADSHEET_ID_PROPERTY) || '';
+  } catch (err) {
+    spreadsheetId = '';
+  }
+
+  spreadsheetId = String(spreadsheetId || DEFAULT_SPREADSHEET_ID || '').trim();
+  if (spreadsheetId) return SpreadsheetApp.openById(spreadsheetId);
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    throw new Error('missing active spreadsheet; set Script Property ' + SPREADSHEET_ID_PROPERTY);
+  }
+  return ss;
 }
 
 function ensureHeaders_(sheet) {
@@ -143,7 +164,9 @@ function ensureHeaders_(sheet) {
   }
 
   var lastCol = Math.max(sheet.getLastColumn(), REQUIRED_HEADERS.length);
-  var headerValues = sheet.getRange(1, 1, 1, lastCol).getDisplayValues()[0];
+  var headerRange = sheet.getRange(1, 1, 1, lastCol);
+  var headerValues = headerRange.getDisplayValues()[0];
+  var headerFormulas = headerRange.getFormulas()[0];
   var allBlank = headerValues.join('').trim() === '';
   if (allBlank) {
     sheet.getRange(1, 1, 1, REQUIRED_HEADERS.length).setValues([REQUIRED_HEADERS]);
@@ -155,6 +178,13 @@ function ensureHeaders_(sheet) {
   for (var c = 0; c < headerValues.length; c++) {
     var key = normalizeHeader_(headerValues[c]);
     if (key) normalizedToColumn[key] = c + 1;
+  }
+
+  // 01_LEADS currently uses an array formula in A1 that renders "#REF!" when
+  // blocked, but the formula itself still defines the Lead ID header. Prefer
+  // column A over duplicate later headers so webhook IDs stay in the lead table.
+  if (String(headerFormulas[0] || '').indexOf('Lead ID') !== -1) {
+    normalizedToColumn[normalizeHeader_('Lead ID')] = 1;
   }
 
   var headerMap = {};
@@ -178,8 +208,8 @@ function ensureHeaders_(sheet) {
   return headerMap;
 }
 
-function appendPreparedRow_(sheet) {
-  var row = Math.max(sheet.getLastRow() + 1, 2);
+function appendPreparedRow_(sheet, leadIdColumn) {
+  var row = findNextAppendRow_(sheet, leadIdColumn);
   if (row > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), 1);
 
   var lastCol = sheet.getLastColumn();
@@ -189,6 +219,36 @@ function appendPreparedRow_(sheet) {
   source.copyTo(target, { formatOnly: true });
   target.setDataValidations(source.getDataValidations());
   return row;
+}
+
+function findNextAppendRow_(sheet, leadIdColumn) {
+  var maxRows = sheet.getMaxRows();
+  if (maxRows < 2) return 2;
+
+  var lastTableColumn = Math.min(sheet.getLastColumn(), 30);
+  var firstDataColumn = leadIdColumn === 1 ? 2 : 1;
+  var width = Math.max(1, lastTableColumn - firstDataColumn + 1);
+  var values = sheet.getRange(2, firstDataColumn, maxRows - 1, width).getDisplayValues();
+
+  var seenData = false;
+  var lastDataRow = 1;
+  for (var r = 0; r < values.length; r++) {
+    var hasData = false;
+    for (var c = 0; c < values[r].length; c++) {
+      if (String(values[r][c] == null ? '' : values[r][c]).trim()) {
+        hasData = true;
+        break;
+      }
+    }
+    if (hasData) {
+      seenData = true;
+      lastDataRow = r + 2;
+    } else if (seenData) {
+      return r + 2;
+    }
+  }
+
+  return Math.max(lastDataRow + 1, 2);
 }
 
 function findLeadRow_(sheet, leadIdColumn, leadId) {
@@ -253,7 +313,7 @@ function toSheetValues_(body) {
     'Event City': l.event_city,
     'Event Date': l.event_date,
     'Requested Time Frame': timeFrame,
-    'Service Requested': services.length ? services.join(', ') : l.lead_type,
+    'Service Requested': formatServices_(services, l.lead_type),
     'Estimated Kids / Guests': guests,
     'Pipeline Status': pipelineStatus_(l.event),
     'Quote Sent?': 'No',
@@ -262,17 +322,31 @@ function toSheetValues_(body) {
     'Retainer Requested?': 'No',
     'Next Follow-Up Date': nextFollowUp,
     'Last Contact Date': lastContact,
-    'Lead Intent / Acquisition Type': joinNonBlank_([l.event_type || l.lead_type, l.paid_status], ' / '),
-    'Platform Status': l.event,
+    'Lead Intent / Acquisition Type': leadIntent_(l),
+    'Platform Status': platformStatus_(l.event),
     'Notes': buildNotes_(body, retainer)
   };
 }
 
 function pipelineStatus_(eventName) {
-  if (eventName === 'message.created') return 'Needs Reply - Thumbtack Message';
-  if (eventName === 'review.created') return 'Review Received';
-  if (eventName === 'lead.updated') return 'Thumbtack Lead Updated';
-  return 'New Thumbtack Lead';
+  return 'New Inquiry';
+}
+
+function platformStatus_(eventName) {
+  if (eventName === 'message.created') return 'Customer replied';
+  if (eventName === 'review.created') return 'Customer replied';
+  return 'Not contacted';
+}
+
+function leadIntent_(lead) {
+  var kind = normalizeHeader_(
+    joinNonBlank_([lead.event_type, lead.lead_type, lead.paid_status], ' ')
+  );
+  if (kind.indexOf('direct') !== -1 || kind.indexOf('paid') !== -1) return 'Direct Lead';
+  if (kind.indexOf('open') !== -1 || kind.indexOf('opportunity') !== -1) {
+    return 'Thumbtack Open Lead Quoted';
+  }
+  return 'Direct Lead';
 }
 
 function buildNotes_(body, retainer) {
@@ -292,6 +366,24 @@ function buildNotes_(body, retainer) {
   if (s.cautions && s.cautions.length) notes.push('Cautions: ' + s.cautions.join(' | '));
   if (body.reply_draft) notes.push('Ready-to-copy Thumbtack reply draft generated; no customer auto-send.');
   return notes.join('\n');
+}
+
+function formatServices_(services, fallback) {
+  var labels = [];
+  for (var i = 0; i < services.length; i++) {
+    var normalized = normalizeHeader_(services[i]);
+    if (normalized === 'facepainting') labels.push('Face Painting');
+    else if (normalized === 'balloontwisting') labels.push('Balloon Twisting');
+    else if (normalized === 'glittertattoos') labels.push('Glitter Tattoos');
+    else if (normalized === 'facegems') labels.push('Face Gems');
+    else {
+      var raw = String(services[i] || '').trim();
+      if (raw) labels.push(raw);
+    }
+  }
+
+  if (labels.length) return labels.join(' + ');
+  return fallback || '';
 }
 
 function joinNonBlank_(parts, separator) {

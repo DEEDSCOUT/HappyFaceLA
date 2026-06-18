@@ -116,7 +116,35 @@ async function appendSheet(env: DispatchEnv, card: LeadCard): Promise<ChannelRes
             target += (url.includes("?") ? "&" : "?") + "sig=" + sig;
         }
         const res = await fetch(target, { method: "POST", headers, body: payload });
-        return { channel: "sheet", status: res.ok ? "sent" : "error", detail: `status ${res.status}` };
+        const text = await res.text();
+        let parsed: any = null;
+        try {
+            parsed = text ? JSON.parse(text) : null;
+        } catch {
+            parsed = null;
+        }
+        if (!res.ok) {
+            return { channel: "sheet", status: "error", detail: `status ${res.status}` };
+        }
+        if (parsed && parsed.ok === false) {
+            return {
+                channel: "sheet",
+                status: "error",
+                detail: String(parsed.error || "Apps Script rejected payload").slice(0, 120),
+            };
+        }
+        if (text && !parsed) {
+            return {
+                channel: "sheet",
+                status: "error",
+                detail: `non-json Apps Script response: ${text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 90)}`,
+            };
+        }
+        return {
+            channel: "sheet",
+            status: "sent",
+            detail: parsed && parsed.row ? `status ${res.status} row ${parsed.row}` : `status ${res.status}`,
+        };
     } catch (err) {
         return { channel: "sheet", status: "error", detail: String(err).slice(0, 120) };
     }
