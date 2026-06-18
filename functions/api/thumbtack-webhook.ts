@@ -5,17 +5,23 @@
 // pricing recommendation + a ready-to-copy reply DRAFT, then fans the internal
 // action card out to Slack / SMS / the Booking Control Center sheet / CRM.
 //
-// Security: requests are HMAC-verified when THUMBTACK_WEBHOOK_SECRET is set.
-// Safety: this endpoint NEVER sends a customer-facing quote — drafts only (#12).
+// Auth (choose one in Cloudflare env — first configured wins):
+//   1. THUMBTACK_WEBHOOK_TOKEN  → Custom Header auth: Thumbtack sends
+//      "X-HFL-Webhook-Token: <token>" (set in Thumbtack UI → Custom Header).
+//      This is the primary / recommended path because Thumbtack's webhook UI
+//      exposes None / Basic / Custom Header — not an HMAC option.
+//   2. THUMBTACK_WEBHOOK_SECRET → HMAC-SHA256 auth over the raw body, for any
+//      proxy / Zapier path that can compute and forward a signature.
+//   3. Neither set              → unverified mode (dev / Zapier MVP). Responses
+//      are flagged verified:false so the state is always visible.
 //
-// For the MVP path (Zapier Catch Hook) leave THUMBTACK_WEBHOOK_SECRET unset and
-// Zapier can POST straight through; responses are flagged `verified:false` so the
-// unverified state is always visible. See docs/integrations/thumbtack/SETUP_GUIDE.md.
+// Safety: this endpoint NEVER sends a customer-facing quote — drafts only (#12).
 
 import { buildLeadCard } from "../../src/lib/thumbtack/engine";
 import { dispatchCard, type DispatchEnv } from "../../src/lib/thumbtack/dispatch";
 
 type Env = DispatchEnv & {
+    THUMBTACK_WEBHOOK_TOKEN?: string;
     THUMBTACK_WEBHOOK_SECRET?: string;
 };
 
@@ -96,12 +102,26 @@ export const onRequest = async (context: any): Promise<Response> => {
         return json({ ok: false, error: "Too many requests" }, 429);
     }
 
-    // Read the raw body first — HMAC must be computed over the exact bytes received.
+    // Read the raw body first — HMAC needs the exact bytes, and token auth is
+    // checked before parsing to fail fast on bad credentials.
     const rawBody = await request.text();
 
+    const token = String(env.THUMBTACK_WEBHOOK_TOKEN || "").trim();
     const secret = String(env.THUMBTACK_WEBHOOK_SECRET || "").trim();
     let verified = false;
-    if (secret) {
+    let auth_method: "token" | "hmac" | "none" = "none";
+
+    if (token) {
+        // Primary path: Custom Header auth (matches Thumbtack's UI option).
+        const provided = String(request.headers.get("x-hfl-webhook-token") || "").trim();
+        if (!timingSafeEqual(provided, token)) {
+            console.warn("[thumbtack] token verification failed");
+            return json({ ok: false, error: "Unauthorized" }, 401);
+        }
+        verified = true;
+        auth_method = "token";
+    } else if (secret) {
+        // Secondary path: HMAC-SHA256 over the raw body (Zapier proxy or similar).
         const sigHeader =
             request.headers.get("x-thumbtack-signature") ||
             request.headers.get("x-signature-sha256") ||
@@ -109,10 +129,12 @@ export const onRequest = async (context: any): Promise<Response> => {
             "";
         verified = await verifySignature(secret, rawBody, sigHeader);
         if (!verified) {
-            console.warn("[thumbtack] signature verification failed");
+            console.warn("[thumbtack] hmac verification failed");
             return json({ ok: false, error: "Invalid signature" }, 401);
         }
+        auth_method = "hmac";
     }
+    // else: unverified mode — dev/MVP, flagged in response as verified:false
 
     let raw: unknown;
     try {
@@ -132,7 +154,7 @@ export const onRequest = async (context: any): Promise<Response> => {
 
     // Diagnostic logging — summary only, never the full reply/PII dump.
     console.log(
-        `[thumbtack] ${card.lead.event} ${card.lead.lead_id} score=${card.score.score}/${card.score.priority} quote=${card.pricing.recommended_display} verified=${verified}`,
+        `[thumbtack] ${card.lead.event} ${card.lead.lead_id} score=${card.score.score}/${card.score.priority} quote=${card.pricing.recommended_display} auth=${auth_method}`,
     );
 
     const dispatch = await dispatchCard(env, card);
@@ -140,6 +162,7 @@ export const onRequest = async (context: any): Promise<Response> => {
     return json({
         ok: true,
         verified,
+        auth_method,
         event: card.lead.event,
         lead_id: card.lead.lead_id,
         score: card.score.score,

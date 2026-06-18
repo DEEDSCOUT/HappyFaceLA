@@ -14,9 +14,11 @@ GOOGLE_ADS_CONVERSION_ID=
 GOOGLE_ADS_LEAD_CONVERSION_LABEL=
 
 # --- Thumbtack Command Center (functions/api/thumbtack-webhook.ts) ---
-# Leave THUMBTACK_WEBHOOK_SECRET unset for the Zapier/MVP path (unverified mode).
-# Set it (and have Thumbtack/Zapier send x-thumbtack-signature = HMAC-SHA256 hex
-# of the raw body) to enforce signature verification in production.
+# PRIMARY (Thumbtack Custom Header auth): Set THUMBTACK_WEBHOOK_TOKEN and configure
+# Thumbtack webhook UI: Auth type = Custom Header, Header name = X-HFL-Webhook-Token,
+# Header value = this token. Token takes priority over HMAC when both are set.
+THUMBTACK_WEBHOOK_TOKEN=
+# SECONDARY (HMAC, for Zapier/proxy paths that can compute a SHA256 sig):
 THUMBTACK_WEBHOOK_SECRET=
 SLACK_WEBHOOK_URL=
 TWILIO_ACCOUNT_SID=
