@@ -1,0 +1,93 @@
+{
+  "negotiationID": "582659970003402770",
+  "createdAt": "2026-06-18T17:59:29Z",
+  "customer": {
+    "customerID": "243555717360936323",
+    "firstName": "Sagar",
+    "lastName": "Mandalia",
+    "phone": "[redacted-phone]"
+  },
+  "business": {
+    "businessID": "582093043904233481",
+    "name": "Happy Faces LA",
+    "imageURL": "[redacted-image-url]",
+    "accessCode": "[redacted-access-code]"
+  },
+  "request": {
+    "requestID": "582659071778037765",
+    "customerID": "243555717360936323",
+    "contactedBusinesses": [],
+    "description": "Looking for face painting and balloon twisting for a child's birthday party for an hour.",
+    "category": {
+      "categoryID": "122708003115475293",
+      "name": "Face Painting"
+    },
+    "proposedTimes": [
+      {
+        "start": "2026-07-25T20:30:00Z",
+        "end": "2026-07-25T21:30:00Z"
+      }
+    ],
+    "location": {
+      "address1": "[redacted-street-address]",
+      "address2": "[redacted-unit]",
+      "city": "Fullerton",
+      "state": "CA",
+      "zipCode": "92833"
+    },
+    "travelPreferences": ["ProviderTravelToCustomer"],
+    "details": [
+      {
+        "question": "Travel Preferences",
+        "answer": "The face painter travels to me"
+      },
+      {
+        "question": "Anything else",
+        "answer": "Looking for face painting and balloon twisting for a child's birthday party for an hour."
+      },
+      {
+        "question": "Event type",
+        "answer": "Birthday party"
+      },
+      {
+        "question": "Category",
+        "answer": "Face Painting"
+      },
+      {
+        "question": "Zip code",
+        "answer": "92833"
+      },
+      {
+        "question": "Number of guests needing face painting",
+        "answer": "21 - 40 guests"
+      },
+      {
+        "question": "Age of guests",
+        "answer": "4 - 6 years old, 7 - 10 years old"
+      },
+      {
+        "question": "Scheduling",
+        "answer": "Date: Sat Jul 25 2026 Time: 1:30 PM Length: 1 hours"
+      },
+      {
+        "question": "Additional services",
+        "answer": "Balloon twisting"
+      }
+    ],
+    "attachments": []
+  },
+  "estimate": {
+    "type": "MoreInfo",
+    "pricePerUnit": "0.00",
+    "unitQuantity": 0,
+    "unitName": "",
+    "total": "N/A"
+  },
+  "status": "Open",
+  "leadPrice": "$11.57",
+  "leadPriceBreakdown": {
+    "subtotal": "$11.57",
+    "salesTax": "$0.00"
+  },
+  "chargeState": "Charged"
+}

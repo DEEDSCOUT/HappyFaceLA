@@ -1,0 +1,25 @@
+{
+  "eventType": "LeadCreated",
+  "createTimestamp": "2026-06-17T18:42:00Z",
+  "lead": {
+    "leadID": "lead_9f2c8a",
+    "fulfillmentStatus": "PAID",
+    "leadCharge": { "amount": 18.5, "currency": "USD" },
+    "numProsContacted": 3,
+    "expectedResponseBy": "2026-06-17T20:42:00Z",
+    "customer": { "name": "Jessica M.", "displayName": "Jessica M." },
+    "request": {
+      "category": "Face Painting",
+      "title": "Face painting for a birthday party",
+      "location": { "city": "Burbank", "zipCode": "91505" },
+      "schedule": { "eventDate": "2026-07-12", "startTime": "1:00 PM" },
+      "details": [
+        { "question": "What type of event is this?", "answer": "Birthday party" },
+        { "question": "How many guests will need face painting?", "answer": "20 kids" },
+        { "question": "Age range of the children?", "answer": "4-8 years" },
+        { "question": "Which services are you interested in?", "answer": "Face painting, Balloon twisting" },
+        { "question": "How long is the event?", "answer": "2 hours" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "eventType": "ReviewCreated",
+  "createTimestamp": "2026-06-18T15:00:00Z",
+  "review": {
+    "leadID": "lead_7a1b22",
+    "customerName": "Daniel R.",
+    "rating": 5,
+    "reviewText": "Amazing! The kids loved the face painting and balloons. Booking again for sure."
+  }
+}

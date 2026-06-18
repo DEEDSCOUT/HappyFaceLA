@@ -1,0 +1,10 @@
+{
+  "eventType": "MessageCreated",
+  "createTimestamp": "2026-06-17T19:10:00Z",
+  "message": {
+    "leadID": "lead_9f2c8a",
+    "customerName": "Jessica M.",
+    "messageText": "Hi! Is July 12th still available, and can you do glitter tattoos too?",
+    "expectedResponseBy": "2026-06-17T21:10:00Z"
+  }
+}
