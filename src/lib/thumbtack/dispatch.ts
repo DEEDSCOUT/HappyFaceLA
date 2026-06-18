@@ -137,7 +137,7 @@ async function appendSheet(env: DispatchEnv, card: LeadCard): Promise<ChannelRes
             return {
                 channel: "sheet",
                 status: "error",
-                detail: `non-json Apps Script response: ${text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 90)}`,
+                detail: `non-json Apps Script response: ${text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300)}`,
             };
         }
         return {

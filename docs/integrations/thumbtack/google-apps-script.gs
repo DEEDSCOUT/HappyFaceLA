@@ -86,7 +86,9 @@ function doPost(e) {
     }
 
     var sig = e && e.parameter ? String(e.parameter.sig || '').trim().toLowerCase() : '';
-    var expected = toHex_(Utilities.computeHmacSha256Signature(raw, secret));
+    var expected = toHex_(
+      Utilities.computeHmacSha256Signature(raw, secret, Utilities.Charset.UTF_8)
+    );
     if (!sig || sig !== expected) {
       return json_({ ok: false, error: 'bad signature' }, 401);
     }
