@@ -15,10 +15,38 @@ const requiredFields = [
     "consent_to_contact"
 ];
 
-export const POST: APIRoute = async ({ request }) => {
-    const formData = await request.formData();
+async function readPayload(request: Request): Promise<Record<string, unknown>> {
+    const contentType = request.headers.get("content-type") || "";
 
-    if (String(formData.get("honeypot") || "").trim() !== "") {
+    if (contentType.includes("application/json")) {
+        return (await request.json()) as Record<string, unknown>;
+    }
+
+    const formData = await request.formData();
+    const payload = Object.fromEntries(formData.entries()) as Record<string, unknown>;
+    const services = formData.getAll("services_requested[]")
+        .map((value) => String(value).trim())
+        .filter(Boolean);
+
+    if (services.length) {
+        payload.services_requested = services;
+    }
+
+    return payload;
+}
+
+export const POST: APIRoute = async ({ request }) => {
+    let payload: Record<string, unknown>;
+    try {
+        payload = await readPayload(request);
+    } catch {
+        return new Response(JSON.stringify({ ok: false, error: "Invalid lead payload" }), {
+            status: 400,
+            headers: { "content-type": "application/json" }
+        });
+    }
+
+    if (String(payload.honeypot || "").trim() !== "") {
         return new Response(JSON.stringify({ ok: true }), {
             status: 200,
             headers: { "content-type": "application/json" }
@@ -26,7 +54,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     for (const key of requiredFields) {
-        const value = formData.get(key);
+        const value = payload[key];
         if (!value || String(value).trim() === "") {
             return new Response(JSON.stringify({ ok: false, error: `Missing required field: ${key}` }), {
                 status: 400,
@@ -34,8 +62,6 @@ export const POST: APIRoute = async ({ request }) => {
             });
         }
     }
-
-    const payload = Object.fromEntries(formData.entries());
 
     return new Response(
         JSON.stringify({

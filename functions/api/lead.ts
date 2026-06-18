@@ -21,6 +21,14 @@ type LeadPayload = {
     budget_range?: string;
     message?: string;
     source_page?: string;
+    lead_source?: string;
+    campaign?: string;
+    selected_package?: string;
+    organization_venue_name?: string;
+    package_interest?: string;
+    painting_window?: string;
+    venue_permission_confirmed?: string;
+    need_invoice_coi?: string;
     utm_source?: string;
     utm_medium?: string;
     utm_campaign?: string;
@@ -167,6 +175,14 @@ export const onRequest = async (context: any): Promise<Response> => {
         budget_range: normalizeString(input.budget_range),
         message: normalizeString(input.message),
         source_page: normalizeString(input.source_page),
+        lead_source: normalizeString(input.lead_source),
+        campaign: normalizeString(input.campaign),
+        selected_package: normalizeString(input.selected_package || input.package_interest),
+        organization_venue_name: normalizeString(input.organization_venue_name),
+        package_interest: normalizeString(input.package_interest),
+        painting_window: normalizeString(input.painting_window),
+        venue_permission_confirmed: normalizeString(input.venue_permission_confirmed),
+        need_invoice_coi: normalizeString(input.need_invoice_coi),
         utm_source: normalizeString(input.utm_source),
         utm_medium: normalizeString(input.utm_medium),
         utm_campaign: normalizeString(input.utm_campaign),

@@ -40,8 +40,11 @@
  * Lead ID | Submitted At | First Name | Last Name | Phone | Email |
  * Event Date | Event Time | Event City | Address | Event Type |
  * Guest Count | Children Count | Services | Budget | Message |
- * Source Page | UTM Source | UTM Medium | UTM Campaign |
- * UTM Term | UTM Content | GCLID | FBCLID | MSCLKID | Consent
+ * Lead Source | Campaign | Selected Package | Organization / Venue |
+ * Package Interest | Painting Window | Venue Permission Confirmed |
+ * Invoice / COI Need | Source Page | UTM Source | UTM Medium |
+ * UTM Campaign | UTM Term | UTM Content | GCLID | FBCLID | MSCLKID |
+ * Consent
  */
 
 // ── Configure these two values ──────────────────────────────────────────────
@@ -84,12 +87,15 @@ function appendLeadToSheet(leadId, submittedAt, lead) {
       "Event Date", "Event Time", "Event City", "Address",
       "Event Type", "Guest Count", "Children Count",
       "Services", "Budget", "Message",
+      "Lead Source", "Campaign", "Selected Package",
+      "Organization / Venue", "Package Interest", "Painting Window",
+      "Venue Permission Confirmed", "Invoice / COI Need",
       "Source Page", "UTM Source", "UTM Medium", "UTM Campaign",
       "UTM Term", "UTM Content", "GCLID", "FBCLID", "MSCLKID",
       "Consent"
     ]);
     // Bold the header row
-    sheet.getRange(1, 1, 1, 26).setFontWeight("bold");
+    sheet.getRange(1, 1, 1, 34).setFontWeight("bold");
     sheet.setFrozenRows(1);
   }
 
@@ -112,6 +118,14 @@ function appendLeadToSheet(leadId, submittedAt, lead) {
     services,
     lead.budget_range || "",
     lead.message || "",
+    lead.lead_source || "",
+    lead.campaign || "",
+    lead.selected_package || "",
+    lead.organization_venue_name || "",
+    lead.package_interest || "",
+    lead.painting_window || "",
+    lead.venue_permission_confirmed || "",
+    lead.need_invoice_coi || "",
     lead.source_page || "",
     lead.utm_source || "",
     lead.utm_medium || "",
@@ -152,6 +166,17 @@ function sendLeadEmail(leadId, submittedAt, lead) {
     "Children:      " + (lead.children_count_optional || "Not specified"),
     "Services:      " + services,
     "Budget:        " + (lead.budget_range || "Not specified"),
+    "",
+    "SOCCER / B2B DETAILS",
+    "--------------------",
+    "Lead Source:              " + (lead.lead_source || "Not specified"),
+    "Campaign:                 " + (lead.campaign || "Not specified"),
+    "Selected Package:         " + (lead.selected_package || "Not specified"),
+    "Organization / Venue:     " + (lead.organization_venue_name || "Not specified"),
+    "Package Interest:         " + (lead.package_interest || "Not specified"),
+    "Painting Window:          " + (lead.painting_window || "Not specified"),
+    "Venue Permission:         " + (lead.venue_permission_confirmed || "Not specified"),
+    "Invoice / COI Need:       " + (lead.need_invoice_coi || "Not specified"),
     "",
     "MESSAGE",
     "-------",
