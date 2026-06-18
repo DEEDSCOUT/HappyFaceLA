@@ -275,3 +275,38 @@ node tests/api/thumbtack-webhook.mjs
 - Build passed.
 - `node tests/thumbtack/logic.test.mjs`: 126 passed, 0 failed.
 - `node tests/api/thumbtack-webhook.mjs`: 13 passed, 0 failed.
+
+## 2026-06-18 Production Message-Filter Update
+
+Time: 2026-06-18 15:30 PT.
+
+Production updates applied:
+
+- Cloudflare Pages production was redeployed from commit `a720abe` with the
+  outbound-business message filter.
+- The active Apps Script web app deployment was updated in place to version 12.
+  The existing `/exec` deployment URL was preserved and remains redacted.
+- Required Cloudflare production secret names were verified as present; values
+  were not printed or committed.
+
+Redacted production auth proof after deploy:
+
+- Missing `X-HFL-Webhook-Token`: HTTP 401.
+- Bad `X-HFL-Webhook-Token`: HTTP 401.
+- Correct `X-HFL-Webhook-Token`: HTTP 200, `verified: true`,
+  `auth_method: token`.
+
+Production outbound-business message proof:
+
+- Probe event: `message.created`, `from: Business`, synthetic non-matching
+  customer/negotiation identifiers.
+- Response: HTTP 200, empty reply draft, zero follow-ups.
+- Slack: skipped as `business outbound message`.
+- Owner SMS: skipped as `business outbound message`.
+- CRM: skipped as `business outbound message`.
+- Sheet receiver returned HTTP 200 and did not create a `01_LEADS` row for the
+  synthetic non-matching business echo.
+
+Customer-message proof remains covered by regression tests rather than a new
+production fake customer alert, to avoid adding more test noise to Slack or
+`01_LEADS`.
