@@ -1,164 +1,203 @@
-# Thumbtack Command Center — Activation Report
+# Thumbtack Command Center Activation Report
 
-**Date:** 2026-06-18 · **PR:** #19 · **Endpoint:** `https://happyfacesla.com/api/thumbtack-webhook`
+**Activation date:** 2026-06-18, 12:16-12:21 PM PT  
+**Endpoint:** `https://happyfacesla.com/api/thumbtack-webhook`  
+**Auth method:** Custom Header  
+**Header name:** `X-HFL-Webhook-Token`  
+**Deployed code:** clean production release branch commit `0da0506360aa`
 
-This report covers the move from "code-complete" to "live dispatch." It is split
-into **what is proven** (the code path, verified end-to-end here) and **what
-remains owner-gated** (account wiring I cannot perform from this environment).
+## Status
 
----
+- **Recommendation:** stay enabled with monitoring.
+- Production webhook is enabled in Thumbtack for Happy Faces LA.
+- Production Cloudflare secrets are set; values remain redacted.
+- Google Sheet writes work on `01_LEADS`.
+- Slack alerts land in `#thumbtack-leads`.
+- Ready-to-copy replies are generated internally only.
+- No customer-facing auto-send path exists.
 
-## TL;DR
+## Production Auth Proof
 
-- ✅ Auth: Custom Header (`X-HFL-Webhook-Token`) — proven 401/401/200.
-- ✅ Dispatch code path: a lead really POSTs the correct **sheet row** and the
-  correct **Slack alert** over HTTP — proven against a live capture server,
-  including a byte-exact HMAC the Apps Script will accept.
-- ✅ No customer-facing auto-send — proven by code + a regression test.
-- ⛔ Production env vars, the deployed Apps Script, the Slack/Twilio secrets, and
-  the Thumbtack "Test your webhooks" click are **owner-only** — see §6.
-
----
-
-## 1. Auth proof (Custom Header)
-
-Run against the local Workers runtime with `THUMBTACK_WEBHOOK_TOKEN` set:
+Run against `https://happyfacesla.com/api/thumbtack-webhook` after the production deploy:
 
 | Request | Result |
 | --- | --- |
-| No `X-HFL-Webhook-Token` header | `401 {"ok":false,"error":"Unauthorized"}` |
-| Wrong token value | `401 {"ok":false,"error":"Unauthorized"}` |
-| Correct token | `200 {"ok":true,"verified":true,"auth_method":"token",…}` |
+| No token | HTTP `401` |
+| Bad token | HTTP `401` |
+| Correct `X-HFL-Webhook-Token` | HTTP `200`, `verified: true`, `auth_method: token` |
 
-## 2. Sheet row proof (code path)
+The correct-token auth proof also returned internal dispatch results: Slack sent, Sheet sent, SMS skipped because Twilio is not configured, CRM skipped because no CRM webhook is configured.
 
-With `SHEETS_WEBHOOK_URL` pointed at a capture server, a `new-lead` POST produced
-this outbound request (mapped to the `01_LEADS` columns the Apps Script writes):
+## Cloudflare / Apps Script / Slack
 
-```json
-{
-  "received_at": "2026-06-17T18:42:00Z", "event": "lead.created",
-  "lead_id": "lead_9f2c8a", "score": "high", "priority": 100,
-  "customer_name": "Jessica M.", "lead_type": "Face Painting",
-  "event_type": "Birthday party", "event_city": "Burbank", "event_zip": "91505",
-  "event_date": "2026-07-12", "event_time": "1:00 PM", "event_length": "2 hours",
-  "requested_services": "Face painting, Balloon twisting", "guest_count": 20,
-  "age_range": "4-8 years", "paid_status": "paid", "lead_fee": 18.5,
-  "pros_contacted": 3, "reply_deadline": "2026-06-17T20:42:00Z",
-  "recommended_quote": "$255", "retainer": 130, "cautions": ""
-}
+Cloudflare Pages production secrets confirmed set, values redacted:
+
+- `THUMBTACK_WEBHOOK_TOKEN`
+- `SHEETS_WEBHOOK_URL`
+- `SHEETS_WEBHOOK_SECRET`
+- `SLACK_WEBHOOK_URL`
+
+Apps Script deployment:
+
+- Web App deployed as `/exec`.
+- URL form: `https://script.google.com/macros/s/[redacted]/exec`
+- Script Properties include the matching sheet secret and spreadsheet target.
+- The Apps Script rejects unsigned or incorrectly signed writes.
+
+Slack:
+
+- Incoming webhook is configured for `#thumbtack-leads`.
+- Final proof alert was visible in the channel.
+
+## Dispatch Proof
+
+Final Happy Faces-style production proof:
+
+- Lead ID: `tt_prod_final_1781810184986`
+- HTTP response: `200`
+- Auth: `verified: true`, `auth_method: token`
+- Event: `lead.created`
+- Recommended quote: `$325+`
+- Retainer recommendation: `$165`
+- Ready-to-copy reply draft: generated
+- Follow-up schedule: 5 steps generated
+- Dispatch: Slack `sent`, Sheet `sent row 47`, SMS `skipped`, CRM `skipped`
+
+Verified `01_LEADS` row 47:
+
+- Lead Source: `Thumbtack`
+- Client Name: `Test Customer`
+- Event City: `Burbank`
+- Event Date: `2026-07-12`
+- Requested Time Frame: `1:00 PM / 2 hours`
+- Service Requested: `Face Painting + Balloon Twisting`
+- Estimated Kids / Guests: `20 4-8 years`
+- Pipeline Status: `New Inquiry`
+- Quote Sent?: `No`
+- Quote Amount: `$325+`
+- Notes include: ready-to-copy Thumbtack reply draft generated; no customer auto-send.
+
+Verified Slack alert:
+
+- Channel: `#thumbtack-leads`
+- Timestamp: approximately 12:16 PM PT
+- Proof ID visible: `tt_prod_final_1781810184986`
+- Alert included lead type, status, city/date/time, services, guest count, lead fee, score, recommended quote, retainer, follow-up schedule, and ready-to-copy reply.
+
+## Thumbtack Test Event
+
+After auth and dispatch proof, Thumbtack's `Test your webhooks` control was clicked for Happy Faces LA. Thumbtack showed:
+
+`Test lead sent successfully. Please check your webhook URLs to see the test payload.`
+
+Captured lead-details payload was sanitized and saved at:
+
+`docs/integrations/thumbtack/sample-payloads/real-thumbtack-lead-details.sanitized.json`
+
+Sanitization removed phone, street/unit address, image URL, attachment URL, and any auth material. Field names and structure were preserved.
+
+## Real Payload Reconciliation
+
+The captured Thumbtack lead-details payload uses this shape:
+
+- top-level `customer.firstName` / `customer.lastName`
+- top-level `request.requestID`
+- top-level `request.category.name`
+- top-level `request.proposedTimes[]`
+- top-level `request.location`
+- top-level `leadPrice`
+
+Parser reconciliation completed:
+
+- Client name parses as `Test Customer`.
+- Lead ID parses as `582664010966958085`.
+- Event city/ZIP parses as `San Francisco / 94103`.
+- Date/time/length parses as `2026-01-06`, `10:00 AM`, `1 hour`.
+- Service/category parses as `Full Service Lawn Care`.
+- Lead fee parses as `$25`.
+- Follow-up schedule and ready-to-copy draft are generated.
+- The non-Happy-Faces test category is treated as manual/custom quote instead of applying the party price ladder.
+
+Production real-payload proof:
+
+- Lead ID: `582664010966958085`
+- HTTP response: `200`
+- Auth: `verified: true`, `auth_method: token`
+- Event: `lead.created`
+- Recommended quote: `Custom quote`
+- Dispatch: Slack `sent`, Sheet `sent row 43`, SMS `skipped`, CRM `skipped`
+
+Verified `01_LEADS` row 43 after reconciliation:
+
+- Client Name: `Test Customer`
+- Event City: `San Francisco`
+- Event Date: `2026-01-06`
+- Requested Time Frame: `10:00 AM / 1 hour`
+- Service Requested: `Custom Quote`
+- Quote Amount: `Custom quote`
+- Notes include the appended authenticated webhook dispatch, manual quote reason, and no-auto-send note.
+
+Verified Slack alert:
+
+- Channel: `#thumbtack-leads`
+- Timestamp: approximately 12:21 PM PT
+- Lead ID visible: `582664010966958085`
+- Alert includes `Test Customer`, `Full Service Lawn Care`, `San Francisco`, `Custom quote`, follow-ups, and `Ready-to-copy Thumbtack reply:`.
+
+## Pricing Logic
+
+Regression tests confirm the Happy Faces LA ladder:
+
+- One service: 1 hour `$150`, 90 minutes `$215`, 2 hours `$275`
+- Two services: 1 hour `$180`, 90 minutes `$255`, 2 hours `$325+`
+- Three or more services: custom quote
+- Schools, festivals, corporate, high-volume, 40+ kids, extended duration, unmapped services, and capacity-heavy cases require manual/custom review
+- Outside core service area adds the travel adjustment note
+
+## No Customer Auto-Send Proof
+
+Allowed behavior only:
+
+- internal Google Sheet write
+- internal Slack alert
+- optional owner SMS if Twilio is configured
+- optional internal CRM webhook
+- ready-to-copy reply draft
+- follow-up schedule and metrics
+
+Proven absent:
+
+- no Thumbtack customer reply send
+- no estimate auto-send
+- no retainer auto-request
+- no Stripe link send
+- no customer SMS
+- no customer email
+
+Code proof:
+
+- `functions/api/thumbtack-webhook.ts` returns the draft in JSON and dispatches only through `dispatchCard`.
+- `src/lib/thumbtack/dispatch.ts` only targets Slack, owner SMS, Sheet, and optional internal CRM.
+- `tests/thumbtack/logic.test.mjs` asserts dispatch channels are exactly `crm,sheet,slack,sms` and that no configured env means zero outbound sends.
+
+## Test Commands
+
+```text
+npm run build
+node tests/thumbtack/logic.test.mjs
+node tests/api/thumbtack-webhook.mjs
 ```
 
-**HMAC proof:** the request carried `x-hfla-signature` (and `?sig=` for Apps
-Script, which can't read custom headers). Recomputing HMAC-SHA256 over the exact
-captured body with the shared secret reproduced the signature **byte-for-byte**,
-so the Apps Script's `Utilities.computeHmacSha256Signature` check will pass.
+Results:
 
-> The Apps Script appends to a tab named **`01_LEADS`** (created with the header
-> row if missing) in the *Happy Faces LA — Booking Control Center* spreadsheet.
-> This proves the **payload + signature** the sheet receives; the actual row
-> appears once the owner deploys the Apps Script (§6) — that step needs the
-> owner's Google account.
+- Build passed.
+- `node tests/thumbtack/logic.test.mjs`: 68 passed, 0 failed.
+- `node tests/api/thumbtack-webhook.mjs`: 9 passed, 0 failed.
 
-## 3. Alert proof (code path)
+## Remaining Risks
 
-With `SLACK_WEBHOOK_URL` pointed at the capture server, the same lead delivered
-this Slack message verbatim — it contains every required field:
-
-```
-🟢 *HIGH lead* — Jessica M. (lead_9f2c8a) • fee $18.5
-Birthday party • Burbank • 2026-07-12 1:00 PM
-Services: Face painting, Balloon twisting • Guests: 20
-💰 Recommend: *$255* • retainer $130
-— Copy/paste reply —
-Hi Jessica! Thanks for reaching out to Happy Faces LA. 🎨
-
-For Birthday party on 2026-07-12, I'd recommend our Face Painting + Balloons Package at $255.
-
-Want me to hold your date and send a simple booking link? Just reply YES.
-```
-
-| Required field | In alert |
-| --- | --- |
-| customer name | Jessica M. |
-| event date | 2026-07-12 |
-| city | Burbank |
-| services | Face painting, Balloon twisting |
-| guest count | 20 |
-| score | HIGH |
-| recommended quote | $255 (retainer $130) |
-| ready-to-copy reply | ✓ (the block after "Copy/paste reply") |
-
-Dispatch result for the run: `slack: sent (200)`, `sheet: sent (200)`,
-`sms: skipped` (Twilio not set), `crm: skipped`. Each channel is independent —
-configure SMS instead of/alongside Slack by setting the Twilio vars.
-
-## 4. No customer-facing auto-send proof (requirement #12)
-
-- **Code:** the only outbound `fetch` destinations in `dispatch.ts` are Slack
-  (owner channel), Twilio → `OWNER_SMS_TO` (Shawn), the Google Sheet, and the
-  optional CRM. A grep for any Thumbtack messaging / reply / estimate / quote-send
-  API returns **zero matches**. The reply only ever travels as `reply_draft` in
-  the JSON response and inside the owner's Slack message.
-- **Test:** `tests/thumbtack/logic.test.mjs` asserts dispatch targets are exactly
-  `{crm, sheet, slack, sms}`, that with no config every channel is skipped (zero
-  outbound), and that the reply exists only as a draft on the card.
-- **Result:** no automatic Thumbtack reply, no automatic estimate, no automatic
-  retainer request. ✅
-
-## 5. Test status
-
-```
-node tests/thumbtack/logic.test.mjs   → 44/44  (incl. 4 no-auto-send assertions)
-node tests/api/thumbtack-webhook.mjs  →  8/8   (HTTP contract, no-secret mode)
-```
-
----
-
-## 6. Remaining owner-gated steps (cannot be done from this environment)
-
-These need credentials/dashboards I don't have. Each is ~2 minutes.
-
-1. **Deploy the Apps Script** (`google-apps-script.gs`) bound to the *Booking
-   Control Center* sheet; set its `SHARED_SECRET`; deploy as a Web App; copy the
-   `/exec` URL. *(Owner's Google account.)*
-2. **Create a Slack incoming webhook** (or gather Twilio SID/token/from + Shawn's
-   number). *(Owner's Slack/Twilio.)*
-3. **Set Cloudflare Pages production env vars:** `THUMBTACK_WEBHOOK_TOKEN`,
-   `SHEETS_WEBHOOK_URL` + `SHEETS_WEBHOOK_SECRET`, and `SLACK_WEBHOOK_URL` (or the
-   Twilio vars). *(Owner's Cloudflare dashboard.)*
-4. **Configure the Thumbtack webhook:** URL `https://happyfacesla.com/api/thumbtack-webhook`,
-   Auth = **Custom Header**, Header name `X-HFL-Webhook-Token`, value = the token
-   from step 3. *(Owner's Thumbtack Pro dashboard.)*
-5. **Click "Test your webhooks"** in Thumbtack and capture the real payloads
-   (lead, message, review). *(Owner's Thumbtack dashboard.)*
-6. **Reconcile real payloads:** drop sanitized real payloads into
-   `sample-payloads/`, re-run both test commands. The parser is tolerant, but the
-   live field paths should be confirmed against reality (it's built from assumed
-   shapes).
-
-> **Want me to do steps 3–6 of the proof for real right now?** If you paste the
-> deployed Apps Script `/exec` URL + a Slack webhook URL, I'll point a local
-> worker at them and prove a row lands in your actual `01_LEADS` tab and an alert
-> lands in your actual Slack — same as §2/§3 but against your live endpoints.
-> Setting the *production* Cloudflare env vars still requires your dashboard.
-
----
-
-## 7. Remaining risks
-
-- **Assumed payload schema.** The parser uses tolerant matching over *assumed*
-  Thumbtack field names + the Q/A "details" array. Until step 5/6, real field
-  paths are unconfirmed; a renamed field degrades to an empty value + lower score
-  (it won't crash), but verify before trusting scores/quotes.
-- **Rate limit is per-isolate.** The 60 req/min limiter is in-memory per Worker
-  isolate, not global — fine for Thumbtack volumes, not a hard quota.
-- **Apps Script header limitation.** Apps Script can't read custom request
-  headers, so the HMAC is verified from the `?sig=` query param (the worker sends
-  both). Keep the `/exec` URL itself secret.
-- **Twilio/Slack delivery is best-effort.** A channel failure is isolated and
-  reported as `error` in the response `dispatch` array, but there is no retry
-  queue yet — a transient Slack 5xx means that one alert is missed (the row still
-  writes). Add a retry/queue if missed alerts become a problem.
-- **No dedupe.** If Thumbtack re-delivers the same event, you get a second row +
-  alert. Add idempotency on `lead_id`+`event` in the Apps Script if needed.
+- Thumbtack's test payload used a lawn-care sample category, not a real Happy Faces LA category. The parser now handles the field shape and forces unmapped categories to custom/manual quote.
+- Thumbtack did not expose separate real message/review payload samples in this test flow. Existing synthetic message/review fixtures still pass, but real message/review payloads should be captured when Thumbtack provides them.
+- Twilio SMS is not configured; Slack is the active urgent alert channel.
+- `01_LEADS` still shows an existing header/formula `#REF!` artifact in the first lead-ID column area. Writes and updates succeeded, but the sheet formula/header structure should be reviewed separately before broader sheet cleanup.
+- There is no retry queue for transient Slack or Apps Script outages. Dispatch failures are reported in the webhook response, but failed alerts are not replayed automatically.
