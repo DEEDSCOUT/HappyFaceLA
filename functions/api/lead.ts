@@ -2,6 +2,8 @@ type Env = {
     OWNER_NOTIFICATION_EMAIL?: string;
     CRM_WEBHOOK_URL?: string;
     CRM_WEBHOOK_SECRET?: string;
+    SHEETS_WEBHOOK_URL?: string;
+    SHEETS_WEBHOOK_SECRET?: string;
     CF_PAGES_BRANCH?: string;
 };
 
@@ -203,22 +205,22 @@ export const onRequest = async (context: any): Promise<Response> => {
     const submittedAt = new Date().toISOString();
     const crmPayload = { leadId, submittedAt, lead: normalized };
 
-    const webhookUrl = normalizeString(env.CRM_WEBHOOK_URL);
-    const webhookSecret = normalizeString(env.CRM_WEBHOOK_SECRET);
+    const webhookUrl = normalizeString(env.CRM_WEBHOOK_URL || env.SHEETS_WEBHOOK_URL);
+    const webhookSecret = normalizeString(env.CRM_WEBHOOK_SECRET || env.SHEETS_WEBHOOK_SECRET);
     // NOTE: CF_PAGES_BRANCH is a build-time variable and is NOT available in Pages Functions
     // runtime env bindings. Do not rely on it for production guards — always require
-    // CRM_WEBHOOK_URL to be explicitly set as a runtime binding.
+    // a webhook URL to be explicitly set as a runtime binding.
 
     if (!webhookUrl) {
-        console.error("[lead] STUB MODE — CRM_WEBHOOK_URL is not configured. Lead NOT forwarded to CRM.");
+        console.error("[lead] STUB MODE — lead webhook URL is not configured. Lead NOT forwarded.");
         return json({ ok: false, error: "Lead capture backend is not configured" }, 500);
     }
 
     // Diagnostic: log host only, never the full URL (which contains the webhook token).
     try {
-        console.log("[lead] CRM webhook host:", new URL(webhookUrl).host);
+        console.log("[lead] webhook host:", new URL(webhookUrl).host);
     } catch {
-        console.error("[lead] CRM_WEBHOOK_URL is not a valid URL");
+        console.error("[lead] webhook URL is not valid");
         return json({ ok: false, error: "Lead capture backend is misconfigured" }, 500);
     }
 
@@ -241,17 +243,17 @@ export const onRequest = async (context: any): Promise<Response> => {
 
         // Diagnostic: log response status and body prefix (no secrets in response).
         const crmBody = await crmResponse.text();
-        console.log("[lead] CRM webhook response status:", crmResponse.status);
-        console.log("[lead] CRM webhook response body prefix:", crmBody.slice(0, 200));
+        console.log("[lead] webhook response status:", crmResponse.status);
+        console.log("[lead] webhook response body prefix:", crmBody.slice(0, 200));
 
         if (!crmResponse.ok) {
-            console.error("[lead] CRM webhook returned non-2xx:", crmResponse.status);
+            console.error("[lead] webhook returned non-2xx:", crmResponse.status);
             return json({ ok: false, error: "Failed to route lead" }, 502);
         }
 
         return json({ ok: true, leadId });
     } catch (err) {
-        console.error("[lead] CRM webhook fetch threw:", String(err));
+        console.error("[lead] webhook fetch threw:", String(err));
         return json({ ok: false, error: "Unexpected lead processing error" }, 500);
     }
 };
