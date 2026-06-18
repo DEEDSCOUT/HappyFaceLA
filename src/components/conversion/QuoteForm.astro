@@ -137,9 +137,13 @@ const hiddenLeadSource = leadSource || currentPath;
   <label class="mt-4 block text-sm font-medium text-slate-700">Message<textarea name="message" rows="4" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"></textarea></label>
 
   <input type="hidden" name="source_page" value={currentPath} />
-  <input type="hidden" name="lead_source" value={hiddenLeadSource} />
-  <input type="hidden" name="campaign" value={campaign} />
-  <input type="hidden" name="selected_package" value={initialSelectedPackage} data-selected-package-input />
+  {isSoccerB2B && (
+    <>
+      <input type="hidden" name="lead_source" value={hiddenLeadSource} />
+      <input type="hidden" name="campaign" value={campaign} />
+      <input type="hidden" name="selected_package" value={initialSelectedPackage} data-selected-package-input />
+    </>
+  )}
   <input type="hidden" name="utm_source" />
   <input type="hidden" name="utm_medium" />
   <input type="hidden" name="utm_campaign" />
@@ -213,7 +217,7 @@ const hiddenLeadSource = leadSource || currentPath;
 
     function getPayload(form) {
       const fd = new FormData(form);
-      return {
+      const payload = {
         first_name: String(fd.get("first_name") || "").trim(),
         last_name: String(fd.get("last_name") || "").trim(),
         phone: String(fd.get("phone") || "").trim(),
@@ -229,14 +233,6 @@ const hiddenLeadSource = leadSource || currentPath;
         budget_range: String(fd.get("budget_range") || "").trim(),
         message: String(fd.get("message") || "").trim(),
         source_page: String(fd.get("source_page") || "").trim(),
-        lead_source: String(fd.get("lead_source") || "").trim(),
-        campaign: String(fd.get("campaign") || "").trim(),
-        selected_package: String(fd.get("selected_package") || fd.get("package_interest") || "").trim(),
-        organization_venue_name: String(fd.get("organization_venue_name") || "").trim(),
-        package_interest: String(fd.get("package_interest") || "").trim(),
-        painting_window: String(fd.get("painting_window") || "").trim(),
-        venue_permission_confirmed: String(fd.get("venue_permission_confirmed") || "").trim(),
-        need_invoice_coi: String(fd.get("need_invoice_coi") || "").trim(),
         utm_source: String(fd.get("utm_source") || "").trim(),
         utm_medium: String(fd.get("utm_medium") || "").trim(),
         utm_campaign: String(fd.get("utm_campaign") || "").trim(),
@@ -248,6 +244,23 @@ const hiddenLeadSource = leadSource || currentPath;
         consent_to_contact: Boolean(fd.get("consent_to_contact")),
         honeypot: String(fd.get("honeypot") || "")
       };
+
+      const addIfPresent = (name, value = fd.get(name)) => {
+        if (form.querySelector(`[name="${name}"]`)) {
+          payload[name] = String(value || "").trim();
+        }
+      };
+
+      addIfPresent("lead_source");
+      addIfPresent("campaign");
+      addIfPresent("selected_package", fd.get("selected_package") || fd.get("package_interest"));
+      addIfPresent("organization_venue_name");
+      addIfPresent("package_interest");
+      addIfPresent("painting_window");
+      addIfPresent("venue_permission_confirmed");
+      addIfPresent("need_invoice_coi");
+
+      return payload;
     }
 
     function hydrateAttribution(form) {

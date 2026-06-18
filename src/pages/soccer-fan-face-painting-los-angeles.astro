@@ -103,9 +103,10 @@ const venueActivationPackages = [
 ];
 
 const soccerPackageOptions = [
-  ...privateWatchPartyPackages,
-  ...venueActivationPackages,
-].map((pkg) => pkg.name);
+  "Not sure yet",
+  ...privateWatchPartyPackages.map((pkg) => pkg.name),
+  ...venueActivationPackages.map((pkg) => pkg.name),
+];
 
 // Team-color designs are represented with simple color swatches only —
 // no federation crests, logos, or protected event branding.
@@ -466,7 +467,7 @@ const faqs = [
         description="Share your watch-party, venue, or activation details and we will follow up with package fit, availability, and next steps."
         leadSource="soccer_fan_face_painting_los_angeles"
         campaign="international_soccer_season"
-        selectedPackage={soccerPackageOptions[0]}
+        selectedPackage="Not sure yet"
         packageOptions={soccerPackageOptions}
       />
     </section>
