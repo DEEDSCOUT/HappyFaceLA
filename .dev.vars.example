@@ -12,3 +12,18 @@ META_TEST_EVENT_CODE=
 GA4_MEASUREMENT_ID=
 GOOGLE_ADS_CONVERSION_ID=
 GOOGLE_ADS_LEAD_CONVERSION_LABEL=
+
+# --- Thumbtack Command Center (functions/api/thumbtack-webhook.ts) ---
+# Leave THUMBTACK_WEBHOOK_SECRET unset for the Zapier/MVP path (unverified mode).
+# Set it (and have Thumbtack/Zapier send x-thumbtack-signature = HMAC-SHA256 hex
+# of the raw body) to enforce signature verification in production.
+THUMBTACK_WEBHOOK_SECRET=
+SLACK_WEBHOOK_URL=
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_FROM=
+OWNER_SMS_TO=
+SHEETS_WEBHOOK_URL=
+SHEETS_WEBHOOK_SECRET=
+THUMBTACK_CRM_WEBHOOK_URL=
+THUMBTACK_CRM_WEBHOOK_SECRET=
