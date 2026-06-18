@@ -10,6 +10,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { buildLeadCard, parseThumbtackEvent } from "../../src/lib/thumbtack/engine.ts";
+import { dispatchCard } from "../../src/lib/thumbtack/dispatch.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const payloads = join(here, "..", "..", "docs", "integrations", "thumbtack", "sample-payloads");
@@ -95,6 +96,26 @@ const reviewCard = buildLeadCard(load("new-review.json"), NOW);
 check("review event detected", reviewCard.lead.event === "review.created");
 check("review rating = 5", reviewCard.lead.review_rating === 5);
 check("review alert shows stars", /5★/.test(reviewCard.alert.slack_text));
+
+// --- No customer-facing auto-send (requirement #12) ----------------------------
+// Dispatch must only ever reach INTERNAL/owner channels, never Thumbtack or the
+// customer. With no env configured, nothing goes out at all.
+console.log("\n# no-auto-send guarantee");
+const dispatchResults = await dispatchCard({}, leadCard);
+const channelSet = dispatchResults.map((r) => r.channel).sort().join(",");
+check("dispatch targets exactly 4 internal channels", dispatchResults.length === 4);
+check(
+    "channels are crm,sheet,slack,sms (no 'thumbtack'/'customer' channel)",
+    channelSet === "crm,sheet,slack,sms",
+);
+check(
+    "with no config every channel is skipped — zero outbound",
+    dispatchResults.every((r) => r.status === "skipped"),
+);
+check(
+    "reply is a draft only (lives on the card, never a dispatch channel)",
+    typeof leadCard.reply_draft === "string" && leadCard.reply_draft.length > 0,
+);
 
 console.log(`\nResults: ${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

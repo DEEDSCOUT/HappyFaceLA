@@ -72,8 +72,9 @@ The receiver already ships as a Pages Function:
    (the HMAC is the real gate). Copy the `/exec` URL.
 5. Set `SHEETS_WEBHOOK_URL` = that URL and `SHEETS_WEBHOOK_SECRET` = the secret.
 
-The script creates a `Leads` tab with one row per lead, including the metrics
-columns (`booked`, `booked_revenue`, `lost_reason`, …) you update as deals move.
+The script creates the `01_LEADS` tab with one row per lead, including the
+metrics columns (`booked`, `booked_revenue`, `lost_reason`, …) you update as
+deals move.
 
 ---
 

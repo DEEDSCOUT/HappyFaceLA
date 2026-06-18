@@ -19,7 +19,9 @@
  */
 
 var SHARED_SECRET = 'REPLACE_WITH_SHEETS_WEBHOOK_SECRET';
-var TAB_NAME = 'Leads';
+// Tab in the "Happy Faces LA — Booking Control Center" spreadsheet. The script
+// creates it (with the header row) if it does not already exist.
+var TAB_NAME = '01_LEADS';
 
 var HEADERS = [
   'received_at', 'event', 'lead_id', 'score', 'priority', 'customer_name',
