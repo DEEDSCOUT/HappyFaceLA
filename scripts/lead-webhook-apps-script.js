@@ -41,7 +41,10 @@
  * Event Date | Event Time | Event City | Address | Event Type |
  * Guest Count | Children Count | Services | Budget | Message |
  * Source Page | UTM Source | UTM Medium | UTM Campaign |
- * UTM Term | UTM Content | GCLID | FBCLID | MSCLKID | Consent
+ * UTM Term | UTM Content | GCLID | FBCLID | MSCLKID | Consent |
+ * Lead Source | Campaign | Selected Package | Organization / Venue |
+ * Package Interest | Painting Window | Venue Permission Confirmed |
+ * Invoice / COI Need
  */
 
 // ── Configure these two values ──────────────────────────────────────────────
@@ -51,6 +54,20 @@ var NOTIFICATION_EMAIL = "YOUR_EMAIL_HERE";
 // Name of the tab within the spreadsheet where leads are written.
 var SHEET_NAME = "Leads";
 // ────────────────────────────────────────────────────────────────────────────
+
+var LEAD_HEADERS = [
+  "Lead ID", "Submitted At",
+  "First Name", "Last Name", "Phone", "Email",
+  "Event Date", "Event Time", "Event City", "Address",
+  "Event Type", "Guest Count", "Children Count",
+  "Services", "Budget", "Message",
+  "Source Page", "UTM Source", "UTM Medium", "UTM Campaign",
+  "UTM Term", "UTM Content", "GCLID", "FBCLID", "MSCLKID",
+  "Consent",
+  "Lead Source", "Campaign", "Selected Package",
+  "Organization / Venue", "Package Interest", "Painting Window",
+  "Venue Permission Confirmed", "Invoice / COI Need"
+];
 
 function doPost(e) {
   try {
@@ -78,51 +95,100 @@ function appendLeadToSheet(leadId, submittedAt, lead) {
 
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
-    sheet.appendRow([
-      "Lead ID", "Submitted At",
-      "First Name", "Last Name", "Phone", "Email",
-      "Event Date", "Event Time", "Event City", "Address",
-      "Event Type", "Guest Count", "Children Count",
-      "Services", "Budget", "Message",
-      "Source Page", "UTM Source", "UTM Medium", "UTM Campaign",
-      "UTM Term", "UTM Content", "GCLID", "FBCLID", "MSCLKID",
-      "Consent"
-    ]);
-    // Bold the header row
-    sheet.getRange(1, 1, 1, 26).setFontWeight("bold");
-    sheet.setFrozenRows(1);
   }
 
-  var services = (lead.services_requested || []).join(", ");
+  ensureLeadHeader(sheet);
 
-  sheet.appendRow([
-    leadId,
-    submittedAt,
-    lead.first_name || "",
-    lead.last_name || "",
-    lead.phone || "",
-    lead.email || "",
-    lead.event_date || "",
-    lead.event_start_time || "",
-    lead.event_city || "",
-    lead.event_address_or_cross_streets_optional || "",
-    lead.event_type || "",
-    lead.estimated_guest_count || "",
-    lead.children_count_optional || "",
-    services,
-    lead.budget_range || "",
-    lead.message || "",
-    lead.source_page || "",
-    lead.utm_source || "",
-    lead.utm_medium || "",
-    lead.utm_campaign || "",
-    lead.utm_term || "",
-    lead.utm_content || "",
-    lead.gclid || "",
-    lead.fbclid || "",
-    lead.msclkid || "",
-    lead.consent_to_contact ? "Yes" : "No"
-  ]);
+  var services = (lead.services_requested || []).join(", ");
+  var valuesByHeader = {
+    "Lead ID": leadId,
+    "Submitted At": submittedAt,
+    "First Name": lead.first_name || "",
+    "Last Name": lead.last_name || "",
+    "Phone": lead.phone || "",
+    "Email": lead.email || "",
+    "Event Date": lead.event_date || "",
+    "Event Time": lead.event_start_time || "",
+    "Event City": lead.event_city || "",
+    "Address": lead.event_address_or_cross_streets_optional || "",
+    "Event Type": lead.event_type || "",
+    "Guest Count": lead.estimated_guest_count || "",
+    "Children Count": lead.children_count_optional || "",
+    "Services": services,
+    "Budget": lead.budget_range || "",
+    "Message": lead.message || "",
+    "Source Page": lead.source_page || "",
+    "UTM Source": lead.utm_source || "",
+    "UTM Medium": lead.utm_medium || "",
+    "UTM Campaign": lead.utm_campaign || "",
+    "UTM Term": lead.utm_term || "",
+    "UTM Content": lead.utm_content || "",
+    "GCLID": lead.gclid || "",
+    "FBCLID": lead.fbclid || "",
+    "MSCLKID": lead.msclkid || "",
+    "Consent": lead.consent_to_contact ? "Yes" : "No",
+    "Lead Source": lead.lead_source || "",
+    "Campaign": lead.campaign || "",
+    "Selected Package": lead.selected_package || "",
+    "Organization / Venue": lead.organization_venue_name || "",
+    "Package Interest": lead.package_interest || "",
+    "Painting Window": lead.painting_window || "",
+    "Venue Permission Confirmed": lead.venue_permission_confirmed || "",
+    "Invoice / COI Need": lead.need_invoice_coi || ""
+  };
+
+  sheet.appendRow(buildLeadRow(sheet, valuesByHeader));
+}
+
+function ensureLeadHeader(sheet) {
+  var lastColumn = Math.max(sheet.getLastColumn(), 1);
+  var existing = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  var hasAnyHeader = existing.some(function (value) {
+    return String(value || "").trim() !== "";
+  });
+
+  if (!hasAnyHeader) {
+    sheet.getRange(1, 1, 1, LEAD_HEADERS.length).setValues([LEAD_HEADERS]);
+    sheet.getRange(1, 1, 1, LEAD_HEADERS.length).setFontWeight("bold");
+    sheet.setFrozenRows(1);
+    return;
+  }
+
+  var existingNames = {};
+  existing.forEach(function (value) {
+    var header = String(value || "").trim();
+    if (header) {
+      existingNames[header] = true;
+    }
+  });
+
+  var missingHeaders = LEAD_HEADERS.filter(function (header) {
+    return !existingNames[header];
+  });
+
+  if (!missingHeaders.length) {
+    sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), LEAD_HEADERS.length)).setFontWeight("bold");
+    sheet.setFrozenRows(1);
+    return;
+  }
+
+  var appendStartColumn = sheet.getLastColumn() + 1;
+  sheet.getRange(1, appendStartColumn, 1, missingHeaders.length).setValues([missingHeaders]);
+  sheet.getRange(1, 1, 1, appendStartColumn + missingHeaders.length - 1).setFontWeight("bold");
+  sheet.setFrozenRows(1);
+}
+
+function buildLeadRow(sheet, valuesByHeader) {
+  var headers = sheet
+    .getRange(1, 1, 1, sheet.getLastColumn())
+    .getValues()[0]
+    .map(function (value) {
+      return String(value || "").trim();
+    });
+
+  return headers.map(function (header) {
+    return Object.prototype.hasOwnProperty.call(valuesByHeader, header) ? valuesByHeader[header] : "";
+  });
 }
 
 // ── Email notification ────────────────────────────────────────────────────────
@@ -152,6 +218,17 @@ function sendLeadEmail(leadId, submittedAt, lead) {
     "Children:      " + (lead.children_count_optional || "Not specified"),
     "Services:      " + services,
     "Budget:        " + (lead.budget_range || "Not specified"),
+    "",
+    "SOCCER / B2B DETAILS",
+    "--------------------",
+    "Lead Source:              " + (lead.lead_source || "Not specified"),
+    "Campaign:                 " + (lead.campaign || "Not specified"),
+    "Selected Package:         " + (lead.selected_package || "Not specified"),
+    "Organization / Venue:     " + (lead.organization_venue_name || "Not specified"),
+    "Package Interest:         " + (lead.package_interest || "Not specified"),
+    "Painting Window:          " + (lead.painting_window || "Not specified"),
+    "Venue Permission:         " + (lead.venue_permission_confirmed || "Not specified"),
+    "Invoice / COI Need:       " + (lead.need_invoice_coi || "Not specified"),
     "",
     "MESSAGE",
     "-------",

@@ -6,8 +6,9 @@
 # Cloudflare dashboard Redirect Rules at the zone level. See README section
 # "Canonical Redirect Rules" for the dashboard rule list.
 #
-# This file is intentionally left without rules. Add path-level redirects here
-# when needed (e.g. legacy URL -> new URL after content moves).
+# Path-level redirects live here.
+
+/soccer-fan-face-painting-los-angeles /soccer-fan-face-painting-los-angeles/ 301
 
 # Reviews page hidden until sufficient real reviews are collected
 /reviews/ /gallery/ 302

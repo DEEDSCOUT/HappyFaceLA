@@ -15,8 +15,8 @@ const serviceName = "Soccer Fan Face Painting";
 
 const whatWeOffer = [
   {
-    title: "Country-color face painting",
-    body: "Bold country-color looks fans can wear with pride on matchday.",
+    title: "Team-color face painting",
+    body: "Bold team-color looks fans can wear with pride on matchday.",
   },
   {
     title: "Fast cheek flags and eye stripes",
@@ -42,6 +42,9 @@ const whatWeOffer = [
 
 const bestFor = [
   "Watch parties",
+  "Matchday celebrations",
+  "Soccer fan parties",
+  "Soccer birthday parties",
   "Restaurants and bars",
   "Hotels",
   "Private pregame parties",
@@ -51,46 +54,72 @@ const bestFor = [
   "Fan-zone style events",
 ];
 
-const packages = [
+const privateWatchPartyPackages = [
   {
-    name: "Pregame Mini Bar",
+    name: "Home Watch Party Paint Bar",
+    price: "Starts at $225",
     blurb:
-      "Compact setup for private pregame parties and home watch gatherings. Fast cheek flags, eye stripes, and glitter to get fans photo-ready before kickoff.",
+      "Compact fan paint setup for home watch parties and small private gatherings. Fast cheek flags, eye stripes, and glitter help guests get photo-ready before kickoff.",
   },
   {
-    name: "Venue Fan Paint Bar",
+    name: "Small Watch Party Paint Bar",
+    price: "Starts at $350",
     blurb:
-      "A staffed fan paint bar for restaurants, bars, and hotels on matchday. High-throughput country-color designs that keep guests entertained and posting.",
+      "A stronger small-party setup for private watch events with a larger guest list, a wider quick-design menu, and more active painting time.",
+  },
+  {
+    name: "Matchday Celebration Package",
+    price: "Starts at $550",
+    blurb:
+      "A private matchday package for bigger home, clubhouse, or community-room celebrations that need a polished fan paint station.",
+  },
+];
+
+const venueActivationPackages = [
+  {
+    name: "Professional Venue Fan Paint Bar",
+    price: "Custom quote, typically $1,200–$2,500",
+    blurb:
+      "A staffed fan paint bar for restaurants, bars, hotels, and venue watch parties. High-throughput team-color designs keep guests entertained and posting.",
   },
   {
     name: "Premium Matchday Activation",
+    price: "Custom quote, typically $3,500–$5,500",
     blurb:
-      "Multi-artist, high-volume coverage for larger fan-zone style events and community gatherings. Country colors, glitter, and gems with fast line management.",
+      "Multi-artist, high-volume coverage for larger fan-zone style events and community gatherings with fast line management.",
   },
   {
     name: "Sponsor-Branded Activation",
+    price: "Custom quote, typically $5,500–$8,500+",
     blurb:
       "Brand-aligned color palettes and add-ons for sponsor and marketing activations. QR or prepaid payment options and clean, on-brand presentation.",
   },
   {
-    name: "Final Weekend Package",
+    name: "Final Weekend / Multi-Day Activation",
+    price: "Custom quote, typically $8,500–$12,000+",
     blurb:
       "Premium multi-day or final-weekend coverage for peak matchdays. Priority scheduling, extra artists, and the full self-contained event kit.",
   },
 ];
 
-// Country-color designs are represented with simple color swatches only —
+const soccerPackageOptions = [
+  "Not sure yet",
+  ...privateWatchPartyPackages.map((pkg) => pkg.name),
+  ...venueActivationPackages.map((pkg) => pkg.name),
+];
+
+// Team-color designs are represented with simple color swatches only —
 // no federation crests, logos, or protected event branding.
 const designs = [
-  { label: "USA", colors: ["#b22234", "#ffffff", "#3c3b6e"] },
-  { label: "Türkiye", colors: ["#e30a17", "#ffffff", "#e30a17"] },
-  { label: "Switzerland", colors: ["#d52b1e", "#ffffff", "#d52b1e"] },
-  { label: "Bosnia", colors: ["#002395", "#fecb00", "#ffffff"] },
-  { label: "Belgium", colors: ["#000000", "#fdda24", "#ef3340"] },
-  { label: "Iran color stripe", colors: ["#239f40", "#ffffff", "#da0000"] },
-  { label: "New Zealand", colors: ["#00247d", "#ffffff", "#cc142b"] },
+  { label: "Red, white & blue", colors: ["#b22234", "#ffffff", "#3c3b6e"] },
+  { label: "Red & white stripe", colors: ["#e30a17", "#ffffff", "#e30a17"] },
+  { label: "Red cross swatch", colors: ["#d52b1e", "#ffffff", "#d52b1e"] },
+  { label: "Blue, gold & white", colors: ["#002395", "#fecb00", "#ffffff"] },
+  { label: "Black, gold & red", colors: ["#000000", "#fdda24", "#ef3340"] },
+  { label: "Green, white & red", colors: ["#239f40", "#ffffff", "#da0000"] },
+  { label: "Navy, white & red", colors: ["#00247d", "#ffffff", "#cc142b"] },
   { label: "Soccer ball", icon: "⚽" },
-  { label: "Champion glitter", icon: "✨" },
+  { label: "Glitter add-on", icon: "✨" },
   { label: "Gems", icon: "💎" },
 ];
 
@@ -106,9 +135,8 @@ const compliance = [
 const serviceAreas = [
   "Los Angeles",
   "Inglewood",
-  "Hollywood Park",
-  "L.A. Live",
   "Downtown LA",
+  "L.A. Live area",
   "Burbank",
   "Venice",
   "San Pedro",
@@ -121,14 +149,14 @@ const serviceAreas = [
 
 const faqs = [
   {
-    question: "Do you paint country colors for both kids and adults?",
+    question: "Do you paint team colors for both kids and adults?",
     answer:
-      "Yes. We paint fan designs for every age, from little supporters to grown-up fans, with country-color looks, cheek flags, and eye stripes for matchday.",
+      "Yes. We paint fan designs for every age, from little supporters to grown-up fans, with team-color looks, cheek flags, and eye stripes for matchday.",
   },
   {
     question: "How fast is the fan paint bar line?",
     answer:
-      "Our fan paint bar is built for high throughput. Quick cheek flags and eye stripes keep the line moving so large watch-party and fan-zone crowds get painted between matches.",
+      "Our fan paint bar is built for high throughput. Quick cheek flags and eye stripes keep the line moving so large watch-party and matchday celebration crowds get painted between goals.",
   },
   {
     question:
@@ -151,7 +179,7 @@ const faqs = [
 
 <BaseLayout
   title="Soccer Fan Face Painting Los Angeles | HappyFacesLA"
-  description="Fast soccer fan face painting in Los Angeles for watch parties, fan zones, restaurants, bars, hotels, private events, and sponsor activations. Country-color designs, glitter, gems, and insured event service."
+  description="Soccer fan face painting in Los Angeles for the international soccer season — watch parties, matchday celebrations, soccer fan parties, restaurants, bars, hotels, and private events. Team-color designs, glitter, gems, and insured event service."
   canonicalPath={canonicalPath}
   jsonLd={[
     localBusinessJsonLd(),
@@ -176,14 +204,15 @@ const faqs = [
   <!-- Hero -->
   <section class="mx-auto w-full max-w-6xl px-4 pt-10">
     <p class="text-sm font-semibold uppercase tracking-wider text-orange-600">
-      Matchday Fan Paint Bars · Los Angeles
+      International Soccer Season · Matchday Fan Paint Bars · Los Angeles
     </p>
     <h1 class="mt-2 text-4xl font-extrabold text-slate-900 md:text-5xl">
       Soccer Fan Face Painting in Los Angeles
     </h1>
     <p class="mt-4 max-w-3xl text-lg text-slate-700">
-      Fast, photo-ready fan face painting for watch parties, fan zones,
-      restaurants, bars, hotels, private events, and sponsor activations.
+      Team-color face painting for the international soccer season — watch
+      parties, matchday celebrations, soccer fan parties, soccer birthday
+      parties, restaurants, bars, hotels, and sponsor activations.
     </p>
     <div class="mt-6 flex flex-wrap gap-3">
       <a
@@ -208,8 +237,8 @@ const faqs = [
       </a>
     </div>
     <p class="mt-4 text-sm text-slate-600">
-      Insured · High-throughput setup · Family-friendly · Booking matchday
-      activations now.
+      Insured · High-throughput setup · Family-friendly · Booking international
+      soccer season activations now.
     </p>
   </section>
 
@@ -232,20 +261,7 @@ const faqs = [
         }
       </div>
       <p class="mt-5 text-sm text-slate-600">
-        Often paired with{" "}
-        <a class="text-orange-600 hover:underline" href="/face-painting-los-angeles/">
-          face painting
-        </a>,{" "}
-        <a class="text-orange-600 hover:underline" href="/glitter-tattoos-los-angeles/">
-          glitter tattoos
-        </a>, and{" "}
-        <a
-          class="text-orange-600 hover:underline"
-          href="/face-gems-face-jewelry-los-angeles/"
-        >
-          face gems
-        </a>
-        for a full fan look.
+        Often paired with <a class="text-orange-600 hover:underline" href="/face-painting-los-angeles/">face painting</a>, <a class="text-orange-600 hover:underline" href="/glitter-tattoos-los-angeles/">glitter tattoos</a>, and <a class="text-orange-600 hover:underline" href="/face-gems-face-jewelry-los-angeles/">face gems</a> for a full look.
       </p>
     </section>
 
@@ -265,28 +281,68 @@ const faqs = [
 
     <!-- Packages -->
     <section class="rounded-2xl border border-slate-200 bg-white p-6">
-      <h2 class="text-2xl font-bold text-slate-900">Packages</h2>
+      <h2 class="text-2xl font-bold text-slate-900">Soccer Fan Paint Bar Packages</h2>
       <p class="mt-2 text-sm text-slate-600">
-        Choose a starting point, then we tailor artists, timing, and add-ons to
-        your venue and crowd size.
+        Private watch parties use starter pricing. Venues, sponsors, and
+        high-volume activations are custom-quoted based on crowd size, painting
+        window, staffing, and compliance requirements.
       </p>
-      <div class="mt-5 grid gap-4 md:grid-cols-2">
-        {
-          packages.map((pkg) => (
-            <div class="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-5">
-              <h3 class="text-lg font-bold text-slate-900">{pkg.name}</h3>
-              <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-700">
-                {pkg.blurb}
-              </p>
-              <a
-                class="mt-4 inline-block text-sm font-semibold text-orange-600 hover:underline"
-                href="#book"
-              >
-                Book this package →
-              </a>
-            </div>
-          ))
-        }
+      <div class="mt-6">
+        <h3 class="text-lg font-bold text-slate-900">
+          Private Watch Party Packages
+        </h3>
+        <div class="mt-4 grid gap-4 md:grid-cols-3">
+          {
+            privateWatchPartyPackages.map((pkg) => (
+              <div class="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-5">
+                <h4 class="text-base font-bold text-slate-900">{pkg.name}</h4>
+                <p class="mt-1 text-sm font-semibold text-orange-700">
+                  {pkg.price}
+                </p>
+                <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-700">
+                  {pkg.blurb}
+                </p>
+                <a
+                  class="mt-4 inline-block text-sm font-semibold text-orange-600 hover:underline"
+                  href="#book"
+                  data-package-choice={pkg.name}
+                >
+                  Check availability →
+                </a>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+      <div class="mt-8">
+        <h3 class="text-lg font-bold text-slate-900">
+          Venue, Sponsor &amp; High-Volume Activations
+        </h3>
+        <div class="mt-4 grid gap-4 md:grid-cols-2">
+          {
+            venueActivationPackages.map((pkg) => (
+              <div class="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-5">
+                <h4 class="text-base font-bold text-slate-900">{pkg.name}</h4>
+                <p class="mt-1 text-sm font-semibold text-orange-700">
+                  {pkg.price}
+                </p>
+                <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-700">
+                  {pkg.blurb}
+                </p>
+                <a
+                  class="mt-4 inline-block text-sm font-semibold text-orange-600 hover:underline"
+                  href="#book"
+                  data-package-choice={pkg.name}
+                >
+                  Request custom quote →
+                </a>
+              </div>
+            ))
+          }
+        </div>
+        <p class="mt-4 text-sm text-slate-600">
+          Sponsor-branded elements are available only with authorized client-provided assets and written approval.
+        </p>
       </div>
     </section>
 
@@ -294,7 +350,7 @@ const faqs = [
     <section class="rounded-2xl border border-slate-200 bg-white p-6">
       <h2 class="text-2xl font-bold text-slate-900">Fast Fan Designs</h2>
       <p class="mt-2 text-sm text-slate-600">
-        Generic country-color looks and fan favorites — quick to paint, great
+        Generic team-color looks and fan favorites — quick to paint, great
         for photos.
       </p>
       <div class="mt-5 flex flex-wrap gap-3">
@@ -336,10 +392,10 @@ const faqs = [
         }
       </ul>
       <p class="mt-5 text-xs leading-relaxed text-slate-500">
-        Happy Faces LA is an independent entertainment service. We are not an
-        official partner, sponsor, or affiliate of any soccer federation,
-        tournament organizer, league, stadium, or event sponsor, and we do not
-        use protected event logos, mascots, or crests.
+        Happy Faces LA is an independent party entertainment service and is not
+        affiliated with any official soccer league, tournament, venue, team, or
+        sponsor. We do not use protected event logos, federation crests, or
+        official team marks.
       </p>
     </section>
 
@@ -347,8 +403,9 @@ const faqs = [
     <section class="rounded-2xl border border-slate-200 bg-white p-6">
       <h2 class="text-2xl font-bold text-slate-900">Service Areas</h2>
       <p class="mt-2 text-sm text-slate-600">
-        Bringing matchday fan paint bars to Los Angeles and nearby
-        communities. Share your venue or ZIP code for availability.
+        Bringing matchday fan paint bars to Los Angeles and nearby communities
+        for the international soccer season. Share your venue or ZIP code for
+        availability.
       </p>
       <div class="mt-4 flex flex-wrap gap-2">
         {
@@ -367,12 +424,12 @@ const faqs = [
     <!-- CTA -->
     <section class="rounded-2xl bg-slate-900 px-6 py-10 text-white md:px-10">
       <h2 class="text-2xl font-bold md:text-3xl">
-        Booking matchday activations now.
+        Booking international soccer season activations now.
       </h2>
       <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-200">
-        Lock in a fan paint bar for your watch party, venue, or sponsor
-        activation. Tell us your matchday and crowd size and we will confirm
-        availability fast.
+        Lock in a fan paint bar for your watch party, matchday celebration,
+        soccer fan party, or sponsor activation. Tell us your matchday and
+        crowd size and we will confirm availability fast.
       </p>
       <div class="mt-5 flex flex-wrap gap-3">
         <a
@@ -394,7 +451,15 @@ const faqs = [
 
     <!-- Lead capture -->
     <section id="book" class="scroll-mt-24">
-      <QuoteForm />
+      <QuoteForm
+        formVariant="soccer-b2b"
+        title="Request a Soccer Fan Paint Bar Quote"
+        description="Share your watch-party, venue, or activation details and we will follow up with package fit, availability, and next steps."
+        leadSource="soccer_fan_face_painting_los_angeles"
+        campaign="international_soccer_season"
+        selectedPackage="Not sure yet"
+        packageOptions={soccerPackageOptions}
+      />
     </section>
   </div>
 </BaseLayout>

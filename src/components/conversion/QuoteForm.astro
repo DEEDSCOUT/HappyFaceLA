@@ -1,10 +1,37 @@
 ---
+interface Props {
+  formVariant?: "standard" | "soccer-b2b";
+  title?: string;
+  description?: string;
+  leadSource?: string;
+  campaign?: string;
+  selectedPackage?: string;
+  packageOptions?: string[];
+}
+
 const currentPath = Astro.url.pathname;
+const {
+  formVariant = "standard",
+  title = "Request My Quote",
+  description = "Share your event details and we will follow up quickly.",
+  leadSource = "",
+  campaign = "",
+  selectedPackage = "",
+  packageOptions = [],
+} = Astro.props;
+const isSoccerB2B = formVariant === "soccer-b2b";
+const initialSelectedPackage = selectedPackage || packageOptions[0] || "";
+const packageInterestOptions = packageOptions.length
+  ? packageOptions
+  : initialSelectedPackage
+    ? [initialSelectedPackage]
+    : [];
+const hiddenLeadSource = leadSource || currentPath;
 ---
 
 <form data-quote-form data-source-page={currentPath} class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-  <h2 class="text-2xl font-bold text-slate-900">Request My Quote</h2>
-  <p class="mt-2 text-sm text-slate-600">Share your event details and we will follow up quickly.</p>
+  <h2 class="text-2xl font-bold text-slate-900">{title}</h2>
+  <p class="mt-2 text-sm text-slate-600">{description}</p>
 
   <div class="mt-5 grid gap-4 md:grid-cols-2">
     <label class="text-sm font-medium text-slate-700">First name<input required name="first_name" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
@@ -15,15 +42,91 @@ const currentPath = Astro.url.pathname;
     <label class="text-sm font-medium text-slate-700">Start time<input required name="event_start_time" type="time" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
     <label class="text-sm font-medium text-slate-700">Event city<input required name="event_city" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
     <label class="text-sm font-medium text-slate-700">Address / cross streets (optional)<input name="event_address_or_cross_streets_optional" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
-    <label class="text-sm font-medium text-slate-700">Event type<input required name="event_type" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+    {isSoccerB2B && (
+      <label class="text-sm font-medium text-slate-700">Organization / venue name<input required name="organization_venue_name" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+    )}
+    {isSoccerB2B ? (
+      <label class="text-sm font-medium text-slate-700">
+        Event type
+        <select required name="event_type" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+          <option value="">Select event type</option>
+          <option value="Private watch party">Private watch party</option>
+          <option value="Restaurant or bar watch party">Restaurant or bar watch party</option>
+          <option value="Hotel or venue activation">Hotel or venue activation</option>
+          <option value="Community matchday celebration">Community matchday celebration</option>
+          <option value="Sponsor or brand activation">Sponsor or brand activation</option>
+          <option value="Final weekend or multi-day activation">Final weekend or multi-day activation</option>
+          <option value="Other soccer event">Other soccer event</option>
+        </select>
+      </label>
+    ) : (
+      <label class="text-sm font-medium text-slate-700">Event type<input required name="event_type" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+    )}
+    {isSoccerB2B && (
+      <>
+        <label class="text-sm font-medium text-slate-700">
+          Package interest
+          <select required name="package_interest" data-package-interest class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+            {
+              packageInterestOptions.map((option) => (
+                <option value={option} selected={option === initialSelectedPackage}>
+                  {option}
+                </option>
+              ))
+            }
+          </select>
+        </label>
+        <label class="text-sm font-medium text-slate-700">Expected active painting window<input required name="painting_window" placeholder="e.g. 3:00-6:00 PM" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+        <label class="text-sm font-medium text-slate-700">
+          Venue permission confirmed?
+          <select required name="venue_permission_confirmed" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+            <option value="">Select one</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+            <option value="Not sure yet">Not sure yet</option>
+          </select>
+        </label>
+        <label class="text-sm font-medium text-slate-700">
+          Need invoice / certificate of insurance?
+          <select required name="need_invoice_coi" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+            <option value="">Select one</option>
+            <option value="Invoice only">Invoice only</option>
+            <option value="Certificate of insurance only">Certificate of insurance only</option>
+            <option value="Invoice and certificate of insurance">Invoice and certificate of insurance</option>
+            <option value="Not sure yet">Not sure yet</option>
+            <option value="No">No</option>
+          </select>
+        </label>
+      </>
+    )}
     <label class="text-sm font-medium text-slate-700">Estimated guest count<input required name="estimated_guest_count" type="number" min="1" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
     <label class="text-sm font-medium text-slate-700">Children count (optional)<input name="children_count_optional" type="number" min="0" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
-    <label class="text-sm font-medium text-slate-700">Budget range<input name="budget_range" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+    {isSoccerB2B ? (
+      <label class="text-sm font-medium text-slate-700">
+        Budget range
+        <select required name="budget_range" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+          <option value="">Select budget range</option>
+          <option value="Under $350">Under $350</option>
+          <option value="$350-$549">$350-$549</option>
+          <option value="$550-$1,199">$550-$1,199</option>
+          <option value="$1,200-$2,500">$1,200-$2,500</option>
+          <option value="$3,500-$5,500">$3,500-$5,500</option>
+          <option value="$5,500-$8,500+">$5,500-$8,500+</option>
+          <option value="$8,500-$12,000+">$8,500-$12,000+</option>
+          <option value="Need guidance">Need guidance</option>
+        </select>
+      </label>
+    ) : (
+      <label class="text-sm font-medium text-slate-700">Budget range<input name="budget_range" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+    )}
   </div>
 
   <fieldset class="mt-4">
     <legend class="text-sm font-medium text-slate-700">Services requested</legend>
     <div class="mt-2 flex flex-wrap gap-3 text-sm text-slate-700">
+      {isSoccerB2B && (
+        <label><input required checked type="checkbox" name="services_requested[]" value="Soccer Fan Paint Bar" /> Soccer Fan Paint Bar</label>
+      )}
       <label><input type="checkbox" name="services_requested[]" value="Face Painting" /> Face painting</label>
       <label><input type="checkbox" name="services_requested[]" value="Balloon Twisting" /> Balloon twisting</label>
       <label><input type="checkbox" name="services_requested[]" value="Glitter Tattoos" /> Glitter tattoos</label>
@@ -34,6 +137,13 @@ const currentPath = Astro.url.pathname;
   <label class="mt-4 block text-sm font-medium text-slate-700">Message<textarea name="message" rows="4" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"></textarea></label>
 
   <input type="hidden" name="source_page" value={currentPath} />
+  {isSoccerB2B && (
+    <>
+      <input type="hidden" name="lead_source" value={hiddenLeadSource} />
+      <input type="hidden" name="campaign" value={campaign} />
+      <input type="hidden" name="selected_package" value={initialSelectedPackage} data-selected-package-input />
+    </>
+  )}
   <input type="hidden" name="utm_source" />
   <input type="hidden" name="utm_medium" />
   <input type="hidden" name="utm_campaign" />
@@ -107,7 +217,7 @@ const currentPath = Astro.url.pathname;
 
     function getPayload(form) {
       const fd = new FormData(form);
-      return {
+      const payload = {
         first_name: String(fd.get("first_name") || "").trim(),
         last_name: String(fd.get("last_name") || "").trim(),
         phone: String(fd.get("phone") || "").trim(),
@@ -134,6 +244,23 @@ const currentPath = Astro.url.pathname;
         consent_to_contact: Boolean(fd.get("consent_to_contact")),
         honeypot: String(fd.get("honeypot") || "")
       };
+
+      const addIfPresent = (name, value = fd.get(name)) => {
+        if (form.querySelector(`[name="${name}"]`)) {
+          payload[name] = String(value || "").trim();
+        }
+      };
+
+      addIfPresent("lead_source");
+      addIfPresent("campaign");
+      addIfPresent("selected_package", fd.get("selected_package") || fd.get("package_interest"));
+      addIfPresent("organization_venue_name");
+      addIfPresent("package_interest");
+      addIfPresent("painting_window");
+      addIfPresent("venue_permission_confirmed");
+      addIfPresent("need_invoice_coi");
+
+      return payload;
     }
 
     function hydrateAttribution(form) {
@@ -163,7 +290,7 @@ const currentPath = Astro.url.pathname;
 
     /**
      * Prefill service checkboxes (and a helpful message) from a `?service=` URL param.
-     * Accepted values: face-painting, balloon-twisting, glitter-tattoos, face-gems, party-package
+     * Accepted values: face-painting, soccer-fan-paint-bar, balloon-twisting, glitter-tattoos, face-gems, party-package
      */
     function prefillFromQuery(form) {
       try {
@@ -173,6 +300,7 @@ const currentPath = Astro.url.pathname;
 
         const map = {
           "face-painting": ["Face Painting"],
+          "soccer-fan-paint-bar": ["Soccer Fan Paint Bar"],
           "balloon-twisting": ["Balloon Twisting"],
           "glitter-tattoos": ["Glitter Tattoos"],
           "face-gems": ["Face Gems"],
@@ -200,6 +328,17 @@ const currentPath = Astro.url.pathname;
       }
     }
 
+    function syncSelectedPackage(form) {
+      const packageSelect = form.querySelector('select[name="package_interest"]');
+      const selectedPackageInput = form.querySelector('input[name="selected_package"]');
+      if (!(selectedPackageInput instanceof HTMLInputElement)) {
+        return;
+      }
+      if (packageSelect instanceof HTMLSelectElement && packageSelect.value.trim()) {
+        selectedPackageInput.value = packageSelect.value.trim();
+      }
+    }
+
     const forms = document.querySelectorAll("form[data-quote-form]");
     forms.forEach((form) => {
       if (!(form instanceof HTMLFormElement)) {
@@ -208,10 +347,16 @@ const currentPath = Astro.url.pathname;
 
       hydrateAttribution(form);
       prefillFromQuery(form);
+      syncSelectedPackage(form);
 
       const sourceInput = form.querySelector('input[name="source_page"]');
       if (sourceInput instanceof HTMLInputElement && !sourceInput.value.trim()) {
         sourceInput.value = window.location.pathname;
+      }
+
+      const packageSelect = form.querySelector('select[name="package_interest"]');
+      if (packageSelect instanceof HTMLSelectElement) {
+        packageSelect.addEventListener("change", () => syncSelectedPackage(form));
       }
 
       const submitButton = form.querySelector("[data-submit-button]");
@@ -273,6 +418,7 @@ const currentPath = Astro.url.pathname;
 
           form.reset();
           hydrateAttribution(form);
+          syncSelectedPackage(form);
 
           const sourceAfterReset = form.querySelector('input[name="source_page"]');
           if (sourceAfterReset instanceof HTMLInputElement) {
@@ -292,6 +438,34 @@ const currentPath = Astro.url.pathname;
             submitButton.disabled = false;
             submitButton.textContent = "Request My Quote";
           }
+        }
+      });
+    });
+
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+      const trigger = target.closest("[data-package-choice]");
+      if (!(trigger instanceof HTMLElement)) {
+        return;
+      }
+      const packageName = (trigger.getAttribute("data-package-choice") || "").trim();
+      if (!packageName) {
+        return;
+      }
+      forms.forEach((form) => {
+        if (!(form instanceof HTMLFormElement)) {
+          return;
+        }
+        const packageSelect = form.querySelector('select[name="package_interest"]');
+        if (packageSelect instanceof HTMLSelectElement) {
+          packageSelect.value = packageName;
+        }
+        const selectedPackageInput = form.querySelector('input[name="selected_package"]');
+        if (selectedPackageInput instanceof HTMLInputElement) {
+          selectedPackageInput.value = packageName;
         }
       });
     });
