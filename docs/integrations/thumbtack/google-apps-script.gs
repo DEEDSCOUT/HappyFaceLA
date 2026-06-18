@@ -304,7 +304,7 @@ function toSheetValues_(body) {
   var lastContact = l.received_at || new Date().toISOString();
 
   return {
-    'Created Date': l.received_at,
+    'Created Date': toSheetDate_(l.received_at),
     'Lead Source': 'Thumbtack',
     'Client Name': l.customer_name,
     'Event City': l.event_city,
@@ -317,12 +317,19 @@ function toSheetValues_(body) {
     'Quote Amount': quote,
     'Travel Fee': p.travel_adjustment ? '$' + p.travel_adjustment : '',
     'Retainer Requested?': 'No',
-    'Next Follow-Up Date': nextFollowUp,
-    'Last Contact Date': lastContact,
+    'Next Follow-Up Date': toSheetDate_(nextFollowUp),
+    'Last Contact Date': toSheetDate_(lastContact),
     'Lead Intent / Acquisition Type': leadIntent_(l),
     'Platform Status': platformStatus_(l.event),
     'Notes': buildNotes_(body, retainer)
   };
+}
+
+function toSheetDate_(value) {
+  if (!value) return '';
+  var date = new Date(value);
+  if (isNaN(date.getTime())) return value;
+  return date;
 }
 
 function pipelineStatus_(eventName) {
