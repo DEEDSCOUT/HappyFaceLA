@@ -1,0 +1,76 @@
+{
+  "negotiationID": "582664010964434956",
+  "createdAt": "2026-06-18T19:06:50Z",
+  "customer": {
+    "customerID": "582664010968227840",
+    "firstName": "Test",
+    "lastName": "Customer",
+    "phone": "[redacted-phone]"
+  },
+  "business": {
+    "businessID": "582093043904233481",
+    "name": "Test Business for Webhooks",
+    "imageURL": "[redacted-image-url]"
+  },
+  "request": {
+    "requestID": "582664010966958085",
+    "customerID": "582664010968227840",
+    "contactedBusinesses": [],
+    "description": "Need Full Service Lawn Care",
+    "category": {
+      "categoryID": "240123621172183344",
+      "name": "Full Service Lawn Care"
+    },
+    "proposedTimes": [
+      {
+        "start": "2026-01-06T10:00:00Z",
+        "end": "2026-01-06T11:00:00Z"
+      }
+    ],
+    "location": {
+      "address1": "[redacted-street-address]",
+      "address2": "[redacted-unit]",
+      "city": "San Francisco",
+      "state": "CA",
+      "zipCode": "94103"
+    },
+    "travelPreferences": ["ProviderTravelToCustomer"],
+    "details": [
+      {
+        "question": "Frequency of services",
+        "answer": "One time only"
+      },
+      {
+        "question": "Zip code",
+        "answer": "95010, 78901"
+      },
+      {
+        "question": "Travel Preferences",
+        "answer": "The lawn professional travels to me"
+      }
+    ],
+    "attachments": [
+      {
+        "fileName": "test_request_attachment.jpg",
+        "fileSize": 20,
+        "mimeType": "image/jpeg",
+        "url": "[redacted-attachment-url]",
+        "description": "test request attachment"
+      }
+    ]
+  },
+  "estimate": {
+    "type": "Fixed",
+    "pricePerUnit": "150.00",
+    "unitQuantity": 1,
+    "unitName": "service",
+    "total": "$150.00"
+  },
+  "status": "Open",
+  "leadPrice": "$25.00",
+  "leadPriceBreakdown": {
+    "subtotal": "$23.15",
+    "salesTax": "$1.85"
+  },
+  "chargeState": "Created"
+}

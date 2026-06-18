@@ -266,6 +266,26 @@ function splitServices(v: unknown): string[] {
         .filter(Boolean);
 }
 
+function rec(v: unknown): Record<string, any> {
+    return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, any>) : {};
+}
+
+function firstString(...values: unknown[]): string {
+    for (const value of values) {
+        const s = str(value);
+        if (s) return s;
+    }
+    return "";
+}
+
+function fullName(first: unknown, last: unknown): string {
+    return [str(first), str(last)].filter(Boolean).join(" ").trim();
+}
+
+function firstArrayItem(v: unknown): Record<string, any> {
+    return Array.isArray(v) && v[0] ? rec(v[0]) : {};
+}
+
 function toIsoDate(v: unknown): string {
     const s = str(v);
     if (!s) return "";
@@ -273,6 +293,30 @@ function toIsoDate(v: unknown): string {
     if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
     const d = new Date(s);
     return Number.isNaN(d.getTime()) ? s : d.toISOString().slice(0, 10);
+}
+
+function timeFromIso(v: unknown): string {
+    const s = str(v);
+    const m = s.match(/T(\d{2}):(\d{2})/);
+    if (!m) return "";
+    let hour = Number.parseInt(m[1], 10);
+    const minute = m[2];
+    const suffix = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12 || 12;
+    return `${hour}:${minute} ${suffix}`;
+}
+
+function durationFromRange(start: unknown, end: unknown): string {
+    const startDate = new Date(str(start));
+    const endDate = new Date(str(end));
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return "";
+    const minutes = Math.round((endDate.getTime() - startDate.getTime()) / 60_000);
+    if (minutes <= 0) return "";
+    if (minutes % 60 === 0) {
+        const hours = minutes / 60;
+        return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+    }
+    return `${minutes} minutes`;
 }
 
 function eventDurationMinutes(v: unknown): number | null {
@@ -310,6 +354,15 @@ export function detectEventType(raw: any): ThumbtackEventType {
 export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
     const event = detectEventType(raw);
     const qa = collectQA(raw);
+    const leadObj = rec(raw?.lead);
+    const requestObj = rec(raw?.request ?? leadObj.request);
+    const customerObj = rec(raw?.customer ?? leadObj.customer ?? requestObj.customer);
+    const categoryObj = rec(requestObj.category);
+    const scheduleObj = rec(requestObj.schedule);
+    const locationObj = rec(requestObj.location);
+    const proposedTime = firstArrayItem(requestObj.proposedTimes);
+    const proposedStart = proposedTime.start;
+    const proposedEnd = proposedTime.end;
 
     // NOTE: deliberately QA-first and avoids "eventType"/"event_type" keys — those
     // collide with the webhook envelope's own `eventType` (e.g. "LeadCreated").
@@ -318,20 +371,30 @@ export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
         str(deepFind(raw, ["occasion", "eventOccasion"]));
 
     const lead_type =
+        firstString(categoryObj.name, requestObj.categoryName, requestObj.category) ||
         str(deepFind(raw, ["category", "requestCategory", "serviceCategory", "categoryName"])) ||
-        str(deepFind(raw, ["title", "requestTitle"]));
+        firstString(requestObj.title, deepFind(raw, ["title", "requestTitle"]));
 
     const services =
         splitServices(deepFind(raw, ["requestedServices", "requested_services", "services"]));
     const servicesFromQA = splitServices(
-        qaAnswer(qa, ["what services", "which services", "service", "add-ons", "add ons"]),
+        qaAnswer(qa, ["what services", "which services", "add-ons", "add ons"]),
     );
-    const requested_services = (services.length ? services : servicesFromQA).map((s) => s);
+    const requested_services = (services.length ? services : servicesFromQA.length ? servicesFromQA : splitServices(lead_type)).map((s) => s);
 
     const fulfillment = str(
-        deepFind(raw, ["fulfillmentStatus", "paid_status", "paidStatus", "status"]),
+        firstString(
+            leadObj.fulfillmentStatus,
+            raw?.chargeState,
+            raw?.status,
+            deepFind(raw, ["fulfillmentStatus", "paid_status", "paidStatus", "status"]),
+        ),
     ).toLowerCase();
-    const fee = num(deepFind(raw, ["leadCharge", "leadFee", "lead_fee", "charge", "amount", "price"]));
+    const fee = num(
+        raw?.leadPrice ??
+            leadObj.leadPrice ??
+            deepFind(raw, ["leadCharge", "leadPrice", "leadFee", "lead_fee", "charge", "amount", "price"]),
+    );
     let paid_status: NormalizedLead["paid_status"] = "unknown";
     if (fulfillment.includes("paid") || (fee != null && fee > 0)) paid_status = "paid";
     else if (fulfillment.includes("unpaid") || fulfillment.includes("free")) paid_status = "unpaid";
@@ -346,7 +409,8 @@ export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
 
     const lengthRaw =
         str(deepFind(raw, ["eventLength", "event_length", "duration", "hours"])) ||
-        qaAnswer(qa, ["how long", "event length", "duration", "how many hours"]);
+        qaAnswer(qa, ["how long", "event length", "duration", "how many hours"]) ||
+        durationFromRange(proposedStart, proposedEnd);
 
     const review_rating = num(deepFind(raw, ["rating", "stars", "reviewRating", "score"]));
 
@@ -356,17 +420,40 @@ export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
 
     return {
         lead_id:
-            str(deepFind(raw, ["leadID", "lead_id", "leadId", "id", "requestID", "requestId"])) ||
+            firstString(
+                requestObj.requestID,
+                requestObj.requestId,
+                leadObj.leadID,
+                leadObj.leadId,
+                raw?.leadID,
+                raw?.lead_id,
+                raw?.leadId,
+                raw?.id,
+                deepFind(raw, ["leadID", "lead_id", "leadId", "requestID", "requestId", "id"]),
+            ) ||
             `tt_${now}`,
         customer_name:
-            str(deepFind(raw, ["customerName", "customer_name", "displayName", "name"])) || "Customer",
+            firstString(
+                fullName(customerObj.firstName, customerObj.lastName),
+                customerObj.name,
+                customerObj.displayName,
+                raw?.customerName,
+                raw?.customer_name,
+                deepFind(raw, ["customerName", "customer_name", "displayName"]),
+            ) || "Customer",
         lead_type: lead_type || "General inquiry",
         paid_status,
         lead_fee: fee,
-        event_city: str(deepFind(raw, ["city", "event_city", "eventCity", "locality"])),
-        event_zip: str(deepFind(raw, ["zipCode", "zip", "event_zip", "postalCode", "postal_code"])),
-        event_date: toIsoDate(deepFind(raw, ["eventDate", "event_date", "date", "startDate"])),
-        event_time: str(deepFind(raw, ["startTime", "event_time", "eventTime"])),
+        event_city: firstString(locationObj.city, deepFind(raw, ["city", "event_city", "eventCity", "locality"])),
+        event_zip: firstString(
+            locationObj.zipCode,
+            locationObj.zip,
+            deepFind(raw, ["zipCode", "zip", "event_zip", "postalCode", "postal_code"]),
+        ),
+        event_date: toIsoDate(
+            firstString(proposedStart, scheduleObj.eventDate, deepFind(raw, ["eventDate", "event_date", "date", "startDate"])),
+        ),
+        event_time: firstString(scheduleObj.startTime, deepFind(raw, ["startTime", "event_time", "eventTime"]), timeFromIso(proposedStart)),
         event_length: lengthRaw,
         event_type: eventTypeRaw,
         requested_services,
@@ -376,12 +463,12 @@ export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
         reply_deadline: str(
             deepFind(raw, ["expectedResponseBy", "reply_deadline", "respondBy", "replyBy", "deadline"]),
         ),
-        action_link: str(deepFind(raw, ["actionLink", "actionUrl", "thumbtackUrl", "leadUrl", "url", "href"])),
+        action_link: str(deepFind(raw, ["actionLink", "actionUrl", "thumbtackUrl", "leadUrl"])),
         message_text,
         event,
         review_rating,
         received_at:
-            str(deepFind(raw, ["createTimestamp", "received_at", "timestamp", "createdAt"])) || now,
+            firstString(raw?.createdAt, deepFind(raw, ["createTimestamp", "received_at", "timestamp", "createdAt"])) || now,
         source: "thumbtack",
     };
 }
@@ -391,6 +478,7 @@ export function parseThumbtackEvent(raw: any, now: string): NormalizedLead {
 // ---------------------------------------------------------------------------
 
 const HIGH_VALUE_EVENT = /(birthday|private|kids|child|family|graduation|baby shower)/i;
+const HAPPY_FACES_SERVICE = /(face\s*paint|balloon|glitter\s*tattoo|face\s*gem)/i;
 
 export function scoreLead(lead: NormalizedLead): LeadScore {
     const reasons: string[] = [];
@@ -492,17 +580,20 @@ export function recommendPricing(lead: NormalizedLead, score: LeadScore): Pricin
     }
 
     const eventProfile = `${lead.event_type} ${lead.lead_type} ${lead.message_text}`.toLowerCase();
+    const serviceProfile = `${lead.lead_type} ${lead.requested_services.join(" ")}`.trim();
     const manualReviewEvent = /(school|festival|corporate|company|office|camp|fundraiser|community|public|fair|high[-\s]?volume|large)/i.test(eventProfile);
     const highVolume = (lead.guest_count ?? 0) >= 40;
     const extendedDuration = durationMinutes != null && durationMinutes > 120;
+    const unmappedService = Boolean(serviceProfile) && !HAPPY_FACES_SERVICE.test(serviceProfile);
 
     // 3+ services, high-volume/manual-review event types, or >2h durations need
     // human quoting instead of silently stretching the party ladder.
-    if (serviceCount >= 3 || highVolume || manualReviewEvent || extendedDuration) {
+    if (serviceCount >= 3 || highVolume || manualReviewEvent || extendedDuration || unmappedService) {
         if (serviceCount >= 3) notes.push("3+ services — build a custom quote.");
         if (highVolume) notes.push("40+ guests/kids — manual capacity review required.");
         if (manualReviewEvent) notes.push("School, festival, corporate, or high-volume event — manual review required.");
         if (extendedDuration) notes.push("Duration over 2 hours — manual quote required.");
+        if (unmappedService) notes.push("Unmapped Thumbtack category/service — manual quote required.");
         return {
             service_count: serviceCount,
             tier: "custom",
@@ -673,7 +764,7 @@ function buildAlert(
         score.cautions.length ? `⚠️ ${score.cautions.join(" ")}` : "",
         followUpLine ? `Follow-ups: ${followUpLine}` : "",
         lead.action_link ? `Thumbtack action: ${lead.action_link}` : "",
-        `— Copy/paste reply —`,
+        `Ready-to-copy Thumbtack reply:`,
         card.reply_draft,
     ]
         .filter(Boolean)

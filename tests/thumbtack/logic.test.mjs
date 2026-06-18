@@ -73,6 +73,33 @@ check("metrics has all columns", "booked_revenue" in leadCard.metrics && "lost_r
 check("slack alert mentions recommend", /Recommend/i.test(leadCard.alert.slack_text));
 check("slack alert includes follow-up schedule", /Follow-ups:/i.test(leadCard.alert.slack_text));
 
+// --- Real Thumbtack lead-details test payload ---------------------------------
+const realLeadRaw = load("real-thumbtack-lead-details.sanitized.json");
+const realLead = parseThumbtackEvent(realLeadRaw, NOW);
+console.log("\n# real-thumbtack-lead-details — normalized official payload");
+console.log(JSON.stringify(realLead, null, 2));
+
+check("real payload lead_id from request.requestID", realLead.lead_id === "582664010966958085");
+check("real payload customer from customer.firstName/lastName", realLead.customer_name === "Test Customer");
+check("real payload category parsed", realLead.lead_type === "Full Service Lawn Care");
+check("real payload leadPrice parsed", realLead.lead_fee === 25);
+check("real payload event city parsed", realLead.event_city === "San Francisco");
+check("real payload event ZIP parsed", realLead.event_zip === "94103");
+check("real payload proposedTimes date parsed", realLead.event_date === "2026-01-06");
+check("real payload proposedTimes time parsed", realLead.event_time === "10:00 AM");
+check("real payload proposedTimes duration parsed", realLead.event_length === "1 hour");
+check(
+    "real payload service preserved for manual review",
+    realLead.requested_services.join(",") === "Full Service Lawn Care",
+);
+check("real payload detected as lead.created", realLead.event === "lead.created");
+
+const realLeadCard = buildLeadCard(realLeadRaw, NOW);
+check("real payload unmapped service uses custom quote", realLeadCard.pricing.custom_quote === true);
+check("real payload follow-up schedule generated", realLeadCard.follow_ups.length === 5);
+check("real payload ready-to-copy draft generated", /Hi Test/.test(realLeadCard.reply_draft));
+check("real payload alert includes ready-to-copy draft", /Ready-to-copy Thumbtack reply:/i.test(realLeadCard.alert.slack_text));
+
 // --- Pricing ladder ------------------------------------------------------------
 function pricingPayload({ services, eventLength, guestCount = 12, eventType = "Birthday party", city = "Burbank" }) {
     return {

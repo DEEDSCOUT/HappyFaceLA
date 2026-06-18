@@ -371,21 +371,40 @@ function buildNotes_(body, retainer) {
 }
 
 function formatServices_(services, fallback) {
+  var parts = [];
+  var values = Array.isArray(services) ? services : String(services || '').split(/[,+]/);
+  for (var i = 0; i < values.length; i++) parts.push(serviceText_(values[i]));
+  parts.push(serviceText_(fallback));
+
+  var combined = normalizeHeader_(parts.join(' '));
   var labels = [];
-  for (var i = 0; i < services.length; i++) {
-    var normalized = normalizeHeader_(services[i]);
-    if (normalized === 'facepainting') labels.push('Face Painting');
-    else if (normalized === 'balloontwisting') labels.push('Balloon Twisting');
-    else if (normalized === 'glittertattoos') labels.push('Glitter Tattoos');
-    else if (normalized === 'facegems') labels.push('Face Gems');
-    else {
-      var raw = String(services[i] || '').trim();
-      if (raw) labels.push(raw);
-    }
+  if (combined.indexOf('facepainting') !== -1 || combined.indexOf('facepaint') !== -1) {
+    labels.push('Face Painting');
   }
+  if (combined.indexOf('balloon') !== -1) labels.push('Balloon Twisting');
+  if (combined.indexOf('glittertattoo') !== -1) labels.push('Glitter Tattoos');
+  if (combined.indexOf('facegem') !== -1) labels.push('Face Gems');
 
   if (labels.length) return labels.join(' + ');
-  return fallback || '';
+  return 'Custom Quote';
+}
+
+function serviceText_(value) {
+  if (value == null) return '';
+  if (typeof value === 'object') {
+    var fields = ['name', 'title', 'label', 'service', 'category', 'type'];
+    var out = [];
+    for (var i = 0; i < fields.length; i++) {
+      if (value[fields[i]]) out.push(String(value[fields[i]]));
+    }
+    if (out.length) return out.join(' ');
+    try {
+      return JSON.stringify(value);
+    } catch (err) {
+      return '';
+    }
+  }
+  return String(value || '');
 }
 
 function joinNonBlank_(parts, separator) {

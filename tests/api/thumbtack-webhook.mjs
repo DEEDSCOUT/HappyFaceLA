@@ -56,6 +56,17 @@ if (r1.body.includes('"dispatch"')) console.log("      dispatch results present"
 await run("new message POST returns 200", 200, post(load("new-message.json")));
 await run("review POST returns 200", 200, post(load("new-review.json")));
 await run("status update POST returns 200", 200, post(load("lead-status-update.json")));
+const realPayload = await run(
+    "real Thumbtack lead-details fixture POST returns 200",
+    200,
+    post(load("real-thumbtack-lead-details.sanitized.json")),
+);
+if (realPayload.body.includes('"lead_id":"582664010966958085"')) {
+    console.log("      real payload lead_id confirmed");
+} else {
+    console.log("FAIL  real payload lead_id not present in response");
+    fail++;
+}
 
 await run("GET health returns 200", 200, { method: "GET" });
 await run("PUT returns 405", 405, {
