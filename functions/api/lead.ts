@@ -68,6 +68,34 @@ function normalizeStringArray(input: unknown): string[] {
     return input.map((item) => normalizeString(item)).filter(Boolean);
 }
 
+function parseWebhookResult(body: string): { ok: true } | { ok: false; reason: string } {
+    const trimmed = body.trim();
+    if (!trimmed) {
+        return { ok: false, reason: "empty response body" };
+    }
+
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(trimmed);
+    } catch {
+        return { ok: false, reason: "non-json response body" };
+    }
+
+    if (!parsed || typeof parsed !== "object" || !("ok" in parsed)) {
+        return { ok: false, reason: "missing ok field" };
+    }
+
+    const ok = (parsed as { ok?: unknown }).ok;
+    if (ok === true) {
+        return { ok: true };
+    }
+    if (ok === false) {
+        return { ok: false, reason: "webhook returned ok:false" };
+    }
+
+    return { ok: false, reason: "invalid ok field" };
+}
+
 function validateLead(payload: LeadPayload): Record<string, string> {
     const errors: Record<string, string> = {};
 
@@ -249,6 +277,12 @@ export const onRequest = async (context: any): Promise<Response> => {
         if (!crmResponse.ok) {
             console.error("[lead] webhook returned non-2xx:", crmResponse.status);
             return json({ ok: false, error: "Failed to route lead" }, 502);
+        }
+
+        const webhookResult = parseWebhookResult(crmBody);
+        if (!webhookResult.ok) {
+            console.error("[lead] webhook response rejected:", webhookResult.reason);
+            return json({ ok: false, error: "Lead capture backend returned an invalid response" }, 502);
         }
 
         return json({ ok: true, leadId });
