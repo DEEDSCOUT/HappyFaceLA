@@ -28,7 +28,7 @@ CEO review.  All findings are captured in the six evidence records in
 - Four core services listed: face painting, balloon twisting, glitter tattoos, face gems & jewelry
 - Three-county coverage: LA, Orange County, Ventura County (with note "Travel fees may apply")
 - Service areas: Los Angeles, Burbank, Glendale, Pasadena, Sherman Oaks, Studio City, Encino
-- Phone: 818-619-5506
+- Phone: (310) 800-2860
 - Instagram: @happy_faces_la
 - Quote response: "expect a response with availability and pricing quickly"
 - Birthday Party Package: starting at $150 (face painting or balloon twisting, 1 artist)

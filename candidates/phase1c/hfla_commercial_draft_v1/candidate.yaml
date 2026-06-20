@@ -296,7 +296,7 @@ rules:
     draft_recommendation: >
       When a chatbot user requests specific pricing, service customisation,
       school/corporate quotes, or multi-artist bookings, the chatbot must
-      escalate to the human quote form or phone number (818-619-5506) rather
+      escalate to the human quote form or phone number (310) 800-2860 rather
       than attempting to provide a binding quote.  Escalation language must
       be approved by the CEO.
     channel_visibility: "INTERNAL_ONLY"
@@ -337,7 +337,7 @@ evidence_records:
     verified_fact: >
       Homepage states: 'Bookings start at $150. A $50 deposit reserves your
       date. Final quote depends on city, guest count, services, and event
-      length.'  Phone number listed as 818-619-5506.  Four services offered:
+      length.'  Phone number listed as (310) 800-2860.  Four services offered:
       face painting, balloon twisting, glitter tattoos, face gems & jewelry.
     related_rule_ids:
       - "HFLA-RULE-PP-001"
@@ -973,7 +973,7 @@ channel_projection_records:
       dedicated artist. Final pricing depends on your event location, guest
       count, and services selected. To get an accurate quote for your event,
       please submit your details using the contact form or call/text
-      818-619-5506.
+      (310) 800-2860.
     approved_channel_text: ""
     release_status: "DRAFT"
     notes_internal_only: >
@@ -992,7 +992,7 @@ channel_projection_records:
       For a specific price on your event — including school events, corporate
       bookings, multi-artist setups, or any event with special requirements —
       please fill out the quote form at happyfacesla.com/contact/ or call/
-      text 818-619-5506. We respond quickly with availability and pricing.
+      text (310) 800-2860. We respond quickly with availability and pricing.
     approved_channel_text: ""
     release_status: "DRAFT"
     notes_internal_only: >

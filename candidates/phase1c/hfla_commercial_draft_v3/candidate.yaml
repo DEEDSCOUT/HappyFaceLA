@@ -666,7 +666,7 @@ rules:
       or any commitment beyond the published Color Pop or
       Birthday Favorite package, the chatbot must escalate to
       the human quote form (happyfacesla.com/contact/) or to
-      the phone number 818-619-5506 rather than attempting to
+      the phone number (310) 800-2860 rather than attempting to
       provide a binding answer.  Prohibited chatbot promises
       include: discounts, guaranteed pricing for non-published
       packages, COI issuance commitments, specific artist
@@ -824,7 +824,7 @@ evidence_records:
     verified_fact: >
       Homepage states 'Bookings start at $150. A $50 deposit reserves
       your date. Final quote depends on city, guest count, services,
-      and event length.'  Phone number listed as 818-619-5506.  Four
+      and event length.'  Phone number listed as (310) 800-2860.  Four
       services offered: face painting, balloon twisting, glitter
       tattoos, face gems & jewelry.  Footer copyright reads
       'Copyright 2026 Happy Faces LA. All rights reserved.'
@@ -2288,7 +2288,7 @@ channel_projection_records:
     draft_channel_text: >
       Book your event: share your details and we will respond
       with availability and pricing.  Phone or text
-      818-619-5506.
+      (310) 800-2860.
     approved_channel_text: ""
     release_status: "DRAFT"
     notes_internal_only: >
@@ -2481,7 +2481,7 @@ channel_projection_records:
       Deposit and cancellation specifics are confirmed
       when we send your quote.  For exact terms tailored
       to your booking, please share your event details or
-      call / text 818-619-5506.
+      call / text (310) 800-2860.
     approved_channel_text: ""
     release_status: "DRAFT"
     notes_internal_only: >
@@ -2500,7 +2500,7 @@ channel_projection_records:
       corporate quotes, multi-artist bookings, COI
       requests, or any sponsor commitment, please contact
       the human quote team at
-      happyfacesla.com/contact/ or 818-619-5506.  The
+      happyfacesla.com/contact/ or (310) 800-2860.  The
       chatbot cannot finalise these requests.
     approved_channel_text: ""
     release_status: "DRAFT"

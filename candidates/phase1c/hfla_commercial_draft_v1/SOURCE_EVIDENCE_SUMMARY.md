@@ -29,7 +29,7 @@
   - Bookings start at $150
   - $50 deposit reserves the date (applied to balance)
   - Final quote depends on city, guest count, services, event length
-  - Phone: 818-619-5506
+  - Phone: (310) 800-2860
   - Four services: face painting, balloon twisting, glitter tattoos, face gems/jewelry
   - Service areas: LA, Burbank, Glendale, Pasadena, Sherman Oaks, Studio City, Encino (and three-county coverage)
 - **Reliability:** Tier 1 (direct observation of live site)

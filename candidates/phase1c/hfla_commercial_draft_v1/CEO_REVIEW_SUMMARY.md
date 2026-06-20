@@ -143,13 +143,13 @@ All text requires CEO approval before going live.
 > dedicated artist. Final pricing depends on your event location, guest
 > count, and services selected. To get an accurate quote for your event,
 > please submit your details using the contact form or call/text
-> 818-619-5506."
+> (310) 800-2860."
 
 **Escalation message** (`HFLA-PROJ-BOT-002`):
 > "For a specific price on your event — including school events, corporate
 > bookings, multi-artist setups, or any event with special requirements —
 > please fill out the quote form at happyfacesla.com/contact/ or call/text
-> 818-619-5506. We respond quickly with availability and pricing."
+> (310) 800-2860. We respond quickly with availability and pricing."
 
 ---
 
