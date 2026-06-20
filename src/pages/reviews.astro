@@ -9,12 +9,21 @@ const canonicalPath = "/reviews/";
 ---
 
 <BaseLayout
-  title="Reviews | Happy Faces LA"
-  description="Read verified Happy Faces LA customer reviews and event feedback for face painting, balloon twisting, glitter tattoos, face gems, and kids party entertainment."
+  title="Happy Faces LA Reviews | Face Painting & Kids Party Entertainment"
+  description="Read real feedback from families and event hosts who booked Happy Faces LA for face painting, balloon twisting, glitter tattoos, face gems, and kids party entertainment in Los Angeles."
   canonicalPath={canonicalPath}
 >
   <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Reviews", href: canonicalPath }]} />
-  <PageIntro title="Reviews" description="Real customer reviews from verified Happy Faces LA events." />
+  <PageIntro
+    title="Happy Faces LA Reviews"
+    description="Read real feedback from families and event hosts who booked Happy Faces LA for face painting, balloon twisting, glitter tattoos, face gems, and kids party entertainment in Los Angeles."
+  />
+
+  <section class="mx-auto w-full max-w-4xl px-4 pb-2">
+    <p class="text-base leading-relaxed text-slate-700">
+      Reviews on this page include feedback from the Happy Faces LA Google Business Profile and direct event feedback shared after real bookings.
+    </p>
+  </section>
 
   <GoogleReviewsSection heading="Latest Google reviews" />
   <TestimonialsSection />
