@@ -9,7 +9,7 @@ import {
 } from './canonical-lead.ts';
 
 export const QUOTE_REQUEST_FAILURE_MESSAGE =
-  'We could not submit your request. Please call/text 818-619-5506.';
+  'We could not submit your request. Please call/text (310) 800-2860.';
 
 export const QUOTE_REQUEST_SUCCESS_MESSAGE = 'Your request was received.';
 

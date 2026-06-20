@@ -72,7 +72,7 @@ Homepage baseline (2026-06-15): `PUBLIC WEBSITE CANONICAL HOMEPAGE / NAV / IMAGE
 
 - Canonical domain: <https://happyfacesla.com>
 - Redirect domain: <https://happyfacela.com>
-- Phone: 818-619-5506
+- Phone: (310) 800-2860
 - Instagram: <https://www.instagram.com/happyfacesla>
 
 ## Stack

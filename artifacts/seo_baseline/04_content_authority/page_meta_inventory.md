@@ -14,7 +14,7 @@ where `business.url = "https://happyfacesla.com"`.
 ### `/` — Homepage
 
 - **Title:** Face Painting, Balloon Twisting & Glitter Tattoos in Los Angeles | Happy Faces LA
-- **Description:** Book Happy Faces LA for professional face painting, balloon twisting, glitter tattoos, and face gems in Los Angeles. Call/text 818-619-5506 for availability and pricing.
+- **Description:** Book Happy Faces LA for professional face painting, balloon twisting, glitter tattoos, and face gems in Los Angeles. Call/text (310) 800-2860 for availability and pricing.
 - **Canonical:** https://happyfacesla.com/
 - **noindex:** false → robots: `index,follow`
 - **OG Image:** /images/services/happy-faces-la-face-painting-service.webp (default)

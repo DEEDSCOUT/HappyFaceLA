@@ -45,9 +45,9 @@ HTML response (SSG). There is no client-side schema injection.
 ```json
 [
   { "@type": "Organization", "name": "Happy Faces LA", "url": "https://happyfacesla.com",
-    "telephone": "+18186195506", "sameAs": ["https://www.instagram.com/happy_faces_la/"] },
+    "telephone": "+13108002860", "sameAs": ["https://www.instagram.com/happy_faces_la/"] },
   { "@type": "LocalBusiness", "name": "Happy Faces LA", "url": "https://happyfacesla.com",
-    "telephone": "+18186195506", "areaServed": ["Los Angeles", "Burbank", ...13 cities],
+    "telephone": "+13108002860", "areaServed": ["Los Angeles", "Burbank", ...13 cities],
     "sameAs": ["https://www.instagram.com/happy_faces_la/"],
     "makesOffer": [{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Face Painting" }}, ...] },
   { "@type": "WebSite", "name": "Happy Faces LA", "url": "https://happyfacesla.com" }
