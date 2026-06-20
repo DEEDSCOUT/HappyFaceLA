@@ -5,12 +5,16 @@ import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
 import FAQAccordion from "../components/content/FAQAccordion.astro";
 import BookingCtaBlock from "../components/sections/BookingCtaBlock.astro";
 import type { FaqItem } from "../data/faqs";
+import { business } from "../data/business";
 import {
   localBusinessJsonLd,
   breadcrumbJsonLd,
   faqJsonLd,
   articleJsonLd,
 } from "../utils/schema";
+
+const phoneCtaLabel = `Call/Text ${business.displayPhone}`;
+const phoneTelHref = `tel:${business.phone.replace(/^\+1/, "")}`;
 
 const canonicalPath = "/what-are-glitter-tattoos/";
 const pageUrl = `https://happyfacesla.com${canonicalPath}`;
@@ -195,8 +199,8 @@ const faqs: FaqItem[] = [
     showCtas={true}
     primaryCtaLabel="Plan My Party"
     primaryCtaHref={planMyPartyHref}
-    secondaryCtaLabel="Call/Text 818-619-5506"
-    secondaryCtaHref="tel:+18186195506"
+    secondaryCtaLabel={phoneCtaLabel}
+    secondaryCtaHref={phoneTelHref}
   />
 
   <!-- Trust notes + owned hero image -->
