@@ -1,0 +1,728 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageIntro from "../components/sections/PageIntro.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import FAQAccordion from "../components/content/FAQAccordion.astro";
+import BookingCtaBlock from "../components/sections/BookingCtaBlock.astro";
+import type { FaqItem } from "../data/faqs";
+import {
+  localBusinessJsonLd,
+  breadcrumbJsonLd,
+  faqJsonLd,
+  articleJsonLd,
+} from "../utils/schema";
+
+const canonicalPath = "/what-are-glitter-tattoos/";
+const pageUrl = `https://happyfacesla.com${canonicalPath}`;
+const planMyPartyHref = "/plan-my-party/";
+const heroImage = "/images/services/happy-faces-la-glitter-tattoo-service.webp";
+const metaDescription =
+  "Learn what glitter tattoos are, how long they last, how they are applied, safety tips for parents, and how to add them to a Los Angeles kids party.";
+
+// Conservative, parent-safe trust notes shown under the hero.
+const trustNotes = [
+  "Fast party station",
+  "Great for older kids and teens",
+  "Pairs with face painting, balloons, or face gems",
+  "Los Angeles kids party entertainment",
+];
+
+const applySteps = [
+  "Skin area is prepared or lightly cleaned.",
+  "Child chooses a design.",
+  "Stencil is placed.",
+  "Cosmetic adhesive is applied.",
+  "Glitter is pressed onto the adhesive.",
+  "Excess glitter is brushed away.",
+  "Stencil is removed to reveal the final design.",
+];
+
+const eventTypes = [
+  {
+    title: "Birthday parties",
+    copy: "A sparkly station and a wearable party favor kids keep for days after the celebration.",
+  },
+  {
+    title: "School festivals and fundraisers",
+    copy: "Quick application keeps booth lines moving, which works well for carnivals and PTA events.",
+  },
+  {
+    title: "Corporate family days",
+    copy: "A kid-friendly activity that keeps children happy while parents socialize.",
+  },
+  {
+    title: "Community events",
+    copy: "A crowd favorite at street fairs and seasonal celebrations that appeals to a wide age range.",
+  },
+  {
+    title: "Themed parties",
+    copy: "Designs can echo a party theme, from fairy-style to ocean-themed and jungle-themed looks.",
+  },
+  {
+    title: "Holiday events",
+    copy: "Holiday-themed designs add a festive, photo-ready touch to seasonal gatherings.",
+  },
+  {
+    title: "Older kids and teen-friendly parties",
+    copy: "A polished, sparkle-forward option for guests who may feel too old for full-face painting.",
+  },
+];
+
+const designCategories = [
+  "Butterflies",
+  "Hearts",
+  "Stars",
+  "Unicorns",
+  "Animals",
+  "Flowers",
+  "Fairy-style designs",
+  "Princess-inspired designs",
+  "Superhero-inspired shapes",
+  "Sports-inspired designs",
+  "Team-color inspired designs",
+  "Holiday and themed party designs",
+];
+
+const parentChecklist = [
+  "Share the child age range.",
+  "Share approximate guest count.",
+  "Mention sensitive skin, allergies, or skin concerns.",
+  "Confirm indoor or outdoor setup.",
+  "Provide shade for outdoor events.",
+  "Provide a clean, stable working area.",
+  "Confirm whether glitter tattoos are standalone or paired with other services.",
+  "Ask about realistic coverage for the available time.",
+  "Confirm parking/access notes if relevant.",
+];
+
+const bookingSteps = [
+  "Submit event date, city/ZIP, guest count, age range, and requested services through Plan My Party.",
+  "Happy Faces LA reviews availability, service mix, guest count, travel, and setup needs.",
+  "Happy Faces LA follows up with the recommended setup and pricing.",
+  "Booking is not confirmed until availability is confirmed and the final booking steps are completed.",
+];
+
+// One FAQ array drives both the visible accordion and the FAQPage schema,
+// so the structured data always matches the on-page content exactly.
+const faqs: FaqItem[] = [
+  {
+    question: "What are glitter tattoos?",
+    answer:
+      "Glitter tattoos are temporary, sparkly body-art designs applied with a stencil, skin-safe cosmetic adhesive, and cosmetic glitter. They sit on top of the skin, do not use needles, and usually fade gradually over several days depending on activity, bathing, skin type, and aftercare.",
+  },
+  {
+    question: "How long do glitter tattoos last?",
+    answer:
+      "Many glitter tattoos last several days, often around 3–7 days, but results vary by child, skin type, activity level, bathing, rubbing, sweating, and aftercare. Water exposure, rubbing, and scratching can shorten how long a design lasts.",
+  },
+  {
+    question: "Are glitter tattoos safe for kids?",
+    answer:
+      "Happy Faces LA uses professional-grade, cosmetic-safe products and a clean event setup. Individual sensitivities vary, so parents should disclose known skin sensitivities, allergies, or skin conditions before service begins. Service may be adjusted or skipped for irritated, broken, sunburned, or visibly sensitive skin.",
+  },
+  {
+    question: "Are glitter tattoos waterproof?",
+    answer:
+      "Glitter tattoos are water-resistant but not fully waterproof. A quick bath or splash usually will not remove them, but prolonged water exposure, swimming, sweating, and rubbing will shorten how long the design lasts.",
+  },
+  {
+    question: "How are glitter tattoos removed?",
+    answer:
+      "Glitter tattoos fade and shed gradually on their own. To remove one sooner, gentle soap and warm water or a little baby oil on a cloth can help lift the design when appropriate. Avoid harsh scrubbing, which can irritate the skin.",
+  },
+  {
+    question: "What ages are glitter tattoos best for?",
+    answer:
+      "Glitter tattoos work well across a wide range of ages and are especially popular with older kids and teens who can sit still for a couple of minutes. For younger children, designs are placed where they are less likely to be rubbed, and any design can be skipped if a child prefers.",
+  },
+  {
+    question: "Can glitter tattoos be added to face painting?",
+    answer:
+      "Yes. Glitter tattoos pair well with face painting as part of a two-service party mix, and they also pair with balloon twisting and face gems. Combining services keeps each station moving and gives guests more variety. Final pricing is reviewed after you submit your event details.",
+  },
+  {
+    question: "Are glitter tattoos good for birthday party lines?",
+    answer:
+      "Yes. Most designs take only a few minutes per guest, which makes glitter tattoos useful for high-traffic party lines. Actual throughput depends on design choice, guest flow, child cooperation, and the event setup.",
+  },
+  {
+    question: "How much do glitter tattoos cost for a Los Angeles party?",
+    answer:
+      "Pricing depends on your event date, location, guest count, service duration, and whether glitter tattoos are booked alone or paired with another service. Submit your details through Plan My Party and Happy Faces LA will review the best setup and send next steps.",
+  },
+  {
+    question: "How do I book glitter tattoos with Happy Faces LA?",
+    answer:
+      "Submit your event date, city or ZIP, guest count, age range, and requested services through Plan My Party. Happy Faces LA reviews availability, service mix, travel, and setup needs, then follows up with a recommended setup and pricing. No payment is required when you submit your party details — checkout and the Booking Retainer are available only after availability is confirmed.",
+  },
+];
+---
+
+<BaseLayout
+  title="What Are Glitter Tattoos? Parent Guide for Kids Parties | Happy Faces LA"
+  description={metaDescription}
+  canonicalPath={canonicalPath}
+  jsonLd={[
+    localBusinessJsonLd(),
+    articleJsonLd({
+      headline: "What Are Glitter Tattoos? A Parent Guide for Kids Parties",
+      description: metaDescription,
+      datePublished: "2026-06-19",
+      dateModified: "2026-06-19",
+      image: `https://happyfacesla.com${heroImage}`,
+      url: pageUrl,
+    }),
+    breadcrumbJsonLd([
+      { name: "Home", url: "https://happyfacesla.com/" },
+      {
+        name: "What Are Glitter Tattoos?",
+        url: pageUrl,
+      },
+    ]),
+    faqJsonLd(faqs),
+  ]}
+>
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "What Are Glitter Tattoos?", href: canonicalPath },
+    ]}
+  />
+
+  <PageIntro
+    title="What Are Glitter Tattoos? A Parent Guide for Kids Parties"
+    description="Glitter tattoos are temporary, sparkly body-art designs applied with a stencil, skin-safe cosmetic adhesive, and cosmetic glitter. They sit on top of the skin, do not use needles, and usually fade gradually over several days depending on activity, bathing, skin type, and aftercare."
+    showCtas={true}
+    primaryCtaLabel="Plan My Party"
+    primaryCtaHref={planMyPartyHref}
+    secondaryCtaLabel="Call/Text 818-619-5506"
+    secondaryCtaHref="tel:+18186195506"
+  />
+
+  <!-- Trust notes + owned hero image -->
+  <section class="mx-auto w-full max-w-6xl px-4 pt-6">
+    <ul class="flex flex-wrap gap-2 text-sm">
+      {
+        trustNotes.map((note) => (
+          <li class="rounded-full border border-orange-100 bg-orange-50 px-3 py-1 font-medium text-slate-700">
+            {note}
+          </li>
+        ))
+      }
+    </ul>
+    <div class="mt-8 overflow-hidden rounded-2xl">
+      <img
+        src={heroImage}
+        alt="Glitter tattoo application at a Los Angeles kids birthday party"
+        width="1400"
+        height="788"
+        class="w-full bg-slate-100 object-contain"
+        style="aspect-ratio:16/9;"
+        loading="eager"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <div class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-10">
+    <!-- 3. Quick Answer -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        Quick Answer: What Are Glitter Tattoos?
+      </h2>
+      <ul class="mt-4 space-y-2 text-sm leading-relaxed text-slate-700">
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>Glitter tattoos are temporary body-art designs.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>They use a stencil, cosmetic adhesive, and glitter.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>They do not use needles.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>They sit on top of the skin.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>They usually take only a few minutes per guest.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>They often last several days, but longevity varies.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>
+            They work well for birthday parties, school festivals, community
+            events, and themed parties.
+          </span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>Parents should disclose known sensitivities before application.</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- 4. How Glitter Tattoos Are Applied -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        How Glitter Tattoos Are Applied
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-700">
+        The application is quick, simple, and needle-free — one reason glitter
+        tattoos work so well at events where many children want a design.
+      </p>
+      <ol class="mt-4 space-y-3 text-sm leading-relaxed text-slate-700">
+        {
+          applySteps.map((step, index) => (
+            <li class="flex gap-3">
+              <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
+                {index + 1}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="mt-4 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
+        Most designs are quick, which makes glitter tattoos useful for
+        high-traffic party lines. Actual throughput depends on design choice,
+        guest flow, child cooperation, and the event setup.
+      </p>
+    </section>
+
+    <!-- 5. How Long Glitter Tattoos Last -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        How Long Do Glitter Tattoos Last?
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-700">
+        Many glitter tattoos last several days, often around 3–7 days, but
+        results vary by child, skin type, activity level, bathing, rubbing,
+        sweating, and aftercare.
+      </p>
+      <ul class="mt-4 space-y-2 text-sm leading-relaxed text-slate-700">
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">→</span>
+          <span>Water exposure can shorten lifespan.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">→</span>
+          <span>Rubbing and scratching can reduce glitter coverage.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">→</span>
+          <span>Tattoos gradually fade or shed naturally.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">→</span>
+          <span>
+            Gentle removal can be done with soap and warm water or baby oil when
+            appropriate.
+          </span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- 6. Are Glitter Tattoos Safe for Kids? -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        Are Glitter Tattoos Safe for Kids?
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-700">
+        Happy Faces LA uses professional, kid-friendly products and a clean event
+        setup. Parents should disclose known skin sensitivities, allergies, or
+        skin conditions before service begins. Individual reactions are possible
+        with any cosmetic product, so service may be adjusted or skipped for
+        irritated, broken, sunburned, or visibly sensitive skin.
+      </p>
+      <p class="mt-4 text-sm leading-relaxed text-slate-700">
+        We keep the language honest and conservative: our products are
+        professional-grade, cosmetic-safe, and kid-friendly, individual
+        sensitivities vary, and parents should disclose known sensitivities so we
+        can adjust the design or skip it if needed.
+      </p>
+    </section>
+
+    <!-- 7. Glitter Tattoos vs. Other Kids Party Services -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        Glitter Tattoos vs. Other Kids Party Services
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-700">
+        Each service brings something different to a party. Many families mix two
+        services so guests have more to do while lines move faster.
+      </p>
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full min-w-[680px] border-collapse text-left text-sm">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-900">
+              <th class="py-3 pr-4 font-bold">Service</th>
+              <th class="py-3 pr-4 font-bold">Best For</th>
+              <th class="py-3 pr-4 font-bold">Typical Strength</th>
+              <th class="py-3 font-bold">Important Note</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-700">
+            <tr class="border-b border-slate-100 align-top">
+              <td class="py-3 pr-4 font-semibold text-slate-900">
+                <a
+                  class="text-orange-600 hover:text-orange-700"
+                  href="/glitter-tattoos-los-angeles/">Glitter Tattoos</a
+                >
+              </td>
+              <td class="py-3 pr-4">
+                Fast sparkle station, older kids, wearable party favors
+              </td>
+              <td class="py-3 pr-4">
+                Quick application and can last beyond the event
+              </td>
+              <td class="py-3">
+                Longevity varies by skin type, activity, and aftercare
+              </td>
+            </tr>
+            <tr class="border-b border-slate-100 align-top">
+              <td class="py-3 pr-4 font-semibold text-slate-900">
+                <a
+                  class="text-orange-600 hover:text-orange-700"
+                  href="/face-painting-los-angeles/">Face Painting</a
+                >
+              </td>
+              <td class="py-3 pr-4">
+                Character looks, full-face designs, colorful party photos
+              </td>
+              <td class="py-3 pr-4">
+                More artistic flexibility and larger designs
+              </td>
+              <td class="py-3">Detailed designs take more time</td>
+            </tr>
+            <tr class="border-b border-slate-100 align-top">
+              <td class="py-3 pr-4 font-semibold text-slate-900">
+                <a
+                  class="text-orange-600 hover:text-orange-700"
+                  href="/balloon-twisting-los-angeles/">Balloon Twisting</a
+                >
+              </td>
+              <td class="py-3 pr-4">
+                Kids who want something to hold and play with
+              </td>
+              <td class="py-3 pr-4">Physical take-home party favor</td>
+              <td class="py-3">Works well with active party flow</td>
+            </tr>
+            <tr class="align-top">
+              <td class="py-3 pr-4 font-semibold text-slate-900">
+                <a
+                  class="text-orange-600 hover:text-orange-700"
+                  href="/face-gems-face-jewelry-los-angeles/">Face Gems</a
+                >
+              </td>
+              <td class="py-3 pr-4">
+                Princess, fairy, glam, dance, and photo-forward parties
+              </td>
+              <td class="py-3 pr-4">
+                Jewelry-like sparkle and polished event photos
+              </td>
+              <td class="py-3">
+                Often works best as an add-on or themed upgrade
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-4 text-sm leading-relaxed text-slate-700">
+        Want the dedicated service page? See
+        <a
+          class="font-semibold text-orange-600 hover:text-orange-700"
+          href="/glitter-tattoos-los-angeles/">Glitter Tattoos in Los Angeles</a
+        > for booking details, or explore
+        <a
+          class="font-semibold text-orange-600 hover:text-orange-700"
+          href="/kids-birthday-party-entertainment-los-angeles/"
+          >kids birthday party entertainment in Los Angeles</a
+        >.
+      </p>
+    </section>
+
+    <!-- 8. Best Events for Glitter Tattoos -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        Best Events for Glitter Tattoos
+      </h2>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          eventTypes.map((event) => (
+            <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <h3 class="text-base font-semibold text-slate-900">
+                {event.title}
+              </h3>
+              <p class="mt-2 text-sm leading-relaxed text-slate-700">
+                {event.copy}
+              </p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <BookingCtaBlock
+      title="Not sure whether glitter tattoos fit your party?"
+      description="Send us your event date, city, guest count, and the services you are considering. We will recommend the right setup so expectations stay realistic."
+      primaryHref={planMyPartyHref}
+      primaryLabel="Get a Personalized Recommendation"
+    />
+
+    <!-- 9. Popular Glitter Tattoo Design Options -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        Popular Glitter Tattoo Design Options
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-700">
+        Children can usually pick a favorite from a design menu. Popular,
+        non-branded categories include:
+      </p>
+      <ul class="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          designCategories.map((design) => (
+            <li class="flex gap-2 text-sm text-slate-700">
+              <span class="mt-0.5 shrink-0 text-orange-400" aria-hidden="true">
+                ★
+              </span>
+              <span>{design}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="mt-4 text-sm leading-relaxed text-slate-700">
+        We use generic, family-friendly design themes — such as
+        superhero-inspired, princess-inspired, fairy-style, holiday-themed,
+        ocean-themed, jungle-themed, and team-color looks — rather than protected
+        brand or character names.
+      </p>
+    </section>
+
+    <!-- 10. Parent Checklist Before Booking -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        Parent Checklist Before Booking Glitter Tattoos
+      </h2>
+      <ul class="mt-4 space-y-2 text-sm leading-relaxed text-slate-700">
+        {
+          parentChecklist.map((item) => (
+            <li class="flex gap-2">
+              <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">
+                ✓
+              </span>
+              <span>{item}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- 11. Planning and Guest Count Guidance -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        How to Plan Glitter Tattoos for Your Party
+      </h2>
+      <ul class="mt-4 space-y-2 text-sm leading-relaxed text-slate-700">
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">→</span>
+          <span>Guest count affects station flow.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">→</span>
+          <span>Fast designs help lines move.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">→</span>
+          <span>More services can reduce waiting and create better variety.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">→</span>
+          <span>Larger events may require custom review.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">→</span>
+          <span>
+            Schools, festivals, community events, corporate events, and
+            high-volume guest counts should not be treated as instant standard
+            quotes.
+          </span>
+        </li>
+      </ul>
+      <p class="mt-4 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
+        Coverage depends on guest count, design complexity, guest flow, child
+        cooperation, and reserved service time. Happy Faces LA will recommend the
+        right setup so expectations stay realistic.
+      </p>
+    </section>
+
+    <!-- 12. Pricing / Quote Language -->
+    <section class="rounded-2xl border border-orange-100 bg-orange-50/40 p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        Glitter Tattoo Pricing: Quote-Reviewed
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-700">
+        Pricing depends on your event date, city, guest count, service mix,
+        service duration, and whether glitter tattoos are booked as a standalone
+        station or paired with another Happy Faces LA service.
+      </p>
+      <p class="mt-3 text-sm leading-relaxed text-slate-700">
+        Glitter tattoos may be available as part of a two-service party mix, with
+        pricing reviewed after you submit your event details.
+      </p>
+      <p class="mt-3 text-sm leading-relaxed text-slate-700">
+        Use
+        <a
+          class="font-semibold text-orange-600 hover:text-orange-700"
+          href={planMyPartyHref}>Plan My Party</a
+        > to request glitter tattoos and receive a personalized recommendation. You
+        can also review the
+        <a
+          class="font-semibold text-orange-600 hover:text-orange-700"
+          href="/pricing/">pricing page</a
+        > before requesting availability.
+      </p>
+    </section>
+
+    <!-- 13. Booking Process -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        How to Request Glitter Tattoos With Happy Faces LA
+      </h2>
+      <ol class="mt-4 space-y-3 text-sm leading-relaxed text-slate-700">
+        {
+          bookingSteps.map((step, index) => (
+            <li class="flex gap-3">
+              <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
+                {index + 1}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))
+        }
+      </ol>
+      <ul class="mt-4 space-y-2 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
+        <li>No payment is required when you submit your party details.</li>
+        <li>There is no online checkout at the quote submission stage.</li>
+        <li>
+          Checkout and Booking Retainer payment are available only after
+          availability is confirmed.
+        </li>
+      </ul>
+      <p class="mt-4 text-sm leading-relaxed text-slate-700">
+        See the
+        <a
+          class="font-semibold text-orange-600 hover:text-orange-700"
+          href="/booking-policy/">booking policy</a
+        > for how retainers and availability work.
+      </p>
+    </section>
+
+    <!-- 14. FAQ (visible content; schema added via faqJsonLd above) -->
+    <section>
+      <h2 class="text-2xl font-bold text-slate-900">
+        Glitter Tattoo FAQ for Parents
+      </h2>
+      <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">
+        Common questions from parents and event planners about glitter tattoos
+        for Los Angeles kids parties.
+      </p>
+      <div class="mt-4">
+        <FAQAccordion items={faqs} />
+      </div>
+    </section>
+
+    <!-- 15. Final Recommendation -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">Final Recommendation</h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-700">
+        Glitter tattoos are a strong choice for parents who want:
+      </p>
+      <ul class="mt-4 space-y-2 text-sm leading-relaxed text-slate-700">
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>A fast party station.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>Sparkly designs.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>A wearable party favor.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>A good option for older kids and teens.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>
+            A service that pairs well with face painting, face gems, or balloon
+            twisting.
+          </span>
+        </li>
+        <li class="flex gap-2">
+          <span class="mt-0.5 shrink-0 text-orange-500" aria-hidden="true">✓</span>
+          <span>A quote-reviewed setup matched to guest count and event flow.</span>
+        </li>
+      </ul>
+    </section>
+
+    <BookingCtaBlock
+      title="Ready to add glitter tattoos to your Los Angeles party?"
+      description="Share your event date, city, guest count, and the services you are considering. Happy Faces LA will recommend the right setup and send next steps — no payment required to request a quote."
+      primaryHref={planMyPartyHref}
+      primaryLabel="Plan My Party"
+    />
+
+    <!-- Internal linking: related Happy Faces LA pages -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-slate-900">
+        Related Happy Faces LA Pages
+      </h2>
+      <ul class="mt-4 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+        <li>
+          <a class="font-semibold text-orange-600 hover:text-orange-700" href={planMyPartyHref}>Plan My Party</a>
+        </li>
+        <li>
+          <a class="font-semibold text-orange-600 hover:text-orange-700" href="/glitter-tattoos-los-angeles/">Glitter Tattoos in Los Angeles</a>
+        </li>
+        <li>
+          <a class="font-semibold text-orange-600 hover:text-orange-700" href="/face-painting-los-angeles/">Face Painting in Los Angeles</a>
+        </li>
+        <li>
+          <a class="font-semibold text-orange-600 hover:text-orange-700" href="/balloon-twisting-los-angeles/">Balloon Twisting in Los Angeles</a>
+        </li>
+        <li>
+          <a class="font-semibold text-orange-600 hover:text-orange-700" href="/face-gems-face-jewelry-los-angeles/">Face Gems &amp; Face Jewelry</a>
+        </li>
+        <li>
+          <a class="font-semibold text-orange-600 hover:text-orange-700" href="/kids-birthday-party-entertainment-los-angeles/">Kids Birthday Party Entertainment</a>
+        </li>
+        <li>
+          <a class="font-semibold text-orange-600 hover:text-orange-700" href="/pricing/">Pricing</a>
+        </li>
+        <li>
+          <a class="font-semibold text-orange-600 hover:text-orange-700" href="/booking-policy/">Booking Policy</a>
+        </li>
+        <li>
+          <a class="font-semibold text-orange-600 hover:text-orange-700" href="/faq/">FAQ</a>
+        </li>
+        <li>
+          <a class="font-semibold text-orange-600 hover:text-orange-700" href="/gallery/">Gallery</a>
+        </li>
+        <li>
+          <a class="font-semibold text-orange-600 hover:text-orange-700" href="/reviews/">Reviews</a>
+        </li>
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
