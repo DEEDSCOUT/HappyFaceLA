@@ -1648,10 +1648,10 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       if (errEl) {
         const msg = err instanceof Error && err.message
           ? err.message
-          : 'We could not submit your request. Please call/text 818-619-5506.';
+          : 'We could not submit your request. Please call/text (310) 800-2860.';
         errEl.textContent = msg.includes('call/text')
           ? msg
-          : 'We could not submit your request. Please call/text 818-619-5506.';
+          : 'We could not submit your request. Please call/text (310) 800-2860.';
         show(errEl);
       }
       show(qs('#step8-fallback-cta'));

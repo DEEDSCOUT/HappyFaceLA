@@ -83,7 +83,7 @@ the website source code and will inform GBP consistency checks when access is re
 | Signal | Website Value | Check Against GBP |
 |---|---|---|
 | Business Name | Happy Faces LA | Verify exact match |
-| Phone | +18186195506 / 818-619-5506 | Verify exact match (NAP) |
+| Phone | +13108002860 / (310) 800-2860 | Verify exact match (NAP) |
 | Website URL | https://happyfacesla.com | Verify in GBP listing |
 | Instagram | https://www.instagram.com/happy_faces_la/ | Verify in GBP sameAs |
 | Service Area | Los Angeles + 12 other cities | Verify service area config |

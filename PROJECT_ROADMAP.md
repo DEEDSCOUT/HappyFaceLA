@@ -113,7 +113,7 @@ grep -ri "placeholder image" dist/ --include="*.html"  # 0 matches ✅
   - New all-services hub page at `/services/` with H1 "Face Painting, Balloon Twisting, Glitter Tattoos & Face Gems in Los Angeles", parent-focused subcopy, primary CTA + Call/Text CTA, services grid, popular packages preview, service-area links, FAQs, and bottom booking CTA.
   - New reusable `ServiceCrossSell` section: 3- or 4-up grid of other services with image, name, description, "View service →" link, plus optional bundle CTA + Call/Text CTA. Used on every service page (excludes current slug) and on the hub (all four).
   - New reusable `BookingCtaBlock` section: dark "Not sure what to book?" CTA with Get Availability & Pricing + Call/Text. Inserted before `QuoteForm` on every service page and at the bottom of `/services/`.
-  - Each service page (`face-painting-los-angeles`, `balloon-twisting-los-angeles`, `glitter-tattoos-los-angeles`, `face-gems-face-jewelry-los-angeles`) now has unique meta title + description per spec, a parent-focused `heroSubcopy` directly under the H1, hero CTA buttons (Get Availability & Pricing, Call/Text 818-619-5506), a per-service `crossSellTitle`/`crossSellDescription`, and a final BookingCtaBlock above the quote form.
+  - Each service page (`face-painting-los-angeles`, `balloon-twisting-los-angeles`, `glitter-tattoos-los-angeles`, `face-gems-face-jewelry-los-angeles`) now has unique meta title + description per spec, a parent-focused `heroSubcopy` directly under the H1, hero CTA buttons (Get Availability & Pricing, Call/Text (310) 800-2860), a per-service `crossSellTitle`/`crossSellDescription`, and a final BookingCtaBlock above the quote form.
   - `PageIntro` extended with optional `showCtas`, primary/secondary CTA props, and `trustLine` so service pages can render booking CTAs above the fold without duplicating markup.
   - `ServicePageSections` now renders `ServiceCrossSell` directly under the banner image and `BookingCtaBlock` directly before `QuoteForm`.
   - Header navigation `Services` link now points to `/services/` (desktop and mobile).
@@ -1069,7 +1069,7 @@ Last updated: 2026-05-19 (Trust Sprint Media Gaps — Video Frame Extraction)
 | Redirect domain | `happyfacela.com` -> <https://happyfacesla.com/> |
 | GitHub repository | <https://github.com/DEEDSCOUT/HappyFaceLA> |
 | Cloudflare Pages preview | <https://happyfacesla.pages.dev> |
-| Phone | 818-619-5506 |
+| Phone | (310) 800-2860 |
 | Instagram | <https://www.instagram.com/happyfacesla> |
 | Core services | Face painting, balloon twisting, glitter tattoos, face jewelry / face gems |
 | Target geography | Los Angeles and surrounding LA-area cities/neighborhoods |
@@ -1730,7 +1730,7 @@ What changed:
 
 - Replaced `Effective date: TBD_BY_OWNER` with `Effective date: May 17, 2026`.
 - Replaced placeholder paragraph about policy owner/mailing/legal entity with owner-confirmed text:
-  business name "Happy Faces LA", service-area-only note, phone 818-619-5506, and link to contact form.
+  business name "Happy Faces LA", service-area-only note, phone (310) 800-2860, and link to contact form.
 - No physical address published. No LLC/corporation name invented.
 
 Files changed:

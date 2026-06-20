@@ -1439,7 +1439,7 @@ was taken during or as a result of this performance evidence collection. All fin
 | Business | Happy Faces LA |
 | Services | Face Painting, Balloon Twisting, Glitter Tattoos, Face Gems |
 | Service Area | Los Angeles County + Orange County + Ventura County |
-| Phone | 818-619-5506 |
+| Phone | (310) 800-2860 |
 | Framework | Astro v6.3.3 (SSG — Static Site Generation) |
 | Hosting | Cloudflare Pages |
 | CDN | Cloudflare |
@@ -2106,9 +2106,9 @@ HTML response (SSG). There is no client-side schema injection.
 ```json
 [
   { "@type": "Organization", "name": "Happy Faces LA", "url": "https://happyfacesla.com",
-    "telephone": "+18186195506", "sameAs": ["https://www.instagram.com/happy_faces_la/"] },
+    "telephone": "+13108002860", "sameAs": ["https://www.instagram.com/happy_faces_la/"] },
   { "@type": "LocalBusiness", "name": "Happy Faces LA", "url": "https://happyfacesla.com",
-    "telephone": "+18186195506", "areaServed": ["Los Angeles", "Burbank", ...13 cities],
+    "telephone": "+13108002860", "areaServed": ["Los Angeles", "Burbank", ...13 cities],
     "sameAs": ["https://www.instagram.com/happy_faces_la/"],
     "makesOffer": [{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Face Painting" }}, ...] },
   { "@type": "WebSite", "name": "Happy Faces LA", "url": "https://happyfacesla.com" }
@@ -2845,7 +2845,7 @@ The commercial control room (`c:\Dev\happyfacesla-commercial-control-room\`) is 
 
 | # | URL Path | Source `noindex` | Commercial Claims in Source HTML | Governance Authorization State | GSC Indexing State | Gap / Conflict Classification |
 |---|---|---|---|---|---|---|
-| 1 | `/` | `false` (indexable) | Services listed (face painting, balloons, glitter, face gems), 6× Offer/Service pairs, phone 818-619-5506, CTAs to /contact/ and /booking-policy/ | No CEO-approved service descriptions on record (governance workbook 04: DRAFT SHELL) | PASS — indexed | **GAP-COM-001:** Live indexed page contains service descriptions with no formal governance authorization trail |
+| 1 | `/` | `false` (indexable) | Services listed (face painting, balloons, glitter, face gems), 6× Offer/Service pairs, phone (310) 800-2860, CTAs to /contact/ and /booking-policy/ | No CEO-approved service descriptions on record (governance workbook 04: DRAFT SHELL) | PASS — indexed | **GAP-COM-001:** Live indexed page contains service descriptions with no formal governance authorization trail |
 | 2 | `/services/` | `false` (indexable) | Full service hub — face painting, balloon twisting, glitter tattoos, face gems; geographic claim "Los Angeles, Orange County, and Ventura County"; 6× Offer/Service JSON-LD pairs; BreadcrumbList | No CEO-approved service descriptions on record | NEUTRAL — URL unknown to Google | **GAP-COM-002:** Page is indexable per source (no noindex) but URL is unknown to Google; service and geographic claims unpublished to search index |
 | 3 | `/pricing/` | `false` (indexable) | Explicit starting price "Bookings start at $150"; FAQ: "Bookings start at $150"; Service JSON-LD present; geographic coverage implied | RULE-PRICE-001 through RULE-PRICE-004 all DRAFT, CEO_INPUT_REQUIRED; no approved public pricing | PASS — indexed | **GAP-COM-003 (HIGH):** Live indexed page publishes a specific price point ("$150") with no formal CEO approval in governance framework; governance workbook `05_PUBLIC_PRICING_PACKAGES` is DRAFT SHELL |
 | 4 | `/corporate-event-face-painting-los-angeles/` | `true` (noindex in source, `noindex={true}` in BaseLayout prop) | Corporate event service claims; 6× Offer/Service JSON-LD; BreadcrumbList; description: "company picnics, grand openings, and family-friendly corporate activations" | No CEO-approved corporate event service descriptions; governance workbook 08_VENDOR_SCHOOL_CORPORATE_RULES: DRAFT SHELL | **ANOMALY:** PASS — Google reports INDEXING_ALLOWED despite noindex in HTML (see ISS-002) | **GAP-COM-004 + ANOMALY-001:** Source intentionally suppresses page (noindex={true}); commercial claims are not authorized for publication per governance; yet Google reports the URL as indexed — content effectively published contrary to source intent |

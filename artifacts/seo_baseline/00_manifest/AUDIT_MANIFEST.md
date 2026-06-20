@@ -33,7 +33,7 @@
 | Business | Happy Faces LA |
 | Services | Face Painting, Balloon Twisting, Glitter Tattoos, Face Gems |
 | Service Area | Los Angeles County + Orange County + Ventura County |
-| Phone | 818-619-5506 |
+| Phone | (310) 800-2860 |
 | Framework | Astro v6.3.3 (SSG — Static Site Generation) |
 | Hosting | Cloudflare Pages |
 | CDN | Cloudflare |

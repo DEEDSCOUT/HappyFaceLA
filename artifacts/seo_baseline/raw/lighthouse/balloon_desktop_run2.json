@@ -2296,8 +2296,8 @@
                 "width": 187,
                 "height": 36
               },
-              "snippet": "<a class=\"shrink-0 rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-w…\" href=\"tel:+18186195506\" data-track-event=\"phone_click\">",
-              "nodeLabel": "Call/Text 818-619-5506",
+              "snippet": "<a class=\"shrink-0 rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-w…\" href=\"tel:3108002860\" data-track-event=\"phone_click\">",
+              "nodeLabel": "Call/Text (310) 800-2860",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 2.88 (foreground color: #ffffff, background color: #ff6900, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
             }
           },
