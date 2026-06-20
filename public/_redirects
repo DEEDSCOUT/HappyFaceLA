@@ -9,6 +9,3 @@
 # Path-level redirects live here.
 
 /soccer-fan-face-painting-los-angeles /soccer-fan-face-painting-los-angeles/ 301
-
-# Reviews page hidden until sufficient real reviews are collected
-/reviews/ /gallery/ 302
