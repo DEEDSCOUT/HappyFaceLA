@@ -1,0 +1,39 @@
+name: verify-release
+
+# Anti-regression gate (issue #38). Runs on every PR targeting main and on
+# pushes to main. Fails the PR if any owner baseline regresses (old phone
+# numbers, homepage/soccer/Plan My Party baselines, sitemap/canonical SEO
+# state, or unapproved image changes) or if the build breaks.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for stale-branch detection)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Owner baseline guard
+        run: npm run guard:owner-baseline
+
+      - name: Build
+        run: npm run build

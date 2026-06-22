@@ -6,6 +6,7 @@ export const business = {
     redirectDomain: "happyfacela.com",
     phone: "+13108002860",
     displayPhone: "(310) 800-2860",
+    email: "info@happyfacesla.com",
     instagramHandle: "happy_faces_la",
     instagramUrl: "https://www.instagram.com/happy_faces_la/",
     businessAddress: "",
