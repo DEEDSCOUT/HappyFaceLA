@@ -1,0 +1,547 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/seo/Breadcrumbs.astro";
+import FAQAccordion from "../components/content/FAQAccordion.astro";
+import { galleryItems } from "../data/gallery";
+import { faqJsonLd, serviceJsonLd } from "../utils/schema";
+
+const canonicalPath = "/packages/";
+
+const packageCards = [
+  {
+    name: "Face Painting",
+    price: "From $150",
+    throughput: "Approximately 10-15 kids/hour depending on design complexity",
+    bestFor: "Classic birthday parties, backyard parties, school booths, and private celebrations.",
+    services: ["Fast line management", "Kid-safe paints", "Simple cheek art through full-face designs"],
+  },
+  {
+    name: "Balloon Twisting",
+    price: "From $150",
+    throughput: "Approximately 12-20 kids/hour depending on balloon complexity",
+    bestFor: "High-energy parties where kids want something to wear, hold, or take home.",
+    services: ["Popular animals and hats", "Fast party flow", "Great as a standalone activity"],
+  },
+  {
+    name: "Face Painting + Balloon Twisting Combo",
+    price: "From $275",
+    throughput: "Best for birthday parties that want both activities",
+    bestFor: "Parties that need a richer entertainment block without adding separate vendors.",
+    services: ["Two activity options", "Better guest coverage", "Strong fit for mixed age groups"],
+  },
+  {
+    name: "Premium Party Package",
+    price: "From $375",
+    throughput: "Best for themed parties, larger birthdays, or multiple services",
+    bestFor: "Families who want the party to feel coordinated, polished, and photo-ready.",
+    services: ["Face painting, balloons, gems, or add-ons", "Theme-aware recommendations", "Expanded artist time"],
+  },
+  {
+    name: "Large Event / School / Corporate",
+    price: "Custom quote",
+    throughput: "Best for multi-artist, long-duration, or high-volume events",
+    bestFor: "Schools, camps, corporate family days, festivals, and venues with larger guest counts.",
+    services: ["Multi-artist staffing", "COI support when required", "Throughput plan by event size"],
+  },
+];
+
+const galleryProof = galleryItems
+  .filter((item) => item.permissionConfirmed && item.category !== "Setup" && !item.src.endsWith(".svg"))
+  .filter((item) => ["Face Painting", "Balloon Twisting", "Face Gems"].includes(item.category))
+  .slice(0, 8)
+  .map((item) => ({ src: item.src, alt: item.alt, service: item.service }));
+
+const packageFaqs = [
+  {
+    question: "How many kids can you paint per hour?",
+    answer:
+      "Face painting is approximately 10-15 kids per hour depending on design complexity, age range, and how detailed the party wants the designs to be.",
+  },
+  {
+    question: "How many balloons can you twist per hour?",
+    answer:
+      "Balloon twisting is approximately 12-20 kids per hour depending on balloon complexity and the types of designs selected for the party.",
+  },
+  {
+    question: "Do you bring all supplies?",
+    answer:
+      "Yes. Happy Faces LA brings the artist kit, paints, balloons, and service supplies needed for the package confirmed for your event.",
+  },
+  {
+    question: "How much space do you need?",
+    answer:
+      "A small shaded area with room for the artist setup and a short guest line is usually enough. Larger events may need a dedicated booth area or multiple artist stations.",
+  },
+  {
+    question: "Do you travel?",
+    answer:
+      "Yes. Happy Faces LA serves Los Angeles, Burbank, Glendale, Pasadena, Sherman Oaks, Studio City, and the broader Los Angeles area.",
+  },
+  {
+    question: "How do we reserve the date?",
+    answer:
+      "Send your event details through the availability form. We will confirm availability, recommend the best package, and share the next step to reserve the date.",
+  },
+  {
+    question: "Can you provide a Certificate of Insurance?",
+    answer:
+      "Yes. Happy Faces LA carries liability insurance and can provide a Certificate of Insurance for venues, schools, corporate events, and private event locations when required.",
+  },
+];
+
+const transparencyCopy =
+  "Packages start at $150. Final pricing depends on your event date, city, party size, selected services, design complexity, and artist availability. Share your event details and we’ll confirm availability with the best package recommendation.";
+---
+
+<BaseLayout
+  title="Face Painting & Balloon Twisting Packages in Los Angeles | Happy Faces LA"
+  description="Check availability for Happy Faces LA face painting and balloon twisting packages for birthdays, private events, schools, and corporate family events in Los Angeles."
+  canonicalPath={canonicalPath}
+  jsonLd={[
+    serviceJsonLd("Face Painting & Balloon Twisting Packages", `https://happyfacesla.com${canonicalPath}`),
+    faqJsonLd(packageFaqs),
+  ]}
+>
+  <Breadcrumbs
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Packages", href: canonicalPath },
+    ]}
+  />
+
+  <section class="relative isolate overflow-hidden bg-slate-950 text-white">
+    <img
+      src="/images/gallery/face-painting/happy-faces-la-face-painting-birthday-party-los-angeles-01.webp"
+      alt="Butterfly face painting by Happy Faces LA at a kids birthday party in Los Angeles"
+      class="absolute inset-0 -z-20 h-full w-full object-cover object-top"
+      width="1400"
+      height="1400"
+      loading="eager"
+      decoding="async"
+    />
+    <div class="absolute inset-0 -z-10 bg-slate-950/68"></div>
+    <div class="mx-auto grid min-h-[560px] w-full max-w-6xl content-center px-4 py-16 md:min-h-[620px]">
+      <div class="max-w-3xl">
+        <p class="text-sm font-semibold uppercase tracking-wider text-cyan-100">Los Angeles party packages</p>
+        <h1 class="mt-4 text-4xl font-extrabold leading-tight md:text-6xl">
+          Face Painting & Balloon Twisting Packages in Los Angeles
+        </h1>
+        <p class="mt-5 max-w-2xl text-lg leading-relaxed text-slate-100">
+          Party-ready face painting and balloon twisting packages for kids birthday parties, private events,
+          schools, and corporate family events across the Los Angeles service area.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a class="rounded-lg bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600" href="#availability">
+            Check Availability
+          </a>
+          <a class="rounded-lg border border-white/70 px-5 py-3 text-sm font-semibold text-white hover:bg-white hover:text-slate-950" href="#designs">
+            See Designs
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-b border-orange-100 bg-white">
+    <div class="mx-auto grid w-full max-w-6xl gap-4 px-4 py-6 text-sm text-slate-700 md:grid-cols-3">
+      <p><strong class="text-slate-950">Starting anchors:</strong> Face painting and balloon twisting from $150.</p>
+      <p><strong class="text-slate-950">Fast party flow:</strong> Throughput guidance helps match artist time to guest count.</p>
+      <p><strong class="text-slate-950">Availability first:</strong> Date, city, and artist availability determine the best package.</p>
+    </div>
+  </section>
+
+  <section id="package-options" class="scroll-mt-28 mx-auto w-full max-w-6xl px-4 py-12" aria-labelledby="packages-heading">
+    <div class="max-w-3xl">
+      <h2 id="packages-heading" class="text-3xl font-bold text-slate-950">Package anchors for Yelp visitors</h2>
+      <p class="mt-3 leading-relaxed text-slate-700">{transparencyCopy}</p>
+    </div>
+
+    <div class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {packageCards.map((item) => (
+        <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex min-h-16 items-start justify-between gap-4">
+            <h3 class="text-xl font-bold leading-tight text-slate-950">{item.name}</h3>
+            <p class="shrink-0 rounded-md bg-cyan-50 px-3 py-2 text-sm font-bold text-cyan-900">{item.price}</p>
+          </div>
+          <p class="mt-4 text-sm font-semibold text-orange-700">{item.throughput}</p>
+          <p class="mt-3 text-sm leading-relaxed text-slate-700">{item.bestFor}</p>
+          <ul class="mt-4 space-y-2 text-sm text-slate-700">
+            {item.services.map((service) => <li class="flex gap-2"><span aria-hidden="true" class="text-orange-500">•</span><span>{service}</span></li>)}
+          </ul>
+          <a class="mt-5 inline-block rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800" href="#availability">
+            Check Availability
+          </a>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section id="designs" class="scroll-mt-28 bg-orange-50/70">
+    <div class="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-wider text-orange-700">Popular Designs for Kids’ Parties</p>
+        <h2 class="mt-3 text-3xl font-bold text-slate-950">Visual proof before you pick a package</h2>
+        <p class="mt-3 leading-relaxed text-slate-700">
+          Browse recent face painting, balloon twisting, and face gem looks already used across the Happy Faces LA website.
+        </p>
+        <a class="mt-5 inline-block rounded-lg border border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-orange-700 hover:bg-orange-100" href="/gallery/">
+          View full gallery
+        </a>
+      </div>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {galleryProof.map((item) => (
+          <a class="group overflow-hidden rounded-lg border border-white bg-white shadow-sm" href="/gallery/" aria-label={`View gallery: ${item.service}`}>
+            <img
+              src={item.src}
+              alt={item.alt}
+              width="360"
+              height="450"
+              loading="lazy"
+              decoding="async"
+              class="aspect-[4/5] h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+            />
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="availability" class="scroll-mt-28 mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-wider text-cyan-700">Availability intent</p>
+      <h2 class="mt-3 text-3xl font-bold text-slate-950">Check the best package for your date</h2>
+      <p class="mt-3 leading-relaxed text-slate-700">
+        Share the date, city, party size, and services wanted. We will confirm availability and recommend the best package for the number of kids and the pace of your event.
+      </p>
+      <div class="mt-6 rounded-lg border border-cyan-200 bg-cyan-50 p-5">
+        <h3 class="font-bold text-slate-950">Insured / COI available</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-700">
+          Happy Faces LA carries liability insurance and can provide a Certificate of Insurance for venues, schools,
+          corporate events, and private event locations when required.
+        </p>
+      </div>
+    </div>
+
+    <form data-packages-form data-source-page={canonicalPath} class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 class="text-2xl font-bold text-slate-950">Check Availability</h2>
+      <p class="mt-2 text-sm text-slate-600">Packages start at $150. We will match the service plan to your party size and event city.</p>
+
+      <div class="mt-5 grid gap-4 md:grid-cols-2">
+        <label class="text-sm font-medium text-slate-700">Parent/name<input required name="parent_name" autocomplete="name" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+        <label class="text-sm font-medium text-slate-700">Phone<input required name="phone" type="tel" autocomplete="tel" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+        <label class="text-sm font-medium text-slate-700">Email<input required name="email" type="email" autocomplete="email" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+        <label class="text-sm font-medium text-slate-700">Event date<input required name="event_date" type="date" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+        <label class="text-sm font-medium text-slate-700">Event city<input required name="event_city" autocomplete="address-level2" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+        <label class="text-sm font-medium text-slate-700">Event start time<input required name="event_start_time" type="time" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+        <label class="text-sm font-medium text-slate-700">Estimated number of kids<input required name="estimated_kids" type="number" min="1" inputmode="numeric" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
+        <label class="text-sm font-medium text-slate-700">Services wanted<select required name="services_primary" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+          <option value="">Select services</option>
+          <option value="Face Painting">Face Painting</option>
+          <option value="Balloon Twisting">Balloon Twisting</option>
+          <option value="Face Painting + Balloon Twisting">Face Painting + Balloon Twisting</option>
+          <option value="Premium Party Package">Premium Party Package</option>
+          <option value="Large Event / School / Corporate">Large Event / School / Corporate</option>
+        </select></label>
+      </div>
+
+      <label class="mt-4 block text-sm font-medium text-slate-700">
+        Party theme / notes
+        <textarea name="message" rows="4" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" placeholder="Theme, venue type, age range, timing notes, or COI needs"></textarea>
+      </label>
+
+      <input type="hidden" name="event_type" value="Yelp packages availability request" />
+      <input type="hidden" name="source_page" value={canonicalPath} />
+      <input type="hidden" name="utm_source" />
+      <input type="hidden" name="utm_medium" />
+      <input type="hidden" name="utm_campaign" />
+      <input type="hidden" name="utm_term" />
+      <input type="hidden" name="utm_content" />
+      <input type="hidden" name="gclid" />
+      <input type="hidden" name="fbclid" />
+      <input type="hidden" name="msclkid" />
+      <input type="hidden" name="lead_source" />
+      <input type="hidden" name="source_path" value={canonicalPath} />
+      <input type="text" name="honeypot" tabindex="-1" autocomplete="off" class="hidden" />
+
+      <label class="mt-4 flex items-start gap-2 text-sm text-slate-700">
+        <input required type="checkbox" name="consent_to_contact" value="true" class="mt-1" />
+        I agree to be contacted about my event request by phone, SMS, and email.
+      </label>
+
+      <button type="submit" data-submit-button class="mt-5 rounded-lg bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600">
+        Check Availability
+      </button>
+      <p data-form-success class="mt-3 hidden text-sm font-medium text-emerald-700">
+        Thanks. Your availability request was received and we will follow up shortly.
+      </p>
+      <p data-form-error class="mt-3 hidden text-sm font-medium text-rose-700"></p>
+    </form>
+  </section>
+
+  <section class="border-y border-slate-200 bg-white">
+    <div class="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 md:grid-cols-[0.8fr_1.2fr]">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-wider text-orange-700">Service area confidence</p>
+        <h2 class="mt-3 text-3xl font-bold text-slate-950">Serving Los Angeles and nearby party cities</h2>
+      </div>
+      <div>
+        <p class="leading-relaxed text-slate-700">
+          Happy Faces LA serves parties around Los Angeles, Burbank, Glendale, Pasadena, Sherman Oaks, and Studio City,
+          with broader Los Angeles area availability depending on date, city, and artist schedule.
+        </p>
+        <div class="mt-5 flex flex-wrap gap-2 text-sm font-semibold text-slate-700">
+          {["Los Angeles", "Burbank", "Glendale", "Pasadena", "Sherman Oaks", "Studio City"].map((city) => (
+            <span class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">{city}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto w-full max-w-6xl px-4 py-12">
+    <FAQAccordion items={packageFaqs} />
+  </section>
+
+  <script is:inline>
+    (() => {
+      const ATTR_KEYS = [
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "gclid",
+        "fbclid",
+        "msclkid"
+      ];
+
+      function readAttrStore() {
+        try {
+          const session = JSON.parse(sessionStorage.getItem("hfla_attribution") || "{}");
+          const local = JSON.parse(localStorage.getItem("hfla_attribution") || "{}");
+          return { ...local, ...session };
+        } catch {
+          return {};
+        }
+      }
+
+      function readUrlAttribution() {
+        const out = {};
+        try {
+          const params = new URLSearchParams(window.location.search);
+          ATTR_KEYS.forEach((key) => {
+            const value = (params.get(key) || "").trim();
+            if (value) {
+              out[key] = value;
+            }
+          });
+        } catch {
+          /* noop */
+        }
+        return out;
+      }
+
+      function deriveLeadSource(values) {
+        const utmSource = String(values.utm_source || "").trim().toLowerCase();
+        return utmSource === "yelp" ? "yelp" : "";
+      }
+
+      function trackEvent(eventName, params = {}) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: eventName, ...params });
+        if (typeof window.gtag === "function") {
+          window.gtag("event", eventName, params);
+        }
+      }
+
+      function hydrateAttribution(form) {
+        const values = { ...readAttrStore(), ...readUrlAttribution() };
+        ATTR_KEYS.forEach((key) => {
+          const input = form.querySelector(`input[name="${key}"]`);
+          if (!(input instanceof HTMLInputElement)) {
+            return;
+          }
+          const next = String(values[key] || "").trim();
+          if (next) {
+            input.value = next;
+          }
+        });
+
+        const leadSourceInput = form.querySelector('input[name="lead_source"]');
+        if (leadSourceInput instanceof HTMLInputElement) {
+          leadSourceInput.value = deriveLeadSource(values);
+        }
+
+        const sourcePathInput = form.querySelector('input[name="source_path"]');
+        if (sourcePathInput instanceof HTMLInputElement) {
+          sourcePathInput.value = window.location.pathname || "/packages/";
+        }
+
+        try {
+          const payload = JSON.stringify(values);
+          sessionStorage.setItem("hfla_attribution", payload);
+          localStorage.setItem("hfla_attribution", payload);
+        } catch {
+          /* noop */
+        }
+      }
+
+      function splitName(parentName) {
+        const parts = parentName.trim().split(/\s+/).filter(Boolean);
+        if (!parts.length) {
+          return { first_name: "", last_name: "" };
+        }
+        if (parts.length === 1) {
+          return { first_name: parts[0], last_name: "" };
+        }
+        return { first_name: parts.slice(0, -1).join(" "), last_name: parts.slice(-1).join("") };
+      }
+
+      function getPayload(form) {
+        const fd = new FormData(form);
+        const parentName = String(fd.get("parent_name") || "").trim();
+        const names = splitName(parentName);
+        const selectedService = String(fd.get("services_primary") || "").trim();
+        const kids = String(fd.get("estimated_kids") || "").trim();
+        const notes = String(fd.get("message") || "").trim();
+        const message = [
+          selectedService ? `Services wanted: ${selectedService}` : "",
+          notes ? `Party theme / notes: ${notes}` : ""
+        ].filter(Boolean).join("\n\n");
+
+        return {
+          first_name: names.first_name,
+          last_name: names.last_name,
+          phone: String(fd.get("phone") || "").trim(),
+          email: String(fd.get("email") || "").trim(),
+          event_date: String(fd.get("event_date") || "").trim(),
+          event_start_time: String(fd.get("event_start_time") || "").trim(),
+          event_city: String(fd.get("event_city") || "").trim(),
+          event_type: String(fd.get("event_type") || "").trim(),
+          estimated_guest_count: kids,
+          children_count_optional: kids,
+          services_requested: selectedService ? [selectedService] : [],
+          budget_range: "",
+          message,
+          source_page: String(fd.get("source_page") || "").trim(),
+          utm_source: String(fd.get("utm_source") || "").trim(),
+          utm_medium: String(fd.get("utm_medium") || "").trim(),
+          utm_campaign: String(fd.get("utm_campaign") || "").trim(),
+          utm_term: String(fd.get("utm_term") || "").trim(),
+          utm_content: String(fd.get("utm_content") || "").trim(),
+          gclid: String(fd.get("gclid") || "").trim(),
+          fbclid: String(fd.get("fbclid") || "").trim(),
+          msclkid: String(fd.get("msclkid") || "").trim(),
+          lead_source: String(fd.get("lead_source") || "").trim(),
+          source_path: String(fd.get("source_path") || "").trim(),
+          consent_to_contact: Boolean(fd.get("consent_to_contact")),
+          honeypot: String(fd.get("honeypot") || "")
+        };
+      }
+
+      document.querySelectorAll("form[data-packages-form]").forEach((form) => {
+        if (!(form instanceof HTMLFormElement)) {
+          return;
+        }
+
+        hydrateAttribution(form);
+
+        const submitButton = form.querySelector("[data-submit-button]");
+        const successNode = form.querySelector("[data-form-success]");
+        const errorNode = form.querySelector("[data-form-error]");
+        let hasStarted = false;
+
+        const startTracking = () => {
+          if (hasStarted) {
+            return;
+          }
+          hasStarted = true;
+          trackEvent("packages_form_start", { source_page: window.location.pathname });
+        };
+
+        form.addEventListener("input", startTracking);
+        form.addEventListener("focusin", startTracking);
+
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          if (submitButton instanceof HTMLButtonElement) {
+            submitButton.disabled = true;
+            submitButton.textContent = "Checking...";
+          }
+          if (successNode instanceof HTMLElement) {
+            successNode.classList.add("hidden");
+          }
+          if (errorNode instanceof HTMLElement) {
+            errorNode.classList.add("hidden");
+            errorNode.textContent = "";
+          }
+
+          hydrateAttribution(form);
+          const payload = getPayload(form);
+
+          try {
+            const response = await fetch("/api/lead", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            const result = await response.json().catch(() => ({ ok: false }));
+            if (!response.ok || !result.ok) {
+              const details = result?.errors ? ` ${Object.values(result.errors).join(" ")}` : "";
+              throw new Error(`We could not submit your request.${details}`.trim());
+            }
+
+            trackEvent("packages_form_submit", {
+              source_page: payload.source_page || window.location.pathname,
+              lead_id: result.leadId || ""
+            });
+            trackEvent("generate_lead", {
+              source_page: payload.source_page || window.location.pathname,
+              lead_id: result.leadId || ""
+            });
+
+            form.reset();
+            hydrateAttribution(form);
+
+            const sourceInput = form.querySelector('input[name="source_page"]');
+            if (sourceInput instanceof HTMLInputElement) {
+              sourceInput.value = window.location.pathname;
+            }
+
+            if (successNode instanceof HTMLElement) {
+              successNode.classList.remove("hidden");
+            }
+          } catch (error) {
+            if (errorNode instanceof HTMLElement) {
+              errorNode.textContent = error instanceof Error ? error.message : "We could not submit your request. Please try again.";
+              errorNode.classList.remove("hidden");
+            }
+          } finally {
+            if (submitButton instanceof HTMLButtonElement) {
+              submitButton.disabled = false;
+              submitButton.textContent = "Check Availability";
+            }
+          }
+        });
+      });
+    })();
+  </script>
+
+  <style is:global>
+    @media (max-width: 640px) {
+      body {
+        overflow-x: hidden;
+      }
+
+      header a[href^="tel:"] {
+        display: none;
+      }
+
+      header img {
+        max-width: 150px;
+        height: auto;
+      }
+    }
+  </style>
+</BaseLayout>
