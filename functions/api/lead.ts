@@ -209,6 +209,11 @@ function isPlanMyPartyLead(p: LeadPayload): boolean {
     return sp.includes("plan-my-party") || sp.includes("plan_my_party");
 }
 
+function isPackagesLead(p: LeadPayload): boolean {
+    const source = `${p.source_page ?? ""} ${p.source_path ?? ""}`.toLowerCase();
+    return source.includes("/packages");
+}
+
 function legacyChildCount(p: LeadPayload): { bucket: string; actual: number | null } {
     const childrenRaw = String(p.children_count_optional ?? "").trim();
     const actual = /^\d+$/.test(childrenRaw) ? Number(childrenRaw) : null;
@@ -380,17 +385,32 @@ export const onRequest = async (context: any): Promise<Response> => {
     }
 
     try {
-        const body = JSON.stringify(makeWebhookUrl && !crmWebhookUrl ? {
+        const proofNotes = [attributionSummary, normalized.message].filter(Boolean).join("\n\n") || null;
+        const useCanonicalMakePayload = isPackagesLead(normalized) || isPlanMyPartyLead(normalized);
+        const makePayload = useCanonicalMakePayload ? {
             ...buildCanonicalNotificationPayload(legacyLeadToCanonical({
                 ...normalized,
-                message: [attributionSummary, normalized.message].filter(Boolean).join("\n\n"),
+                message: proofNotes || "",
             }, leadId, submittedAt)),
             lead_source: normalized.lead_source || null,
             source_path: normalized.source_path || null,
             message: normalized.message || null,
-            proof_token_or_notes: [attributionSummary, normalized.message].filter(Boolean).join("\n\n") || null,
+            proof_token_or_notes: proofNotes,
             legacy_lead: normalized,
-        } : crmPayload);
+        } : {
+            leadId,
+            submittedAt,
+            source: "legacy-contact",
+            source_endpoint: "lead",
+            source_page: normalized.source_page || null,
+            lead_source: normalized.lead_source || null,
+            source_path: normalized.source_path || null,
+            message: normalized.message || null,
+            proof_token_or_notes: proofNotes,
+            lead: normalized,
+            legacy_lead: normalized,
+        };
+        const body = JSON.stringify(makeWebhookUrl && !crmWebhookUrl ? makePayload : crmPayload);
         const headers: Record<string, string> = {
             "content-type": "application/json",
             "x-lead-source": "happyfacesla-cloudflare-pages"
