@@ -41,19 +41,18 @@ footer, schema, and CTAs should consume it rather than hardcoding values.
 | --- | --- | --- |
 | Business name | `Happy Faces LA` | confirmed |
 | Canonical website | `https://happyfacesla.com` | confirmed |
-| Canonical business phone | `+13108002860` | **OWNER CONFIRM REQUIRED** — pinned to current `main` to block regression; not yet formally confirmed as final |
-| Canonical display phone | `(310) 800-2860` | **OWNER CONFIRM REQUIRED** — same as above |
+| Canonical business phone | `+13108002860` | **Confirmed by owner 2026-06-22** |
+| Canonical display phone | `(310) 800-2860` | **Confirmed by owner 2026-06-22** |
 | Business email | `info@happyfacesla.com` | owner-provided in issue #38 work order |
 | Instagram | `https://www.instagram.com/happy_faces_la/` | confirmed |
 
-### Phone: why "OWNER CONFIRM REQUIRED" while also pinned
+### Phone: owner-confirmed and pinned
 
-The owner reports phone-number regressions. The number currently on `main`
-(`+13108002860` / `(310) 800-2860`) is **pinned by the guard** so it cannot
-silently change. That pin is *anti-regression*, not a claim that the owner has
-finalized it. If the owner confirms a different canonical number, change
-`src/data/business.ts`, the `EXPECTED` block in `scripts/guard-owner-baseline.mjs`,
-and this table — all in one PR.
+The owner **confirmed `+13108002860` / `(310) 800-2860` as the canonical number
+on 2026-06-22.** The guard **pins** these values so they cannot silently change.
+To change the number in future, the owner must authorize it, and the change must
+update `src/data/business.ts`, the `EXPECTED` block in
+`scripts/guard-owner-baseline.mjs`, and this table — all in one PR.
 
 ### Blocked / old phone numbers (must never reappear as the public contact number)
 

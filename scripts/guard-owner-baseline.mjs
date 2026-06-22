@@ -16,14 +16,13 @@
  *     OWNER BASELINE GUARD: PASS
  *
  * ───────────────────────────────────────────────────────────────────────────
- * IMPORTANT — pinned values vs. owner confirmation
- * The phone / displayPhone / email below are PINNED to the values currently on
- * main. They are pinned to prevent SILENT regression, not to assert they are
- * the owner's final canonical choice (see docs/OWNER_SOURCE_OF_TRUTH.md, which
- * marks the canonical phone "OWNER CONFIRM REQUIRED"). If the owner confirms a
- * different number, business.ts AND the EXPECTED constant below must change in
- * the SAME reviewed PR — never one without the other. That two-file coupling is
- * the anti-regression mechanism.
+ * IMPORTANT — pinned, owner-confirmed values
+ * The phone / displayPhone / email below are PINNED to the owner-confirmed
+ * canonical values (phone confirmed by owner 2026-06-22; see
+ * docs/OWNER_SOURCE_OF_TRUTH.md). They are pinned to prevent SILENT regression.
+ * If the owner authorizes a different number, business.ts AND the EXPECTED
+ * constant below must change in the SAME reviewed PR — never one without the
+ * other. That two-file coupling is the anti-regression mechanism.
  * ───────────────────────────────────────────────────────────────────────────
  *
  * Flags:
