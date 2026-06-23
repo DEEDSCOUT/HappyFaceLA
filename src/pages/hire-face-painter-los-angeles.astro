@@ -1,0 +1,570 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { business } from "../data/business";
+import { packages } from "../data/packages";
+import { faqJsonLd, localBusinessJsonLd, serviceJsonLd } from "../utils/schema";
+
+const canonicalPath = "/hire-face-painter-los-angeles/";
+const pageUrl = `${business.url}${canonicalPath}`;
+const birthdayPackage = packages.find((item) => item.name === "Birthday Party Package");
+const serviceAreas = business.areaServed.slice(0, 10);
+
+const faqs = [
+  {
+    question: "Can I hire a face painter for a kids birthday party in Los Angeles?",
+    answer:
+      "Yes. Happy Faces LA provides face painting for kids birthday parties and private celebrations in Los Angeles and nearby areas. Share your date, city, and estimated child count so availability can be confirmed.",
+  },
+  {
+    question: "Is payment required when I request availability?",
+    answer:
+      "No payment is required to request availability. Happy Faces LA reviews your event details, confirms availability, and sends an official quote before any booking is final.",
+  },
+  {
+    question: "What affects the face painting quote?",
+    answer:
+      "Pricing depends on your event date, location, estimated number of participating kids, service duration, travel, and whether you add other services. Package and add-on prices are confirmed by quote.",
+  },
+  {
+    question: "Can I plan more than face painting?",
+    answer:
+      "Yes. If you want help combining face painting with balloon twisting, glitter tattoos, or face gems, use Plan My Party after checking availability.",
+  },
+];
+---
+
+<BaseLayout
+  title="Hire a Face Painter in Los Angeles | Happy Faces LA"
+  description="Hire a face painter for kids birthday parties and private events in Los Angeles. Check availability with Happy Faces LA. No payment required to request availability."
+  canonicalPath={canonicalPath}
+  jsonLd={[
+    localBusinessJsonLd(),
+    serviceJsonLd("Face Painting", pageUrl),
+    faqJsonLd(faqs),
+  ]}
+>
+  <main id="main-content" class="bg-slate-50">
+    <section class="border-b border-orange-100 bg-white">
+      <div class="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-14">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-wide text-orange-600">
+            Face painting for LA kids parties
+          </p>
+          <h1 class="mt-3 max-w-2xl text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">
+            Hire a Face Painter in Los Angeles
+          </h1>
+          <p class="mt-5 max-w-2xl text-lg leading-relaxed text-slate-700">
+            Book colorful, event-ready face painting for birthday parties, family
+            celebrations, and private kids events. Share your date and city to
+            check availability before planning the full party lineup.
+          </p>
+          <p class="mt-4 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800">
+            No payment required to request availability.
+          </p>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a
+              class="inline-flex items-center justify-center rounded-xl bg-orange-500 px-5 py-3 text-sm font-bold text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+              href={`tel:${business.phone}`}
+              data-track-event="phone_click"
+            >
+              Call/Text {business.displayPhone}
+            </a>
+            <a
+              class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+              href="#availability-form"
+            >
+              Check Availability
+            </a>
+            <a
+              class="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-bold text-emerald-800 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+              href={`sms:${business.phone}`}
+              data-track-event="sms_click"
+            >
+              Text {business.displayPhone}
+            </a>
+          </div>
+
+          <div class="mt-6 rounded-lg border-2 border-orange-200 bg-orange-50 p-5 shadow-sm">
+            <h2 class="text-xl font-bold leading-tight text-slate-950">
+              Want the easiest way to get the right party quote?
+            </h2>
+            <p class="mt-2 text-base font-semibold text-slate-800">
+              Use our free Plan My Party tool.
+            </p>
+            <p class="mt-3 text-sm leading-relaxed text-slate-700">
+              Tell us your date, city, kids count, and the services you want.
+              We'll review your request and get back to you fast — usually
+              within about 15 minutes when we're available.
+            </p>
+            <p class="mt-3 text-sm font-semibold text-emerald-800">
+              No payment required to request availability.
+            </p>
+            <a
+              class="mt-4 inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+              href="/plan-my-party/"
+            >
+              Plan My Party — Free Quote
+            </a>
+          </div>
+
+          <dl class="mt-8 grid gap-3 text-sm text-slate-700 sm:grid-cols-3">
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <dt class="font-semibold text-slate-950">Best for</dt>
+              <dd class="mt-1">Birthday parties and kids events</dd>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <dt class="font-semibold text-slate-950">Quote-first</dt>
+              <dd class="mt-1">Availability and pricing confirmed before booking</dd>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <dt class="font-semibold text-slate-950">More planning</dt>
+              <dd class="mt-1">
+                <a href="/plan-my-party/" class="text-orange-600 hover:underline">
+                  Route into Plan My Party
+                </a>
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+          <img
+            src="/images/services/happy-faces-la-face-painting-service.webp"
+            alt="Happy Faces LA face painting at a birthday party in Los Angeles"
+            class="aspect-[4/3] w-full object-cover"
+            loading="eager"
+            decoding="async"
+          />
+          <div class="p-5">
+            <h2 class="text-lg font-bold text-slate-950">Face painting availability request</h2>
+            <p class="mt-2 text-sm leading-relaxed text-slate-600">
+              Tell us the event date, city, and estimated number of kids. Happy
+              Faces LA will respond with availability and next steps.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[0.9fr_1.1fr]">
+      <div class="space-y-6">
+        <section class="rounded-lg border border-slate-200 bg-white p-6">
+          <h2 class="text-2xl font-bold text-slate-950">What face painting includes</h2>
+          <ul class="mt-4 space-y-3 text-sm leading-relaxed text-slate-700">
+            <li>Kid-friendly designs for birthdays, themed parties, and family events.</li>
+            <li>Design options that can be adjusted for your guest count and timeline.</li>
+            <li>Line-flow planning so more children can participate during your service window.</li>
+            <li>Optional routing into the full party planner for balloons, glitter tattoos, or face gems.</li>
+          </ul>
+        </section>
+
+        <section class="rounded-lg border border-slate-200 bg-white p-6">
+          <h2 class="text-2xl font-bold text-slate-950">Clean, organized setup</h2>
+          <p class="mt-3 text-sm leading-relaxed text-slate-700">
+            Happy Faces LA brings an organized face painting station and confirms
+            event details before booking. Share any age range, sensitivity, access,
+            or venue requirements in the notes field so the setup can be planned
+            appropriately.
+          </p>
+        </section>
+
+        <section class="rounded-lg border border-slate-200 bg-white p-6">
+          <h2 class="text-2xl font-bold text-slate-950">Service areas</h2>
+          <p class="mt-3 text-sm leading-relaxed text-slate-700">
+            Happy Faces LA serves Los Angeles and nearby areas. Availability and
+            any travel details are confirmed by quote.
+          </p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {serviceAreas.map((area) => (
+              <span class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                {area}
+              </span>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <form
+        id="availability-form"
+        class="rounded-lg border border-orange-200 bg-white p-6 shadow-sm"
+        data-hire-face-painter-form
+        novalidate
+      >
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-950">Check Availability</h2>
+            <p class="mt-2 text-sm leading-relaxed text-slate-600">
+              No payment required to request availability.
+            </p>
+          </div>
+          <a
+            class="text-sm font-semibold text-orange-600 hover:underline"
+            href="/plan-my-party/"
+          >
+            Plan the full party
+          </a>
+        </div>
+
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          <label class="text-sm font-semibold text-slate-700">
+            Name
+            <input
+              required
+              name="name"
+              autocomplete="name"
+              class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+            />
+          </label>
+          <label class="text-sm font-semibold text-slate-700">
+            Phone
+            <input
+              required
+              name="phone"
+              type="tel"
+              autocomplete="tel"
+              class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+            />
+          </label>
+          <label class="text-sm font-semibold text-slate-700">
+            Email
+            <input
+              required
+              name="email"
+              type="email"
+              autocomplete="email"
+              class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+            />
+          </label>
+          <label class="text-sm font-semibold text-slate-700">
+            Event date
+            <input
+              required
+              name="eventDate"
+              type="date"
+              class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+            />
+          </label>
+          <label class="text-sm font-semibold text-slate-700">
+            Event city
+            <input
+              required
+              name="eventCity"
+              autocomplete="address-level2"
+              placeholder="Los Angeles, Pasadena, Burbank..."
+              class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+            />
+          </label>
+          <label class="text-sm font-semibold text-slate-700">
+            Estimated kids
+            <input
+              required
+              name="estimatedKids"
+              type="number"
+              min="1"
+              max="200"
+              inputmode="numeric"
+              class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+            />
+          </label>
+        </div>
+
+        <label class="mt-4 block text-sm font-semibold text-slate-700">
+          Notes
+          <textarea
+            name="notes"
+            rows="4"
+            placeholder="Theme, age range, venue details, timing, or sensitivities we should know."
+            class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+          ></textarea>
+        </label>
+
+        <input type="text" name="honeypot" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+
+        <p class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          No payment required to request availability. Your booking is not
+          confirmed until Happy Faces LA confirms artist availability and sends
+          confirmation.
+        </p>
+        <p class="mt-4 text-sm leading-relaxed text-slate-600">
+          By submitting, I agree that Happy Faces LA may contact me by phone,
+          text, or email about my event request.
+        </p>
+
+        <button
+          type="submit"
+          class="mt-5 w-full rounded-xl bg-orange-500 px-6 py-3 text-base font-bold text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          data-hire-face-painter-submit
+        >
+          Send Availability Request
+        </button>
+        <p class="mt-3 hidden text-sm font-semibold text-emerald-700" data-hire-face-painter-success>
+          Thanks. Your request was received and Happy Faces LA will follow up about availability.
+        </p>
+        <p class="mt-3 hidden text-sm font-semibold text-rose-700" data-hire-face-painter-error role="alert"></p>
+      </form>
+    </section>
+
+    <section class="border-y border-slate-200 bg-white">
+      <div class="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-950">Face-painting proof</h2>
+          <p class="mt-3 text-sm leading-relaxed text-slate-700">
+            Browse examples from the existing Happy Faces LA face-painting
+            lookbook. Designs and timing are planned around your party size,
+            guest ages, and service window.
+          </p>
+          <a
+            href="/gallery/"
+            class="mt-5 inline-flex rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-900 hover:bg-slate-100"
+          >
+            View Gallery
+          </a>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-3">
+          {[
+            "/images/party-lookbook/face-painting/happy-faces-la-face-painting-001.webp",
+            "/images/party-lookbook/face-painting/happy-faces-la-face-painting-010.webp",
+            "/images/party-lookbook/face-painting/happy-faces-la-face-painting-022.webp",
+          ].map((src, index) => (
+            <img
+              src={src}
+              alt={`Happy Faces LA face painting lookbook example ${index + 1}`}
+              class="aspect-square w-full rounded-lg border border-slate-200 object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 lg:grid-cols-2">
+      <section class="rounded-lg border border-slate-200 bg-white p-6">
+        <h2 class="text-2xl font-bold text-slate-950">Pricing anchor</h2>
+        <p class="mt-3 text-sm leading-relaxed text-slate-700">
+          {birthdayPackage?.name ?? "Birthday Party Package"} is the closest
+          package fit for birthday-party face painting requests. Pricing is
+          quote-first and depends on event date, city, estimated kids, service
+          window, travel, and artist availability.
+        </p>
+        <dl class="mt-5 grid gap-3 text-sm">
+          <div class="rounded-lg bg-slate-50 p-3">
+            <dt class="font-semibold text-slate-950">Best for</dt>
+            <dd class="mt-1 text-slate-700">{birthdayPackage?.bestFor ?? "Kids birthday parties"}</dd>
+          </div>
+          <div class="rounded-lg bg-slate-50 p-3">
+            <dt class="font-semibold text-slate-950">Includes</dt>
+            <dd class="mt-1 text-slate-700">
+              {birthdayPackage?.features.join("; ") ?? "Face painting or balloon twisting"}
+            </dd>
+          </div>
+          <div class="rounded-lg bg-slate-50 p-3">
+            <dt class="font-semibold text-slate-950">Pricing anchor</dt>
+            <dd class="mt-1 text-slate-700">
+              Face painting starts at $150 for one party service. Final quote
+              depends on date, city, guest count, design menu, service window,
+              travel, and artist availability.
+            </dd>
+          </div>
+        </dl>
+        <p class="mt-4 text-sm text-slate-700">
+          For deeper planning, use
+          <a href="/plan-my-party/" class="font-semibold text-orange-600 hover:underline"> Plan My Party</a>.
+        </p>
+      </section>
+
+      <section class="rounded-lg border border-slate-200 bg-white p-6">
+        <h2 class="text-2xl font-bold text-slate-950">Frequently asked questions</h2>
+        <div class="mt-5 divide-y divide-slate-200">
+          {faqs.map((faq) => (
+            <details class="group py-4">
+              <summary class="cursor-pointer list-none font-semibold text-slate-950">
+                {faq.question}
+              </summary>
+              <p class="mt-2 text-sm leading-relaxed text-slate-700">{faq.answer}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script is:inline>
+    (() => {
+      const ATTR_KEYS = [
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "gclid",
+        "fbclid",
+        "msclkid"
+      ];
+
+      function trackEvent(eventName, params = {}) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: eventName, ...params });
+        if (typeof window.gtag === "function") {
+          window.gtag("event", eventName, params);
+        }
+      }
+
+      function readAttrStore() {
+        try {
+          const session = JSON.parse(sessionStorage.getItem("hfla_attribution") || "{}");
+          const local = JSON.parse(localStorage.getItem("hfla_attribution") || "{}");
+          return { ...local, ...session };
+        } catch {
+          return {};
+        }
+      }
+
+      function readAttribution() {
+        const params = new URLSearchParams(window.location.search);
+        const stored = readAttrStore();
+        const next = {};
+        ATTR_KEYS.forEach((key) => {
+          next[key] = (params.get(key) || stored[key] || "").trim();
+        });
+        return next;
+      }
+
+      function splitName(value) {
+        const clean = String(value || "").trim().replace(/\s+/g, " ");
+        if (!clean) return { firstName: "", lastName: "" };
+        const parts = clean.split(" ");
+        if (parts.length === 1) return { firstName: parts[0], lastName: "Not provided" };
+        return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
+      }
+
+      function bucketKids(value) {
+        const count = Number(value);
+        if (!Number.isFinite(count)) return "not-sure";
+        if (count <= 10) return "1-10";
+        if (count <= 18) return "11-18";
+        if (count <= 25) return "19-25";
+        if (count <= 40) return "26-40";
+        return "40-plus";
+      }
+
+      function makeIdempotencyKey() {
+        const random = typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        return `qrq_${String(random).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 80)}`;
+      }
+
+      function payloadFromForm(form) {
+        const fd = new FormData(form);
+        const name = splitName(fd.get("name"));
+        const estimatedKids = String(fd.get("estimatedKids") || "").trim();
+        const attribution = readAttribution();
+        return {
+          eventType: "birthday-party",
+          services: ["face-painting"],
+          kidsCountBucket: bucketKids(estimatedKids),
+          kidsCountActual: estimatedKids ? Number(estimatedKids) : null,
+          designStyle: "not-sure",
+          selectedDurationMinutes: null,
+          recommendedDurationMinutes: null,
+          branch: "custom-quote",
+          eventDate: String(fd.get("eventDate") || "").trim() || null,
+          eventTime: null,
+          eventCity: String(fd.get("eventCity") || "").trim(),
+          venueName: null,
+          travelMiles: null,
+          firstName: name.firstName,
+          lastName: name.lastName,
+          email: String(fd.get("email") || "").trim(),
+          phone: String(fd.get("phone") || "").trim(),
+          specialRequests: String(fd.get("notes") || "").trim() || null,
+          quoteOutcome: "hire-face-painter-availability-request",
+          quoteRequestIdempotencyKey: makeIdempotencyKey(),
+          consentAcknowledgement: true,
+          lookbook_inspirations: [],
+          wizardVersion: "hire-face-painter-landing-v1",
+          submittedAt: new Date().toISOString(),
+          preferredContactMethod: "any",
+          source_page: window.location.pathname,
+          ...attribution
+        };
+      }
+
+      const form = document.querySelector("[data-hire-face-painter-form]");
+      if (!(form instanceof HTMLFormElement)) return;
+
+      const submitButton = form.querySelector("[data-hire-face-painter-submit]");
+      const success = form.querySelector("[data-hire-face-painter-success]");
+      const error = form.querySelector("[data-hire-face-painter-error]");
+      let started = false;
+
+      const trackStart = () => {
+        if (started) return;
+        started = true;
+        trackEvent("hire_face_painter_form_start", {
+          source_page: window.location.pathname,
+        });
+      };
+
+      form.addEventListener("input", trackStart);
+      form.addEventListener("focusin", trackStart);
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (String(new FormData(form).get("honeypot") || "").trim()) return;
+
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return;
+        }
+
+        if (submitButton instanceof HTMLButtonElement) {
+          submitButton.disabled = true;
+          submitButton.textContent = "Sending request...";
+        }
+        if (success instanceof HTMLElement) success.classList.add("hidden");
+        if (error instanceof HTMLElement) {
+          error.classList.add("hidden");
+          error.textContent = "";
+        }
+
+        const payload = payloadFromForm(form);
+
+        try {
+          const response = await fetch("/api/quote-request", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const result = await response.json().catch(() => ({ ok: false }));
+          if (!response.ok || !result.ok || result.received !== true || result.persisted !== true) {
+            throw new Error(result.message || "We could not submit your request. Please call or text instead.");
+          }
+
+          trackEvent("hire_face_painter_form_submit", {
+            source_page: window.location.pathname,
+            lead_id: result.leadId || "",
+          });
+
+          form.reset();
+          started = false;
+          if (success instanceof HTMLElement) success.classList.remove("hidden");
+        } catch (err) {
+          if (error instanceof HTMLElement) {
+            error.textContent = err instanceof Error
+              ? err.message
+              : "We could not submit your request. Please call or text instead.";
+            error.classList.remove("hidden");
+          }
+        } finally {
+          if (submitButton instanceof HTMLButtonElement) {
+            submitButton.disabled = false;
+            submitButton.textContent = "Send Availability Request";
+          }
+        }
+      });
+    })();
+  </script>
+</BaseLayout>
