@@ -2,8 +2,10 @@ import type { D1Database, D1Value } from '../booking/availability-types.ts';
 import { calculateCapacity, resolveKidsCount } from '../booking/capacity-engine.ts';
 import { assessEligibility } from '../booking/eligibility.ts';
 import {
+  assertLeadNotificationPayloadCanSend,
   buildCanonicalLead,
   buildCanonicalNotificationPayload,
+  validateLeadNotificationPayload,
   type CanonicalPlanMyPartyLead,
   type PreferredContactMethod,
 } from './canonical-lead.ts';
@@ -167,7 +169,7 @@ const SENSITIVE_TOKEN_PATTERNS = [
   /\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})\b/g,
 ];
 
-function json(data: QuoteRequestResponse | { ok: false; received: false; message: string }, status = 200): Response {
+function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -202,6 +204,43 @@ function normalizeString(value: unknown, maxLength: number): string {
 function normalizeNullableString(value: unknown, maxLength: number): string | null {
   const normalized = normalizeString(value, maxLength);
   return normalized || null;
+}
+
+const NON_CUSTOMER_VALUES = new Set([
+  '',
+  'not provided',
+  'not available',
+  'needs confirmation',
+  'unavailable',
+  'unknown',
+  'not-sure',
+  'not_provided',
+  'customer budget: not provided',
+]);
+
+function isMeaningfulCustomerText(value: unknown): boolean {
+  if (typeof value !== 'string' && typeof value !== 'number') return false;
+  const normalized = String(value).trim().toLowerCase();
+  return Boolean(normalized) && !NON_CUSTOMER_VALUES.has(normalized);
+}
+
+function hasMeaningfulCustomerField(body: Record<string, unknown>, services: string[]): boolean {
+  return (
+    isMeaningfulCustomerText(body.firstName) ||
+    isMeaningfulCustomerText(body.lastName) ||
+    isMeaningfulCustomerText(body.email) ||
+    isMeaningfulCustomerText(body.phone) ||
+    isMeaningfulCustomerText(body.eventType) ||
+    isMeaningfulCustomerText(body.eventDate) ||
+    isMeaningfulCustomerText(body.eventTime) ||
+    isMeaningfulCustomerText(body.eventCity) ||
+    isMeaningfulCustomerText(body.venueName) ||
+    services.length > 0 ||
+    isMeaningfulCustomerText(body.specialRequests) ||
+    isMeaningfulCustomerText(body.customerBudget) ||
+    isMeaningfulCustomerText(body.budget) ||
+    isMeaningfulCustomerText(body.budget_range)
+  );
 }
 
 function redactSensitiveTokens(value: string): string {
@@ -295,6 +334,55 @@ function normalizeAttribution(value: unknown): string | null {
   return normalizeNullableString(value, 256);
 }
 
+function deriveSafeSourcePage(raw: Record<string, unknown>, request: Request): string | null {
+  const explicit = normalizeAttribution(raw.sourcePage ?? raw.source_page);
+  if (explicit) return explicit;
+
+  const referer = request.headers.get('referer') || request.headers.get('referrer') || '';
+  if (!referer) return null;
+
+  try {
+    const requestUrl = new URL(request.url);
+    const refererUrl = new URL(referer);
+    if (requestUrl.hostname === refererUrl.hostname && refererUrl.pathname) {
+      return refererUrl.pathname;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function makeQuoteRequestIdempotencyKey(): string {
+  const random = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+  return `qrq_${random.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 80).toLowerCase()}`;
+}
+
+function safePayloadKeys(raw: Record<string, unknown> | null): string[] {
+  if (!raw) return [];
+  return Object.keys(raw).sort();
+}
+
+function logQuoteValidationFailure(
+  request: Request,
+  raw: Record<string, unknown> | null,
+  code: string,
+  missingFields: string[],
+): void {
+  console.warn('[quote-request] invalid lead payload rejected', {
+    timestamp: new Date().toISOString(),
+    endpoint: 'quote-request',
+    method: request.method,
+    sourcePage: raw ? normalizeAttribution(raw.sourcePage ?? raw.source_page) : null,
+    payloadKeysPresent: safePayloadKeys(raw),
+    missingRequiredFields: missingFields,
+    userAgent: request.headers.get('user-agent') || null,
+    requestId: request.headers.get('cf-ray') || request.headers.get('x-request-id') || null,
+    validationErrorCode: code,
+  });
+}
+
 function sanitizePayload(raw: Record<string, unknown>): Record<string, unknown> {
   const sanitized: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(raw)) {
@@ -303,35 +391,52 @@ function sanitizePayload(raw: Record<string, unknown>): Record<string, unknown> 
   return sanitized;
 }
 
-function validatePayload(raw: Record<string, unknown>): ValidationResult {
+function validatePayload(raw: Record<string, unknown>, sourcePage: string | null): ValidationResult {
   const body = sanitizePayload(raw);
   const eventType = normalizeString(body.eventType, 60);
+  const rawServices = Array.isArray(body.services) ? body.services : [];
   const services = Array.isArray(body.services)
     ? body.services.map(normalizeService).filter((item): item is string => Boolean(item))
     : [];
-  const kidsCountBucket = normalizeString(body.kidsCountBucket, 20);
+  const kidsCountBucketRaw = normalizeString(body.kidsCountBucket, 20);
+  const kidsCountBucket = kidsCountBucketRaw || 'not-sure';
   const kidsCountActual = body.kidsCountActual === null || body.kidsCountActual === undefined
     ? null
     : normalizeWholeNumber(body.kidsCountActual);
-  const designStyle = normalizeString(body.designStyle, 40);
+  const designStyleRaw = normalizeString(body.designStyle, 40);
+  const designStyle = designStyleRaw || 'not-sure';
   const firstName = normalizeString(body.firstName, 80);
   const lastName = normalizeString(body.lastName, 80);
   const email = normalizeEmail(body.email);
+  const phone = normalizePhone(body.phone);
   const eventCity = normalizeString(body.eventCity, 120);
-  const idempotencyKey = normalizeIdempotencyKey(body.quoteRequestIdempotencyKey);
+  const rawEventDate = normalizeString(body.eventDate, 20);
+  const eventDate = normalizeDate(body.eventDate);
+  const rawEventTime = normalizeString(body.eventTime, 20);
+  const eventTime = normalizeTime(body.eventTime);
+  const idempotencyKey = normalizeIdempotencyKey(body.quoteRequestIdempotencyKey) || makeQuoteRequestIdempotencyKey();
   const consentAcknowledgement = body.consentAcknowledgement === true || body.consentAcknowledgement === 'true';
 
-  if (!firstName) return { ok: false, message: 'First name is required.' };
-  if (!lastName) return { ok: false, message: 'Last name is required.' };
-  if (!email) return { ok: false, message: 'Email address is required.' };
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!hasMeaningfulCustomerField(body, services)) {
+    return { ok: false, message: 'Please include your contact information.' };
+  }
+  if (!sourcePage) {
+    return { ok: false, message: 'Source page is required.' };
+  }
+  if (!email && !phone) {
+    return { ok: false, message: 'Phone or email is required.' };
+  }
+  if (!firstName && !lastName && !email && !phone) {
+    return { ok: false, message: 'Contact identity is required.' };
+  }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { ok: false, message: 'A valid email address is required.' };
   }
-  if (!EVENT_TYPE_ALLOWLIST.has(eventType)) {
-    return { ok: false, message: 'Please select your event type.' };
+  if (eventType && !EVENT_TYPE_ALLOWLIST.has(eventType)) {
+    return { ok: false, message: 'Please select a valid event type.' };
   }
-  if (services.length === 0) {
-    return { ok: false, message: 'Please select at least one service.' };
+  if (rawServices.length > 0 && services.length === 0) {
+    return { ok: false, message: 'Please select a valid service.' };
   }
   if (!KIDS_BUCKET_ALLOWLIST.has(kidsCountBucket)) {
     return { ok: false, message: 'Please select the number of participating children.' };
@@ -344,13 +449,13 @@ function validatePayload(raw: Record<string, unknown>): ValidationResult {
     return { ok: false, message: 'Please enter a whole number of children between 1 and 200.' };
   }
   if (!DESIGN_STYLE_ALLOWLIST.has(designStyle)) {
-    return { ok: false, message: 'Please select a design style.' };
+    return { ok: false, message: 'Please select a valid design style.' };
   }
-  if (!normalizeDate(body.eventDate) && !eventCity) {
-    return { ok: false, message: 'Please include your event details.' };
+  if (rawEventDate && !eventDate) {
+    return { ok: false, message: 'Please enter a valid event date.' };
   }
-  if (!idempotencyKey) {
-    return { ok: false, message: 'Please retry your request before submitting.' };
+  if (rawEventTime && !eventTime) {
+    return { ok: false, message: 'Please enter a valid event time.' };
   }
   if (!consentAcknowledgement) {
     return { ok: false, message: 'Please confirm we may contact you about this request.' };
@@ -368,15 +473,15 @@ function validatePayload(raw: Record<string, unknown>): ValidationResult {
       recommendedDurationMinutes: normalizeDuration(body.recommendedDurationMinutes),
       branch: normalizeString(body.branch, 40) || 'custom-quote',
       quoteOutcome: normalizeNullableString(body.quoteOutcome, 80),
-      eventDate: normalizeDate(body.eventDate),
-      eventTime: normalizeTime(body.eventTime),
+      eventDate,
+      eventTime,
       eventCity,
       venueName: normalizeNullableString(body.venueName, 120),
       travelMiles: normalizeNumber(body.travelMiles),
       firstName,
       lastName,
       email,
-      phone: normalizePhone(body.phone),
+      phone,
       specialRequests: normalizeNullableString(body.specialRequests, 1000),
       wizardVersion: normalizeString(body.wizardVersion, 80) || 'guided-wizard',
       submittedAt: normalizeNullableString(body.submittedAt, 40),
@@ -385,7 +490,7 @@ function validatePayload(raw: Record<string, unknown>): ValidationResult {
       lookbookInspirations: normalizeLookbookInspirations(body.lookbook_inspirations),
       preferredContactMethod: normalizePreferredContactMethod(body.preferredContactMethod),
       customerBudgetRaw: normalizeNullableString(body.customerBudget ?? body.budget ?? body.budget_range, 80),
-      sourcePage: normalizeAttribution(body.sourcePage ?? body.source_page),
+      sourcePage,
       utmSource: normalizeAttribution(body.utm_source),
       utmMedium: normalizeAttribution(body.utm_medium),
       utmCampaign: normalizeAttribution(body.utm_campaign),
@@ -719,6 +824,22 @@ function getEnvString(value: unknown): string {
 // field and every system-recommended value is delivered, truthfully labeled.
 
 async function postWebhook(url: string, secret: string, payload: Record<string, unknown>): Promise<boolean> {
+  try {
+    assertLeadNotificationPayloadCanSend(payload);
+  } catch (err) {
+    console.error('BLANK_LEAD_EMAIL_BLOCKED', {
+      timestamp: new Date().toISOString(),
+      endpoint: 'quote-request',
+      sourcePage: normalizeAttribution(payload.source_page),
+      payloadKeysPresent: Object.keys(payload).sort(),
+      missingRequiredFields: err instanceof Error
+        ? (err as Error & { missingFields?: string[] }).missingFields ?? []
+        : [],
+      validationErrorCode: 'BLANK_LEAD_EMAIL_BLOCKED',
+    });
+    return false;
+  }
+
   const body = JSON.stringify(payload);
   const headers: Record<string, string> = {
     'content-type': 'application/json',
@@ -787,6 +908,18 @@ async function persistQuoteRequest(
   const now = new Date().toISOString();
   const leadId = makeLeadId();
   const canonical = buildCanonical(body, leadId, now);
+  const notificationValidation = validateLeadNotificationPayload(buildCanonicalNotificationPayload(canonical));
+  if (!notificationValidation.ok) {
+    console.error('BLANK_LEAD_EMAIL_BLOCKED', {
+      timestamp: new Date().toISOString(),
+      endpoint: 'quote-request',
+      sourcePage: canonical.sourcePage,
+      payloadKeysPresent: Object.keys(buildCanonicalNotificationPayload(canonical)).sort(),
+      missingRequiredFields: notificationValidation.missingFields,
+      validationErrorCode: notificationValidation.code,
+    });
+    return { response: failure('Invalid lead payload.', 400), canonical: null };
+  }
   const record = canonicalToD1Record(canonical, body);
 
   try {
@@ -827,11 +960,16 @@ export async function handleQuoteRequest(request: Request, env: QuoteRequestEnv)
   try {
     raw = (await request.json()) as Record<string, unknown>;
   } catch {
+    logQuoteValidationFailure(request, null, 'malformed_json', ['json_body']);
     return failure('Invalid request body.', 400);
   }
 
-  const parsed = validatePayload(raw);
-  if (!parsed.ok) return failure(parsed.message, 422);
+  const sourcePage = deriveSafeSourcePage(raw, request);
+  const parsed = validatePayload(raw, sourcePage);
+  if (!parsed.ok) {
+    logQuoteValidationFailure(request, raw, 'invalid_payload', [parsed.message]);
+    return failure(parsed.message, 400);
+  }
 
   const db = getPersistenceDb(env);
   if (!db) return failure();

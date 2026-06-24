@@ -1,6 +1,8 @@
 import {
+  assertLeadNotificationPayloadCanSend,
   buildCanonicalLead,
   buildCanonicalNotificationPayload,
+  validateLeadNotificationPayload,
   type CanonicalPlanMyPartyLead,
 } from '../../src/lib/quote-request/canonical-lead.ts';
 
@@ -70,11 +72,102 @@ function normalizeString(input: unknown): string {
     return String(input ?? "").trim();
 }
 
+const NON_CUSTOMER_VALUES = new Set([
+    "",
+    "not provided",
+    "not available",
+    "needs confirmation",
+    "unavailable",
+    "unknown",
+    "not-sure",
+    "not_provided",
+    "customer budget: not provided"
+]);
+
+function isMeaningfulLeadText(input: unknown): boolean {
+    const normalized = normalizeString(input).toLowerCase();
+    return Boolean(normalized) && !NON_CUSTOMER_VALUES.has(normalized);
+}
+
 function normalizeStringArray(input: unknown): string[] {
     if (!Array.isArray(input)) {
         return [];
     }
     return input.map((item) => normalizeString(item)).filter(Boolean);
+}
+
+function hasLegitimateCustomerField(payload: LeadPayload): boolean {
+    return (
+        isMeaningfulLeadText(payload.first_name) ||
+        isMeaningfulLeadText(payload.last_name) ||
+        isMeaningfulLeadText(payload.phone) ||
+        isMeaningfulLeadText(payload.email) ||
+        isMeaningfulLeadText(payload.event_date) ||
+        isMeaningfulLeadText(payload.event_start_time) ||
+        isMeaningfulLeadText(payload.event_city) ||
+        isMeaningfulLeadText(payload.event_address_or_cross_streets_optional) ||
+        isMeaningfulLeadText(payload.event_type) ||
+        isMeaningfulLeadText(payload.estimated_guest_count) ||
+        isMeaningfulLeadText(payload.children_count_optional) ||
+        normalizeStringArray(payload.services_requested).length > 0 ||
+        isMeaningfulLeadText(payload.budget_range) ||
+        isMeaningfulLeadText(payload.message) ||
+        isMeaningfulLeadText(payload.selected_package) ||
+        isMeaningfulLeadText(payload.organization_venue_name) ||
+        isMeaningfulLeadText(payload.package_interest) ||
+        isMeaningfulLeadText(payload.painting_window)
+    );
+}
+
+function payloadKeys(input: LeadPayload | null): string[] {
+    if (!input || typeof input !== "object") return [];
+    return Object.keys(input).sort();
+}
+
+function deriveSafeSourcePage(input: LeadPayload, request: Request): string {
+    const explicit = normalizeString(input.source_page);
+    if (explicit) {
+        return explicit.startsWith("/") ? explicit.split("?")[0] || "/" : explicit;
+    }
+
+    const sourcePath = normalizeString(input.source_path);
+    if (sourcePath.startsWith("/")) {
+        return sourcePath.split("?")[0] || "/";
+    }
+
+    const referer = request.headers.get("referer") || request.headers.get("referrer") || "";
+    if (!referer) return "";
+
+    try {
+        const requestUrl = new URL(request.url);
+        const refererUrl = new URL(referer);
+        if (requestUrl.hostname === refererUrl.hostname && refererUrl.pathname) {
+            return refererUrl.pathname;
+        }
+    } catch {
+        return "";
+    }
+
+    return "";
+}
+
+function logLeadValidationFailure(
+    request: Request,
+    input: LeadPayload | null,
+    code: string,
+    missingFields: string[],
+): void {
+    console.warn("[lead] invalid lead payload rejected", {
+        timestamp: new Date().toISOString(),
+        endpoint: "lead",
+        method: request.method,
+        sourcePage: input ? normalizeString(input.source_page) || normalizeString(input.source_path) || null : null,
+        payloadKeysPresent: payloadKeys(input),
+        missingRequiredFields: missingFields,
+        userAgent: request.headers.get("user-agent") || null,
+        requestId: request.headers.get("cf-ray") || request.headers.get("x-request-id") || null,
+        validationErrorCode: code
+    });
 }
 
 function parseWebhookResult(body: string): { ok: true } | { ok: false; reason: string } {
@@ -139,33 +232,31 @@ function deriveSourcePath(input: Pick<LeadPayload, "source_path" | "source_page"
 
 function validateLead(payload: LeadPayload): Record<string, string> {
     const errors: Record<string, string> = {};
+    const hasPhone = isMeaningfulLeadText(payload.phone);
+    const hasEmail = isMeaningfulLeadText(payload.email);
 
-    if (!normalizeString(payload.first_name)) {
-        errors.first_name = "First name is required.";
+    if (!isMeaningfulLeadText(payload.source_page) && !isMeaningfulLeadText(payload.source_path)) {
+        errors.source_page = "Source page is required.";
     }
-    if (!normalizeString(payload.phone)) {
-        errors.phone = "Phone is required.";
+    if (!hasPhone && !hasEmail) {
+        errors.contact = "Phone or email is required.";
     }
-    if (!normalizeString(payload.email)) {
-        errors.email = "Email is required.";
+    if (
+        hasEmail &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeString(payload.email).toLowerCase())
+    ) {
+        errors.email = "A valid email address is required.";
     }
-    if (!normalizeString(payload.event_date)) {
-        errors.event_date = "Event date is required.";
+    if (
+        !isMeaningfulLeadText(payload.first_name) &&
+        !isMeaningfulLeadText(payload.last_name) &&
+        !hasPhone &&
+        !hasEmail
+    ) {
+        errors.contact_identity = "Contact identity is required.";
     }
-    if (!normalizeString(payload.event_city)) {
-        errors.event_city = "Event city is required.";
-    }
-    if (!normalizeString(payload.event_type)) {
-        errors.event_type = "Event type is required.";
-    }
-    if (!normalizeStringArray(payload.services_requested).length) {
-        errors.services_requested = "Select at least one service.";
-    }
-
-    const consent = payload.consent_to_contact;
-    const consentValue = String(consent ?? "").toLowerCase();
-    if (!(consent === true || consentValue === "true" || consentValue === "on" || consentValue === "1")) {
-        errors.consent_to_contact = "Consent is required.";
+    if (!hasLegitimateCustomerField(payload)) {
+        errors.customer_payload = "At least one customer-provided field is required.";
     }
 
     return errors;
@@ -199,19 +290,6 @@ function isRateLimited(ip: string): boolean {
     existing.count += 1;
     rateLimitMap.set(ip, existing);
     return false;
-}
-
-// A Plan My Party submission delivered through the legacy contact endpoint is
-// detected by its source page so it can be mapped into the canonical lead model.
-// Simple contact-form and packages-page leads are otherwise unaffected.
-function isPlanMyPartyLead(p: LeadPayload): boolean {
-    const sp = String(p.source_page ?? "").toLowerCase();
-    return sp.includes("plan-my-party") || sp.includes("plan_my_party");
-}
-
-function isPackagesLead(p: LeadPayload): boolean {
-    const source = `${p.source_page ?? ""} ${p.source_path ?? ""}`.toLowerCase();
-    return source.includes("/packages");
 }
 
 function legacyChildCount(p: LeadPayload): { bucket: string; actual: number | null } {
@@ -289,6 +367,7 @@ export const onRequest = async (context: any): Promise<Response> => {
     try {
         input = (await request.json()) as LeadPayload;
     } catch {
+        logLeadValidationFailure(request, null, "malformed_json", ["json_body"]);
         return json({ ok: false, error: "Invalid JSON payload" }, 400);
     }
 
@@ -312,7 +391,7 @@ export const onRequest = async (context: any): Promise<Response> => {
         services_requested: normalizeStringArray(input.services_requested),
         budget_range: normalizeString(input.budget_range),
         message: normalizeString(input.message),
-        source_page: normalizeString(input.source_page),
+        source_page: deriveSafeSourcePage(input, request),
         utm_source: normalizeString(input.utm_source),
         utm_medium: normalizeString(input.utm_medium),
         utm_campaign: normalizeString(input.utm_campaign),
@@ -335,6 +414,7 @@ export const onRequest = async (context: any): Promise<Response> => {
 
     const errors = validateLead(normalized);
     if (Object.keys(errors).length) {
+        logLeadValidationFailure(request, normalized, "invalid_payload", Object.keys(errors));
         return json({ ok: false, errors }, 400);
     }
 
@@ -347,16 +427,41 @@ export const onRequest = async (context: any): Promise<Response> => {
         normalized.utm_medium ? `utm_medium=${normalized.utm_medium}` : "",
         normalized.utm_campaign ? `utm_campaign=${normalized.utm_campaign}` : "",
     ].filter(Boolean).join("; ");
-    const crmPayload: Record<string, unknown> = { leadId, submittedAt, lead: normalized };
-
-    if (isPlanMyPartyLead(normalized)) {
-        const canonical = legacyLeadToCanonical(normalized, leadId, submittedAt);
-        crmPayload.canonical = {
-            ...buildCanonicalNotificationPayload(canonical),
-            lead_source: normalized.lead_source || null,
-            source_path: normalized.source_path || null,
-        };
+    const proofNotes = [attributionSummary, normalized.message].filter(Boolean).join("\n\n") || null;
+    const canonical = legacyLeadToCanonical({
+        ...normalized,
+        message: proofNotes || normalized.message || "",
+    }, leadId, submittedAt);
+    const notificationPayload: Record<string, unknown> = {
+        ...buildCanonicalNotificationPayload(canonical),
+        lead_source: normalized.lead_source || null,
+        source_path: normalized.source_path || null,
+        message: normalized.message || null,
+        proof_token_or_notes: proofNotes,
+        leadId,
+        submittedAt,
+        lead: normalized,
+        legacy_lead: normalized,
+    };
+    const notificationValidation = validateLeadNotificationPayload(notificationPayload);
+    if (!notificationValidation.ok) {
+        console.error("BLANK_LEAD_EMAIL_BLOCKED", {
+            timestamp: new Date().toISOString(),
+            endpoint: "lead",
+            sourcePage: normalized.source_page || null,
+            payloadKeysPresent: Object.keys(notificationPayload).sort(),
+            missingRequiredFields: notificationValidation.missingFields,
+            validationErrorCode: notificationValidation.code,
+        });
+        return json({ ok: false, error: "Invalid lead payload" }, 400);
     }
+
+    const crmPayload: Record<string, unknown> = {
+        leadId,
+        submittedAt,
+        lead: normalized,
+        canonical: notificationPayload,
+    };
 
     const crmWebhookUrl = normalizeString(env.CRM_WEBHOOK_URL);
     const makeWebhookUrl = normalizeString(env.QUOTE_REQUEST_MAKE_WEBHOOK_URL);
@@ -385,32 +490,25 @@ export const onRequest = async (context: any): Promise<Response> => {
     }
 
     try {
-        const proofNotes = [attributionSummary, normalized.message].filter(Boolean).join("\n\n") || null;
-        const useCanonicalMakePayload = isPackagesLead(normalized) || isPlanMyPartyLead(normalized);
-        const makePayload = useCanonicalMakePayload ? {
-            ...buildCanonicalNotificationPayload(legacyLeadToCanonical({
-                ...normalized,
-                message: proofNotes || "",
-            }, leadId, submittedAt)),
-            lead_source: normalized.lead_source || null,
-            source_path: normalized.source_path || null,
-            message: normalized.message || null,
-            proof_token_or_notes: proofNotes,
-            legacy_lead: normalized,
-        } : {
-            leadId,
-            submittedAt,
-            source: "legacy-contact",
-            source_endpoint: "lead",
-            source_page: normalized.source_page || null,
-            lead_source: normalized.lead_source || null,
-            source_path: normalized.source_path || null,
-            message: normalized.message || null,
-            proof_token_or_notes: proofNotes,
-            lead: normalized,
-            legacy_lead: normalized,
-        };
-        const body = JSON.stringify(makeWebhookUrl && !crmWebhookUrl ? makePayload : crmPayload);
+        if ((makeWebhookUrl || sheetsWebhookUrl) && !crmWebhookUrl) {
+            try {
+                assertLeadNotificationPayloadCanSend(notificationPayload);
+            } catch (err) {
+                console.error("BLANK_LEAD_EMAIL_BLOCKED", {
+                    timestamp: new Date().toISOString(),
+                    endpoint: "lead",
+                    sourcePage: normalized.source_page || null,
+                    payloadKeysPresent: Object.keys(notificationPayload).sort(),
+                    missingRequiredFields: err instanceof Error
+                        ? (err as Error & { missingFields?: string[] }).missingFields ?? []
+                        : [],
+                    validationErrorCode: "BLANK_LEAD_EMAIL_BLOCKED",
+                });
+                return json({ ok: false, error: "Invalid lead payload" }, 400);
+            }
+        }
+
+        const body = JSON.stringify((makeWebhookUrl || sheetsWebhookUrl) && !crmWebhookUrl ? notificationPayload : crmPayload);
         const headers: Record<string, string> = {
             "content-type": "application/json",
             "x-lead-source": "happyfacesla-cloudflare-pages"

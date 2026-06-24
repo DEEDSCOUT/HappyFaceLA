@@ -139,6 +139,81 @@ export interface CanonicalPlanMyPartyLead {
   consentAcknowledgement: boolean;
 }
 
+export type LeadNotificationValidationResult =
+  | { ok: true }
+  | { ok: false; code: 'BLANK_LEAD_EMAIL_BLOCKED'; missingFields: string[] };
+
+const DEFAULT_NOTIFICATION_TEXT = new Set([
+  '',
+  'not provided',
+  'not available',
+  'needs confirmation',
+  'unavailable',
+  'unknown',
+  'not-sure',
+  'not_provided',
+  'manual_review',
+  'customer budget: not provided',
+]);
+
+function isMeaningfulNotificationText(value: unknown): boolean {
+  if (typeof value !== 'string' && typeof value !== 'number') return false;
+  const normalized = String(value).trim().toLowerCase();
+  return Boolean(normalized) && !DEFAULT_NOTIFICATION_TEXT.has(normalized);
+}
+
+function isMeaningfulNotificationArray(value: unknown): boolean {
+  if (!Array.isArray(value)) return false;
+  return value.some((item) => isMeaningfulNotificationText(item));
+}
+
+export function validateLeadNotificationPayload(payload: Record<string, unknown>): LeadNotificationValidationResult {
+  const missingFields: string[] = [];
+  const hasLeadId = isMeaningfulNotificationText(payload.lead_id);
+  const hasCreatedAt = isMeaningfulNotificationText(payload.created_at);
+  const hasSourcePage = isMeaningfulNotificationText(payload.source_page);
+  const hasContactChannel =
+    isMeaningfulNotificationText(payload.phone) ||
+    isMeaningfulNotificationText(payload.email);
+  const hasContactIdentity =
+    isMeaningfulNotificationText(payload.first_name) ||
+    isMeaningfulNotificationText(payload.last_name) ||
+    hasContactChannel;
+  const hasCustomerProvidedField =
+    isMeaningfulNotificationText(payload.first_name) ||
+    isMeaningfulNotificationText(payload.last_name) ||
+    isMeaningfulNotificationText(payload.phone) ||
+    isMeaningfulNotificationText(payload.email) ||
+    isMeaningfulNotificationText(payload.event_type) ||
+    isMeaningfulNotificationText(payload.event_date) ||
+    isMeaningfulNotificationText(payload.preferred_start_time) ||
+    isMeaningfulNotificationText(payload.event_city) ||
+    isMeaningfulNotificationText(payload.event_venue_or_address) ||
+    isMeaningfulNotificationArray(payload.services_requested) ||
+    isMeaningfulNotificationText(payload.notes) ||
+    isMeaningfulNotificationText(payload.customer_budget_label);
+
+  if (!hasLeadId) missingFields.push('lead_id');
+  if (!hasCreatedAt) missingFields.push('created_at');
+  if (!hasSourcePage) missingFields.push('source_page');
+  if (!hasContactChannel) missingFields.push('phone_or_email');
+  if (!hasContactIdentity) missingFields.push('contact_identity');
+  if (!hasCustomerProvidedField) missingFields.push('customer_provided_field');
+
+  return missingFields.length
+    ? { ok: false, code: 'BLANK_LEAD_EMAIL_BLOCKED', missingFields }
+    : { ok: true };
+}
+
+export function assertLeadNotificationPayloadCanSend(payload: Record<string, unknown>): void {
+  const result = validateLeadNotificationPayload(payload);
+  if (!result.ok) {
+    const err = new Error('BLANK_LEAD_EMAIL_BLOCKED');
+    (err as Error & { missingFields?: string[] }).missingFields = result.missingFields;
+    throw err;
+  }
+}
+
 export function deriveChildCount(
   bucket: string,
   actual: number | null,
@@ -208,6 +283,10 @@ export function buildCanonicalLead(input: CanonicalLeadInput): CanonicalPlanMyPa
   const budget = parseCustomerBudget(input.customerBudgetRaw);
 
   const manualReviewReasons: string[] = [];
+  if (!input.eventType) manualReviewReasons.push('event_type_missing');
+  if (!input.eventDate) manualReviewReasons.push('event_date_missing');
+  if (!input.eventCity) manualReviewReasons.push('event_city_missing');
+  if (input.services.length === 0) manualReviewReasons.push('services_missing');
   if (child.manualReviewReason) manualReviewReasons.push(child.manualReviewReason);
   if (duration.durationSource === 'manual_review') manualReviewReasons.push('duration_unknown');
   if (travel.zone === 'manual_review') manualReviewReasons.push('travel_exceeds_standard_zone');
