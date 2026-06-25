@@ -1,0 +1,97 @@
+{
+  "negotiationID": "582664294715858949",
+  "createdAt": "2026-06-18T19:11:34Z",
+  "customer": {
+    "customerID": "582662209023279122",
+    "firstName": "Angela",
+    "lastName": "Cho",
+    "phone": "[redacted-phone]"
+  },
+  "business": {
+    "businessID": "582093043904233481",
+    "name": "Happy Faces LA",
+    "imageURL": "[redacted-image-url]",
+    "accessCode": "[redacted-access-code]"
+  },
+  "request": {
+    "requestID": "582664293680545809",
+    "customerID": "582662209023279122",
+    "contactedBusinesses": [],
+    "description": "Open-to-the-public city event; RSVPs are not available, so attendance is approximate.",
+    "category": {
+      "categoryID": "122851889414725991",
+      "name": "Balloon Twisting"
+    },
+    "proposedTimes": [
+      {
+        "start": "2026-10-23T00:00:00Z",
+        "end": "2026-10-23T02:00:00Z"
+      }
+    ],
+    "location": {
+      "address1": "[redacted-street-address]",
+      "address2": "[redacted-unit]",
+      "city": "La Canada Flintridge",
+      "state": "CA",
+      "zipCode": "91011"
+    },
+    "travelPreferences": ["ProviderTravelToCustomer"],
+    "details": [
+      {
+        "question": "Number of guests",
+        "answer": "71 - 100 guests"
+      },
+      {
+        "question": "Category",
+        "answer": "Balloon Twisting"
+      },
+      {
+        "question": "Age of guests",
+        "answer": "4 - 6 years old, 7 - 10 years old"
+      },
+      {
+        "question": "Event type",
+        "answer": "Community event"
+      },
+      {
+        "question": "Scheduling",
+        "answer": "Date: Thu Oct 22 2026 Time: 5:00 PM Length: 2 hours"
+      },
+      {
+        "question": "Zip code",
+        "answer": "91011"
+      },
+      {
+        "question": "Face Painting services",
+        "answer": "Face painting is needed"
+      },
+      {
+        "question": "Balloon art type",
+        "answer": "I'm flexible"
+      },
+      {
+        "question": "Travel Preferences",
+        "answer": "The balloon twister travels to me"
+      },
+      {
+        "question": "Anything else",
+        "answer": "Open-to-the-public city event; RSVPs are not available, so attendance is approximate."
+      }
+    ],
+    "attachments": []
+  },
+  "estimate": {
+    "type": "Fixed",
+    "pricePerUnit": "275.00",
+    "unitQuantity": 0,
+    "unitName": "",
+    "total": "$275"
+  },
+  "status": "Open",
+  "leadPrice": "$14.94",
+  "leadPriceBreakdown": {
+    "subtotal": "$14.94",
+    "salesTax": "$0.00"
+  },
+  "chargeState": "Charged"
+}

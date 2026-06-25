@@ -1,0 +1,22 @@
+{
+  "eventType": "LeadStatusUpdated",
+  "createTimestamp": "2026-06-19T16:30:00Z",
+  "lead": {
+    "leadID": "lead_4d8e10",
+    "fulfillmentStatus": "UNPAID",
+    "numProsContacted": 7,
+    "expectedResponseBy": "2026-06-19T18:30:00Z",
+    "customer": { "name": "Priya S." },
+    "request": {
+      "category": "Balloon Twisting",
+      "title": "Balloon twisting for a school festival",
+      "location": { "city": "Temecula", "zipCode": "92592" },
+      "schedule": { "eventDate": "2026-08-30", "startTime": "" },
+      "details": [
+        { "question": "What type of event is this?", "answer": "School festival" },
+        { "question": "Approximately how many guests?", "answer": "150 kids" },
+        { "question": "Which services?", "answer": "Balloon twisting, Face painting, Glitter tattoos" }
+      ]
+    }
+  }
+}
