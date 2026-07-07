@@ -57,6 +57,18 @@ function eventValueCents(lead: CanonicalPlanMyPartyLead, eventName: OfflineConve
   return null;
 }
 
+function effectiveQualifiedStatus(lead: CanonicalPlanMyPartyLead, outcome: OfflineConversionOutcomeInput): string | null | undefined {
+  return outcome.qualifiedStatus ?? lead.qualifiedStatus;
+}
+
+function effectiveBookedRevenueCents(lead: CanonicalPlanMyPartyLead, outcome: OfflineConversionOutcomeInput): number | null | undefined {
+  return outcome.bookedRevenueCents ?? lead.bookedRevenueCents;
+}
+
+function isPositiveRevenueCents(value: number | null | undefined): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0;
+}
+
 function conversionActionName(eventName: OfflineConversionEventName): string {
   switch (eventName) {
     case 'qualified_lead':
@@ -75,11 +87,15 @@ function suppressionReason(
 ): string | null {
   if (outcome.isInternalTest || lead.isInternalTest) return outcome.internalTestReason || lead.internalTestReason || 'internal_test';
   if (outcome.duplicateOfLeadId || lead.duplicateOfLeadId) return 'duplicate_lead';
+  const qualifiedStatus = effectiveQualifiedStatus(lead, outcome);
+  if (qualifiedStatus !== 'qualified') return `qualified_status_${qualifiedStatus || 'missing'}`;
   const clickId = selectedClickId(lead);
   if (!clickId.gclid && !clickId.gbraid && !clickId.wbraid) return 'missing_google_click_id';
-  if (eventName === 'qualified_lead' && outcome.qualifiedStatus !== 'qualified') return 'qualified_status_not_qualified';
-  if (eventName === 'quote_sent' && outcome.quoteSentStatus !== 'sent') return 'quote_not_sent';
-  if (eventName === 'booked_event' && outcome.bookedStatus !== 'booked') return 'not_booked';
+  if (eventName === 'quote_sent' && (outcome.quoteSentStatus ?? lead.quoteSentStatus) !== 'sent') return 'quote_not_sent';
+  if (eventName === 'booked_event') {
+    if ((outcome.bookedStatus ?? lead.bookedStatus) !== 'booked') return 'not_booked';
+    if (!isPositiveRevenueCents(effectiveBookedRevenueCents(lead, outcome))) return 'booked_revenue_missing';
+  }
   return null;
 }
 

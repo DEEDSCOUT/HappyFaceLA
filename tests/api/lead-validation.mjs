@@ -476,7 +476,7 @@ test('qualified lead outbox event queues only when feature flag is enabled', asy
   assert.equal(db.outbox[0].gclid, 'CjwK-test-gclid');
 });
 
-test('quote sent outbox event queues for sent status', async () => {
+test('quote sent outbox event does not queue for sent status without qualified review', async () => {
   resetFetch();
   const db = new MockD1();
   await callQuote(fullPlanMyPartyPayload, db);
@@ -488,8 +488,68 @@ test('quote sent outbox event queues for sent status', async () => {
     { quoteSentStatus: 'sent' },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
+  assert.equal(result.queued, false);
+  assert.equal(result.reason, 'qualified_status_unreviewed');
+  assert.equal(db.outbox.length, 0);
+});
+
+test('quote sent outbox event queues only when sent and qualified', async () => {
+  resetFetch();
+  const db = new MockD1();
+  await callQuote(fullPlanMyPartyPayload, db);
+  const canonical = firstCanonical(db);
+  const result = await queueOfflineConversionOutboxEvent(
+    db,
+    canonical,
+    'quote_sent',
+    { qualifiedStatus: 'qualified', quoteSentStatus: 'sent' },
+    { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
+  );
   assert.equal(result.queued, true);
   assert.equal(db.outbox[0].event_name, 'quote_sent');
+});
+
+test('booked event outbox does not queue without booked revenue', async () => {
+  resetFetch();
+  const db = new MockD1();
+  await callQuote(fullPlanMyPartyPayload, db);
+  const canonical = firstCanonical(db);
+  const result = await queueOfflineConversionOutboxEvent(
+    db,
+    canonical,
+    'booked_event',
+    { qualifiedStatus: 'qualified', bookedStatus: 'booked' },
+    { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
+  );
+  assert.equal(result.queued, false);
+  assert.equal(result.reason, 'booked_revenue_missing');
+  assert.equal(db.outbox.length, 0);
+});
+
+test('weak spam outside-area and wrong-service leads do not queue any offline events', async () => {
+  for (const qualifiedStatus of ['weak', 'spam', 'outside_area', 'wrong_service']) {
+    resetFetch();
+    const db = new MockD1();
+    await callQuote({
+      ...fullPlanMyPartyPayload,
+      quoteRequestIdempotencyKey: `qrq_${qualifiedStatus.replaceAll('_', '-')}-blocked12345`,
+    }, db);
+    const canonical = firstCanonical(db);
+    const results = await queueOfflineConversionOutboxEvents(
+      db,
+      canonical,
+      {
+        qualifiedStatus,
+        quoteSentStatus: 'sent',
+        bookedStatus: 'booked',
+        bookedRevenueCents: 57500,
+      },
+      { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
+    );
+    assert.equal(results.filter((result) => result.queued).length, 0);
+    assert(results.every((result) => result.reason === `qualified_status_${qualifiedStatus}`));
+    assert.equal(db.outbox.length, 0);
+  }
 });
 
 test('booked event outbox carries revenue value and no separate booked_revenue event exists', async () => {
