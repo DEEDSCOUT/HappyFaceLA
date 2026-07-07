@@ -4,6 +4,7 @@ import { redactError, runStatement } from './availability-store.ts';
 
 const SAFE_DETAIL_ALLOWLIST = new Set([
   'action',
+  'leadId',
   'status',
   'reason',
   'slotStatus',
@@ -13,6 +14,14 @@ const SAFE_DETAIL_ALLOWLIST = new Set([
   'eventDate',
   'startTime',
   'travelZone',
+  'readyForD1Sync',
+  'dryRun',
+  'qualifiedStatus',
+  'quoteSentStatus',
+  'bookedStatus',
+  'bookedRevenueCents',
+  'outboxQueuedCount',
+  'outboxSuppressedCount',
 ]);
 
 export function buildSlotAuditEvent(
