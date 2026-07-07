@@ -1519,19 +1519,116 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     hide(qs('#preferredContactMethod-error'));
   });
 
-  // First-touch attribution capture (Plan My Party lead-data completeness): record
-  // gclid/utm/source_page on load so they survive to submission.
-  try {
-    const ap = new URLSearchParams(location.search);
-    const cur = JSON.parse(sessionStorage.getItem('hfla_attribution') || '{}') as Record<string, string>;
-    let changed = false;
-    for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid', 'msclkid']) {
-      const v = ap.get(k);
-      if (v && !cur[k]) { cur[k] = v; changed = true; }
+  const ATTRIBUTION_KEYS = [
+    'utm_source',
+    'utm_medium',
+    'utm_campaign',
+    'utm_term',
+    'utm_content',
+    'gclid',
+    'gbraid',
+    'wbraid',
+    'fbclid',
+    'msclkid',
+  ] as const;
+
+  function safeCurrentUrl(): string {
+    try {
+      const url = new URL(location.href);
+      url.hash = '';
+      return url.toString().slice(0, 512);
+    } catch {
+      return location.pathname || '/';
     }
-    if (!cur.source_page) { cur.source_page = location.pathname; changed = true; }
-    if (changed) sessionStorage.setItem('hfla_attribution', JSON.stringify(cur));
-  } catch {}
+  }
+
+  function safeDocumentReferrer(): string {
+    if (!document.referrer) return '';
+    try {
+      const url = new URL(document.referrer);
+      url.hash = '';
+      url.search = '';
+      return url.toString().slice(0, 512);
+    } catch {
+      return '';
+    }
+  }
+
+  function readStoredAttribution(): Record<string, string> {
+    try {
+      return JSON.parse(sessionStorage.getItem('hfla_attribution') || '{}') as Record<string, string>;
+    } catch {
+      return {};
+    }
+  }
+
+  function writeStoredAttribution(value: Record<string, string>) {
+    try {
+      const payload = JSON.stringify(value);
+      sessionStorage.setItem('hfla_attribution', payload);
+      localStorage.setItem('hfla_attribution', payload);
+    } catch {
+      // Ignore storage access issues.
+    }
+  }
+
+  function captureWizardAttribution(): Record<string, string> {
+    const ap = new URLSearchParams(location.search);
+    const cur = readStoredAttribution();
+    const next = { ...cur };
+    const landingPage = safeCurrentUrl();
+    const sourcePath = location.pathname || '/';
+    const referrer = safeDocumentReferrer();
+
+    if (!next.first_landing_page) next.first_landing_page = landingPage;
+    if (!next.first_source_path) next.first_source_path = sourcePath;
+    if (!next.first_referrer && referrer) next.first_referrer = referrer;
+    next.landing_page = next.first_landing_page || landingPage;
+    next.source_path = next.first_source_path || sourcePath;
+    if (referrer && !next.referrer) next.referrer = referrer;
+
+    ATTRIBUTION_KEYS.forEach((key) => {
+      const value = ap.get(key);
+      if (!value) return;
+      const firstKey = `first_${key}`;
+      if (!next[firstKey]) next[firstKey] = value;
+      next[key] = value;
+    });
+
+    writeStoredAttribution(next);
+    return next;
+  }
+
+  function buildSubmitAttributionPayload(): Record<string, string | null> {
+    const stored = captureWizardAttribution();
+    const ap = new URLSearchParams(location.search);
+    const currentUrl = safeCurrentUrl();
+    const currentPath = location.pathname || '/';
+    const currentReferrer = safeDocumentReferrer();
+    const pick = (key: string) => ap.get(key) || stored[key] || null;
+    const out: Record<string, string | null> = {
+      source_page: currentPath,
+      landing_page: stored.first_landing_page || currentUrl,
+      source_path: stored.first_source_path || currentPath,
+      referrer: stored.first_referrer || currentReferrer || null,
+      first_landing_page: stored.first_landing_page || currentUrl,
+      first_source_path: stored.first_source_path || currentPath,
+      first_referrer: stored.first_referrer || null,
+      submit_landing_page: currentUrl,
+      submit_source_path: currentPath,
+      submit_referrer: currentReferrer || null,
+    };
+
+    ATTRIBUTION_KEYS.forEach((key) => {
+      out[key] = pick(key);
+      out[`first_${key}`] = stored[`first_${key}`] || stored[key] || null;
+      out[`submit_${key}`] = ap.get(key) || stored[key] || null;
+    });
+
+    return out;
+  }
+
+  captureWizardAttribution();
 
   qs('#wizard-quote-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1602,23 +1699,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       wizardVersion: 'guided-wizard-v1',
       submittedAt: new Date().toISOString(),
       preferredContactMethod: selectedPreferredContactMethod,
-      ...(() => {
-        let stored: Record<string, string> = {};
-        try { stored = JSON.parse(sessionStorage.getItem('hfla_attribution') || '{}'); } catch {}
-        const ap = new URLSearchParams(location.search);
-        const pick = (k: string) => ap.get(k) || stored[k] || null;
-        return {
-          source_page: location.pathname || stored.source_page || null,
-          utm_source: pick('utm_source'),
-          utm_medium: pick('utm_medium'),
-          utm_campaign: pick('utm_campaign'),
-          utm_term: pick('utm_term'),
-          utm_content: pick('utm_content'),
-          gclid: pick('gclid'),
-          fbclid: pick('fbclid'),
-          msclkid: pick('msclkid'),
-        };
-      })(),
+      ...buildSubmitAttributionPayload(),
     };
 
     try {
@@ -1639,6 +1720,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       }
       track('hfla_quote_submit', {
         source: answers.lookbookInspirations.length ? 'party_lookbook' : 'wizard',
+        lead_id: data.leadId || undefined,
         public_look_slug: answers.publicLookSlug || undefined,
         inspiration_count: answers.lookbookInspirations.length || undefined,
       });

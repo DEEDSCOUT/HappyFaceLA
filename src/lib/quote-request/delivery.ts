@@ -18,6 +18,7 @@ export const QUOTE_REQUEST_SUCCESS_MESSAGE = 'Your request was received.';
 export type QuoteRequestEnv = {
   AVAILABILITY_D1?: D1Database;
   QUOTE_REQUESTS_D1?: D1Database;
+  GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED?: string;
   QUOTE_REQUEST_CRM_WEBHOOK_URL?: string;
   QUOTE_REQUEST_CRM_WEBHOOK_SECRET?: string;
   QUOTE_REQUEST_SHEET_WEBHOOK_URL?: string;
@@ -90,14 +91,41 @@ type SanitizedQuoteRequest = {
   preferredContactMethod: PreferredContactMethod;
   customerBudgetRaw: string | null;
   sourcePage: string | null;
+  landingPage: string | null;
+  sourcePath: string | null;
+  referrer: string | null;
+  firstLandingPage: string | null;
+  firstSourcePath: string | null;
+  firstReferrer: string | null;
+  submitLandingPage: string | null;
+  submitSourcePath: string | null;
+  submitReferrer: string | null;
   utmSource: string | null;
   utmMedium: string | null;
   utmCampaign: string | null;
   utmTerm: string | null;
   utmContent: string | null;
   gclid: string | null;
+  gbraid: string | null;
+  wbraid: string | null;
   fbclid: string | null;
   msclkid: string | null;
+  firstUtmSource: string | null;
+  firstUtmMedium: string | null;
+  firstUtmCampaign: string | null;
+  firstUtmTerm: string | null;
+  firstUtmContent: string | null;
+  firstGclid: string | null;
+  firstGbraid: string | null;
+  firstWbraid: string | null;
+  submitUtmSource: string | null;
+  submitUtmMedium: string | null;
+  submitUtmCampaign: string | null;
+  submitUtmTerm: string | null;
+  submitUtmContent: string | null;
+  submitGclid: string | null;
+  submitGbraid: string | null;
+  submitWbraid: string | null;
 };
 
 const PROHIBITED_FIELDS = new Set([
@@ -331,7 +359,31 @@ function normalizePreferredContactMethod(value: unknown): PreferredContactMethod
 }
 
 function normalizeAttribution(value: unknown): string | null {
-  return normalizeNullableString(value, 256);
+  return normalizeNullableString(value, 512);
+}
+
+function normalizeUrlAttribution(value: unknown): string | null {
+  const raw = normalizeAttribution(value);
+  if (!raw) return null;
+  try {
+    const url = new URL(raw, 'https://www.happyfacesla.com');
+    url.hash = '';
+    return url.toString().slice(0, 512);
+  } catch {
+    return raw.slice(0, 512);
+  }
+}
+
+function normalizePathAttribution(value: unknown): string | null {
+  const raw = normalizeAttribution(value);
+  if (!raw) return null;
+  if (raw.startsWith('/')) return raw.split('#')[0].slice(0, 256);
+  try {
+    const url = new URL(raw);
+    return (url.pathname || '/').slice(0, 256);
+  } catch {
+    return raw.slice(0, 256);
+  }
 }
 
 function deriveSafeSourcePage(raw: Record<string, unknown>, request: Request): string | null {
@@ -491,14 +543,41 @@ function validatePayload(raw: Record<string, unknown>, sourcePage: string | null
       preferredContactMethod: normalizePreferredContactMethod(body.preferredContactMethod),
       customerBudgetRaw: normalizeNullableString(body.customerBudget ?? body.budget ?? body.budget_range, 80),
       sourcePage,
+      landingPage: normalizeUrlAttribution(body.landing_page),
+      sourcePath: normalizePathAttribution(body.source_path),
+      referrer: normalizeUrlAttribution(body.referrer),
+      firstLandingPage: normalizeUrlAttribution(body.first_landing_page),
+      firstSourcePath: normalizePathAttribution(body.first_source_path),
+      firstReferrer: normalizeUrlAttribution(body.first_referrer),
+      submitLandingPage: normalizeUrlAttribution(body.submit_landing_page),
+      submitSourcePath: normalizePathAttribution(body.submit_source_path),
+      submitReferrer: normalizeUrlAttribution(body.submit_referrer),
       utmSource: normalizeAttribution(body.utm_source),
       utmMedium: normalizeAttribution(body.utm_medium),
       utmCampaign: normalizeAttribution(body.utm_campaign),
       utmTerm: normalizeAttribution(body.utm_term),
       utmContent: normalizeAttribution(body.utm_content),
       gclid: normalizeAttribution(body.gclid),
+      gbraid: normalizeAttribution(body.gbraid),
+      wbraid: normalizeAttribution(body.wbraid),
       fbclid: normalizeAttribution(body.fbclid),
       msclkid: normalizeAttribution(body.msclkid),
+      firstUtmSource: normalizeAttribution(body.first_utm_source),
+      firstUtmMedium: normalizeAttribution(body.first_utm_medium),
+      firstUtmCampaign: normalizeAttribution(body.first_utm_campaign),
+      firstUtmTerm: normalizeAttribution(body.first_utm_term),
+      firstUtmContent: normalizeAttribution(body.first_utm_content),
+      firstGclid: normalizeAttribution(body.first_gclid),
+      firstGbraid: normalizeAttribution(body.first_gbraid),
+      firstWbraid: normalizeAttribution(body.first_wbraid),
+      submitUtmSource: normalizeAttribution(body.submit_utm_source),
+      submitUtmMedium: normalizeAttribution(body.submit_utm_medium),
+      submitUtmCampaign: normalizeAttribution(body.submit_utm_campaign),
+      submitUtmTerm: normalizeAttribution(body.submit_utm_term),
+      submitUtmContent: normalizeAttribution(body.submit_utm_content),
+      submitGclid: normalizeAttribution(body.submit_gclid),
+      submitGbraid: normalizeAttribution(body.submit_gbraid),
+      submitWbraid: normalizeAttribution(body.submit_wbraid),
     },
   };
 }
@@ -563,6 +642,15 @@ function buildCanonical(body: SanitizedQuoteRequest, leadId: string, now: string
     leadId,
     createdAt: now,
     sourcePage: body.sourcePage,
+    landingPage: body.landingPage,
+    sourcePath: body.sourcePath,
+    referrer: body.referrer,
+    firstLandingPage: body.firstLandingPage,
+    firstSourcePath: body.firstSourcePath,
+    firstReferrer: body.firstReferrer,
+    submitLandingPage: body.submitLandingPage,
+    submitSourcePath: body.submitSourcePath,
+    submitReferrer: body.submitReferrer,
     firstName: body.firstName,
     lastName: body.lastName,
     email: body.email,
@@ -596,8 +684,26 @@ function buildCanonical(body: SanitizedQuoteRequest, leadId: string, now: string
     utmTerm: body.utmTerm,
     utmContent: body.utmContent,
     gclid: body.gclid,
+    gbraid: body.gbraid,
+    wbraid: body.wbraid,
     fbclid: body.fbclid,
     msclkid: body.msclkid,
+    firstUtmSource: body.firstUtmSource,
+    firstUtmMedium: body.firstUtmMedium,
+    firstUtmCampaign: body.firstUtmCampaign,
+    firstUtmTerm: body.firstUtmTerm,
+    firstUtmContent: body.firstUtmContent,
+    firstGclid: body.firstGclid,
+    firstGbraid: body.firstGbraid,
+    firstWbraid: body.firstWbraid,
+    submitUtmSource: body.submitUtmSource,
+    submitUtmMedium: body.submitUtmMedium,
+    submitUtmCampaign: body.submitUtmCampaign,
+    submitUtmTerm: body.submitUtmTerm,
+    submitUtmContent: body.submitUtmContent,
+    submitGclid: body.submitGclid,
+    submitGbraid: body.submitGbraid,
+    submitWbraid: body.submitWbraid,
     consentAcknowledgement: body.consentAcknowledgement,
   });
 }
@@ -654,8 +760,36 @@ function canonicalToD1Record(c: CanonicalPlanMyPartyLead, body: SanitizedQuoteRe
     utm_term: c.utmTerm,
     utm_content: c.utmContent,
     gclid: c.gclid,
+    gbraid: c.gbraid,
+    wbraid: c.wbraid,
     fbclid: c.fbclid,
     msclkid: c.msclkid,
+    landing_page: c.landingPage,
+    source_path: c.sourcePath,
+    referrer: c.referrer,
+    first_landing_page: c.firstLandingPage,
+    first_source_path: c.firstSourcePath,
+    first_referrer: c.firstReferrer,
+    first_utm_source: c.firstUtmSource,
+    first_utm_medium: c.firstUtmMedium,
+    first_utm_campaign: c.firstUtmCampaign,
+    first_utm_term: c.firstUtmTerm,
+    first_utm_content: c.firstUtmContent,
+    first_gclid: c.firstGclid,
+    first_gbraid: c.firstGbraid,
+    first_wbraid: c.firstWbraid,
+    submit_landing_page: c.submitLandingPage,
+    submit_source_path: c.submitSourcePath,
+    submit_referrer: c.submitReferrer,
+    submit_utm_source: c.submitUtmSource,
+    submit_utm_medium: c.submitUtmMedium,
+    submit_utm_campaign: c.submitUtmCampaign,
+    submit_utm_term: c.submitUtmTerm,
+    submit_utm_content: c.submitUtmContent,
+    submit_gclid: c.submitGclid,
+    submit_gbraid: c.submitGbraid,
+    submit_wbraid: c.submitWbraid,
+    source_confidence: c.sourceConfidence,
     // appended — migration 0004 canonical-completeness columns
     preferred_contact_method: c.preferredContactMethod,
     child_count_confidence: c.childCountConfidence,
@@ -669,6 +803,18 @@ function canonicalToD1Record(c: CanonicalPlanMyPartyLead, body: SanitizedQuoteRe
     customer_budget_label: c.customerBudgetLabel,
     pricing_source: c.pricingSource,
     manual_review_reasons_json: JSON.stringify(c.manualReviewReasons),
+    qualified_status: c.qualifiedStatus,
+    quote_sent_status: c.quoteSentStatus,
+    booked_status: c.bookedStatus,
+    booked_revenue_cents: c.bookedRevenueCents,
+    booked_revenue_currency: c.bookedRevenueCurrency,
+    lost_reason: c.lostReason,
+    duplicate_of_lead_id: c.duplicateOfLeadId,
+    owner_review_notes: c.ownerReviewNotes,
+    owner_reviewed_at_utc: null,
+    owner_reviewed_by: null,
+    is_internal_test: c.isInternalTest ? 1 : 0,
+    internal_test_reason: c.internalTestReason,
     canonical_payload_json: JSON.stringify(c),
   };
 }
@@ -685,92 +831,114 @@ async function selectExistingLead(db: D1Database, idempotencyKey: string): Promi
     .first<PersistedLeadRow>();
 }
 
+const QUOTE_REQUEST_INSERT_COLUMNS = [
+  'lead_id',
+  'idempotency_key',
+  'source',
+  'received_at',
+  'updated_at',
+  'event_type',
+  'event_date',
+  'start_time',
+  'event_city',
+  'venue_name',
+  'travel_miles',
+  'travel_band',
+  'travel_fee_estimate_cents',
+  'services_json',
+  'kids_count_bucket',
+  'kids_count_actual',
+  'design_style',
+  'service_window_minutes',
+  'required_artist_count',
+  'quote_outcome',
+  'pricing_event_total_cents',
+  'pricing_retainer_cents',
+  'pricing_model',
+  'customer_first_name',
+  'customer_last_name',
+  'customer_email',
+  'customer_phone',
+  'consent_acknowledgement',
+  'sanitized_notes',
+  'lookbook_inspirations_json',
+  'wizard_version',
+  'client_submitted_at',
+  'delivery_status',
+  'owner_notification_queued',
+  'owner_notification_sent',
+  'sheet_written',
+  'crm_posted',
+  'source_page',
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'gclid',
+  'gbraid',
+  'wbraid',
+  'fbclid',
+  'msclkid',
+  'landing_page',
+  'source_path',
+  'referrer',
+  'first_landing_page',
+  'first_source_path',
+  'first_referrer',
+  'first_utm_source',
+  'first_utm_medium',
+  'first_utm_campaign',
+  'first_utm_term',
+  'first_utm_content',
+  'first_gclid',
+  'first_gbraid',
+  'first_wbraid',
+  'submit_landing_page',
+  'submit_source_path',
+  'submit_referrer',
+  'submit_utm_source',
+  'submit_utm_medium',
+  'submit_utm_campaign',
+  'submit_utm_term',
+  'submit_utm_content',
+  'submit_gclid',
+  'submit_gbraid',
+  'submit_wbraid',
+  'source_confidence',
+  'preferred_contact_method',
+  'child_count_confidence',
+  'duration_minutes',
+  'duration_source',
+  'computed_end_time',
+  'travel_source',
+  'travel_note',
+  'customer_budget_provided',
+  'customer_budget_amount_cents',
+  'customer_budget_label',
+  'pricing_source',
+  'manual_review_reasons_json',
+  'qualified_status',
+  'quote_sent_status',
+  'booked_status',
+  'booked_revenue_cents',
+  'booked_revenue_currency',
+  'lost_reason',
+  'duplicate_of_lead_id',
+  'owner_review_notes',
+  'owner_reviewed_at_utc',
+  'owner_reviewed_by',
+  'is_internal_test',
+  'internal_test_reason',
+  'canonical_payload_json',
+] as const;
+
 async function insertLead(db: D1Database, record: Record<string, D1Value>): Promise<void> {
+  const placeholders = QUOTE_REQUEST_INSERT_COLUMNS.map(() => '?').join(', ');
+  const columns = QUOTE_REQUEST_INSERT_COLUMNS.join(', ');
   await db
-    .prepare(
-      `INSERT INTO quote_requests (
-        lead_id, idempotency_key, source, received_at, updated_at,
-        event_type, event_date, start_time, event_city, venue_name,
-        travel_miles, travel_band, travel_fee_estimate_cents,
-        services_json, kids_count_bucket, kids_count_actual, design_style,
-        service_window_minutes, required_artist_count, quote_outcome,
-        pricing_event_total_cents, pricing_retainer_cents, pricing_model,
-        customer_first_name, customer_last_name, customer_email, customer_phone,
-        consent_acknowledgement, sanitized_notes, lookbook_inspirations_json,
-        wizard_version, client_submitted_at, delivery_status,
-        owner_notification_queued, owner_notification_sent, sheet_written, crm_posted
-        ,
-        source_page, utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid, fbclid, msclkid,
-        preferred_contact_method, child_count_confidence, duration_minutes, duration_source, computed_end_time,
-        travel_source, travel_note, customer_budget_provided, customer_budget_amount_cents, customer_budget_label,
-        pricing_source, manual_review_reasons_json, canonical_payload_json
-      ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-      )`,
-    )
-    .bind(
-      record.lead_id,
-      record.idempotency_key,
-      record.source,
-      record.received_at,
-      record.updated_at,
-      record.event_type,
-      record.event_date,
-      record.start_time,
-      record.event_city,
-      record.venue_name,
-      record.travel_miles,
-      record.travel_band,
-      record.travel_fee_estimate_cents,
-      record.services_json,
-      record.kids_count_bucket,
-      record.kids_count_actual,
-      record.design_style,
-      record.service_window_minutes,
-      record.required_artist_count,
-      record.quote_outcome,
-      record.pricing_event_total_cents,
-      record.pricing_retainer_cents,
-      record.pricing_model,
-      record.customer_first_name,
-      record.customer_last_name,
-      record.customer_email,
-      record.customer_phone,
-      record.consent_acknowledgement,
-      record.sanitized_notes,
-      record.lookbook_inspirations_json,
-      record.wizard_version,
-      record.client_submitted_at,
-      record.delivery_status,
-      record.owner_notification_queued,
-      record.owner_notification_sent,
-      record.sheet_written,
-      record.crm_posted,
-      record.source_page,
-      record.utm_source,
-      record.utm_medium,
-      record.utm_campaign,
-      record.utm_term,
-      record.utm_content,
-      record.gclid,
-      record.fbclid,
-      record.msclkid,
-      record.preferred_contact_method,
-      record.child_count_confidence,
-      record.duration_minutes,
-      record.duration_source,
-      record.computed_end_time,
-      record.travel_source,
-      record.travel_note,
-      record.customer_budget_provided,
-      record.customer_budget_amount_cents,
-      record.customer_budget_label,
-      record.pricing_source,
-      record.manual_review_reasons_json,
-      record.canonical_payload_json,
-    )
+    .prepare(`INSERT INTO quote_requests (${columns}) VALUES (${placeholders})`)
+    .bind(...QUOTE_REQUEST_INSERT_COLUMNS.map((column) => record[column] ?? null))
     .run();
 }
 
