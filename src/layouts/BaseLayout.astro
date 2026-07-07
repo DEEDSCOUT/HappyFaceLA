@@ -71,6 +71,8 @@ const {
         "utm_term",
         "utm_content",
         "gclid",
+        "gbraid",
+        "wbraid",
         "fbclid",
         "msclkid"
       ];
@@ -95,14 +97,48 @@ const {
         }
       }
 
+      function safeCurrentUrl() {
+        try {
+          const url = new URL(window.location.href);
+          url.hash = "";
+          return url.toString().slice(0, 512);
+        } catch {
+          return window.location.pathname || "/";
+        }
+      }
+
+      function safeReferrer() {
+        if (!document.referrer) return "";
+        try {
+          const url = new URL(document.referrer);
+          url.hash = "";
+          url.search = "";
+          return url.toString().slice(0, 512);
+        } catch {
+          return "";
+        }
+      }
+
       function captureAttributionFromUrl() {
         const url = new URL(window.location.href);
         const current = readAttrStore();
         const next = { ...current };
+        const landingPage = safeCurrentUrl();
+        const sourcePath = window.location.pathname || "/";
+        const referrer = safeReferrer();
+
+        if (!next.first_landing_page) next.first_landing_page = landingPage;
+        if (!next.first_source_path) next.first_source_path = sourcePath;
+        if (!next.first_referrer && referrer) next.first_referrer = referrer;
+        next.landing_page = next.first_landing_page || landingPage;
+        next.source_path = next.first_source_path || sourcePath;
+        if (referrer && !next.referrer) next.referrer = referrer;
 
         ATTR_KEYS.forEach((key) => {
-          const value = (url.searchParams.get(key) || "").trim();
+          const value = url.searchParams.get(key);
           if (value) {
+            const firstKey = `first_${key}`;
+            if (!next[firstKey]) next[firstKey] = value;
             next[key] = value;
           }
         });
