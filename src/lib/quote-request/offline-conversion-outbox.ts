@@ -21,6 +21,10 @@ export type OfflineConversionOutboxResult =
   | { queued: true; eventName: OfflineConversionEventName; orderId: string }
   | { queued: false; eventName: OfflineConversionEventName; reason: string };
 
+export type OfflineConversionOutboxEligibility =
+  | { eligible: true; eventName: OfflineConversionEventName }
+  | { eligible: false; eventName: OfflineConversionEventName; reason: string };
+
 export function isOfflineOutboxEnabled(env: OfflineConversionEnv): boolean {
   return String(env.GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED ?? '').trim().toLowerCase() === 'true';
 }
@@ -99,6 +103,27 @@ function suppressionReason(
   return null;
 }
 
+export function evaluateOfflineConversionOutboxEvent(
+  lead: CanonicalPlanMyPartyLead,
+  eventName: OfflineConversionEventName,
+  outcome: OfflineConversionOutcomeInput,
+): OfflineConversionOutboxEligibility {
+  const suppressed = suppressionReason(lead, eventName, outcome);
+  if (suppressed) return { eligible: false, eventName, reason: suppressed };
+  return { eligible: true, eventName };
+}
+
+export function evaluateOfflineConversionOutboxEvents(
+  lead: CanonicalPlanMyPartyLead,
+  outcome: OfflineConversionOutcomeInput,
+): OfflineConversionOutboxEligibility[] {
+  return [
+    evaluateOfflineConversionOutboxEvent(lead, 'qualified_lead', outcome),
+    evaluateOfflineConversionOutboxEvent(lead, 'quote_sent', outcome),
+    evaluateOfflineConversionOutboxEvent(lead, 'booked_event', outcome),
+  ];
+}
+
 export async function queueOfflineConversionOutboxEvent(
   db: D1Database,
   lead: CanonicalPlanMyPartyLead,
@@ -108,8 +133,8 @@ export async function queueOfflineConversionOutboxEvent(
 ): Promise<OfflineConversionOutboxResult> {
   if (!isOfflineOutboxEnabled(env)) return { queued: false, eventName, reason: 'feature_flag_disabled' };
 
-  const suppressed = suppressionReason(lead, eventName, outcome);
-  if (suppressed) return { queued: false, eventName, reason: suppressed };
+  const eligibility = evaluateOfflineConversionOutboxEvent(lead, eventName, outcome);
+  if (!eligibility.eligible) return { queued: false, eventName, reason: eligibility.reason };
 
   const clickId = selectedClickId(lead);
   const orderId = makeOfflineOrderId(lead.leadId, eventName);
