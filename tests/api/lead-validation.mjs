@@ -426,7 +426,7 @@ test('internal-test lead is marked and suppressed from offline outbox', async ()
     db,
     canonical,
     'qualified_lead',
-    { qualifiedStatus: 'qualified' },
+    { qualifiedStatus: 'qualified', qualifiedAtUtc: '2026-07-07T22:30:37.000Z' },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
   assert.equal(result.queued, false);
@@ -459,7 +459,7 @@ test('qualified lead outbox event queues only when feature flag is enabled', asy
     db,
     canonical,
     'qualified_lead',
-    { qualifiedStatus: 'qualified' },
+    { qualifiedStatus: 'qualified', qualifiedAtUtc: '2026-07-07T22:30:37.000Z' },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'false' },
   );
   assert.equal(disabled.queued, false);
@@ -468,7 +468,7 @@ test('qualified lead outbox event queues only when feature flag is enabled', asy
     db,
     canonical,
     'qualified_lead',
-    { qualifiedStatus: 'qualified' },
+    { qualifiedStatus: 'qualified', qualifiedAtUtc: '2026-07-07T22:30:37.000Z' },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
   assert.equal(queued.queued, true);
@@ -502,7 +502,11 @@ test('quote sent outbox event queues only when sent and qualified', async () => 
     db,
     canonical,
     'quote_sent',
-    { qualifiedStatus: 'qualified', quoteSentStatus: 'sent' },
+    {
+      qualifiedStatus: 'qualified',
+      quoteSentStatus: 'sent',
+      quoteSentAtUtc: '2026-07-07T15:19:52.000Z',
+    },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
   assert.equal(result.queued, true);
@@ -518,7 +522,11 @@ test('booked event outbox does not queue without booked revenue', async () => {
     db,
     canonical,
     'booked_event',
-    { qualifiedStatus: 'qualified', bookedStatus: 'booked' },
+    {
+      qualifiedStatus: 'qualified',
+      bookedStatus: 'booked',
+      bookedAtUtc: '2026-07-08T01:02:03.000Z',
+    },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
   assert.equal(result.queued, false);
@@ -562,8 +570,11 @@ test('booked event outbox carries revenue value and no separate booked_revenue e
     canonical,
     {
       qualifiedStatus: 'qualified',
+      qualifiedAtUtc: '2026-07-07T22:30:37.000Z',
       quoteSentStatus: 'sent',
+      quoteSentAtUtc: '2026-07-07T15:19:52.000Z',
       bookedStatus: 'booked',
+      bookedAtUtc: '2026-07-08T01:02:03.000Z',
       bookedRevenueCents: 57500,
     },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },

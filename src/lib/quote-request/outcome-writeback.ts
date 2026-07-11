@@ -30,9 +30,11 @@ export type OutcomeWritebackInput = {
   readyForD1Sync: 'yes';
   dryRun: boolean;
   qualifiedStatus: QualifiedStatus;
+  qualifiedAtUtc: string | null;
   quoteSentStatus: QuoteSentStatus;
   quoteSentAtUtc: string | null;
   bookedStatus: BookedStatus;
+  bookedAtUtc: string | null;
   bookedRevenueCents: number | null;
   lostReason: string | null;
   duplicateOfLeadId: string | null;
@@ -57,9 +59,11 @@ type QuoteRequestOutcomeRow = {
   submit_gbraid: string | null;
   submit_wbraid: string | null;
   qualified_status: QualifiedStatus;
+  qualified_at_utc: string | null;
   quote_sent_status: QuoteSentStatus;
   quote_sent_at_utc: string | null;
   booked_status: BookedStatus;
+  booked_at_utc: string | null;
   booked_revenue_cents: number | null;
   booked_revenue_currency: string | null;
   lost_reason: string | null;
@@ -73,8 +77,11 @@ type QuoteRequestOutcomeRow = {
 
 type OutcomeSnapshot = {
   qualifiedStatus: QualifiedStatus;
+  qualifiedAtUtc: string | null;
   quoteSentStatus: QuoteSentStatus;
+  quoteSentAtUtc: string | null;
   bookedStatus: BookedStatus;
+  bookedAtUtc: string | null;
   bookedRevenueCents: number | null;
   lostReason: string | null;
   duplicateOfLeadId: string | null;
@@ -219,11 +226,18 @@ function normalizeRevenueFromRecord(record: Record<string, unknown>): number | n
 
 function validateOutcomeRules(input: OutcomeWritebackInput): string[] {
   const errors: string[] = [];
+  if (input.qualifiedStatus === 'qualified' && !input.qualifiedAtUtc) {
+    errors.push('qualified requires qualified_at_utc');
+  }
   if (input.quoteSentStatus === 'sent' && input.qualifiedStatus !== 'qualified') {
     errors.push('quote_sent requires qualified_status = qualified');
   }
+  if (input.quoteSentStatus === 'sent' && !input.quoteSentAtUtc) {
+    errors.push('quote_sent requires quote_sent_at_utc');
+  }
   if (input.bookedStatus === 'booked') {
     if (input.qualifiedStatus !== 'qualified') errors.push('booked requires qualified_status = qualified');
+    if (!input.bookedAtUtc) errors.push('booked requires booked_at_utc');
     if (input.bookedRevenueCents === null || input.bookedRevenueCents <= 0) {
       errors.push('booked requires booked_revenue_cents > 0');
     }
@@ -273,9 +287,19 @@ export function validateOutcomeWritebackRequest(value: unknown): ValidationResul
     'ownerBookedStatus',
   ])) ?? 'pending';
 
+  const qualifiedAtUtc = normalizeNullableString(pick(value, ['qualified_at_utc', 'qualifiedAtUtc']), 40);
+  if (qualifiedAtUtc !== null && !isIsoInstant(qualifiedAtUtc)) {
+    errors.push('qualified_at_utc must be an ISO UTC instant');
+  }
+
   const quoteSentAtUtc = normalizeNullableString(pick(value, ['quote_sent_at_utc', 'quoteSentAtUtc']), 40);
   if (quoteSentAtUtc !== null && !isIsoInstant(quoteSentAtUtc)) {
     errors.push('quote_sent_at_utc must be an ISO UTC instant');
+  }
+
+  const bookedAtUtc = normalizeNullableString(pick(value, ['booked_at_utc', 'bookedAtUtc']), 40);
+  if (bookedAtUtc !== null && !isIsoInstant(bookedAtUtc)) {
+    errors.push('booked_at_utc must be an ISO UTC instant');
   }
 
   const duplicateOfLeadId = normalizeNullableString(pick(value, [
@@ -293,9 +317,11 @@ export function validateOutcomeWritebackRequest(value: unknown): ValidationResul
     readyForD1Sync: readyForD1Sync ?? 'yes',
     dryRun: normalizeDryRun(pick(value, ['dry_run', 'dryRun'])),
     qualifiedStatus: qualifiedStatus ?? 'unreviewed',
+    qualifiedAtUtc,
     quoteSentStatus,
     quoteSentAtUtc,
     bookedStatus,
+    bookedAtUtc,
     bookedRevenueCents: normalizeRevenueFromRecord(value),
     lostReason: normalizeNullableString(pick(value, ['lost_reason', 'lostReason', 'owner_lost_reason', 'ownerLostReason']), 120),
     duplicateOfLeadId,
@@ -322,8 +348,11 @@ export function validateOutcomeWritebackRequest(value: unknown): ValidationResul
 function snapshotFromRow(row: QuoteRequestOutcomeRow): OutcomeSnapshot {
   return {
     qualifiedStatus: row.qualified_status,
+    qualifiedAtUtc: row.qualified_at_utc,
     quoteSentStatus: row.quote_sent_status,
+    quoteSentAtUtc: row.quote_sent_at_utc,
     bookedStatus: row.booked_status,
+    bookedAtUtc: row.booked_at_utc,
     bookedRevenueCents: row.booked_revenue_cents,
     lostReason: row.lost_reason,
     duplicateOfLeadId: row.duplicate_of_lead_id,
@@ -335,8 +364,11 @@ function snapshotFromRow(row: QuoteRequestOutcomeRow): OutcomeSnapshot {
 function snapshotFromInput(input: OutcomeWritebackInput): OutcomeSnapshot {
   return {
     qualifiedStatus: input.qualifiedStatus,
+    qualifiedAtUtc: input.qualifiedStatus === 'qualified' ? input.qualifiedAtUtc : null,
     quoteSentStatus: input.quoteSentStatus,
+    quoteSentAtUtc: input.quoteSentStatus === 'sent' ? input.quoteSentAtUtc : null,
     bookedStatus: input.bookedStatus,
+    bookedAtUtc: input.bookedStatus === 'booked' ? input.bookedAtUtc : null,
     bookedRevenueCents: input.bookedRevenueCents,
     lostReason: input.lostReason,
     duplicateOfLeadId: input.duplicateOfLeadId,
@@ -352,8 +384,11 @@ function applyOutcomeToCanonical(
   return {
     ...lead,
     qualifiedStatus: input.qualifiedStatus,
+    qualifiedAtUtc: input.qualifiedStatus === 'qualified' ? input.qualifiedAtUtc : null,
     quoteSentStatus: input.quoteSentStatus,
+    quoteSentAtUtc: input.quoteSentStatus === 'sent' ? input.quoteSentAtUtc : null,
     bookedStatus: input.bookedStatus,
+    bookedAtUtc: input.bookedStatus === 'booked' ? input.bookedAtUtc : null,
     bookedRevenueCents: input.bookedRevenueCents,
     bookedRevenueCurrency: 'USD',
     lostReason: input.lostReason,
@@ -385,8 +420,11 @@ function canonicalFromRow(row: QuoteRequestOutcomeRow): CanonicalPlanMyPartyLead
       submitWbraid: row.submit_wbraid ?? canonical.submitWbraid ?? null,
       sourceConfidence: (row.source_confidence ?? canonical.sourceConfidence) as CanonicalPlanMyPartyLead['sourceConfidence'],
       qualifiedStatus: row.qualified_status,
+      qualifiedAtUtc: row.qualified_at_utc,
       quoteSentStatus: row.quote_sent_status,
+      quoteSentAtUtc: row.quote_sent_at_utc,
       bookedStatus: row.booked_status,
+      bookedAtUtc: row.booked_at_utc,
       bookedRevenueCents: row.booked_revenue_cents,
       bookedRevenueCurrency: row.booked_revenue_currency ?? 'USD',
       lostReason: row.lost_reason,
@@ -409,8 +447,8 @@ async function selectQuoteRequestOutcomeRow(
        lead_id, updated_at, canonical_payload_json, source_confidence,
        gclid, gbraid, wbraid, first_gclid, first_gbraid, first_wbraid,
        submit_gclid, submit_gbraid, submit_wbraid,
-       qualified_status, quote_sent_status, quote_sent_at_utc,
-       booked_status, booked_revenue_cents, booked_revenue_currency,
+       qualified_status, qualified_at_utc, quote_sent_status, quote_sent_at_utc,
+       booked_status, booked_at_utc, booked_revenue_cents, booked_revenue_currency,
        lost_reason, duplicate_of_lead_id, owner_review_notes,
        owner_reviewed_at_utc, owner_reviewed_by,
        is_internal_test, internal_test_reason
@@ -424,21 +462,21 @@ async function updateQuoteRequestOutcome(
   db: D1Database,
   input: OutcomeWritebackInput,
   canonical: CanonicalPlanMyPartyLead,
-  existingQuoteSentAtUtc: string | null,
   actorLabel: string,
   nowIso: string,
 ): Promise<boolean> {
-  const quoteSentAtUtc =
-    input.quoteSentStatus === 'sent'
-      ? input.quoteSentAtUtc ?? existingQuoteSentAtUtc ?? nowIso
-      : null;
+  const qualifiedAtUtc = input.qualifiedStatus === 'qualified' ? input.qualifiedAtUtc : null;
+  const quoteSentAtUtc = input.quoteSentStatus === 'sent' ? input.quoteSentAtUtc : null;
+  const bookedAtUtc = input.bookedStatus === 'booked' ? input.bookedAtUtc : null;
   const canonicalPayload = JSON.stringify(applyOutcomeToCanonical(canonical, input));
   const values: D1Value[] = [
     nowIso,
     input.qualifiedStatus,
+    qualifiedAtUtc,
     input.quoteSentStatus,
     quoteSentAtUtc,
     input.bookedStatus,
+    bookedAtUtc,
     input.bookedRevenueCents,
     'USD',
     input.lostReason,
@@ -455,9 +493,11 @@ async function updateQuoteRequestOutcome(
     `UPDATE quote_requests
      SET updated_at = ?,
          qualified_status = ?,
+         qualified_at_utc = ?,
          quote_sent_status = ?,
          quote_sent_at_utc = ?,
          booked_status = ?,
+         booked_at_utc = ?,
          booked_revenue_cents = ?,
          booked_revenue_currency = ?,
          lost_reason = ?,
@@ -476,8 +516,11 @@ async function updateQuoteRequestOutcome(
 function outcomeInput(input: OutcomeWritebackInput): OfflineConversionOutcomeInput {
   return {
     qualifiedStatus: input.qualifiedStatus,
+    qualifiedAtUtc: input.qualifiedAtUtc,
     quoteSentStatus: input.quoteSentStatus,
+    quoteSentAtUtc: input.quoteSentAtUtc,
     bookedStatus: input.bookedStatus,
+    bookedAtUtc: input.bookedAtUtc,
     bookedRevenueCents: input.bookedRevenueCents,
     duplicateOfLeadId: input.duplicateOfLeadId,
     isInternalTest: input.isInternalTest,
@@ -538,7 +581,6 @@ export async function handleOutcomeWriteback(
     db,
     parsed.value,
     canonical,
-    row.quote_sent_at_utc,
     actorLabel,
     nowIso,
   );
@@ -555,8 +597,11 @@ export async function handleOutcomeWriteback(
       readyForD1Sync: true,
       dryRun: false,
       qualifiedStatus: parsed.value.qualifiedStatus,
+      qualifiedAtUtc: parsed.value.qualifiedAtUtc,
       quoteSentStatus: parsed.value.quoteSentStatus,
+      quoteSentAtUtc: parsed.value.quoteSentAtUtc,
       bookedStatus: parsed.value.bookedStatus,
+      bookedAtUtc: parsed.value.bookedAtUtc,
       bookedRevenueCents: parsed.value.bookedRevenueCents,
       outboxQueuedCount: outboxResults.filter((result) => result.queued).length,
       outboxSuppressedCount: outboxResults.filter((result) => !result.queued).length,

@@ -1,4 +1,5 @@
 import type { D1Database, D1Value } from '../booking/availability-types.ts';
+import { isIsoInstant } from '../booking/availability-validation.ts';
 import type { CanonicalPlanMyPartyLead } from './canonical-lead.ts';
 
 export type OfflineConversionEventName = 'qualified_lead' | 'quote_sent' | 'booked_event';
@@ -9,8 +10,11 @@ export type OfflineConversionEnv = {
 
 export type OfflineConversionOutcomeInput = {
   qualifiedStatus?: string | null;
+  qualifiedAtUtc?: string | null;
   quoteSentStatus?: string | null;
+  quoteSentAtUtc?: string | null;
   bookedStatus?: string | null;
+  bookedAtUtc?: string | null;
   bookedRevenueCents?: number | null;
   duplicateOfLeadId?: string | null;
   isInternalTest?: boolean;
@@ -31,6 +35,46 @@ export function isOfflineOutboxEnabled(env: OfflineConversionEnv): boolean {
 
 function nowIso(): string {
   return new Date().toISOString();
+}
+
+function padDatePart(value: number): string {
+  return String(value).padStart(2, '0');
+}
+
+const PACIFIC_DATE_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Los_Angeles',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+  timeZoneName: 'longOffset',
+});
+
+export function formatGoogleAdsUtcDateTime(isoInstant: string): string {
+  if (!isIsoInstant(isoInstant)) {
+    throw new Error('Offline conversion milestone must be an ISO UTC instant');
+  }
+  const date = new Date(isoInstant);
+  const datePart = `${date.getUTCFullYear()}-${padDatePart(date.getUTCMonth() + 1)}-${padDatePart(date.getUTCDate())}`;
+  const timePart = `${padDatePart(date.getUTCHours())}:${padDatePart(date.getUTCMinutes())}:${padDatePart(date.getUTCSeconds())}`;
+  return `${datePart} ${timePart}+00:00`;
+}
+
+export function formatGoogleAdsPacificDateTime(isoInstant: string): string {
+  if (!isIsoInstant(isoInstant)) {
+    throw new Error('Offline conversion milestone must be an ISO UTC instant');
+  }
+  const parts = Object.fromEntries(
+    PACIFIC_DATE_TIME_FORMATTER.formatToParts(new Date(isoInstant)).map(({ type, value }) => [type, value]),
+  );
+  const offset = String(parts.timeZoneName ?? '').replace(/^GMT/, '');
+  if (!/^[+-]\d{2}:\d{2}$/.test(offset)) {
+    throw new Error('Unable to determine America/Los_Angeles offset');
+  }
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}${offset}`;
 }
 
 function makeOutboxId(leadId: string, eventName: OfflineConversionEventName): string {
@@ -69,6 +113,32 @@ function effectiveBookedRevenueCents(lead: CanonicalPlanMyPartyLead, outcome: Of
   return outcome.bookedRevenueCents ?? lead.bookedRevenueCents;
 }
 
+function eventMilestoneUtc(
+  lead: CanonicalPlanMyPartyLead,
+  eventName: OfflineConversionEventName,
+  outcome: OfflineConversionOutcomeInput,
+): string | null {
+  switch (eventName) {
+    case 'qualified_lead':
+      return outcome.qualifiedAtUtc ?? lead.qualifiedAtUtc ?? null;
+    case 'quote_sent':
+      return outcome.quoteSentAtUtc ?? lead.quoteSentAtUtc ?? null;
+    case 'booked_event':
+      return outcome.bookedAtUtc ?? lead.bookedAtUtc ?? null;
+  }
+}
+
+function missingMilestoneReason(eventName: OfflineConversionEventName): string {
+  switch (eventName) {
+    case 'qualified_lead':
+      return 'missing_qualified_at_utc';
+    case 'quote_sent':
+      return 'missing_quote_sent_at_utc';
+    case 'booked_event':
+      return 'missing_booked_at_utc';
+  }
+}
+
 function isPositiveRevenueCents(value: number | null | undefined): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0;
 }
@@ -100,6 +170,7 @@ function suppressionReason(
     if ((outcome.bookedStatus ?? lead.bookedStatus) !== 'booked') return 'not_booked';
     if (!isPositiveRevenueCents(effectiveBookedRevenueCents(lead, outcome))) return 'booked_revenue_missing';
   }
+  if (!isIsoInstant(eventMilestoneUtc(lead, eventName, outcome))) return missingMilestoneReason(eventName);
   return null;
 }
 
@@ -138,15 +209,19 @@ export async function queueOfflineConversionOutboxEvent(
 
   const clickId = selectedClickId(lead);
   const orderId = makeOfflineOrderId(lead.leadId, eventName);
-  const timestamp = nowIso();
+  const milestoneUtc = eventMilestoneUtc(lead, eventName, outcome);
+  if (!milestoneUtc) return { queued: false, eventName, reason: missingMilestoneReason(eventName) };
+  const conversionTimeUtc = formatGoogleAdsUtcDateTime(milestoneUtc);
+  const conversionTimePacific = formatGoogleAdsPacificDateTime(milestoneUtc);
+  const generatedAt = nowIso();
   const valueCents = eventValueCents(lead, eventName, outcome);
   const values: D1Value[] = [
     makeOutboxId(lead.leadId, eventName),
     lead.leadId,
     eventName,
     conversionActionName(eventName),
-    timestamp,
-    timestamp,
+    conversionTimeUtc,
+    conversionTimePacific,
     valueCents === null ? null : valueCents / 100,
     'USD',
     orderId,
@@ -169,12 +244,12 @@ export async function queueOfflineConversionOutboxEvent(
     null,
     null,
     null,
-    `${lead.leadId}:${eventName}:${timestamp}:${valueCents ?? ''}`,
-    timestamp,
-    timestamp,
+    `${lead.leadId}:${eventName}:${conversionTimeUtc}:${valueCents ?? ''}:${generatedAt}`,
+    generatedAt,
+    generatedAt,
   ];
 
-  await db.prepare(
+  const result = await db.prepare(
     `INSERT INTO google_ads_offline_conversion_outbox (
       outbox_id, lead_id, event_name, conversion_action_name,
       conversion_time_utc, conversion_time_pacific, conversion_value, currency_code,
@@ -187,8 +262,32 @@ export async function queueOfflineConversionOutboxEvent(
     ) VALUES (
       ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
     )
-    ON CONFLICT(lead_id, event_name) DO NOTHING`,
+    ON CONFLICT(lead_id, event_name) DO UPDATE SET
+      conversion_action_name = excluded.conversion_action_name,
+      conversion_time_utc = excluded.conversion_time_utc,
+      conversion_time_pacific = excluded.conversion_time_pacific,
+      conversion_value = excluded.conversion_value,
+      currency_code = excluded.currency_code,
+      gclid = excluded.gclid,
+      gbraid = excluded.gbraid,
+      wbraid = excluded.wbraid,
+      source_confidence_at_export = excluded.source_confidence_at_export,
+      qualified_status_snapshot = excluded.qualified_status_snapshot,
+      quote_sent_status_snapshot = excluded.quote_sent_status_snapshot,
+      booked_status_snapshot = excluded.booked_status_snapshot,
+      booked_revenue_cents_snapshot = excluded.booked_revenue_cents_snapshot,
+      suppression_reason = NULL,
+      payload_hash = excluded.payload_hash,
+      updated_at_utc = excluded.updated_at_utc
+    WHERE google_ads_offline_conversion_outbox.status = 'queued'
+      AND google_ads_offline_conversion_outbox.attempt_count = 0
+      AND google_ads_offline_conversion_outbox.google_ads_upload_job_id IS NULL
+      AND google_ads_offline_conversion_outbox.google_ads_result_resource_name IS NULL`,
   ).bind(...values).run();
+
+  if (result.meta?.changes === 0) {
+    return { queued: false, eventName, reason: 'existing_outbox_not_correctable' };
+  }
 
   return { queued: true, eventName, orderId };
 }
