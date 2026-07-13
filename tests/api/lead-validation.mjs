@@ -12,6 +12,9 @@ import {
 const originalFetch = globalThis.fetch;
 const tests = [];
 let fetchCalls = [];
+const TEST_QUALIFIED_AT = '2026-08-14T20:45:12.000Z';
+const TEST_QUOTE_SENT_AT = '2026-08-14T18:15:30.000Z';
+const TEST_BOOKED_AT = '2026-08-15T01:02:03.000Z';
 
 class MockD1 {
   constructor() {
@@ -30,6 +33,15 @@ class MockD1 {
               return db.byIdempotency.get(args[0]) ?? null;
             }
             return null;
+          },
+          async all() {
+            if (sql.includes('FROM google_ads_offline_conversion_outbox')) {
+              return {
+                success: true,
+                results: db.outbox.filter((row) => row.lead_id === args[0]),
+              };
+            }
+            return { success: true, results: [] };
           },
           async run() {
             if (sql.trim().startsWith('INSERT INTO quote_requests')) {
@@ -81,6 +93,15 @@ class MockD1 {
 
 function test(name, fn) {
   tests.push({ name, fn });
+}
+
+function milestoneTimes(overrides = {}) {
+  return {
+    qualifiedLead: null,
+    quoteSent: null,
+    bookedEvent: null,
+    ...overrides,
+  };
 }
 
 function resetFetch() {
@@ -187,6 +208,15 @@ test('valid Plan My Party full payload accepted', async () => {
   assert.equal(body.received, true);
   assert.equal(body.persisted, true);
   assert.equal(fetchCalls.length, 1);
+});
+
+test('ordinary Plan My Party insert remains a 99-column subset of the 100-column parent table', async () => {
+  resetFetch();
+  const { db } = await callQuote(fullPlanMyPartyPayload);
+  const inserted = Array.from(db.byLeadId.values())[0];
+  assert.equal(Object.keys(inserted).length, 99);
+  assert.equal(Object.hasOwn(inserted, 'qualified_at_utc'), false);
+  assert.equal(Object.hasOwn(inserted, 'booked_at_utc'), false);
 });
 
 test('GCLID and UTM fields preserved on valid Plan My Party payload', async () => {
@@ -426,7 +456,10 @@ test('internal-test lead is marked and suppressed from offline outbox', async ()
     db,
     canonical,
     'qualified_lead',
-    { qualifiedStatus: 'qualified' },
+    {
+      qualifiedStatus: 'qualified',
+      milestoneTimes: milestoneTimes({ qualifiedLead: TEST_QUALIFIED_AT }),
+    },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
   assert.equal(result.queued, false);
@@ -459,7 +492,10 @@ test('qualified lead outbox event queues only when feature flag is enabled', asy
     db,
     canonical,
     'qualified_lead',
-    { qualifiedStatus: 'qualified' },
+    {
+      qualifiedStatus: 'qualified',
+      milestoneTimes: milestoneTimes({ qualifiedLead: TEST_QUALIFIED_AT }),
+    },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'false' },
   );
   assert.equal(disabled.queued, false);
@@ -468,7 +504,10 @@ test('qualified lead outbox event queues only when feature flag is enabled', asy
     db,
     canonical,
     'qualified_lead',
-    { qualifiedStatus: 'qualified' },
+    {
+      qualifiedStatus: 'qualified',
+      milestoneTimes: milestoneTimes({ qualifiedLead: TEST_QUALIFIED_AT }),
+    },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
   assert.equal(queued.queued, true);
@@ -502,7 +541,11 @@ test('quote sent outbox event queues only when sent and qualified', async () => 
     db,
     canonical,
     'quote_sent',
-    { qualifiedStatus: 'qualified', quoteSentStatus: 'sent' },
+    {
+      qualifiedStatus: 'qualified',
+      quoteSentStatus: 'sent',
+      milestoneTimes: milestoneTimes({ quoteSent: TEST_QUOTE_SENT_AT }),
+    },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
   assert.equal(result.queued, true);
@@ -518,7 +561,11 @@ test('booked event outbox does not queue without booked revenue', async () => {
     db,
     canonical,
     'booked_event',
-    { qualifiedStatus: 'qualified', bookedStatus: 'booked' },
+    {
+      qualifiedStatus: 'qualified',
+      bookedStatus: 'booked',
+      milestoneTimes: milestoneTimes({ bookedEvent: TEST_BOOKED_AT }),
+    },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
   assert.equal(result.queued, false);
@@ -565,6 +612,11 @@ test('booked event outbox carries revenue value and no separate booked_revenue e
       quoteSentStatus: 'sent',
       bookedStatus: 'booked',
       bookedRevenueCents: 57500,
+      milestoneTimes: milestoneTimes({
+        qualifiedLead: TEST_QUALIFIED_AT,
+        quoteSent: TEST_QUOTE_SENT_AT,
+        bookedEvent: TEST_BOOKED_AT,
+      }),
     },
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
