@@ -218,11 +218,8 @@ export interface CanonicalPlanMyPartyLead {
   sourceConfidence: SourceConfidence;
   attributionSummary: string;
   qualifiedStatus: QualifiedStatus;
-  qualifiedAtUtc: string | null;
   quoteSentStatus: QuoteSentStatus;
-  quoteSentAtUtc: string | null;
   bookedStatus: BookedStatus;
-  bookedAtUtc: string | null;
   bookedRevenueCents: number | null;
   bookedRevenueCurrency: string;
   lostReason: string | null;
@@ -545,11 +542,8 @@ export function buildCanonicalLead(input: CanonicalLeadInput): CanonicalPlanMyPa
     sourceConfidence,
     attributionSummary,
     qualifiedStatus: 'unreviewed',
-    qualifiedAtUtc: null,
     quoteSentStatus: 'not_sent',
-    quoteSentAtUtc: null,
     bookedStatus: 'pending',
-    bookedAtUtc: null,
     bookedRevenueCents: null,
     bookedRevenueCurrency: 'USD',
     lostReason: null,

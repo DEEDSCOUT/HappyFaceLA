@@ -1,8 +1,19 @@
-import type { D1Database, D1Value } from '../booking/availability-types.ts';
+import type {
+  D1Database,
+  D1PreparedStatement,
+  D1Value,
+} from '../booking/availability-types.ts';
 import { isIsoInstant } from '../booking/availability-validation.ts';
 import type { CanonicalPlanMyPartyLead } from './canonical-lead.ts';
+import type { QuoteRequestMilestoneTimes } from './milestones.ts';
 
 export type OfflineConversionEventName = 'qualified_lead' | 'quote_sent' | 'booked_event';
+
+export const OFFLINE_CONVERSION_EVENT_NAMES: readonly OfflineConversionEventName[] = [
+  'qualified_lead',
+  'quote_sent',
+  'booked_event',
+];
 
 export type OfflineConversionEnv = {
   GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED?: string;
@@ -10,15 +21,13 @@ export type OfflineConversionEnv = {
 
 export type OfflineConversionOutcomeInput = {
   qualifiedStatus?: string | null;
-  qualifiedAtUtc?: string | null;
   quoteSentStatus?: string | null;
-  quoteSentAtUtc?: string | null;
   bookedStatus?: string | null;
-  bookedAtUtc?: string | null;
   bookedRevenueCents?: number | null;
   duplicateOfLeadId?: string | null;
   isInternalTest?: boolean;
   internalTestReason?: string | null;
+  milestoneTimes?: QuoteRequestMilestoneTimes;
 };
 
 export type OfflineConversionOutboxResult =
@@ -28,6 +37,22 @@ export type OfflineConversionOutboxResult =
 export type OfflineConversionOutboxEligibility =
   | { eligible: true; eventName: OfflineConversionEventName }
   | { eligible: false; eventName: OfflineConversionEventName; reason: string };
+
+export type OfflineConversionOutboxRowState = {
+  event_name: OfflineConversionEventName;
+  conversion_time_utc: string;
+  status: string;
+  attempt_count: number;
+  google_ads_upload_job_id: string | null;
+  google_ads_result_resource_name: string | null;
+};
+
+export type PreparedOfflineConversionOutboxEvent = {
+  eventName: OfflineConversionEventName;
+  statement: D1PreparedStatement | null;
+  result: OfflineConversionOutboxResult;
+  conversionTimeUtc: string | null;
+};
 
 export function isOfflineOutboxEnabled(env: OfflineConversionEnv): boolean {
   return String(env.GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED ?? '').trim().toLowerCase() === 'true';
@@ -98,33 +123,42 @@ function selectedClickId(lead: CanonicalPlanMyPartyLead): { gclid: string | null
   return { gclid: null, gbraid: null, wbraid: null };
 }
 
-function eventValueCents(lead: CanonicalPlanMyPartyLead, eventName: OfflineConversionEventName, outcome: OfflineConversionOutcomeInput): number | null {
+function eventValueCents(
+  lead: CanonicalPlanMyPartyLead,
+  eventName: OfflineConversionEventName,
+  outcome: OfflineConversionOutcomeInput,
+): number | null {
   if (eventName === 'booked_event') {
     return outcome.bookedRevenueCents ?? lead.bookedRevenueCents ?? null;
   }
   return null;
 }
 
-function effectiveQualifiedStatus(lead: CanonicalPlanMyPartyLead, outcome: OfflineConversionOutcomeInput): string | null | undefined {
+function effectiveQualifiedStatus(
+  lead: CanonicalPlanMyPartyLead,
+  outcome: OfflineConversionOutcomeInput,
+): string | null | undefined {
   return outcome.qualifiedStatus ?? lead.qualifiedStatus;
 }
 
-function effectiveBookedRevenueCents(lead: CanonicalPlanMyPartyLead, outcome: OfflineConversionOutcomeInput): number | null | undefined {
+function effectiveBookedRevenueCents(
+  lead: CanonicalPlanMyPartyLead,
+  outcome: OfflineConversionOutcomeInput,
+): number | null | undefined {
   return outcome.bookedRevenueCents ?? lead.bookedRevenueCents;
 }
 
 function eventMilestoneUtc(
-  lead: CanonicalPlanMyPartyLead,
   eventName: OfflineConversionEventName,
   outcome: OfflineConversionOutcomeInput,
 ): string | null {
   switch (eventName) {
     case 'qualified_lead':
-      return outcome.qualifiedAtUtc ?? lead.qualifiedAtUtc ?? null;
+      return outcome.milestoneTimes?.qualifiedLead ?? null;
     case 'quote_sent':
-      return outcome.quoteSentAtUtc ?? lead.quoteSentAtUtc ?? null;
+      return outcome.milestoneTimes?.quoteSent ?? null;
     case 'booked_event':
-      return outcome.bookedAtUtc ?? lead.bookedAtUtc ?? null;
+      return outcome.milestoneTimes?.bookedEvent ?? null;
   }
 }
 
@@ -159,18 +193,22 @@ function suppressionReason(
   eventName: OfflineConversionEventName,
   outcome: OfflineConversionOutcomeInput,
 ): string | null {
-  if (outcome.isInternalTest || lead.isInternalTest) return outcome.internalTestReason || lead.internalTestReason || 'internal_test';
+  if (outcome.isInternalTest || lead.isInternalTest) {
+    return outcome.internalTestReason || lead.internalTestReason || 'internal_test';
+  }
   if (outcome.duplicateOfLeadId || lead.duplicateOfLeadId) return 'duplicate_lead';
   const qualifiedStatus = effectiveQualifiedStatus(lead, outcome);
   if (qualifiedStatus !== 'qualified') return `qualified_status_${qualifiedStatus || 'missing'}`;
   const clickId = selectedClickId(lead);
   if (!clickId.gclid && !clickId.gbraid && !clickId.wbraid) return 'missing_google_click_id';
-  if (eventName === 'quote_sent' && (outcome.quoteSentStatus ?? lead.quoteSentStatus) !== 'sent') return 'quote_not_sent';
+  if (eventName === 'quote_sent' && (outcome.quoteSentStatus ?? lead.quoteSentStatus) !== 'sent') {
+    return 'quote_not_sent';
+  }
   if (eventName === 'booked_event') {
     if ((outcome.bookedStatus ?? lead.bookedStatus) !== 'booked') return 'not_booked';
     if (!isPositiveRevenueCents(effectiveBookedRevenueCents(lead, outcome))) return 'booked_revenue_missing';
   }
-  if (!isIsoInstant(eventMilestoneUtc(lead, eventName, outcome))) return missingMilestoneReason(eventName);
+  if (!isIsoInstant(eventMilestoneUtc(eventName, outcome))) return missingMilestoneReason(eventName);
   return null;
 }
 
@@ -188,32 +226,73 @@ export function evaluateOfflineConversionOutboxEvents(
   lead: CanonicalPlanMyPartyLead,
   outcome: OfflineConversionOutcomeInput,
 ): OfflineConversionOutboxEligibility[] {
-  return [
-    evaluateOfflineConversionOutboxEvent(lead, 'qualified_lead', outcome),
-    evaluateOfflineConversionOutboxEvent(lead, 'quote_sent', outcome),
-    evaluateOfflineConversionOutboxEvent(lead, 'booked_event', outcome),
-  ];
+  return OFFLINE_CONVERSION_EVENT_NAMES.map((eventName) => (
+    evaluateOfflineConversionOutboxEvent(lead, eventName, outcome)
+  ));
 }
 
-export async function queueOfflineConversionOutboxEvent(
+export function isOfflineConversionOutboxRowCorrectable(
+  row: OfflineConversionOutboxRowState,
+): boolean {
+  return row.status === 'queued'
+    && row.attempt_count === 0
+    && row.google_ads_upload_job_id === null
+    && row.google_ads_result_resource_name === null;
+}
+
+export async function selectOfflineConversionOutboxRows(
+  db: D1Database,
+  leadId: string,
+): Promise<Map<OfflineConversionEventName, OfflineConversionOutboxRowState>> {
+  const result = await db.prepare(
+    `SELECT event_name, conversion_time_utc, status, attempt_count,
+            google_ads_upload_job_id, google_ads_result_resource_name
+     FROM google_ads_offline_conversion_outbox
+     WHERE lead_id = ?`,
+  ).bind(leadId).all<OfflineConversionOutboxRowState>();
+  return new Map((result.results ?? []).map((row) => [row.event_name, row]));
+}
+
+export function prepareOfflineConversionOutboxEvent(
   db: D1Database,
   lead: CanonicalPlanMyPartyLead,
   eventName: OfflineConversionEventName,
   outcome: OfflineConversionOutcomeInput,
   env: OfflineConversionEnv,
-): Promise<OfflineConversionOutboxResult> {
-  if (!isOfflineOutboxEnabled(env)) return { queued: false, eventName, reason: 'feature_flag_disabled' };
+  generatedAt = nowIso(),
+): PreparedOfflineConversionOutboxEvent {
+  if (!isOfflineOutboxEnabled(env)) {
+    return {
+      eventName,
+      statement: null,
+      result: { queued: false, eventName, reason: 'feature_flag_disabled' },
+      conversionTimeUtc: null,
+    };
+  }
 
   const eligibility = evaluateOfflineConversionOutboxEvent(lead, eventName, outcome);
-  if (!eligibility.eligible) return { queued: false, eventName, reason: eligibility.reason };
+  if (!eligibility.eligible) {
+    return {
+      eventName,
+      statement: null,
+      result: { queued: false, eventName, reason: eligibility.reason },
+      conversionTimeUtc: null,
+    };
+  }
 
   const clickId = selectedClickId(lead);
   const orderId = makeOfflineOrderId(lead.leadId, eventName);
-  const milestoneUtc = eventMilestoneUtc(lead, eventName, outcome);
-  if (!milestoneUtc) return { queued: false, eventName, reason: missingMilestoneReason(eventName) };
+  const milestoneUtc = eventMilestoneUtc(eventName, outcome);
+  if (!milestoneUtc) {
+    return {
+      eventName,
+      statement: null,
+      result: { queued: false, eventName, reason: missingMilestoneReason(eventName) },
+      conversionTimeUtc: null,
+    };
+  }
   const conversionTimeUtc = formatGoogleAdsUtcDateTime(milestoneUtc);
   const conversionTimePacific = formatGoogleAdsPacificDateTime(milestoneUtc);
-  const generatedAt = nowIso();
   const valueCents = eventValueCents(lead, eventName, outcome);
   const values: D1Value[] = [
     makeOutboxId(lead.leadId, eventName),
@@ -249,7 +328,7 @@ export async function queueOfflineConversionOutboxEvent(
     generatedAt,
   ];
 
-  const result = await db.prepare(
+  const statement = db.prepare(
     `INSERT INTO google_ads_offline_conversion_outbox (
       outbox_id, lead_id, event_name, conversion_action_name,
       conversion_time_utc, conversion_time_pacific, conversion_value, currency_code,
@@ -264,7 +343,14 @@ export async function queueOfflineConversionOutboxEvent(
     )
     ON CONFLICT(lead_id, event_name) DO UPDATE SET
       conversion_action_name = excluded.conversion_action_name,
-      conversion_time_utc = excluded.conversion_time_utc,
+      conversion_time_utc = CASE
+        WHEN google_ads_offline_conversion_outbox.status = 'queued'
+         AND google_ads_offline_conversion_outbox.attempt_count = 0
+         AND google_ads_offline_conversion_outbox.google_ads_upload_job_id IS NULL
+         AND google_ads_offline_conversion_outbox.google_ads_result_resource_name IS NULL
+        THEN excluded.conversion_time_utc
+        ELSE NULL
+      END,
       conversion_time_pacific = excluded.conversion_time_pacific,
       conversion_value = excluded.conversion_value,
       currency_code = excluded.currency_code,
@@ -278,18 +364,57 @@ export async function queueOfflineConversionOutboxEvent(
       booked_revenue_cents_snapshot = excluded.booked_revenue_cents_snapshot,
       suppression_reason = NULL,
       payload_hash = excluded.payload_hash,
-      updated_at_utc = excluded.updated_at_utc
-    WHERE google_ads_offline_conversion_outbox.status = 'queued'
-      AND google_ads_offline_conversion_outbox.attempt_count = 0
-      AND google_ads_offline_conversion_outbox.google_ads_upload_job_id IS NULL
-      AND google_ads_offline_conversion_outbox.google_ads_result_resource_name IS NULL`,
-  ).bind(...values).run();
+      updated_at_utc = excluded.updated_at_utc`,
+  ).bind(...values);
 
-  if (result.meta?.changes === 0) {
+  return {
+    eventName,
+    statement,
+    result: { queued: true, eventName, orderId },
+    conversionTimeUtc,
+  };
+}
+
+export function prepareOfflineConversionOutboxEvents(
+  db: D1Database,
+  lead: CanonicalPlanMyPartyLead,
+  outcome: OfflineConversionOutcomeInput,
+  env: OfflineConversionEnv,
+  generatedAt = nowIso(),
+): PreparedOfflineConversionOutboxEvent[] {
+  return OFFLINE_CONVERSION_EVENT_NAMES.map((eventName) => (
+    prepareOfflineConversionOutboxEvent(db, lead, eventName, outcome, env, generatedAt)
+  ));
+}
+
+export async function queueOfflineConversionOutboxEvent(
+  db: D1Database,
+  lead: CanonicalPlanMyPartyLead,
+  eventName: OfflineConversionEventName,
+  outcome: OfflineConversionOutcomeInput,
+  env: OfflineConversionEnv,
+): Promise<OfflineConversionOutboxResult> {
+  const prepared = prepareOfflineConversionOutboxEvent(db, lead, eventName, outcome, env);
+  if (!prepared.statement) return prepared.result;
+
+  const existing = (await selectOfflineConversionOutboxRows(db, lead.leadId)).get(eventName);
+  if (existing && !isOfflineConversionOutboxRowCorrectable(existing)) {
     return { queued: false, eventName, reason: 'existing_outbox_not_correctable' };
   }
 
-  return { queued: true, eventName, orderId };
+  try {
+    const result = await prepared.statement.run();
+    if (result.meta?.changes === 0) {
+      return { queued: false, eventName, reason: 'existing_outbox_not_correctable' };
+    }
+    return prepared.result;
+  } catch (error) {
+    const current = (await selectOfflineConversionOutboxRows(db, lead.leadId)).get(eventName);
+    if (current && !isOfflineConversionOutboxRowCorrectable(current)) {
+      return { queued: false, eventName, reason: 'existing_outbox_not_correctable' };
+    }
+    throw error;
+  }
 }
 
 export async function queueOfflineConversionOutboxEvents(
@@ -298,9 +423,7 @@ export async function queueOfflineConversionOutboxEvents(
   outcome: OfflineConversionOutcomeInput,
   env: OfflineConversionEnv,
 ): Promise<OfflineConversionOutboxResult[]> {
-  return Promise.all([
-    queueOfflineConversionOutboxEvent(db, lead, 'qualified_lead', outcome, env),
-    queueOfflineConversionOutboxEvent(db, lead, 'quote_sent', outcome, env),
-    queueOfflineConversionOutboxEvent(db, lead, 'booked_event', outcome, env),
-  ]);
+  return Promise.all(OFFLINE_CONVERSION_EVENT_NAMES.map((eventName) => (
+    queueOfflineConversionOutboxEvent(db, lead, eventName, outcome, env)
+  )));
 }

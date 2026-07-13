@@ -1,6 +1,12 @@
-import type { D1Database, D1Value } from '../booking/availability-types.ts';
-import { isRecord, isIsoInstant, sanitizeSafeString } from '../booking/availability-validation.ts';
-import { writeSlotAdminEvent } from '../booking/slot-audit.ts';
+import type { D1Database, D1PreparedStatement, D1Value } from '../booking/availability-types.ts';
+import { redactError } from '../booking/availability-store.ts';
+import {
+  generateSafeId,
+  isRecord,
+  isIsoInstant,
+  sanitizeSafeString,
+} from '../booking/availability-validation.ts';
+import { redactAuditDetails } from '../booking/slot-audit.ts';
 import type {
   BookedStatus,
   CanonicalPlanMyPartyLead,
@@ -9,13 +15,26 @@ import type {
 } from './canonical-lead.ts';
 import {
   evaluateOfflineConversionOutboxEvents,
+  formatGoogleAdsUtcDateTime,
+  isOfflineConversionOutboxRowCorrectable,
   isOfflineOutboxEnabled,
-  queueOfflineConversionOutboxEvents,
+  prepareOfflineConversionOutboxEvents,
+  selectOfflineConversionOutboxRows,
   type OfflineConversionEnv,
+  type OfflineConversionEventName,
   type OfflineConversionOutcomeInput,
   type OfflineConversionOutboxEligibility,
   type OfflineConversionOutboxResult,
+  type OfflineConversionOutboxRowState,
+  type PreparedOfflineConversionOutboxEvent,
 } from './offline-conversion-outbox.ts';
+import {
+  prepareQuoteRequestMilestoneUpsert,
+  selectQuoteRequestMilestoneTimes,
+  type QuoteRequestMilestoneTimes,
+  type QuoteRequestMilestoneType,
+  type QuoteRequestMilestoneWrite,
+} from './milestones.ts';
 
 export type OutcomeWritebackEnv = OfflineConversionEnv & {
   CLOSED_LOOP_OUTCOME_WRITEBACK_ENABLED?: string;
@@ -59,11 +78,9 @@ type QuoteRequestOutcomeRow = {
   submit_gbraid: string | null;
   submit_wbraid: string | null;
   qualified_status: QualifiedStatus;
-  qualified_at_utc: string | null;
   quote_sent_status: QuoteSentStatus;
   quote_sent_at_utc: string | null;
   booked_status: BookedStatus;
-  booked_at_utc: string | null;
   booked_revenue_cents: number | null;
   booked_revenue_currency: string | null;
   lost_reason: string | null;
@@ -105,7 +122,7 @@ export type OutcomeWritebackResult =
     }
   | {
       ok: false;
-      status: 400 | 403 | 404 | 503;
+      status: 400 | 403 | 404 | 409 | 503;
       error: string;
       validationErrors?: string[];
     };
@@ -345,14 +362,17 @@ export function validateOutcomeWritebackRequest(value: unknown): ValidationResul
   return errors.length ? { ok: false, errors } : { ok: true, value: input };
 }
 
-function snapshotFromRow(row: QuoteRequestOutcomeRow): OutcomeSnapshot {
+function snapshotFromRow(
+  row: QuoteRequestOutcomeRow,
+  milestones: QuoteRequestMilestoneTimes,
+): OutcomeSnapshot {
   return {
     qualifiedStatus: row.qualified_status,
-    qualifiedAtUtc: row.qualified_at_utc,
+    qualifiedAtUtc: milestones.qualifiedLead,
     quoteSentStatus: row.quote_sent_status,
-    quoteSentAtUtc: row.quote_sent_at_utc,
+    quoteSentAtUtc: milestones.quoteSent,
     bookedStatus: row.booked_status,
-    bookedAtUtc: row.booked_at_utc,
+    bookedAtUtc: milestones.bookedEvent,
     bookedRevenueCents: row.booked_revenue_cents,
     lostReason: row.lost_reason,
     duplicateOfLeadId: row.duplicate_of_lead_id,
@@ -384,11 +404,8 @@ function applyOutcomeToCanonical(
   return {
     ...lead,
     qualifiedStatus: input.qualifiedStatus,
-    qualifiedAtUtc: input.qualifiedStatus === 'qualified' ? input.qualifiedAtUtc : null,
     quoteSentStatus: input.quoteSentStatus,
-    quoteSentAtUtc: input.quoteSentStatus === 'sent' ? input.quoteSentAtUtc : null,
     bookedStatus: input.bookedStatus,
-    bookedAtUtc: input.bookedStatus === 'booked' ? input.bookedAtUtc : null,
     bookedRevenueCents: input.bookedRevenueCents,
     bookedRevenueCurrency: 'USD',
     lostReason: input.lostReason,
@@ -420,11 +437,8 @@ function canonicalFromRow(row: QuoteRequestOutcomeRow): CanonicalPlanMyPartyLead
       submitWbraid: row.submit_wbraid ?? canonical.submitWbraid ?? null,
       sourceConfidence: (row.source_confidence ?? canonical.sourceConfidence) as CanonicalPlanMyPartyLead['sourceConfidence'],
       qualifiedStatus: row.qualified_status,
-      qualifiedAtUtc: row.qualified_at_utc,
       quoteSentStatus: row.quote_sent_status,
-      quoteSentAtUtc: row.quote_sent_at_utc,
       bookedStatus: row.booked_status,
-      bookedAtUtc: row.booked_at_utc,
       bookedRevenueCents: row.booked_revenue_cents,
       bookedRevenueCurrency: row.booked_revenue_currency ?? 'USD',
       lostReason: row.lost_reason,
@@ -447,8 +461,8 @@ async function selectQuoteRequestOutcomeRow(
        lead_id, updated_at, canonical_payload_json, source_confidence,
        gclid, gbraid, wbraid, first_gclid, first_gbraid, first_wbraid,
        submit_gclid, submit_gbraid, submit_wbraid,
-       qualified_status, qualified_at_utc, quote_sent_status, quote_sent_at_utc,
-       booked_status, booked_at_utc, booked_revenue_cents, booked_revenue_currency,
+       qualified_status, quote_sent_status, quote_sent_at_utc,
+       booked_status, booked_revenue_cents, booked_revenue_currency,
        lost_reason, duplicate_of_lead_id, owner_review_notes,
        owner_reviewed_at_utc, owner_reviewed_by,
        is_internal_test, internal_test_reason
@@ -458,25 +472,21 @@ async function selectQuoteRequestOutcomeRow(
   ).bind(leadId).first<QuoteRequestOutcomeRow>();
 }
 
-async function updateQuoteRequestOutcome(
+function prepareQuoteRequestOutcomeUpdate(
   db: D1Database,
   input: OutcomeWritebackInput,
   canonical: CanonicalPlanMyPartyLead,
   actorLabel: string,
   nowIso: string,
-): Promise<boolean> {
-  const qualifiedAtUtc = input.qualifiedStatus === 'qualified' ? input.qualifiedAtUtc : null;
+): D1PreparedStatement {
   const quoteSentAtUtc = input.quoteSentStatus === 'sent' ? input.quoteSentAtUtc : null;
-  const bookedAtUtc = input.bookedStatus === 'booked' ? input.bookedAtUtc : null;
   const canonicalPayload = JSON.stringify(applyOutcomeToCanonical(canonical, input));
   const values: D1Value[] = [
     nowIso,
     input.qualifiedStatus,
-    qualifiedAtUtc,
     input.quoteSentStatus,
     quoteSentAtUtc,
     input.bookedStatus,
-    bookedAtUtc,
     input.bookedRevenueCents,
     'USD',
     input.lostReason,
@@ -489,15 +499,13 @@ async function updateQuoteRequestOutcome(
     canonicalPayload,
     input.leadId,
   ];
-  const result = await db.prepare(
+  return db.prepare(
     `UPDATE quote_requests
      SET updated_at = ?,
          qualified_status = ?,
-         qualified_at_utc = ?,
          quote_sent_status = ?,
          quote_sent_at_utc = ?,
          booked_status = ?,
-         booked_at_utc = ?,
          booked_revenue_cents = ?,
          booked_revenue_currency = ?,
          lost_reason = ?,
@@ -509,23 +517,140 @@ async function updateQuoteRequestOutcome(
          internal_test_reason = ?,
          canonical_payload_json = ?
      WHERE lead_id = ?`,
-  ).bind(...values).run();
-  return result.meta?.changes === undefined || result.meta.changes > 0;
+  ).bind(...values);
 }
 
-function outcomeInput(input: OutcomeWritebackInput): OfflineConversionOutcomeInput {
+function milestoneTimesFromInput(input: OutcomeWritebackInput): QuoteRequestMilestoneTimes {
+  return {
+    qualifiedLead: input.qualifiedStatus === 'qualified' ? input.qualifiedAtUtc : null,
+    quoteSent: input.quoteSentStatus === 'sent' ? input.quoteSentAtUtc : null,
+    bookedEvent: input.bookedStatus === 'booked' ? input.bookedAtUtc : null,
+  };
+}
+
+function milestoneWritesFromInput(
+  input: OutcomeWritebackInput,
+  recordedBy: string,
+  nowIso: string,
+): QuoteRequestMilestoneWrite[] {
+  const writes: QuoteRequestMilestoneWrite[] = [];
+  const add = (milestoneType: QuoteRequestMilestoneType, occurredAtUtc: string | null): void => {
+    if (!occurredAtUtc) return;
+    writes.push({
+      leadId: input.leadId,
+      milestoneType,
+      occurredAtUtc,
+      recordedAtUtc: nowIso,
+      recordedBy,
+    });
+  };
+
+  if (input.qualifiedStatus === 'qualified') add('qualified_lead', input.qualifiedAtUtc);
+  if (input.quoteSentStatus === 'sent') add('quote_sent', input.quoteSentAtUtc);
+  if (input.bookedStatus === 'booked') add('booked_event', input.bookedAtUtc);
+  return writes;
+}
+
+function outcomeInput(
+  input: OutcomeWritebackInput,
+  milestones: QuoteRequestMilestoneTimes,
+): OfflineConversionOutcomeInput {
   return {
     qualifiedStatus: input.qualifiedStatus,
-    qualifiedAtUtc: input.qualifiedAtUtc,
     quoteSentStatus: input.quoteSentStatus,
-    quoteSentAtUtc: input.quoteSentAtUtc,
     bookedStatus: input.bookedStatus,
-    bookedAtUtc: input.bookedAtUtc,
     bookedRevenueCents: input.bookedRevenueCents,
     duplicateOfLeadId: input.duplicateOfLeadId,
     isInternalTest: input.isInternalTest,
     internalTestReason: input.internalTestReason,
+    milestoneTimes: milestones,
   };
+}
+
+function prepareOutcomeAuditStatement(
+  db: D1Database,
+  input: OutcomeWritebackInput,
+  actorLabel: string,
+  outboxResults: OfflineConversionOutboxResult[],
+  nowIso: string,
+): D1PreparedStatement {
+  const safeDetails = redactAuditDetails({
+    action: 'closed_loop_outcome_writeback',
+    leadId: input.leadId,
+    readyForD1Sync: true,
+    dryRun: false,
+    qualifiedStatus: input.qualifiedStatus,
+    quoteSentStatus: input.quoteSentStatus,
+    bookedStatus: input.bookedStatus,
+    bookedRevenueCents: input.bookedRevenueCents,
+    outboxQueuedCount: outboxResults.filter((result) => result.queued).length,
+    outboxSuppressedCount: outboxResults.filter((result) => !result.queued).length,
+  });
+  return db.prepare(
+    `INSERT INTO slot_admin_events (
+       admin_event_id, slot_id, action, actor_label, safe_details_json, created_at
+     ) VALUES (?, ?, ?, ?, ?, ?)`,
+  ).bind(
+    generateSafeId('admin'),
+    null,
+    'closed_loop_outcome_writeback',
+    actorLabel.slice(0, 80),
+    JSON.stringify(safeDetails),
+    nowIso,
+  );
+}
+
+function milestoneTimeForType(
+  milestones: QuoteRequestMilestoneTimes,
+  milestoneType: QuoteRequestMilestoneType,
+): string | null {
+  if (milestoneType === 'qualified_lead') return milestones.qualifiedLead;
+  if (milestoneType === 'quote_sent') return milestones.quoteSent;
+  return milestones.bookedEvent;
+}
+
+function blockedMilestoneCorrection(
+  writes: QuoteRequestMilestoneWrite[],
+  currentMilestones: QuoteRequestMilestoneTimes,
+  outboxRows: Map<OfflineConversionEventName, OfflineConversionOutboxRowState>,
+): QuoteRequestMilestoneType | null {
+  for (const write of writes) {
+    const existing = outboxRows.get(write.milestoneType);
+    if (!existing) continue;
+    const currentMilestone = milestoneTimeForType(currentMilestones, write.milestoneType);
+    const desiredConversionTime = formatGoogleAdsUtcDateTime(write.occurredAtUtc);
+    if (
+      (
+        (currentMilestone !== null && currentMilestone !== write.occurredAtUtc)
+        || existing.conversion_time_utc !== desiredConversionTime
+      )
+      && !isOfflineConversionOutboxRowCorrectable(existing)
+    ) {
+      return write.milestoneType;
+    }
+  }
+  return null;
+}
+
+function omitImmutableOutboxMutations(
+  prepared: PreparedOfflineConversionOutboxEvent[],
+  outboxRows: Map<OfflineConversionEventName, OfflineConversionOutboxRowState>,
+): PreparedOfflineConversionOutboxEvent[] {
+  return prepared.map((mutation) => {
+    const existing = outboxRows.get(mutation.eventName);
+    if (!mutation.statement || !existing || isOfflineConversionOutboxRowCorrectable(existing)) {
+      return mutation;
+    }
+    return {
+      ...mutation,
+      statement: null,
+      result: {
+        queued: false,
+        eventName: mutation.eventName,
+        reason: 'existing_outbox_not_correctable',
+      },
+    };
+  });
 }
 
 export async function handleOutcomeWriteback(
@@ -547,14 +672,25 @@ export async function handleOutcomeWriteback(
 
   if (!db) return { ok: false, status: 503, error: 'Quote request storage is not configured' };
 
-  const row = await selectQuoteRequestOutcomeRow(db, parsed.value.leadId);
+  let row: QuoteRequestOutcomeRow | null;
+  let currentMilestones: QuoteRequestMilestoneTimes;
+  try {
+    [row, currentMilestones] = await Promise.all([
+      selectQuoteRequestOutcomeRow(db, parsed.value.leadId),
+      selectQuoteRequestMilestoneTimes(db, parsed.value.leadId),
+    ]);
+  } catch (error) {
+    console.error(`[closed-loop-outcome-writeback] Read failed: ${redactError(error)}`);
+    return { ok: false, status: 503, error: 'Closed-loop outcome storage is unavailable' };
+  }
   if (!row) return { ok: false, status: 404, error: 'Lead not found' };
 
   const canonical = canonicalFromRow(row);
   if (!canonical) return { ok: false, status: 503, error: 'Lead canonical payload is missing or malformed' };
 
   const proposedCanonical = applyOutcomeToCanonical(canonical, parsed.value);
-  const outboxInput = outcomeInput(parsed.value);
+  const proposedMilestones = milestoneTimesFromInput(parsed.value);
+  const outboxInput = outcomeInput(parsed.value, proposedMilestones);
   const outboxEligibility = evaluateOfflineConversionOutboxEvents(proposedCanonical, outboxInput);
 
   if (parsed.value.dryRun) {
@@ -566,7 +702,7 @@ export async function handleOutcomeWriteback(
       writeApplied: false,
       auditLogged: false,
       googleAdsOfflineOutboxEnabled: isOfflineOutboxEnabled(env),
-      current: snapshotFromRow(row),
+      current: snapshotFromRow(row, currentMilestones),
       proposed: snapshotFromInput(parsed.value),
       outboxEligibility,
       outboxResults: [],
@@ -577,36 +713,50 @@ export async function handleOutcomeWriteback(
     return { ok: false, status: 403, error: 'Closed-loop outcome writeback is disabled' };
   }
 
-  const updated = await updateQuoteRequestOutcome(
-    db,
-    parsed.value,
-    canonical,
-    actorLabel,
-    nowIso,
-  );
-  if (!updated) return { ok: false, status: 404, error: 'Lead not found' };
+  if (!db.batch) {
+    return { ok: false, status: 503, error: 'Atomic D1 batch writeback is unavailable' };
+  }
 
-  const outboxResults = await queueOfflineConversionOutboxEvents(db, proposedCanonical, outboxInput, env);
-  const audit = await writeSlotAdminEvent(db, {
-    slotId: null,
-    action: 'closed_loop_outcome_writeback',
-    actorLabel,
-    safeDetails: {
-      action: 'closed_loop_outcome_writeback',
-      leadId: parsed.value.leadId,
-      readyForD1Sync: true,
-      dryRun: false,
-      qualifiedStatus: parsed.value.qualifiedStatus,
-      qualifiedAtUtc: parsed.value.qualifiedAtUtc,
-      quoteSentStatus: parsed.value.quoteSentStatus,
-      quoteSentAtUtc: parsed.value.quoteSentAtUtc,
-      bookedStatus: parsed.value.bookedStatus,
-      bookedAtUtc: parsed.value.bookedAtUtc,
-      bookedRevenueCents: parsed.value.bookedRevenueCents,
-      outboxQueuedCount: outboxResults.filter((result) => result.queued).length,
-      outboxSuppressedCount: outboxResults.filter((result) => !result.queued).length,
-    },
-  }, nowIso);
+  const recordedBy = parsed.value.ownerReviewedBy ?? actorLabel;
+  const milestoneWrites = milestoneWritesFromInput(parsed.value, recordedBy, nowIso);
+  let outboxRows: Map<OfflineConversionEventName, OfflineConversionOutboxRowState>;
+  try {
+    outboxRows = await selectOfflineConversionOutboxRows(db, parsed.value.leadId);
+  } catch (error) {
+    console.error(`[closed-loop-outcome-writeback] Outbox guard read failed: ${redactError(error)}`);
+    return { ok: false, status: 503, error: 'Closed-loop outbox guard is unavailable' };
+  }
+
+  const blockedMilestone = blockedMilestoneCorrection(milestoneWrites, currentMilestones, outboxRows);
+  if (blockedMilestone) {
+    return {
+      ok: false,
+      status: 409,
+      error: `${blockedMilestone} timestamp cannot change after its outbox row is attempted or externally identified`,
+    };
+  }
+
+  const preparedOutbox = omitImmutableOutboxMutations(
+    prepareOfflineConversionOutboxEvents(db, proposedCanonical, outboxInput, env, nowIso),
+    outboxRows,
+  );
+  const outboxResults = preparedOutbox.map((mutation) => mutation.result);
+  const statements: D1PreparedStatement[] = [
+    prepareQuoteRequestOutcomeUpdate(db, parsed.value, canonical, actorLabel, nowIso),
+    ...milestoneWrites.map((write) => prepareQuoteRequestMilestoneUpsert(db, write)),
+    prepareOutcomeAuditStatement(db, parsed.value, actorLabel, outboxResults, nowIso),
+    ...preparedOutbox.flatMap((mutation) => mutation.statement ? [mutation.statement] : []),
+  ];
+
+  try {
+    const results = await db.batch(statements);
+    if (results.some((result) => result.success === false)) {
+      throw new Error('D1 batch reported an unsuccessful statement');
+    }
+  } catch (error) {
+    console.error(`[closed-loop-outcome-writeback] Atomic batch failed: ${redactError(error)}`);
+    return { ok: false, status: 503, error: 'Closed-loop outcome writeback failed atomically' };
+  }
 
   return {
     ok: true,
@@ -614,9 +764,9 @@ export async function handleOutcomeWriteback(
     leadId: parsed.value.leadId,
     dryRun: false,
     writeApplied: true,
-    auditLogged: audit.ok,
+    auditLogged: true,
     googleAdsOfflineOutboxEnabled: isOfflineOutboxEnabled(env),
-    current: snapshotFromRow(row),
+    current: snapshotFromRow(row, currentMilestones),
     proposed: snapshotFromInput(parsed.value),
     outboxEligibility,
     outboxResults,
