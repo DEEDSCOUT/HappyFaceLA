@@ -147,6 +147,7 @@ npm run preview
 - Schema helpers: `src/utils/schema.ts`
 - Production lead endpoint: `functions/api/lead.ts`
 - Production Meta CAPI endpoint shell: `functions/api/meta-capi.ts`
+- Thumbtack Command Center webhook: `functions/api/thumbtack-webhook.ts` (engine in `src/lib/thumbtack/`, setup/proof docs in `docs/integrations/thumbtack/`)
 - Non-production Astro API stubs: `src/pages/api/lead.ts`, `src/pages/api/meta-capi.ts`
 - Post-build QA script: `scripts/qa-postbuild.mjs`
 - Environment template: `.env.example`

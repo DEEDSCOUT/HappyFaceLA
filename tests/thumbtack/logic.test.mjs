@@ -1,0 +1,398 @@
+#!/usr/bin/env node
+// Pure-logic unit tests for the Thumbtack Command Center engine.
+// No server, no network — imports the TypeScript engine directly (Node >= 23
+// strips types natively). Run: node tests/thumbtack/logic.test.mjs
+//
+// These tests also produce the "field mapping" + "sample lead card" proof used
+// in docs/integrations/thumbtack/IMPLEMENTATION_REPORT.md.
+
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import { buildLeadCard, parseThumbtackEvent } from "../../src/lib/thumbtack/engine.ts";
+import { dispatchCard } from "../../src/lib/thumbtack/dispatch.ts";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const root = join(here, "..", "..");
+const payloads = join(root, "docs", "integrations", "thumbtack", "sample-payloads");
+const NOW = "2026-06-17T18:42:00.000Z";
+
+let pass = 0;
+let fail = 0;
+function check(label, cond) {
+    if (cond) {
+        pass++;
+        console.log(`PASS  ${label}`);
+    } else {
+        fail++;
+        console.log(`FAIL  ${label}`);
+    }
+}
+const load = (name) => JSON.parse(readFileSync(join(payloads, name), "utf8"));
+
+async function withMockFetch(fn) {
+    const originalFetch = globalThis.fetch;
+    const calls = [];
+    globalThis.fetch = async (url, init = {}) => {
+        calls.push({ url: String(url), method: init.method || "GET", body: String(init.body || "") });
+        return new Response(JSON.stringify({ ok: true, row: 12 }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+        });
+    };
+    try {
+        return await fn(calls);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+}
+
+// --- New lead: paid birthday with full details ---------------------------------
+const leadRaw = load("new-lead.json");
+const lead = parseThumbtackEvent(leadRaw, NOW);
+console.log("\n# new-lead — normalized 16 fields");
+console.log(JSON.stringify(lead, null, 2));
+
+check("lead_id parsed", lead.lead_id === "lead_9f2c8a");
+check("customer_name parsed", lead.customer_name === "Jessica M.");
+check("lead_type = category", lead.lead_type === "Face Painting");
+check("paid_status = paid", lead.paid_status === "paid");
+check("lead_fee = 18.5", lead.lead_fee === 18.5);
+check("event_city = Burbank", lead.event_city === "Burbank");
+check("event_zip = 91505", lead.event_zip === "91505");
+check("event_date ISO", lead.event_date === "2026-07-12");
+check("event_time not the webhook timestamp", lead.event_time === "1:00 PM");
+check("event_length from Q/A", /2/.test(lead.event_length));
+check("event_type = Birthday party (not 'LeadCreated')", /birthday/i.test(lead.event_type));
+check("requested_services = 2", lead.requested_services.length === 2);
+check("guest_count = 20", lead.guest_count === 20);
+check("age_range from Q/A", lead.age_range === "4-8 years");
+check("pros_contacted = 3", lead.pros_contacted === 3);
+check("reply_deadline parsed", lead.reply_deadline === "2026-06-17T20:42:00Z");
+check("event detected as lead.created", lead.event === "lead.created");
+
+const leadCard = buildLeadCard(leadRaw, NOW);
+console.log("\n# new-lead — full lead card");
+console.log(JSON.stringify(leadCard, null, 2));
+
+check("score = high", leadCard.score.score === "high");
+check("pricing 2-service 2h = $325", leadCard.pricing.recommended === 325);
+check("pricing display $325+", leadCard.pricing.recommended_display === "$325+");
+check("retainer is a number", typeof leadCard.pricing.retainer === "number");
+check("reply names the customer", leadCard.reply_draft.includes("Jessica"));
+check("reply offers a next step", /reply yes/i.test(leadCard.reply_draft));
+check("reply has no auto-send (draft only)", !/\bsent\b/i.test(leadCard.reply_draft));
+check("5 follow-ups", leadCard.follow_ups.length === 5);
+check(
+    "follow-up offsets correct",
+    leadCard.follow_ups.map((f) => f.offset).join(",") === "15m,12h,24h,48h,5–7d",
+);
+check("metrics has all columns", "booked_revenue" in leadCard.metrics && "lost_reason" in leadCard.metrics);
+check("slack alert mentions recommend", /Recommend/i.test(leadCard.alert.slack_text));
+check("slack alert includes follow-up schedule", /Follow-ups:/i.test(leadCard.alert.slack_text));
+
+// --- Real Thumbtack lead-details test payload ---------------------------------
+const realLeadRaw = load("real-thumbtack-lead-details.sanitized.json");
+const realLead = parseThumbtackEvent(realLeadRaw, NOW);
+console.log("\n# real-thumbtack-lead-details — normalized official payload");
+console.log(JSON.stringify(realLead, null, 2));
+
+check("real payload lead_id from request.requestID", realLead.lead_id === "582664010966958085");
+check("real payload customer from customer.firstName/lastName", realLead.customer_name === "Test Customer");
+check("real payload category parsed", realLead.lead_type === "Full Service Lawn Care");
+check("real payload leadPrice parsed", realLead.lead_fee === 25);
+check("real payload event city parsed", realLead.event_city === "San Francisco");
+check("real payload event ZIP parsed", realLead.event_zip === "94103");
+check("real payload proposedTimes date parsed", realLead.event_date === "2026-01-06");
+check("real payload proposedTimes time parsed", realLead.event_time === "10:00 AM");
+check("real payload proposedTimes duration parsed", realLead.event_length === "1 hour");
+check(
+    "real payload service preserved for manual review",
+    realLead.requested_services.join(",") === "Full Service Lawn Care",
+);
+check("real payload detected as lead.created", realLead.event === "lead.created");
+
+const realLeadCard = buildLeadCard(realLeadRaw, NOW);
+check("real payload unmapped service uses custom quote", realLeadCard.pricing.custom_quote === true);
+check("real payload follow-up schedule generated", realLeadCard.follow_ups.length === 5);
+check("real payload ready-to-copy draft generated", /Hi Test/.test(realLeadCard.reply_draft));
+check("real payload alert includes ready-to-copy draft", /Ready-to-copy Thumbtack reply:/i.test(realLeadCard.alert.slack_text));
+
+// --- Real Happy Faces LA lead payloads ----------------------------------------
+const sagarRaw = load("real-thumbtack-hfla-sagar-lead.sanitized.json");
+const sagarLead = parseThumbtackEvent(sagarRaw, NOW);
+const sagarCard = buildLeadCard(sagarRaw, NOW);
+console.log("\n# real-thumbtack-hfla-sagar-lead — normalized official payload");
+console.log(JSON.stringify(sagarLead, null, 2));
+
+check("Sagar lead_id from request.requestID", sagarLead.lead_id === "582659071778037765");
+check("Sagar customer parsed", sagarLead.customer_name === "Sagar Mandalia");
+check("Sagar event type parsed", sagarLead.event_type === "Birthday party");
+check("Sagar city parsed", sagarLead.event_city === "Fullerton");
+check("Sagar ZIP parsed", sagarLead.event_zip === "92833");
+check("Sagar scheduling date parsed from details", sagarLead.event_date === "2026-07-25");
+check("Sagar scheduling time parsed from details", sagarLead.event_time === "1:30 PM");
+check("Sagar scheduling length parsed from details", sagarLead.event_length === "1 hour");
+check("Sagar guest range parsed", sagarLead.guest_count === 21);
+check("Sagar lead fee parsed", sagarLead.lead_fee === 11.57);
+check(
+    "Sagar services include category plus add-on",
+    sagarLead.requested_services.join(",") === "Face Painting,Balloon Twisting",
+);
+check("Sagar no longer weak General inquiry", sagarLead.lead_type === "Face Painting");
+check("Sagar pricing is ladder-based with travel", sagarCard.pricing.recommended_display === "$215");
+check("Sagar Slack card has real details", /Birthday party.*Fullerton.*2026-07-25 1:30 PM/s.test(sagarCard.alert.slack_text));
+check("Sagar Slack card lists add-on", /Face Painting, Balloon Twisting/.test(sagarCard.alert.slack_text));
+
+const angelaRaw = load("real-thumbtack-hfla-angela-lead.sanitized.json");
+const angelaLead = parseThumbtackEvent(angelaRaw, NOW);
+const angelaCard = buildLeadCard(angelaRaw, NOW);
+console.log("\n# real-thumbtack-hfla-angela-lead — normalized official payload");
+console.log(JSON.stringify(angelaLead, null, 2));
+
+check("Angela lead_id from request.requestID", angelaLead.lead_id === "582664293680545809");
+check("Angela customer parsed", angelaLead.customer_name === "Angela Cho");
+check("Angela event type parsed", angelaLead.event_type === "Community event");
+check("Angela city parsed", angelaLead.event_city === "La Canada Flintridge");
+check("Angela ZIP parsed", angelaLead.event_zip === "91011");
+check("Angela scheduling date parsed from details", angelaLead.event_date === "2026-10-22");
+check("Angela scheduling time parsed from details", angelaLead.event_time === "5:00 PM");
+check("Angela scheduling length parsed from details", angelaLead.event_length === "2 hours");
+check("Angela guest range parsed", angelaLead.guest_count === 71);
+check("Angela lead fee parsed", angelaLead.lead_fee === 14.94);
+check(
+    "Angela services include balloon plus face painting",
+    angelaLead.requested_services.join(",") === "Balloon Twisting,Face Painting",
+);
+check("Angela community/high-volume is custom quote", angelaCard.pricing.custom_quote === true);
+check("Angela Slack card has real details", /Community event.*La Canada Flintridge.*2026-10-22 5:00 PM/s.test(angelaCard.alert.slack_text));
+
+const angelaMsgRaw = load("real-thumbtack-hfla-angela-message.sanitized.json");
+const angelaMsgCard = buildLeadCard(angelaMsgRaw, NOW);
+check("Angela message event detected", angelaMsgCard.lead.event === "message.created");
+check("Angela customer message direction parsed", angelaMsgCard.lead.message_direction === "customer");
+check("Angela message customer parsed", angelaMsgCard.lead.customer_name === "Angela Cho");
+check("Angela message negotiation id parsed", angelaMsgCard.lead.negotiation_id === "582664294715858949");
+check("Angela message text parsed", /Open-to-the-public city event/i.test(angelaMsgCard.lead.message_text));
+check("Angela message alert is message-shaped", /new thumbtack message/i.test(angelaMsgCard.alert.slack_text));
+
+const angelaBusinessMsgRaw = load("real-thumbtack-hfla-angela-business-message.sanitized.json");
+const angelaBusinessMsgCard = buildLeadCard(angelaBusinessMsgRaw, NOW);
+check("Angela business message event detected", angelaBusinessMsgCard.lead.event === "message.created");
+check("Angela business message direction parsed", angelaBusinessMsgCard.lead.message_direction === "business");
+check("Angela business message uses displayName", angelaBusinessMsgCard.lead.customer_name === "Angela Cho");
+check("Angela business message keeps negotiation id", angelaBusinessMsgCard.lead.negotiation_id === "582664294715858949");
+check("Angela business message has no reply draft", angelaBusinessMsgCard.reply_draft === "");
+check("Angela business message has no follow-up schedule", angelaBusinessMsgCard.follow_ups.length === 0);
+check("Angela business message has no urgent Slack text", angelaBusinessMsgCard.alert.slack_text === "");
+
+const messageDispatchEnv = {
+    SLACK_WEBHOOK_URL: "https://internal.invalid/slack",
+    SHEETS_WEBHOOK_URL: "https://internal.invalid/sheet",
+    SHEETS_WEBHOOK_SECRET: "test-secret",
+};
+
+const customerMessageDispatch = await withMockFetch(async (calls) => {
+    const results = await dispatchCard(messageDispatchEnv, angelaMsgCard);
+    return { results, calls };
+});
+check(
+    "Angela customer message sends urgent Slack alert",
+    customerMessageDispatch.results.some((r) => r.channel === "slack" && r.status === "sent") &&
+        customerMessageDispatch.calls.some((c) => c.url === messageDispatchEnv.SLACK_WEBHOOK_URL),
+);
+check(
+    "Angela customer message updates sheet path",
+    customerMessageDispatch.results.some((r) => r.channel === "sheet" && r.status === "sent"),
+);
+
+const businessMessageDispatch = await withMockFetch(async (calls) => {
+    const results = await dispatchCard(
+        {
+            ...messageDispatchEnv,
+            TWILIO_ACCOUNT_SID: "AC123",
+            TWILIO_AUTH_TOKEN: "token",
+            TWILIO_FROM: "+15550000000",
+            OWNER_SMS_TO: "+15550000001",
+            THUMBTACK_CRM_WEBHOOK_URL: "https://internal.invalid/crm",
+        },
+        angelaBusinessMsgCard,
+    );
+    return { results, calls };
+});
+check(
+    "Angela business message skips urgent Slack alert",
+    businessMessageDispatch.results.some((r) => r.channel === "slack" && r.status === "skipped") &&
+        !businessMessageDispatch.calls.some((c) => c.url === messageDispatchEnv.SLACK_WEBHOOK_URL),
+);
+check(
+    "Angela business message skips owner SMS",
+    businessMessageDispatch.results.some((r) => r.channel === "sms" && r.status === "skipped"),
+);
+check(
+    "Angela business message skips CRM noise",
+    businessMessageDispatch.results.some((r) => r.channel === "crm" && r.status === "skipped"),
+);
+check(
+    "Angela business message only offers sheet existing-row note path",
+    businessMessageDispatch.results.some((r) => r.channel === "sheet" && r.status === "sent") &&
+        businessMessageDispatch.calls.length === 1 &&
+        businessMessageDispatch.calls[0].url.startsWith(messageDispatchEnv.SHEETS_WEBHOOK_URL),
+);
+
+// --- Pricing ladder ------------------------------------------------------------
+function pricingPayload({ services, eventLength, guestCount = 12, eventType = "Birthday party", city = "Burbank" }) {
+    return {
+        eventType: "LeadCreated",
+        createTimestamp: NOW,
+        lead: {
+            leadID: `price_${services.length}_${eventLength.replace(/\W+/g, "_")}`,
+            fulfillmentStatus: "PAID",
+            customer: { name: "Pricing Test" },
+            request: {
+                category: services[0],
+                location: { city },
+                schedule: { eventDate: "2026-07-12", startTime: "1:00 PM" },
+                details: [
+                    { question: "What type of event is this?", answer: eventType },
+                    { question: "How many guests will need face painting?", answer: `${guestCount} kids` },
+                    { question: "Which services are you interested in?", answer: services.join(", ") },
+                    { question: "How long is the event?", answer: eventLength },
+                ],
+            },
+        },
+    };
+}
+
+const pricingCases = [
+    ["one service 1h = $150", ["Face painting"], "1 hour", 150, "$150"],
+    ["one service 90m = $215", ["Face painting"], "90 minutes", 215, "$215"],
+    ["one service 2h = $275", ["Face painting"], "2 hours", 275, "$275"],
+    ["two services 1h = $180", ["Face painting", "Balloon twisting"], "1 hour", 180, "$180"],
+    ["two services 90m = $255", ["Face painting", "Balloon twisting"], "90 minutes", 255, "$255"],
+    ["two services 2h = $325+", ["Face painting", "Balloon twisting"], "2 hours", 325, "$325+"],
+];
+
+for (const [label, services, eventLength, expected, display] of pricingCases) {
+    const card = buildLeadCard(pricingPayload({ services, eventLength }), NOW);
+    check(label, card.pricing.recommended === expected && card.pricing.recommended_display === display);
+}
+
+const highVolumeCard = buildLeadCard(
+    pricingPayload({
+        services: ["Face painting", "Balloon twisting"],
+        eventLength: "2 hours",
+        guestCount: 40,
+    }),
+    NOW,
+);
+check("40+ kids requires custom/manual review", highVolumeCard.pricing.custom_quote === true);
+
+const corporateCard = buildLeadCard(
+    pricingPayload({
+        services: ["Face painting"],
+        eventLength: "90 minutes",
+        eventType: "Corporate family event",
+    }),
+    NOW,
+);
+check("corporate events require custom/manual review", corporateCard.pricing.custom_quote === true);
+
+// --- Far-travel, 3-service, weak details => caution + custom quote -------------
+const statusCard = buildLeadCard(load("lead-status-update.json"), NOW);
+console.log("\n# lead-status-update — card summary:", statusCard.summary);
+check("status: caution score", statusCard.score.score === "caution");
+check("status: custom quote (3 services)", statusCard.pricing.custom_quote === true);
+check("status: travel surcharge flagged", statusCard.pricing.travel_adjustment > 0);
+check(
+    "status: far-travel caution present",
+    statusCard.score.cautions.some((c) => /service area/i.test(c)),
+);
+check("status: capacity review", statusCard.pricing.capacity_review === true);
+check("status: reply includes capacity caveat", /coverage depends/i.test(statusCard.reply_draft));
+
+// --- Customer message ----------------------------------------------------------
+const msgCard = buildLeadCard(load("new-message.json"), NOW);
+check("message event detected", msgCard.lead.event === "message.created");
+check("message_text captured", /glitter tattoos/i.test(msgCard.lead.message_text));
+check("message alert is message-shaped", /new thumbtack message/i.test(msgCard.alert.slack_text));
+
+// --- Review --------------------------------------------------------------------
+const reviewCard = buildLeadCard(load("new-review.json"), NOW);
+check("review event detected", reviewCard.lead.event === "review.created");
+check("review rating = 5", reviewCard.lead.review_rating === 5);
+check("review alert shows stars", /5★/.test(reviewCard.alert.slack_text));
+
+// --- No customer-facing auto-send (requirement #12) ----------------------------
+// Dispatch must only ever reach INTERNAL/owner channels, never Thumbtack or the
+// customer. With no env configured, nothing goes out at all.
+console.log("\n# no-auto-send guarantee");
+const dispatchResults = await dispatchCard({}, leadCard);
+const channelSet = dispatchResults.map((r) => r.channel).sort().join(",");
+check("dispatch targets exactly 4 internal channels", dispatchResults.length === 4);
+check(
+    "channels are crm,sheet,slack,sms (no 'thumbtack'/'customer' channel)",
+    channelSet === "crm,sheet,slack,sms",
+);
+check(
+    "with no config every channel is skipped — zero outbound",
+    dispatchResults.every((r) => r.status === "skipped"),
+);
+check(
+    "reply is a draft only (lives on the card, never a dispatch channel)",
+    typeof leadCard.reply_draft === "string" && leadCard.reply_draft.length > 0,
+);
+
+// --- 01_LEADS formula-column guardrails ---------------------------------------
+// Column A is owner/formula-controlled. The Apps Script must write only from B
+// onward and must keep Thumbtack's external lead ID in Notes, not in column A.
+console.log("\n# 01_LEADS column-A guardrails");
+const appsScriptSource = readFileSync(
+    join(root, "docs", "integrations", "thumbtack", "google-apps-script.gs"),
+    "utf8",
+);
+const requiredHeadersBlock =
+    appsScriptSource.match(/var REQUIRED_HEADERS = \[([\s\S]*?)\];/)?.[1] || "";
+
+check("sheet writer first writable column is B", /var FIRST_WRITABLE_COLUMN\s*=\s*2\b/.test(appsScriptSource));
+check("sheet writer does not define Lead ID as a writable header", !/['"]Lead ID['"]/.test(requiredHeadersBlock));
+check(
+    "sheet writer never maps a Lead ID field value",
+    !/['"]Lead ID['"]\s*:/.test(appsScriptSource),
+);
+check(
+    "sheet writer searches external Thumbtack IDs in Notes",
+    /findBestLeadRow_\(sheet,\s*headerMap,\s*lead\)/.test(appsScriptSource),
+);
+check(
+    "sheet writer stores external Thumbtack IDs in Notes",
+    /EXTERNAL_ID_NOTE_PREFIX\s*\+\s*l\.lead_id/.test(appsScriptSource),
+);
+check(
+    "sheet writer stores negotiation IDs in Notes",
+    /NEGOTIATION_ID_NOTE_PREFIX\s*\+\s*l\.negotiation_id/.test(appsScriptSource),
+);
+check(
+    "sheet writer skips any mapped column before B",
+    /if\s*\(\s*col\s*<\s*FIRST_WRITABLE_COLUMN\s*\)\s*continue;/.test(appsScriptSource),
+);
+check(
+    "sheet append formatting starts at column B",
+    /getRange\(sourceRow,\s*FIRST_WRITABLE_COLUMN,\s*1,\s*width\)/.test(appsScriptSource) &&
+        /getRange\(row,\s*FIRST_WRITABLE_COLUMN,\s*1,\s*width\)/.test(appsScriptSource),
+);
+check(
+    "sheet header writes start at column B",
+    /getRange\(1,\s*FIRST_WRITABLE_COLUMN,\s*1,\s*REQUIRED_HEADERS\.length\)\.setValues/.test(appsScriptSource),
+);
+check(
+    "sheet writer ignores outbound business messages without a reliable row",
+    /if\s*\(isBusinessMessage_\(lead\)\)\s*{[\s\S]*return\s*{\s*row:\s*existingRow\s*\|\|\s*0,\s*created:\s*false,\s*ignored:\s*!existingRow\s*}/.test(appsScriptSource),
+);
+check(
+    "sheet writer finds existing rows before appending",
+    /var existingRow = findBestLeadRow_\(sheet,\s*headerMap,\s*lead\);[\s\S]*var row = existingRow \|\| appendPreparedRow_\(sheet\)/.test(appsScriptSource),
+);
+
+console.log(`\nResults: ${pass} passed, ${fail} failed`);
+process.exit(fail === 0 ? 0 : 1);

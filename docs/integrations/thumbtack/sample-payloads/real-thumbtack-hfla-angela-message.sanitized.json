@@ -1,0 +1,15 @@
+{
+  "messageID": "582664295497359378",
+  "negotiationID": "582664294715858949",
+  "customer": {
+    "customerID": "582662209023279122",
+    "displayName": "Angela Cho"
+  },
+  "business": {
+    "businessID": "582093043904233481",
+    "displayName": "Happy Faces LA"
+  },
+  "from": "Customer",
+  "text": "Open-to-the-public city event; RSVPs are not available, so attendance is approximate.",
+  "sentAt": "2026-06-18T19:11:35Z"
+}

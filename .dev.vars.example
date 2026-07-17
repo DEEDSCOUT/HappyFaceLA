@@ -15,3 +15,21 @@ META_TEST_EVENT_CODE=
 GA4_MEASUREMENT_ID=
 GOOGLE_ADS_CONVERSION_ID=
 GOOGLE_ADS_LEAD_CONVERSION_LABEL=
+
+# --- Thumbtack Command Center (functions/api/thumbtack-webhook.ts) ---
+# Primary auth path for Thumbtack's Custom Header option.
+# Configure Thumbtack with:
+#   Header name: X-HFL-Webhook-Token
+#   Header value: same value as THUMBTACK_WEBHOOK_TOKEN
+THUMBTACK_WEBHOOK_TOKEN=
+# Secondary HMAC path for proxy/Zapier flows only.
+THUMBTACK_WEBHOOK_SECRET=
+SLACK_WEBHOOK_URL=
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_FROM=
+OWNER_SMS_TO=
+SHEETS_WEBHOOK_URL=
+SHEETS_WEBHOOK_SECRET=
+THUMBTACK_CRM_WEBHOOK_URL=
+THUMBTACK_CRM_WEBHOOK_SECRET=
