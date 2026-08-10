@@ -98,16 +98,10 @@ const pricingFaqs = [
     <QuoteForm />
   </section>
 
-  <script is:inline>
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: "pricing_view",
+  <script>
+    import { trackProductionAnalyticsEvent } from "../lib/analytics/production-analytics.ts";
+    trackProductionAnalyticsEvent("pricing_view", {
       source_page: window.location.pathname,
     });
-    if (typeof window.gtag === "function") {
-      window.gtag("event", "pricing_view", {
-        source_page: window.location.pathname,
-      });
-    }
   </script>
 </BaseLayout>

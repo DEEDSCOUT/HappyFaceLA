@@ -140,6 +140,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   } from '../../lib/forms/submission-client.ts';
   import { buildPlanMyPartyBrowserPayload } from '../../lib/forms/browser-payloads.ts';
   import { shouldEmitTechnicalEvent } from '../../lib/forms/acceptance-contract.ts';
+  import { trackProductionAnalyticsEvent } from '../../lib/analytics/production-analytics.ts';
 
   // ── Types (inline for bundler compatibility) ──────────────────
   type EventType = 'birthday-party'|'school-event'|'corporate-family-day'|'festival-community'|'other';
@@ -390,16 +391,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   function clearValidationError() { hide(qs('#wizard-validation-error')); }
 
   function track(eventName: string, params: Record<string, unknown> = {}) {
-    const trackedWindow = window as Window & {
-      dataLayer?: unknown[];
-      gtag?: (command: string, eventName: string, params: Record<string, unknown>) => void;
-    };
-    trackedWindow.dataLayer = trackedWindow.dataLayer || [];
-    if (typeof trackedWindow.gtag === 'function') {
-      trackedWindow.gtag('event', eventName, params);
-    } else {
-      trackedWindow.dataLayer.push({ event: eventName, ...params });
-    }
+    trackProductionAnalyticsEvent(eventName, params);
   }
 
   function readSafeParam(params: URLSearchParams, key: string, maxLength = 80): string {

@@ -540,10 +540,8 @@ const isCostumeStyleDemo = (item: LookbookItem) =>
     };
 
     function track(eventName, params) {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push(Object.assign({ event: eventName }, params || {}));
-      if (typeof window.gtag === "function") {
-        window.gtag("event", eventName, params || {});
+      if (typeof window.hflaTrackEvent === "function") {
+        window.hflaTrackEvent(eventName, params || {});
       }
     }
 

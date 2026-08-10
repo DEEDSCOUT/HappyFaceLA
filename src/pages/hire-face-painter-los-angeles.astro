@@ -402,15 +402,11 @@ const faqs = [
       markSubmissionAccepted,
       rotateAcceptedSubmissionOnEdit,
     } from "../lib/forms/submission-client.ts";
+    import { trackProductionAnalyticsEvent } from "../lib/analytics/production-analytics.ts";
 
     (() => {
       function trackEvent(eventName: string, params: Record<string, unknown> = {}) {
-        window.dataLayer = window.dataLayer || [];
-        if (typeof window.gtag === "function") {
-          window.gtag("event", eventName, params);
-        } else {
-          window.dataLayer.push({ event: eventName, ...params });
-        }
+        trackProductionAnalyticsEvent(eventName, params);
       }
 
       function splitName(value: FormDataEntryValue | null) {

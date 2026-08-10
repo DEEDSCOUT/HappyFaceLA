@@ -31,28 +31,10 @@ const {
     {homepageVisualBaseline && (
       <meta name="hfla-homepage-visual-baseline" content={homepageVisualBaseline} />
     )}
-    <!-- Google Analytics 4 tracking for Happy Faces LA -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7NH6RY78TK"></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { window.dataLayer.push(arguments); }
-      gtag("js", new Date());
-      gtag("config", "G-7NH6RY78TK");
-    </script>
-    <!-- Microsoft Clarity tracking for Happy Faces LA -->
-    <script is:inline>
-      (function (c, l, a, r, i, t, y) {
-        c[a] =
-          c[a] ||
-          function () {
-            (c[a].q = c[a].q || []).push(arguments);
-          };
-        t = l.createElement(r);
-        t.async = 1;
-        t.src = "https://www.clarity.ms/tag/" + i;
-        y = l.getElementsByTagName(r)[0];
-        y.parentNode.insertBefore(t, y);
-      })(window, document, "clarity", "script", "wsw4v74jpw");
+    <!-- Production analytics is fail-closed outside the two approved production hosts. -->
+    <script>
+      import { installProductionAnalytics } from "../lib/analytics/production-analytics.ts";
+      installProductionAnalytics();
     </script>
   </head>
   <body class="bg-slate-50 text-slate-900">
@@ -65,14 +47,10 @@ const {
 
     <script>
       import { captureBrowserAttribution } from "../lib/attribution/browser-attribution.ts";
+      import { trackProductionAnalyticsEvent } from "../lib/analytics/production-analytics.ts";
 
       function trackEvent(eventName: string, params: Record<string, unknown> = {}) {
-        window.dataLayer = window.dataLayer || [];
-        if (typeof window.gtag === "function") {
-          window.gtag("event", eventName, params);
-        } else {
-          window.dataLayer.push({ event: eventName, ...params });
-        }
+        trackProductionAnalyticsEvent(eventName, params);
       }
 
       captureBrowserAttribution();
