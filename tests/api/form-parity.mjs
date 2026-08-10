@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 
 import { onRequest as handleLegacyLead } from '../../functions/api/lead.ts';
 import { handleQuoteRequest } from '../../src/lib/quote-request/delivery.ts';
@@ -11,6 +12,21 @@ import {
   buildPlanMyPartyBrowserPayload,
 } from '../../src/lib/forms/browser-payloads.ts';
 import { flattenJourney } from '../../src/lib/attribution/atomic-attribution.ts';
+
+const admittedMakeBlueprint = await readFile(
+  new URL(
+    '../../evidence/lead_capture_20260610/integration_webhooks_final_verified_blueprint_after_leadid_guard.json',
+    import.meta.url,
+  ),
+  'utf8',
+);
+for (const admittedMapping of ['{{1.lead.first_name}}', '{{1.leadId}}', '{{1.submittedAt}}']) {
+  assert.equal(
+    admittedMakeBlueprint.includes(admittedMapping),
+    true,
+    `admitted Make mapping preserved in fixture: ${admittedMapping}`,
+  );
+}
 
 class CanonicalMockD1 {
   constructor() {
@@ -168,8 +184,9 @@ globalThis.fetch = async (url, init = {}) => {
     body: JSON.parse(String(init.body || '{}')),
   });
   const ok = notificationOutcomes.length ? notificationOutcomes.shift() : true;
-  return new Response(JSON.stringify({ ok: true }), {
-    status: ok ? 200 : 503,
+  const negativeAck = ok === 'negative-ack';
+  return new Response(JSON.stringify({ ok: !negativeAck }), {
+    status: ok === false ? 503 : 200,
     headers: { 'content-type': 'application/json' },
   });
 };
@@ -286,7 +303,7 @@ function legacyPayload(route, id, overrides = {}) {
 }
 
 let requestCount = 0;
-function request(path, payload) {
+function request(path, payload, extraHeaders = {}) {
   requestCount += 1;
   const sourcePage = typeof payload.source_page === 'string' ? payload.source_page : '/';
   return new Request(`https://happyfacesla.com${path}`, {
@@ -295,6 +312,7 @@ function request(path, payload) {
       'content-type': 'application/json',
       'cf-connecting-ip': `192.0.2.${(requestCount % 200) + 1}`,
       referer: new URL(sourcePage, 'https://happyfacesla.com').toString(),
+      ...extraHeaders,
     },
     body: JSON.stringify(payload),
   });
@@ -337,8 +355,23 @@ for (const route of ['plan-my-party', 'packages', 'contact']) {
   assert.equal(notifications[0].body.lead_id, result.body.leadId, `${route} notification lead`);
   assert.equal(notifications[0].body.submission_id, id, `${route} notification submission`);
   assert.equal(notifications[0].body.form_route, route, `${route} notification route`);
+  assert.equal(
+    notifications[0].body.source_endpoint,
+    route === 'plan-my-party' ? 'quote-request' : 'lead-adapter',
+    `${route} truthful source endpoint`,
+  );
   assert.equal(notifications[0].headers['x-idempotency-key'], result.body.leadId, `${route} destination idempotency header`);
-  assert.equal(notifications[0].headers['x-lead-source'], `happyfacesla-${route}`, `${route} source header`);
+  assert.equal(
+    notifications[0].headers['x-lead-source'],
+    route === 'plan-my-party' ? 'happyfacesla-plan-my-party' : 'happyfacesla-cloudflare-pages',
+    `${route} admitted source header`,
+  );
+  if (route !== 'plan-my-party') {
+    assert.equal(notifications[0].body.leadId, result.body.leadId, `${route} legacy Make leadId`);
+    assert.equal(typeof notifications[0].body.submittedAt, 'string', `${route} legacy Make timestamp`);
+    assert.equal(notifications[0].body.lead.first_name, 'Fixture', `${route} legacy Make nested lead`);
+    assert.equal(notifications[0].body.canonical.lead_id, result.body.leadId, `${route} nested canonical payload`);
+  }
   assert.equal(/GCLID-FIXTURE|GBRAID-FIXTURE|WBRAID-FIXTURE/.test(JSON.stringify(notifications[0].body)), false, `${route} raw click IDs stay private`);
   assert.equal(shouldEmitTechnicalEvent(result.body), true, `${route} browser event decision`);
 }
@@ -381,6 +414,52 @@ assert.equal(notifications[0].headers['x-idempotency-key'], notifications[1].hea
 assert.equal(shouldEmitTechnicalEvent(retriedNotification.body), false);
 notificationOutcomes = [];
 
+for (const route of ['packages', 'contact']) {
+  notifications = [];
+  notificationOutcomes = [false, true];
+  const stablePayloadDb = new CanonicalMockD1();
+  const id = submissionId(`${route}-stable-notification`);
+  const originalPayload = legacyPayload(route, id);
+  const firstAttempt = await callLegacy(stablePayloadDb, originalPayload);
+  assert.equal(firstAttempt.body.ownerNotificationSent, false);
+  const changedRetry = structuredClone(originalPayload);
+  changedRetry.utm_source = 'yelp';
+  changedRetry.utm_medium = 'referral';
+  changedRetry.gclid = 'CHANGED-CURRENT-REQUEST-ID';
+  changedRetry.attribution.submit_touch.captured_at = '2026-08-10T18:30:00.000Z';
+  const retryAttempt = await callLegacy(stablePayloadDb, changedRetry);
+  assert.equal(retryAttempt.body.duplicate, true);
+  assert.equal(retryAttempt.body.ownerNotificationSent, true);
+  assert.deepEqual(
+    notifications[1].body,
+    notifications[0].body,
+    `${route} retry reuses the persisted coherent notification payload`,
+  );
+  assert.equal(
+    notifications[1].headers['x-idempotency-key'],
+    notifications[0].headers['x-idempotency-key'],
+    `${route} retry preserves downstream idempotency key`,
+  );
+}
+notificationOutcomes = [];
+
+notifications = [];
+notificationOutcomes = ['negative-ack', true];
+const crmAckDb = new CanonicalMockD1();
+const crmAckPayload = planPayload(submissionId('crm-negative-ack'));
+const crmAckEnv = {
+  QUOTE_REQUEST_MAKE_WEBHOOK_URL: '',
+  QUOTE_REQUEST_CRM_WEBHOOK_URL: 'https://example.invalid/crm',
+};
+const rejectedCrmAck = await callPlan(crmAckDb, crmAckPayload, crmAckEnv);
+assert.equal(rejectedCrmAck.body.ownerNotificationSent, false, 'CRM 2xx ok:false is not delivery success');
+assert.equal(crmAckDb.notificationOutbox[0].status, 'failed_retryable');
+const acceptedCrmAck = await callPlan(crmAckDb, crmAckPayload, crmAckEnv);
+assert.equal(acceptedCrmAck.body.ownerNotificationSent, true);
+assert.equal(crmAckDb.notificationOutbox[0].status, 'sent');
+assert.equal(notifications.length, 2);
+notificationOutcomes = [];
+
 notifications = [];
 const concurrentDb = new CanonicalMockD1();
 const concurrentPayload = planPayload(submissionId('double-click'));
@@ -418,13 +497,31 @@ assert.equal(notifications.length, 0);
 
 notifications = [];
 const internalDb = new CanonicalMockD1();
-const internal = await callPlan(internalDb, planPayload(submissionId('internal'), {
-  specialRequests: 'HFL tracking test. Do not quote.',
+const ordinaryDoNotBook = await callPlan(internalDb, planPayload(submissionId('ordinary-do-not-book'), {
+  specialRequests: 'Please do not book yet; wait until I approve the quote.',
 }));
+assert.equal(ordinaryDoNotBook.body.conversionEligible, true);
+assert.equal(notifications.length, 1, 'ordinary do-not-book language still notifies the owner');
+
+notifications = [];
+const authorizedInternalDb = new CanonicalMockD1();
+const internalToken = 'owner-authorized-test-token-000000000001';
+const internalPayload = planPayload(submissionId('internal'), {
+  specialRequests: 'HFL tracking test. Do not quote.',
+  internal_test: true,
+  internal_test_reason: 'owner_approved_fixture',
+});
+const internalResponse = await handleQuoteRequest(
+  request('/api/quote-request', internalPayload, {
+    'x-hfla-internal-test-token': internalToken,
+  }),
+  env(authorizedInternalDb, { INTERNAL_TEST_TOKEN: internalToken }),
+);
+const internal = { response: internalResponse, body: await internalResponse.json() };
 assert.equal(internal.body.accepted, true);
 assert.equal(internal.body.conversionEligible, false);
-assert.equal(internalDb.canonicalOutbox[0].status, 'suppressed');
-assert.match(internalDb.canonicalOutbox[0].suppression_reason, /^internal_test:/);
+assert.equal(authorizedInternalDb.canonicalOutbox[0].status, 'suppressed');
+assert.match(authorizedInternalDb.canonicalOutbox[0].suppression_reason, /^internal_test:/);
 assert.equal(notifications.length, 0);
 assert.equal(shouldEmitTechnicalEvent(internal.body), false);
 
@@ -435,7 +532,18 @@ const spam = await callLegacy(spamDb, legacyPayload('contact', submissionId('spa
 }));
 assert.equal(spam.body.conversionEligible, false);
 assert.equal(spamDb.canonicalOutbox[0].status, 'suppressed');
-assert.equal(notifications.length, 0);
+assert.equal(notifications.length, 1, 'heuristic spam remains owner-reviewable');
+
+notifications = [];
+const inspirationLinksDb = new CanonicalMockD1();
+const inspirationLinks = await callLegacy(
+  inspirationLinksDb,
+  legacyPayload('contact', submissionId('inspiration-links'), {
+    message: 'Three inspiration links: https://a.example/look https://b.example/look https://c.example/look',
+  }),
+);
+assert.equal(inspirationLinks.body.conversionEligible, false, 'multi-link heuristic stays out of conversion training');
+assert.equal(notifications.length, 1, 'legitimate multi-link request still reaches owner review');
 
 notifications = [];
 const separateDb = new CanonicalMockD1();
@@ -473,6 +581,15 @@ assert.deepEqual(
   ['face-painting', 'balloon-twisting', 'combo', 'not-sure'],
   'all valid package service aliases survive the adapter',
 );
+assert.deepEqual(
+  notifications[0].body.lead.services_requested,
+  [
+    'Face Painting + Balloon Twisting',
+    'Premium Party Package',
+    'Large Event / School / Corporate',
+  ],
+  'admitted Make nested payload retains customer-facing package labels',
+);
 
 notifications = [];
 const contactFieldsDb = new CanonicalMockD1();
@@ -493,6 +610,9 @@ assert.match(notifications[0].body.notes, /Neighborhood soccer fan activation/);
 assert.match(notifications[0].body.notes, /2:00–4:00 PM/);
 assert.match(notifications[0].body.notes, /Invoice and COI needed/);
 assert.match(notifications[0].body.notes, /soccer-landing/);
+assert.equal(notifications[0].body.lead.event_type, 'Neighborhood soccer fan activation');
+assert.deepEqual(notifications[0].body.lead.services_requested, ['Soccer Fan Paint Bar']);
+assert.equal(notifications[0].body.lead.estimated_guest_count, '25');
 
 async function assertAttributionProjection(seed, attribution, expected) {
   notifications = [];

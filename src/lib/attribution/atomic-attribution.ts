@@ -54,6 +54,7 @@ const MAX_VALUE_LENGTH = 256;
 const MAX_PATH_LENGTH = 512;
 const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
 const PAID_MEDIUM_RE = /^(?:cpc|ppc|paid|paidsearch|paid-search|sem)$/i;
+const HFLA_CANONICAL_HOSTS = new Set(['happyfacesla.com', 'www.happyfacesla.com']);
 
 function cleanValue(value: unknown, maxLength = MAX_VALUE_LENGTH): string | null {
   if (typeof value !== 'string') return null;
@@ -74,6 +75,12 @@ function safeHttpUrl(raw: unknown, expectedOrigin: string): URL | null {
   } catch {
     return null;
   }
+}
+
+function isSameExpectedSite(candidate: URL, expected: URL): boolean {
+  if (candidate.origin === expected.origin) return true;
+  return HFLA_CANONICAL_HOSTS.has(candidate.hostname.toLowerCase())
+    && HFLA_CANONICAL_HOSTS.has(expected.hostname.toLowerCase());
 }
 
 export function sanitizePath(raw: unknown, expectedOrigin = 'https://happyfacesla.com'): string {
@@ -116,7 +123,7 @@ export function deriveSourceConfidence(
   }
   if (sanitizedReferrer) {
     try {
-      if (new URL(sanitizedReferrer).origin !== new URL(expectedOrigin).origin) return 'referrer';
+      if (!isSameExpectedSite(new URL(sanitizedReferrer), new URL(expectedOrigin))) return 'referrer';
     } catch {
       // A malformed referrer was already sanitized away. Treat it as direct.
     }
@@ -165,7 +172,7 @@ export function captureTouch(
 function isExternalReferrer(referrer: string | null, expectedOrigin: string): boolean {
   if (!referrer) return false;
   try {
-    return new URL(referrer).origin !== new URL(expectedOrigin).origin;
+    return !isSameExpectedSite(new URL(referrer), new URL(expectedOrigin));
   } catch {
     return false;
   }

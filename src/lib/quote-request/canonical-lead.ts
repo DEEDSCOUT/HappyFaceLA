@@ -132,11 +132,21 @@ export interface CanonicalLeadInput {
   submitGclid?: string | null;
   submitGbraid?: string | null;
   submitWbraid?: string | null;
+  internalTestAuthorized?: boolean;
+  internalTestReason?: string | null;
   consentAcknowledgement: boolean;
 }
 
 export interface CanonicalPlanMyPartyLead {
   leadId: string;
+  /** AP-02 persisted intake identity and route; absent on historical rows. */
+  submissionId?: string;
+  formRoute?: 'plan-my-party' | 'packages' | 'contact';
+  /**
+   * Sanitized compatibility projection for the admitted Make blueprint. It is
+   * persisted with the canonical row so retry delivery is payload-stable.
+   */
+  legacyNotificationLead?: Record<string, unknown> | null;
   endpoint: LeadEndpoint;
   createdAt: string;
   sourcePage: string | null;
@@ -407,23 +417,16 @@ function buildAttributionSummary(input: CanonicalLeadInput, sourceConfidence: So
 }
 
 function detectInternalTest(input: CanonicalLeadInput): { isInternalTest: boolean; reason: string | null } {
-  const haystack = [
-    input.firstName,
-    input.lastName,
-    input.email,
-    input.phone,
-    input.notes,
-  ].filter(Boolean).join(' ').toLowerCase();
-  const markers = [
-    'hfl tracking test',
-    'internal tracking test',
-    'do not quote',
-    'do not book',
-  ];
-  const matched = markers.find((marker) => haystack.includes(marker));
-  return matched
-    ? { isInternalTest: true, reason: matched }
-    : { isInternalTest: false, reason: null };
+  if (input.internalTestAuthorized !== true) {
+    return { isInternalTest: false, reason: null };
+  }
+  const reason = typeof input.internalTestReason === 'string'
+    ? input.internalTestReason.trim().slice(0, 120)
+    : '';
+  return {
+    isInternalTest: true,
+    reason: reason || 'owner_authorized_synthetic_test',
+  };
 }
 
 export function buildCanonicalLead(input: CanonicalLeadInput): CanonicalPlanMyPartyLead {

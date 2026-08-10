@@ -95,6 +95,15 @@ const directReturn = submit(google, `${ORIGIN}/contact/`, 5000);
 assert.equal(directReturn.latest_qualifying_touch.gclid, 'G-ONE');
 assert.equal(directReturn.submit_touch.gclid, null);
 
+const wwwInternal = capture(
+  null,
+  `${ORIGIN}/contact/`,
+  0,
+  'https://www.happyfacesla.com/services/?private=query',
+);
+assert.equal(wwwInternal.first_touch.source_confidence, 'direct');
+assert.equal(wwwInternal.latest_qualifying_touch, null, 'www and apex are the same HFLA site');
+
 const beforeExpiry = capture(google, `${ORIGIN}/services/`, TTL - 1);
 assert.equal(beforeExpiry.first_touch.gclid, 'G-ONE');
 const atExpiry = capture(google, `${ORIGIN}/services/`, TTL);
@@ -115,4 +124,4 @@ assert.equal(unsafe.captured_at, new Date(T0).toISOString());
 assert.equal(sanitizeJourney({ version: 99 }, { nowMs: T0 }), null);
 assert.equal(sanitizeJourney({ version: 1, first_touch: null }, { nowMs: T0 }), null);
 
-console.log('PASS 17 atomic attribution fixtures');
+console.log('PASS 18 atomic attribution fixtures');

@@ -175,13 +175,14 @@ function resetFetch() {
   };
 }
 
-function jsonRequest(path, payload) {
+function jsonRequest(path, payload, extraHeaders = {}) {
   return new Request(`https://www.happyfacesla.com${path}`, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
       'user-agent': 'lead-validation-test',
       'cf-ray': 'test-ray',
+      ...extraHeaders,
     },
     body: typeof payload === 'string' ? payload : JSON.stringify(payload),
   });
@@ -544,12 +545,24 @@ test('bot/honeypot payload does not send customer lead email', async () => {
 test('internal-test lead is marked and suppressed from offline outbox', async () => {
   resetFetch();
   const db = new MockD1();
-  await callQuote({
+  const internalTestToken = 'owner-authorized-test-token-000000000001';
+  const payload = withAtomicTestContract({
     ...fullPlanMyPartyPayload,
     quoteRequestIdempotencyKey: 'qrq_internaltest1234567890',
     firstName: 'HFL Tracking Test',
     specialRequests: 'INTERNAL TRACKING TEST - DO NOT QUOTE - DO NOT BOOK',
-  }, db);
+    internal_test: true,
+    internal_test_reason: 'owner_approved_fixture',
+  }, 'plan-my-party');
+  await handleQuoteRequest(
+    jsonRequest('/api/quote-request', payload, {
+      'x-hfla-internal-test-token': internalTestToken,
+    }),
+    {
+      ...quoteEnv(db),
+      INTERNAL_TEST_TOKEN: internalTestToken,
+    },
+  );
   const canonical = firstCanonical(db);
   assert.equal(canonical.isInternalTest, true);
   const result = await queueOfflineConversionOutboxEvent(
@@ -560,8 +573,21 @@ test('internal-test lead is marked and suppressed from offline outbox', async ()
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
   assert.equal(result.queued, false);
-  assert.equal(result.reason, 'hfl tracking test');
+  assert.equal(result.reason, 'owner_approved_fixture');
   assert.equal(db.outbox.length, 0);
+});
+
+test('ordinary customer do-not-book language is not an internal test', async () => {
+  resetFetch();
+  const db = new MockD1();
+  await callQuote({
+    ...fullPlanMyPartyPayload,
+    quoteRequestIdempotencyKey: 'qrq_customerwait1234567890',
+    specialRequests: 'Please do not book anything until I approve the quote.',
+  }, db);
+  const canonical = firstCanonical(db);
+  assert.equal(canonical.isInternalTest, false);
+  assert.equal(fetchCalls.length, 1, 'ordinary customer request still notifies the owner');
 });
 
 test('duplicate lead submission is idempotent and does not insert a second lead', async () => {

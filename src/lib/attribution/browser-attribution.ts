@@ -13,6 +13,7 @@ let memoryJourney: AttributionJourney | null = null;
 
 type BrowserAttributionConfig = {
   retentionMs?: number | null;
+  transientStorageAllowed?: boolean;
   persistentStorageAllowed?: boolean;
   consentGranted?: boolean;
 };
@@ -29,9 +30,14 @@ function config(): Required<BrowserAttributionConfig> {
     retentionMs: typeof candidate.retentionMs === 'number' && candidate.retentionMs >= 0
       ? candidate.retentionMs
       : null,
+    transientStorageAllowed: candidate.transientStorageAllowed === true,
     persistentStorageAllowed: candidate.persistentStorageAllowed === true,
     consentGranted: candidate.consentGranted === true,
   };
+}
+
+function canUseSessionStorage(candidate: Required<BrowserAttributionConfig>): boolean {
+  return candidate.transientStorageAllowed && candidate.consentGranted;
 }
 
 function canPersist(candidate: Required<BrowserAttributionConfig>): boolean {
@@ -71,6 +77,13 @@ export function purgeLegacyAttributionStorage(): void {
 function readJourney(nowMs = Date.now()): AttributionJourney | null {
   purgeLegacyAttributionStorage();
   const runtime = config();
+  if (!canUseSessionStorage(runtime)) {
+    try {
+      browserStorage('sessionStorage')?.removeItem(STORAGE_KEY);
+    } catch {
+      // Consent/storage revocation cleanup is best-effort.
+    }
+  }
   if (!canPersist(runtime)) {
     try {
       browserStorage('localStorage')?.removeItem(STORAGE_KEY);
@@ -79,7 +92,9 @@ function readJourney(nowMs = Date.now()): AttributionJourney | null {
     }
   }
   const options = { nowMs, retentionMs: runtime.retentionMs };
-  const session = sanitizeJourney(readJson(browserStorage('sessionStorage')), options);
+  const session = canUseSessionStorage(runtime)
+    ? sanitizeJourney(readJson(browserStorage('sessionStorage')), options)
+    : null;
   if (session) return session;
   if (canPersist(runtime)) {
     const local = sanitizeJourney(readJson(browserStorage('localStorage')), options);
@@ -92,12 +107,20 @@ function writeJourney(journey: AttributionJourney): void {
   purgeLegacyAttributionStorage();
   memoryJourney = journey;
   const serialized = JSON.stringify(journey);
-  try {
-    window.sessionStorage.setItem(STORAGE_KEY, serialized);
-  } catch {
-    // In-memory state still protects retries when storage is unavailable.
-  }
   const runtime = config();
+  if (canUseSessionStorage(runtime)) {
+    try {
+      window.sessionStorage.setItem(STORAGE_KEY, serialized);
+    } catch {
+      // In-memory state still protects retries when storage is unavailable.
+    }
+  } else {
+    try {
+      window.sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Consent/storage revocation cleanup is best-effort.
+    }
+  }
   if (canPersist(runtime)) {
     try {
       window.localStorage.setItem(STORAGE_KEY, serialized);

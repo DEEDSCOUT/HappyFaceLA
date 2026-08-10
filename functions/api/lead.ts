@@ -61,6 +61,81 @@ function formRoute(sourcePage: string): 'packages' | 'contact' {
   return sourcePage.startsWith('/packages') ? 'packages' : 'contact';
 }
 
+const ATTRIBUTION_KEYS = [
+  'gclid', 'gbraid', 'wbraid',
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+  'landing_page', 'source_path', 'referrer',
+] as const;
+
+function allowlistedLegacyAttribution(input: LegacyLeadPayload): Record<string, unknown> {
+  const output: Record<string, unknown> = {};
+  for (const prefix of ['', 'first_', 'submit_'] as const) {
+    for (const key of ATTRIBUTION_KEYS) {
+      const field = `${prefix}${key}`;
+      if (Object.prototype.hasOwnProperty.call(input, field)) output[field] = input[field];
+    }
+  }
+  return output;
+}
+
+/**
+ * Preserve the admitted production Make/Sheets envelope without trusting an
+ * arbitrary client-supplied nested object. Every field is rebuilt from the
+ * route's allowlisted legacy input and sanitized before the shared handler sees
+ * it. The AP-03 atomic journey remains the attribution source of truth.
+ */
+function legacyNotificationLead(
+  input: LegacyLeadPayload,
+  sourcePage: string,
+): Record<string, unknown> {
+  const services = Array.isArray(input.services_requested)
+    ? input.services_requested.map((value) => stringValue(value, 120)).filter(Boolean)
+    : [];
+  return {
+    first_name: stringValue(input.first_name, 80),
+    last_name: stringValue(input.last_name, 80),
+    phone: stringValue(input.phone, 40),
+    email: stringValue(input.email, 254),
+    event_date: stringValue(input.event_date, 10),
+    event_start_time: stringValue(input.event_start_time, 5),
+    event_city: stringValue(input.event_city, 120),
+    event_address_or_cross_streets_optional: stringValue(
+      input.event_address_or_cross_streets_optional,
+      160,
+    ),
+    event_type: stringValue(input.event_type, 120),
+    estimated_guest_count: stringValue(input.estimated_guest_count, 20),
+    children_count_optional: stringValue(input.children_count_optional, 20),
+    services_requested: services,
+    budget_range: stringValue(input.budget_range, 80),
+    message: stringValue(input.message, 1000),
+    source_page: sourcePage,
+    source_path: sourcePage,
+    utm_source: stringValue(input.utm_source, 256),
+    utm_medium: stringValue(input.utm_medium, 256),
+    utm_campaign: stringValue(input.utm_campaign, 256),
+    utm_term: stringValue(input.utm_term, 256),
+    utm_content: stringValue(input.utm_content, 256),
+    // The admitted Make blueprint expects these keys, but broad owner
+    // notifications do not need the raw identifiers. The complete values stay
+    // in the private atomic attribution record.
+    gclid: stringValue(input.gclid, 512) ? '[present]' : '',
+    gbraid: stringValue(input.gbraid, 512) ? '[present]' : '',
+    wbraid: stringValue(input.wbraid, 512) ? '[present]' : '',
+    fbclid: stringValue(input.fbclid, 512) ? '[present]' : '',
+    msclkid: stringValue(input.msclkid, 512) ? '[present]' : '',
+    lead_source: stringValue(input.lead_source, 120),
+    campaign: stringValue(input.campaign, 120),
+    selected_package: stringValue(input.selected_package ?? input.package_interest, 120),
+    organization_venue_name: stringValue(input.organization_venue_name, 160),
+    package_interest: stringValue(input.package_interest, 120),
+    painting_window: stringValue(input.painting_window, 120),
+    venue_permission_confirmed: stringValue(input.venue_permission_confirmed, 80),
+    need_invoice_coi: stringValue(input.need_invoice_coi, 120),
+    consent_to_contact: input.consent_to_contact === true || input.consent_to_contact === 'true',
+  };
+}
+
 function normalizeServiceValues(value: unknown): string[] {
   const normalized = stringValue(value, 80).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const aliases: Record<string, string[]> = {
@@ -142,6 +217,8 @@ function adaptLegacyLead(input: LegacyLeadPayload, request: Request): Record<str
     || stringValue(input.estimated_guest_count, 20);
   const childCount = /^\d+$/.test(childrenRaw) ? Number(childrenRaw) : null;
   return {
+    ...allowlistedLegacyAttribution(input),
+    legacyNotificationLead: legacyNotificationLead(input, sourcePage),
     submission_id: input.submission_id ?? input.submissionId,
     form_route: formRoute(sourcePage),
     sourcePage,

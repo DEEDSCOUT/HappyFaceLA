@@ -22,6 +22,8 @@ CREATE TABLE lead_submission_identity (
   first_touch_json TEXT NOT NULL CHECK (json_valid(first_touch_json)),
   latest_qualifying_touch_json TEXT CHECK (latest_qualifying_touch_json IS NULL OR json_valid(latest_qualifying_touch_json)),
   submit_touch_json TEXT NOT NULL CHECK (json_valid(submit_touch_json)),
+  client_contract_version TEXT NOT NULL DEFAULT 'atomic-v1'
+    CHECK (client_contract_version IN ('atomic-v1', 'legacy-bounded-v1')),
   attribution_policy_version TEXT NOT NULL DEFAULT 'AP03A-1',
   canonical_version TEXT NOT NULL DEFAULT 'AP02A-1',
   CHECK (

@@ -16,6 +16,7 @@ import {
 } from '../attribution/atomic-attribution.ts';
 import {
   createOpaqueLeadId,
+  createServerSubmissionId,
   detectDeterministicSpam,
   normalizeFormRoute,
   normalizeSubmissionId,
@@ -43,6 +44,9 @@ export type QuoteRequestEnv = {
   QUOTE_REQUEST_EMAIL_PROVIDER?: string;
   QUOTE_REQUEST_EMAIL_API_KEY?: string;
   ATTRIBUTION_RETENTION_DAYS?: string;
+  LEGACY_FORM_COMPAT_STARTED_AT_UTC?: string;
+  LEGACY_FORM_COMPAT_UNTIL_UTC?: string;
+  INTERNAL_TEST_TOKEN?: string;
 };
 
 type ValidationResult =
@@ -83,7 +87,10 @@ type SanitizedQuoteRequest = {
   attribution: AttributionJourney;
   payloadHash: string;
   conversionEligible: boolean;
+  notificationEligible: boolean;
   suppressionReason: string | null;
+  clientContractVersion: 'atomic-v1' | 'legacy-bounded-v1';
+  attributionPolicyVersion: 'AP03A-1' | 'AP03A-legacy-bounded-v1';
   eventType: string;
   services: string[];
   kidsCountBucket: string;
@@ -146,7 +153,27 @@ type SanitizedQuoteRequest = {
   submitGclid: string | null;
   submitGbraid: string | null;
   submitWbraid: string | null;
+  legacyNotificationLead: Record<string, unknown> | null;
+  internalTestAuthorized: boolean;
+  internalTestReason: string | null;
 };
+
+type RequestContractContext = {
+  legacyClient: boolean;
+  legacyStorageKey: string | null;
+  internalTestAuthorized: boolean;
+  internalTestReason: string | null;
+};
+
+const MODERN_CONTRACT_CONTEXT: RequestContractContext = {
+  legacyClient: false,
+  legacyStorageKey: null,
+  internalTestAuthorized: false,
+  internalTestReason: null,
+};
+
+const LEGACY_COMPAT_MAX_MS = 14 * 24 * 60 * 60 * 1000;
+const LEGACY_IDEMPOTENCY_RE = /^qrq_[a-z0-9-]{8,96}$/i;
 
 const PROHIBITED_FIELDS = new Set([
   'band_id',
@@ -434,6 +461,187 @@ function deriveSafeSourcePage(raw: Record<string, unknown>, request: Request): s
   return null;
 }
 
+const LEGACY_NOTIFICATION_STRING_LIMITS: Readonly<Record<string, number>> = {
+  first_name: 80,
+  last_name: 80,
+  phone: 40,
+  email: 254,
+  event_date: 10,
+  event_start_time: 5,
+  event_city: 120,
+  event_address_or_cross_streets_optional: 160,
+  event_type: 120,
+  estimated_guest_count: 20,
+  children_count_optional: 20,
+  budget_range: 80,
+  message: 1000,
+  source_page: 256,
+  source_path: 256,
+  utm_source: 256,
+  utm_medium: 256,
+  utm_campaign: 256,
+  utm_term: 256,
+  utm_content: 256,
+  gclid: 512,
+  gbraid: 512,
+  wbraid: 512,
+  fbclid: 512,
+  msclkid: 512,
+  lead_source: 120,
+  campaign: 120,
+  selected_package: 120,
+  organization_venue_name: 160,
+  package_interest: 120,
+  painting_window: 120,
+  venue_permission_confirmed: 80,
+  need_invoice_coi: 120,
+};
+
+function normalizeLegacyNotificationLead(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const raw = value as Record<string, unknown>;
+  const normalized: Record<string, unknown> = {};
+  for (const [field, limit] of Object.entries(LEGACY_NOTIFICATION_STRING_LIMITS)) {
+    normalized[field] = normalizeString(raw[field], limit);
+  }
+  normalized.services_requested = Array.isArray(raw.services_requested)
+    ? raw.services_requested
+      .slice(0, 12)
+      .map((item) => normalizeString(item, 120))
+      .filter(Boolean)
+    : [];
+  normalized.consent_to_contact = raw.consent_to_contact === true;
+  return normalized;
+}
+
+export function legacyCompatibilityWindowIsActive(
+  env: QuoteRequestEnv,
+  nowMs = Date.now(),
+): boolean {
+  const startedAt = Date.parse(getEnvString(env.LEGACY_FORM_COMPAT_STARTED_AT_UTC));
+  const until = Date.parse(getEnvString(env.LEGACY_FORM_COMPAT_UNTIL_UTC));
+  return Number.isFinite(startedAt)
+    && Number.isFinite(until)
+    && until > startedAt
+    && until - startedAt <= LEGACY_COMPAT_MAX_MS
+    && nowMs >= startedAt
+    && nowMs <= until;
+}
+
+async function secureTokenMatch(supplied: string, configured: string): Promise<boolean> {
+  if (!supplied || configured.length < 32 || supplied.length > 512 || configured.length > 512) {
+    return false;
+  }
+  const encoder = new TextEncoder();
+  const [suppliedDigest, configuredDigest] = await Promise.all([
+    crypto.subtle.digest('SHA-256', encoder.encode(supplied)),
+    crypto.subtle.digest('SHA-256', encoder.encode(configured)),
+  ]);
+  const left = new Uint8Array(suppliedDigest);
+  const right = new Uint8Array(configuredDigest);
+  let mismatch = 0;
+  for (let index = 0; index < left.length; index += 1) mismatch |= left[index] ^ right[index];
+  return mismatch === 0;
+}
+
+async function internalTestContract(
+  request: Request,
+  raw: Record<string, unknown>,
+  env: QuoteRequestEnv,
+): Promise<Pick<RequestContractContext, 'internalTestAuthorized' | 'internalTestReason'>> {
+  if (raw.internal_test !== true) {
+    return { internalTestAuthorized: false, internalTestReason: null };
+  }
+  const configured = getEnvString(env.INTERNAL_TEST_TOKEN);
+  const supplied = request.headers.get('x-hfla-internal-test-token')?.trim() ?? '';
+  const authorized = await secureTokenMatch(supplied, configured);
+  return authorized
+    ? {
+        internalTestAuthorized: true,
+        internalTestReason: normalizeNullableString(raw.internal_test_reason, 120)
+          ?? 'owner_authorized_synthetic_test',
+      }
+    : { internalTestAuthorized: false, internalTestReason: null };
+}
+
+function legacyTouch(
+  raw: Record<string, unknown>,
+  prefix: '' | 'first_' | 'submit_',
+  sourcePage: string,
+  capturedAt: string,
+): Record<string, unknown> {
+  const get = (key: string): unknown => raw[`${prefix}${key}`];
+  const path = prefix === 'submit_'
+    ? sourcePage
+    : get('source_path') ?? get('landing_page') ?? sourcePage;
+  return {
+    gclid: get('gclid') ?? null,
+    gbraid: get('gbraid') ?? null,
+    wbraid: get('wbraid') ?? null,
+    utm_source: get('utm_source') ?? null,
+    utm_medium: get('utm_medium') ?? null,
+    utm_campaign: get('utm_campaign') ?? null,
+    utm_term: get('utm_term') ?? null,
+    utm_content: get('utm_content') ?? null,
+    landing_path: path,
+    source_path: path,
+    sanitized_referrer: get('referrer') ?? null,
+    captured_at: capturedAt,
+    source_confidence: 'direct',
+  };
+}
+
+async function upgradeBoundedLegacyContract(
+  raw: Record<string, unknown>,
+  sourcePage: string | null,
+  endpointPath: string,
+  env: QuoteRequestEnv,
+): Promise<{ raw: Record<string, unknown>; context: RequestContractContext }> {
+  const hasModernMarker = raw.submission_id !== undefined
+    || raw.submissionId !== undefined
+    || raw.attribution !== undefined;
+  if (hasModernMarker || !legacyCompatibilityWindowIsActive(env) || !sourcePage) {
+    return { raw, context: MODERN_CONTRACT_CONTEXT };
+  }
+
+  const legacyKeyRaw = normalizeString(raw.quoteRequestIdempotencyKey, 128);
+  const legacyStorageKey = endpointPath.endsWith('/api/quote-request')
+    && LEGACY_IDEMPOTENCY_RE.test(legacyKeyRaw)
+    ? legacyKeyRaw.toLowerCase()
+    : null;
+  const submissionId = legacyStorageKey
+    ? `sub_${(await payloadHash({ contract: 'legacy-plan-v1', legacyStorageKey })).slice(0, 32)}`
+    : createServerSubmissionId();
+  const capturedAt = new Date().toISOString();
+  const firstTouch = legacyTouch(raw, 'first_', sourcePage, capturedAt);
+  const latestTouch = legacyTouch(raw, '', sourcePage, capturedAt);
+  const submitTouch = legacyTouch(raw, 'submit_', sourcePage, capturedAt);
+  const formRoute = endpointPath.endsWith('/api/quote-request')
+    ? 'plan-my-party'
+    : normalizeFormRoute(undefined, sourcePage);
+
+  return {
+    raw: {
+      ...raw,
+      submission_id: submissionId,
+      form_route: formRoute,
+      attribution: {
+        version: 1,
+        first_touch: firstTouch,
+        latest_qualifying_touch: latestTouch,
+        submit_touch: submitTouch,
+        expires_at: null,
+      },
+    },
+    context: {
+      legacyClient: true,
+      legacyStorageKey,
+      internalTestAuthorized: false,
+      internalTestReason: null,
+    },
+  };
+}
+
 function comparablePath(value: string): string {
   if (value === '/') return value;
   return value.replace(/\/+$/, '') || '/';
@@ -476,6 +684,7 @@ async function validatePayload(
   sourcePage: string | null,
   attributionRetentionMs: number | null,
   endpointPath: string,
+  contract: RequestContractContext,
 ): Promise<ValidationResult> {
   const body = sanitizePayload(raw);
   const eventType = normalizeString(body.eventType, 60);
@@ -577,13 +786,20 @@ async function validatePayload(
     email,
     specialRequests: body.specialRequests,
   });
+  const suppressionReason = spamReason
+    || (contract.legacyClient ? 'legacy_client_compatibility' : null);
   const value: SanitizedQuoteRequest = {
       submissionId,
       formRoute,
       attribution,
       payloadHash: '',
-      conversionEligible: !spamReason,
-      suppressionReason: spamReason,
+      conversionEligible: !spamReason && !contract.legacyClient,
+      // Heuristic spam remains conversion-suppressed but must reach the owner
+      // for review; only a honeypot or authenticated internal test is silent.
+      notificationEligible: true,
+      suppressionReason,
+      clientContractVersion: contract.legacyClient ? 'legacy-bounded-v1' : 'atomic-v1',
+      attributionPolicyVersion: contract.legacyClient ? 'AP03A-legacy-bounded-v1' : 'AP03A-1',
       eventType,
       services,
       kidsCountBucket,
@@ -605,7 +821,7 @@ async function validatePayload(
       specialRequests: normalizeNullableString(body.specialRequests, 1000),
       wizardVersion: normalizeString(body.wizardVersion, 80) || 'guided-wizard',
       submittedAt: normalizeNullableString(body.submittedAt, 40),
-      quoteRequestIdempotencyKey: submissionId,
+      quoteRequestIdempotencyKey: contract.legacyStorageKey || quoteRequestStorageKey(submissionId),
       consentAcknowledgement: true,
       lookbookInspirations: normalizeLookbookInspirations(body.lookbook_inspirations),
       preferredContactMethod: normalizePreferredContactMethod(body.preferredContactMethod),
@@ -646,6 +862,9 @@ async function validatePayload(
       submitGclid: normalizeAttribution(compatibility.submit_gclid),
       submitGbraid: normalizeAttribution(compatibility.submit_gbraid),
       submitWbraid: normalizeAttribution(compatibility.submit_wbraid),
+      legacyNotificationLead: normalizeLegacyNotificationLead(body.legacyNotificationLead),
+      internalTestAuthorized: contract.internalTestAuthorized,
+      internalTestReason: contract.internalTestReason,
   };
 
   value.payloadHash = await payloadHash({
@@ -685,6 +904,17 @@ function getPersistenceDb(env: QuoteRequestEnv): D1Database | undefined {
 
 function makeLeadId(): string {
   return createOpaqueLeadId();
+}
+
+/**
+ * quote_requests is an admitted legacy production table whose CHECK constraint
+ * only accepts qrq_* idempotency keys. Keep that storage contract stable while
+ * lead_submission_identity owns the new public sub_* identity.
+ */
+export function quoteRequestStorageKey(submissionId: string): string {
+  const normalized = normalizeSubmissionId(submissionId);
+  if (!normalized) throw new Error('A valid submission identity is required.');
+  return `qrq_${normalized.slice(4)}`;
 }
 
 function attributionRetentionMs(env: QuoteRequestEnv): number | null {
@@ -739,8 +969,8 @@ function buildCanonical(body: SanitizedQuoteRequest, leadId: string, now: string
     }
   }
 
-  return buildCanonicalLead({
-    endpoint: 'quote-request',
+  const canonical = buildCanonicalLead({
+    endpoint: body.formRoute === 'plan-my-party' ? 'quote-request' : 'lead-adapter',
     leadId,
     createdAt: now,
     sourcePage: body.sourcePage,
@@ -810,8 +1040,16 @@ function buildCanonical(body: SanitizedQuoteRequest, leadId: string, now: string
     submitGclid: body.submitGclid,
     submitGbraid: body.submitGbraid,
     submitWbraid: body.submitWbraid,
+    internalTestAuthorized: body.internalTestAuthorized,
+    internalTestReason: body.internalTestReason,
     consentAcknowledgement: body.consentAcknowledgement,
   });
+  return {
+    ...canonical,
+    submissionId: body.submissionId,
+    formRoute: body.formRoute,
+    legacyNotificationLead: body.legacyNotificationLead,
+  };
 }
 
 // Map the canonical lead to the D1 row. The FIRST 37 columns preserve the original
@@ -823,7 +1061,10 @@ function canonicalToD1Record(c: CanonicalPlanMyPartyLead, body: SanitizedQuoteRe
   return {
     lead_id: c.leadId,
     idempotency_key: body.quoteRequestIdempotencyKey,
-    source: body.formRoute,
+    // The live table has CHECK (source = 'plan-my-party'). The authoritative
+    // route is stored in lead_submission_identity.form_route, source_page, and
+    // canonical_payload_json; this field remains a legacy compatibility value.
+    source: 'plan-my-party',
     received_at: c.createdAt,
     updated_at: c.createdAt,
     event_type: c.eventType,
@@ -853,8 +1094,10 @@ function canonicalToD1Record(c: CanonicalPlanMyPartyLead, body: SanitizedQuoteRe
     lookbook_inspirations_json: JSON.stringify(body.lookbookInspirations),
     wizard_version: body.wizardVersion,
     client_submitted_at: body.submittedAt,
-    delivery_status: body.conversionEligible ? 'persisted_internal_queue' : 'suppressed_at_intake',
-    owner_notification_queued: body.conversionEligible ? 1 : 0,
+    // Preserve the admitted live CHECK constraint. Suppression and shadow
+    // eligibility are represented in the additive identity/outbox tables.
+    delivery_status: 'persisted_internal_queue',
+    owner_notification_queued: body.notificationEligible ? 1 : 0,
     owner_notification_sent: 0,
     sheet_written: 0,
     crm_posted: 0,
@@ -1074,8 +1317,8 @@ function prepareSubmissionIdentityInsert(
       submission_id, lead_id, form_route, payload_hash, accepted_at_utc,
       conversion_eligible, suppression_reason, business_duplicate_of_lead_id,
       first_touch_json, latest_qualifying_touch_json, submit_touch_json,
-      attribution_policy_version, canonical_version
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, 'AP03A-1', 'AP02A-1')`,
+      client_contract_version, attribution_policy_version, canonical_version
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, 'AP02A-1')`,
   ).bind(
     body.submissionId,
     leadId,
@@ -1089,6 +1332,8 @@ function prepareSubmissionIdentityInsert(
       ? JSON.stringify(body.attribution.latest_qualifying_touch)
       : null,
     JSON.stringify(body.attribution.submit_touch),
+    body.clientContractVersion,
+    body.attributionPolicyVersion,
   );
 }
 
@@ -1151,7 +1396,7 @@ async function insertAcceptedSubmission(
     prepareLeadInsert(db, record),
     prepareCanonicalOutboxInsert(db, body, leadId, acceptedAt),
   ];
-  if (body.conversionEligible) {
+  if (body.notificationEligible) {
     statements.push(prepareNotificationOutboxInsert(db, body, leadId, acceptedAt));
   }
   const results = await db.batch(statements);
@@ -1289,7 +1534,24 @@ function getEnvString(value: unknown): string {
 // buildCanonicalNotificationPayload (canonical-lead.ts), so every customer-entered
 // field and every system-recommended value is delivered, truthfully labeled.
 
-async function postWebhook(url: string, secret: string, payload: Record<string, unknown>): Promise<boolean> {
+type WebhookAckMode = 'http-2xx' | 'json-ok';
+
+function validJsonWebhookAcknowledgement(body: string): boolean {
+  if (!body.trim() || body.length > 4096) return false;
+  try {
+    const parsed = JSON.parse(body) as { ok?: unknown };
+    return Boolean(parsed && typeof parsed === 'object' && parsed.ok === true);
+  } catch {
+    return false;
+  }
+}
+
+async function postWebhook(
+  url: string,
+  secret: string,
+  payload: Record<string, unknown>,
+  acknowledgement: WebhookAckMode,
+): Promise<boolean> {
   try {
     assertLeadNotificationPayloadCanSend(payload);
   } catch (err) {
@@ -1307,32 +1569,56 @@ async function postWebhook(url: string, secret: string, payload: Record<string, 
   }
 
   const body = JSON.stringify(payload);
+  const formRoute = typeof payload.form_route === 'string' ? payload.form_route : '';
   const headers: Record<string, string> = {
     'content-type': 'application/json',
-    'x-lead-source': `happyfacesla-${String(payload.form_route || 'canonical-lead')}`,
+    // Preserve the two admitted production header contracts. The stable
+    // lead-id header is additive and supplies downstream idempotency.
+    'x-lead-source': formRoute === 'plan-my-party'
+      ? 'happyfacesla-plan-my-party'
+      : 'happyfacesla-cloudflare-pages',
   };
   if (typeof payload.lead_id === 'string') headers['x-idempotency-key'] = payload.lead_id;
   if (secret) headers['x-signature-sha256'] = await hmacSignature(secret, body);
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
   try {
-    const response = await fetch(url, { method: 'POST', headers, body });
-    return response.ok;
+    const response = await fetch(url, { method: 'POST', headers, body, signal: controller.signal });
+    if (!response.ok) return false;
+    if (acknowledgement === 'http-2xx') return true;
+    return validJsonWebhookAcknowledgement(await response.text());
   } catch {
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
 async function runOptionalNotifications(
   env: QuoteRequestEnv,
   canonical: CanonicalPlanMyPartyLead,
-  body: SanitizedQuoteRequest,
 ): Promise<{ attempted: boolean; ownerNotificationSent: boolean; sheetWritten: boolean; crmPosted: boolean }> {
-  const payload = {
+  const formRoute = canonical.formRoute ?? 'plan-my-party';
+  const canonicalNotification = {
     ...buildCanonicalNotificationPayload(canonical),
-    source: body.formRoute,
-    form_route: body.formRoute,
-    submission_id: body.submissionId,
+    source: formRoute,
+    form_route: formRoute,
+    submission_id: canonical.submissionId ?? null,
   };
+  const payload = formRoute === 'plan-my-party'
+    ? canonicalNotification
+    : {
+        ...canonicalNotification,
+        // The admitted production Make blueprint maps 1.lead.*, 1.leadId,
+        // and 1.submittedAt. Keep that shape while the flat canonical fields
+        // remain available to the future AP-02 contract.
+        leadId: canonical.leadId,
+        submittedAt: canonical.createdAt,
+        lead: canonical.legacyNotificationLead ?? {},
+        legacy_lead: canonical.legacyNotificationLead ?? {},
+        canonical: canonicalNotification,
+      };
   const crmUrl = getEnvString(env.QUOTE_REQUEST_CRM_WEBHOOK_URL);
   const sheetUrl = getEnvString(env.QUOTE_REQUEST_SHEET_WEBHOOK_URL);
   const makeUrl = getEnvString(env.QUOTE_REQUEST_MAKE_WEBHOOK_URL);
@@ -1343,16 +1629,16 @@ async function runOptionalNotifications(
   let crmPosted = false;
   let sheetWritten = false;
   let makePosted = false;
-  if (body.formRoute === 'plan-my-party') {
-    crmPosted = crmUrl ? await postWebhook(crmUrl, crmSecret, payload) : false;
-    sheetWritten = sheetUrl ? await postWebhook(sheetUrl, sheetSecret, payload) : false;
-    makePosted = makeUrl ? await postWebhook(makeUrl, makeSecret, payload) : false;
+  if (formRoute === 'plan-my-party') {
+    crmPosted = crmUrl ? await postWebhook(crmUrl, crmSecret, payload, 'json-ok') : false;
+    sheetWritten = sheetUrl ? await postWebhook(sheetUrl, sheetSecret, payload, 'json-ok') : false;
+    makePosted = makeUrl ? await postWebhook(makeUrl, makeSecret, payload, 'http-2xx') : false;
   } else if (crmUrl) {
-    crmPosted = await postWebhook(crmUrl, crmSecret, payload);
+    crmPosted = await postWebhook(crmUrl, crmSecret, payload, 'json-ok');
   } else if (makeUrl) {
-    makePosted = await postWebhook(makeUrl, makeSecret, payload);
+    makePosted = await postWebhook(makeUrl, makeSecret, payload, 'http-2xx');
   } else if (sheetUrl) {
-    sheetWritten = await postWebhook(sheetUrl, sheetSecret, payload);
+    sheetWritten = await postWebhook(sheetUrl, sheetSecret, payload, 'json-ok');
   }
 
   return {
@@ -1407,10 +1693,34 @@ async function persistQuoteRequest(
     if (!existing) return { response: failure(), canonical: null };
     return {
       response: success(existing, existingIdentity, true, false),
-      canonical: existingIdentity.conversion_eligible === 1 && existing.owner_notification_sent !== 1
+      canonical: existing.owner_notification_queued === 1 && existing.owner_notification_sent !== 1
         ? parsePersistedCanonical(existing)
         : null,
     };
+  }
+
+  // A Plan My Party tab opened before cutover can retry a qrq_* submission
+  // that already exists but has no additive identity row. Return the durable
+  // historical lead without mutating or duplicating it.
+  if (body.clientContractVersion === 'legacy-bounded-v1') {
+    try {
+      const historical = await selectExistingLead(db, body.quoteRequestIdempotencyKey);
+      if (historical) {
+        return {
+          response: success(historical, {
+            submission_id: body.submissionId,
+            lead_id: historical.lead_id,
+            form_route: body.formRoute,
+            payload_hash: body.payloadHash,
+            conversion_eligible: 0,
+            suppression_reason: 'legacy_historical_retry',
+          }, true, false),
+          canonical: null,
+        };
+      }
+    } catch {
+      return { response: failure(), canonical: null };
+    }
   }
 
   const now = new Date().toISOString();
@@ -1418,6 +1728,7 @@ async function persistQuoteRequest(
   const canonical = buildCanonical(body, leadId, now);
   if (canonical.isInternalTest) {
     body.conversionEligible = false;
+    body.notificationEligible = false;
     body.suppressionReason = canonical.internalTestReason
       ? `internal_test:${canonical.internalTestReason.replace(/\s+/g, '_')}`
       : 'internal_test';
@@ -1456,7 +1767,7 @@ async function persistQuoteRequest(
         }
         return {
           response: success(duplicate, duplicateIdentity, true, false),
-          canonical: duplicateIdentity.conversion_eligible === 1 && duplicate.owner_notification_sent !== 1
+          canonical: duplicate.owner_notification_queued === 1 && duplicate.owner_notification_sent !== 1
             ? parsePersistedCanonical(duplicate)
             : null,
         };
@@ -1470,7 +1781,7 @@ async function persistQuoteRequest(
   return {
     response: success({
       lead_id: leadId,
-      owner_notification_queued: body.conversionEligible ? 1 : 0,
+      owner_notification_queued: body.notificationEligible ? 1 : 0,
       owner_notification_sent: 0,
       sheet_written: 0,
       crm_posted: 0,
@@ -1536,11 +1847,15 @@ export async function handleQuoteRequest(request: Request, env: QuoteRequestEnv)
   }
 
   const sourcePage = deriveSafeSourcePage(raw, request);
+  const endpointPath = new URL(request.url).pathname;
+  const upgraded = await upgradeBoundedLegacyContract(raw, sourcePage, endpointPath, env);
+  const testContract = await internalTestContract(request, upgraded.raw, env);
   const parsed = await validatePayload(
-    raw,
+    upgraded.raw,
     sourcePage,
     attributionRetentionMs(env),
-    new URL(request.url).pathname,
+    endpointPath,
+    { ...upgraded.context, ...testContract },
   );
   if (!parsed.ok) {
     logQuoteValidationFailure(request, raw, 'invalid_payload', [parsed.message]);
@@ -1560,7 +1875,7 @@ export async function handleQuoteRequest(request: Request, env: QuoteRequestEnv)
     return persistedResponse;
   }
 
-  if (!persisted.leadId || !persisted.conversionEligible || !canonical) {
+  if (!persisted.leadId || !persisted.ownerNotificationQueued || !canonical) {
     return persistedResponse;
   }
 
@@ -1574,7 +1889,7 @@ export async function handleQuoteRequest(request: Request, env: QuoteRequestEnv)
   }
   if (!claimToken) return persistedResponse;
 
-  const flags = await runOptionalNotifications(env, canonical, parsed.value);
+  const flags = await runOptionalNotifications(env, canonical);
   if (!flags.attempted) return persistedResponse;
 
   try {
