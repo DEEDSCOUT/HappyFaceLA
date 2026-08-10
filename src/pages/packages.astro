@@ -249,7 +249,7 @@ const transparencyCopy =
         <textarea name="message" rows="4" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" placeholder="Theme, venue type, age range, timing notes, or COI needs"></textarea>
       </label>
 
-      <input type="hidden" name="event_type" value="Yelp packages availability request" />
+      <input type="hidden" name="event_type" value="Package availability request" />
       <input type="hidden" name="source_page" value={canonicalPath} />
       <input type="hidden" name="utm_source" />
       <input type="hidden" name="utm_medium" />
@@ -257,6 +257,8 @@ const transparencyCopy =
       <input type="hidden" name="utm_term" />
       <input type="hidden" name="utm_content" />
       <input type="hidden" name="gclid" />
+      <input type="hidden" name="gbraid" />
+      <input type="hidden" name="wbraid" />
       <input type="hidden" name="fbclid" />
       <input type="hidden" name="msclkid" />
       <input type="hidden" name="lead_source" />
@@ -302,141 +304,41 @@ const transparencyCopy =
     <FAQAccordion items={packageFaqs} />
   </section>
 
-  <script is:inline>
+  <script>
+    import {
+      buildBrowserSubmissionAttribution,
+      captureBrowserAttribution,
+    } from "../lib/attribution/browser-attribution.ts";
+    import {
+      getOrCreateSubmissionId,
+      markSubmissionAccepted,
+      rotateAcceptedSubmissionOnEdit,
+    } from "../lib/forms/submission-client.ts";
+    import { buildPackagesBrowserPayload } from "../lib/forms/browser-payloads.ts";
+    import { shouldEmitTechnicalEvent } from "../lib/forms/acceptance-contract.ts";
+
     (() => {
-      const ATTR_KEYS = [
-        "utm_source",
-        "utm_medium",
-        "utm_campaign",
-        "utm_term",
-        "utm_content",
-        "gclid",
-        "fbclid",
-        "msclkid"
-      ];
-
-      function readAttrStore() {
-        try {
-          const session = JSON.parse(sessionStorage.getItem("hfla_attribution") || "{}");
-          const local = JSON.parse(localStorage.getItem("hfla_attribution") || "{}");
-          return { ...local, ...session };
-        } catch {
-          return {};
-        }
-      }
-
-      function readUrlAttribution() {
-        const out = {};
-        try {
-          const params = new URLSearchParams(window.location.search);
-          ATTR_KEYS.forEach((key) => {
-            const value = (params.get(key) || "").trim();
-            if (value) {
-              out[key] = value;
-            }
-          });
-        } catch {
-          /* noop */
-        }
-        return out;
-      }
-
-      function deriveLeadSource(values) {
-        const utmSource = String(values.utm_source || "").trim().toLowerCase();
-        return utmSource === "yelp" ? "yelp" : "";
-      }
-
-      function trackEvent(eventName, params = {}) {
+      function trackEvent(eventName: string, params: Record<string, unknown> = {}) {
         window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({ event: eventName, ...params });
         if (typeof window.gtag === "function") {
           window.gtag("event", eventName, params);
+        } else {
+          window.dataLayer.push({ event: eventName, ...params });
         }
       }
 
-      function hydrateAttribution(form) {
-        const values = { ...readAttrStore(), ...readUrlAttribution() };
-        ATTR_KEYS.forEach((key) => {
-          const input = form.querySelector(`input[name="${key}"]`);
-          if (!(input instanceof HTMLInputElement)) {
-            return;
-          }
-          const next = String(values[key] || "").trim();
-          if (next) {
-            input.value = next;
-          }
-        });
-
-        const leadSourceInput = form.querySelector('input[name="lead_source"]');
-        if (leadSourceInput instanceof HTMLInputElement) {
-          leadSourceInput.value = deriveLeadSource(values);
-        }
-
-        const sourcePathInput = form.querySelector('input[name="source_path"]');
-        if (sourcePathInput instanceof HTMLInputElement) {
-          sourcePathInput.value = window.location.pathname || "/packages/";
-        }
-
-        try {
-          const payload = JSON.stringify(values);
-          sessionStorage.setItem("hfla_attribution", payload);
-          localStorage.setItem("hfla_attribution", payload);
-        } catch {
-          /* noop */
-        }
+      function hydrateAttribution(_form: HTMLFormElement) {
+        captureBrowserAttribution();
       }
 
-      function splitName(parentName) {
-        const parts = parentName.trim().split(/\s+/).filter(Boolean);
-        if (!parts.length) {
-          return { first_name: "", last_name: "" };
-        }
-        if (parts.length === 1) {
-          return { first_name: parts[0], last_name: "" };
-        }
-        return { first_name: parts.slice(0, -1).join(" "), last_name: parts.slice(-1).join("") };
-      }
-
-      function getPayload(form) {
+      function getPayload(form: HTMLFormElement) {
         const fd = new FormData(form);
-        const parentName = String(fd.get("parent_name") || "").trim();
-        const names = splitName(parentName);
-        const selectedService = String(fd.get("services_primary") || "").trim();
-        const kids = String(fd.get("estimated_kids") || "").trim();
-        const notes = String(fd.get("message") || "").trim();
-        const message = [
-          selectedService ? `Services wanted: ${selectedService}` : "",
-          notes ? `Party theme / notes: ${notes}` : ""
-        ].filter(Boolean).join("\n\n");
-
-        return {
-          first_name: names.first_name,
-          last_name: names.last_name,
-          phone: String(fd.get("phone") || "").trim(),
-          email: String(fd.get("email") || "").trim(),
-          event_date: String(fd.get("event_date") || "").trim(),
-          event_start_time: String(fd.get("event_start_time") || "").trim(),
-          event_city: String(fd.get("event_city") || "").trim(),
-          event_type: String(fd.get("event_type") || "").trim(),
-          estimated_guest_count: kids,
-          children_count_optional: kids,
-          services_requested: selectedService ? [selectedService] : [],
-          budget_range: "",
-          message,
-          source_page: String(fd.get("source_page") || "").trim(),
-          utm_source: String(fd.get("utm_source") || "").trim(),
-          utm_medium: String(fd.get("utm_medium") || "").trim(),
-          utm_campaign: String(fd.get("utm_campaign") || "").trim(),
-          utm_term: String(fd.get("utm_term") || "").trim(),
-          utm_content: String(fd.get("utm_content") || "").trim(),
-          gclid: String(fd.get("gclid") || "").trim(),
-          fbclid: String(fd.get("fbclid") || "").trim(),
-          msclkid: String(fd.get("msclkid") || "").trim(),
-          lead_source: String(fd.get("lead_source") || "").trim(),
-          source_path: String(fd.get("source_path") || "").trim(),
-          consent_to_contact: Boolean(fd.get("consent_to_contact")),
-          honeypot: String(fd.get("honeypot") || "")
-        };
+        const submission = buildBrowserSubmissionAttribution();
+        return buildPackagesBrowserPayload({
+          formData: fd,
+          submissionId: getOrCreateSubmissionId(form, "packages"),
+          submission
+        });
       }
 
       document.querySelectorAll("form[data-packages-form]").forEach((form) => {
@@ -445,6 +347,7 @@ const transparencyCopy =
         }
 
         hydrateAttribution(form);
+        getOrCreateSubmissionId(form, "packages");
 
         const submitButton = form.querySelector("[data-submit-button]");
         const successNode = form.querySelector("[data-form-success]");
@@ -460,10 +363,15 @@ const transparencyCopy =
         };
 
         form.addEventListener("input", startTracking);
+        form.addEventListener("input", () => rotateAcceptedSubmissionOnEdit(form, "packages"));
         form.addEventListener("focusin", startTracking);
 
         form.addEventListener("submit", async (event) => {
           event.preventDefault();
+          if (form.dataset.submissionInFlight === "true") {
+            return;
+          }
+          form.dataset.submissionInFlight = "true";
 
           if (submitButton instanceof HTMLButtonElement) {
             submitButton.disabled = true;
@@ -487,19 +395,24 @@ const transparencyCopy =
               body: JSON.stringify(payload)
             });
             const result = await response.json().catch(() => ({ ok: false }));
-            if (!response.ok || !result.ok) {
+            if (!response.ok || !result.ok || result.accepted !== true || result.persisted !== true) {
               const details = result?.errors ? ` ${Object.values(result.errors).join(" ")}` : "";
               throw new Error(`We could not submit your request.${details}`.trim());
             }
 
-            trackEvent("packages_form_submit", {
-              source_page: payload.source_page || window.location.pathname,
-              lead_id: result.leadId || ""
-            });
-            trackEvent("generate_lead", {
-              source_page: payload.source_page || window.location.pathname,
-              lead_id: result.leadId || ""
-            });
+            if (result.submissionId) markSubmissionAccepted(form, "packages", result.submissionId);
+            if (shouldEmitTechnicalEvent(result)) {
+              trackEvent("packages_form_submit", {
+                source_page: payload.source_page || window.location.pathname,
+                form_route: "packages",
+                lead_id: result.leadId || ""
+              });
+              trackEvent("generate_lead", {
+                source_page: payload.source_page || window.location.pathname,
+                form_route: "packages",
+                lead_id: result.leadId || ""
+              });
+            }
 
             form.reset();
             hydrateAttribution(form);
@@ -518,6 +431,7 @@ const transparencyCopy =
               errorNode.classList.remove("hidden");
             }
           } finally {
+            form.dataset.submissionInFlight = "false";
             if (submitButton instanceof HTMLButtonElement) {
               submitButton.disabled = false;
               submitButton.textContent = "Check Availability";

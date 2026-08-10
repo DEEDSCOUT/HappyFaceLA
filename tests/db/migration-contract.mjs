@@ -1,0 +1,96 @@
+#!/usr/bin/env node
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { DatabaseSync } from 'node:sqlite';
+
+const sql = await readFile(
+  new URL('../../migrations/d1/20260810_ap02a_ap03a_canonical_form_identity.sql', import.meta.url),
+  'utf8',
+);
+const db = new DatabaseSync(':memory:');
+db.exec('PRAGMA foreign_keys = ON;');
+db.exec(sql);
+
+const tables = db.prepare(
+  "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name",
+).all().map((row) => row.name);
+assert.deepEqual(tables, [
+  'canonical_lead_outbox',
+  'lead_notification_outbox',
+  'lead_submission_identity',
+]);
+
+const submissionId = `sub_${'a'.repeat(32)}`;
+const leadId = `lead_${'b'.repeat(32)}`;
+db.prepare(`INSERT INTO lead_submission_identity (
+  submission_id, lead_id, form_route, payload_hash, accepted_at_utc,
+  conversion_eligible, suppression_reason, first_touch_json,
+  latest_qualifying_touch_json, submit_touch_json
+) VALUES (?, ?, 'contact', ?, ?, 1, NULL, '{}', NULL, '{}')`).run(
+  submissionId,
+  leadId,
+  'c'.repeat(64),
+  '2026-08-10T18:00:00.000Z',
+);
+db.prepare(`INSERT INTO canonical_lead_outbox (
+  outbox_id, submission_id, lead_id, conversion_eligible, status,
+  suppression_reason, payload_hash, created_at_utc, updated_at_utc
+) VALUES ('cfo_fixture', ?, ?, 0, 'shadow_pending',
+  'pending_business_classification', ?, ?, ?)`
+).run(submissionId, leadId, 'c'.repeat(64), '2026-08-10T18:00:00.000Z', '2026-08-10T18:00:00.000Z');
+db.prepare(`INSERT INTO lead_notification_outbox (
+  notification_id, submission_id, lead_id, created_at_utc, updated_at_utc
+) VALUES ('notify_fixture', ?, ?, ?, ?)`
+).run(submissionId, leadId, '2026-08-10T18:00:00.000Z', '2026-08-10T18:00:00.000Z');
+const claimA = `claim_${'a'.repeat(32)}`;
+const claimB = `claim_${'b'.repeat(32)}`;
+db.prepare(`UPDATE lead_notification_outbox
+  SET status = 'delivering', claim_token = ?, lease_expires_at_utc = ?
+  WHERE lead_id = ?`).run(claimA, '2026-08-10T17:59:00.000Z', leadId);
+const reclaimed = db.prepare(`UPDATE lead_notification_outbox
+  SET status = 'delivering', claim_token = ?, lease_expires_at_utc = ?
+  WHERE lead_id = ? AND status = 'delivering' AND lease_expires_at_utc < ?`
+).run(claimB, '2026-08-10T18:05:00.000Z', leadId, '2026-08-10T18:00:00.000Z');
+assert.equal(reclaimed.changes, 1);
+const staleFinalizer = db.prepare(`UPDATE lead_notification_outbox
+  SET status = 'failed_retryable', claim_token = NULL, lease_expires_at_utc = NULL
+  WHERE lead_id = ? AND status = 'delivering' AND claim_token = ?`
+).run(leadId, claimA);
+assert.equal(staleFinalizer.changes, 0, 'expired worker cannot overwrite the new claim');
+const currentFinalizer = db.prepare(`UPDATE lead_notification_outbox
+  SET status = 'sent', attempt_count = attempt_count + 1,
+      claim_token = NULL, lease_expires_at_utc = NULL, last_attempt_at_utc = ?
+  WHERE lead_id = ? AND status = 'delivering' AND claim_token = ?`
+).run('2026-08-10T18:01:00.000Z', leadId, claimB);
+assert.equal(currentFinalizer.changes, 1);
+const notification = db.prepare(
+  'SELECT status, attempt_count, claim_token, lease_expires_at_utc FROM lead_notification_outbox WHERE lead_id = ?',
+).get(leadId);
+assert.deepEqual(
+  { ...notification },
+  { status: 'sent', attempt_count: 1, claim_token: null, lease_expires_at_utc: null },
+);
+
+assert.throws(() => db.prepare(`INSERT INTO lead_submission_identity (
+  submission_id, lead_id, form_route, payload_hash, accepted_at_utc,
+  conversion_eligible, suppression_reason, first_touch_json, submit_touch_json
+) VALUES (?, ?, 'contact', ?, ?, 1, NULL, '{}', '{}')`).run(
+  `sub_${'a'.repeat(31)}z`,
+  `lead_${'d'.repeat(32)}`,
+  'e'.repeat(64),
+  '2026-08-10T18:00:00.000Z',
+), /CHECK constraint failed/);
+
+assert.throws(() => db.prepare(`INSERT INTO lead_notification_outbox (
+  notification_id, submission_id, lead_id, created_at_utc, updated_at_utc
+) VALUES ('notify_duplicate', ?, ?, ?, ?)`
+).run(submissionId, leadId, '2026-08-10T18:00:00.000Z', '2026-08-10T18:00:00.000Z'), /UNIQUE constraint failed/);
+
+assert.throws(() => db.prepare(`INSERT INTO canonical_lead_outbox (
+  outbox_id, submission_id, lead_id, conversion_eligible, status,
+  suppression_reason, payload_hash, created_at_utc, updated_at_utc
+) VALUES ('cfo_bad', ?, ?, 1, 'shadow_pending', NULL, ?, ?, ?)`
+).run(submissionId, leadId, 'f'.repeat(64), '2026-08-10T18:00:00.000Z', '2026-08-10T18:00:00.000Z'), /CHECK constraint failed/);
+
+db.close();
+console.log('PASS AP-02A/AP-03A migration schema and constraints');

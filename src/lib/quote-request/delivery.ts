@@ -9,6 +9,20 @@ import {
   type CanonicalPlanMyPartyLead,
   type PreferredContactMethod,
 } from './canonical-lead.ts';
+import {
+  flattenJourney,
+  sanitizeJourney,
+  type AttributionJourney,
+} from '../attribution/atomic-attribution.ts';
+import {
+  createOpaqueLeadId,
+  detectDeterministicSpam,
+  normalizeFormRoute,
+  normalizeSubmissionId,
+  payloadHash,
+  type FormRoute,
+  type LeadAcceptanceResponse,
+} from '../forms/acceptance-contract.ts';
 
 export const QUOTE_REQUEST_FAILURE_MESSAGE =
   'We could not submit your request. Please call/text (310) 800-2860.';
@@ -28,6 +42,7 @@ export type QuoteRequestEnv = {
   OWNER_NOTIFICATION_EMAIL?: string;
   QUOTE_REQUEST_EMAIL_PROVIDER?: string;
   QUOTE_REQUEST_EMAIL_API_KEY?: string;
+  ATTRIBUTION_RETENTION_DAYS?: string;
 };
 
 type ValidationResult =
@@ -40,20 +55,19 @@ type PersistedLeadRow = {
   owner_notification_sent: number;
   sheet_written: number;
   crm_posted: number;
+  canonical_payload_json?: string | null;
 };
 
-type QuoteRequestResponse = {
-  ok: boolean;
-  received: boolean;
-  leadId?: string;
-  persisted: boolean;
-  ownerNotificationQueued: boolean;
-  ownerNotificationSent: boolean;
-  sheetWritten: boolean;
-  crmPosted: boolean;
-  duplicate?: boolean;
-  message: string;
+type SubmissionIdentityRow = {
+  submission_id: string;
+  lead_id: string;
+  form_route: FormRoute;
+  payload_hash: string;
+  conversion_eligible: number;
+  suppression_reason: string | null;
 };
+
+type QuoteRequestResponse = LeadAcceptanceResponse;
 
 type SanitizedLookbookInspiration = {
   public_look_slug: string;
@@ -64,6 +78,12 @@ type SanitizedLookbookInspiration = {
 };
 
 type SanitizedQuoteRequest = {
+  submissionId: string;
+  formRoute: FormRoute;
+  attribution: AttributionJourney;
+  payloadHash: string;
+  conversionEligible: boolean;
+  suppressionReason: string | null;
   eventType: string;
   services: string[];
   kidsCountBucket: string;
@@ -210,8 +230,12 @@ function json(data: unknown, status = 200): Response {
 function failure(message = QUOTE_REQUEST_FAILURE_MESSAGE, status = 500): Response {
   return json({
     ok: false,
+    accepted: false,
     received: false,
     persisted: false,
+    created: false,
+    duplicate: false,
+    conversionEligible: false,
     ownerNotificationQueued: false,
     ownerNotificationSent: false,
     sheetWritten: false,
@@ -317,11 +341,6 @@ function normalizeTime(value: unknown): string | null {
   return /^\d{2}:\d{2}$/.test(time) ? time : null;
 }
 
-function normalizeIdempotencyKey(value: unknown): string {
-  const key = normalizeString(value, 96);
-  return /^qrq_[a-z0-9-]{16,90}$/i.test(key) ? key : '';
-}
-
 function normalizeLookbookInspirations(value: unknown): SanitizedLookbookInspiration[] {
   if (!Array.isArray(value)) return [];
   return value.slice(0, 6).map((entry) => {
@@ -366,7 +385,7 @@ function normalizeUrlAttribution(value: unknown): string | null {
   const raw = normalizeAttribution(value);
   if (!raw) return null;
   try {
-    const url = new URL(raw, 'https://www.happyfacesla.com');
+    const url = new URL(raw, 'https://happyfacesla.com');
     url.hash = '';
     return url.toString().slice(0, 512);
   } catch {
@@ -387,28 +406,37 @@ function normalizePathAttribution(value: unknown): string | null {
 }
 
 function deriveSafeSourcePage(raw: Record<string, unknown>, request: Request): string | null {
-  const explicit = normalizeAttribution(raw.sourcePage ?? raw.source_page);
-  if (explicit) return explicit;
-
   const referer = request.headers.get('referer') || request.headers.get('referrer') || '';
-  if (!referer) return null;
-
-  try {
-    const requestUrl = new URL(request.url);
-    const refererUrl = new URL(referer);
-    if (requestUrl.hostname === refererUrl.hostname && refererUrl.pathname) {
-      return refererUrl.pathname;
+  if (referer) {
+    try {
+      const requestUrl = new URL(request.url);
+      const refererUrl = new URL(referer);
+      if (requestUrl.origin === refererUrl.origin && refererUrl.pathname) {
+        return refererUrl.pathname;
+      }
+    } catch {
+      // Fall through to a same-origin explicit source path.
     }
-  } catch {
-    return null;
+  }
+
+  const explicit = normalizeAttribution(raw.sourcePage ?? raw.source_page);
+  if (explicit) {
+    try {
+      const requestUrl = new URL(request.url);
+      const explicitUrl = new URL(explicit, requestUrl.origin);
+      if (explicitUrl.origin === requestUrl.origin) return explicitUrl.pathname || '/';
+      return null;
+    } catch {
+      return null;
+    }
   }
 
   return null;
 }
 
-function makeQuoteRequestIdempotencyKey(): string {
-  const random = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-  return `qrq_${random.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 80).toLowerCase()}`;
+function comparablePath(value: string): string {
+  if (value === '/') return value;
+  return value.replace(/\/+$/, '') || '/';
 }
 
 function safePayloadKeys(raw: Record<string, unknown> | null): string[] {
@@ -443,7 +471,12 @@ function sanitizePayload(raw: Record<string, unknown>): Record<string, unknown> 
   return sanitized;
 }
 
-function validatePayload(raw: Record<string, unknown>, sourcePage: string | null): ValidationResult {
+async function validatePayload(
+  raw: Record<string, unknown>,
+  sourcePage: string | null,
+  attributionRetentionMs: number | null,
+  endpointPath: string,
+): Promise<ValidationResult> {
   const body = sanitizePayload(raw);
   const eventType = normalizeString(body.eventType, 60);
   const rawServices = Array.isArray(body.services) ? body.services : [];
@@ -466,7 +499,15 @@ function validatePayload(raw: Record<string, unknown>, sourcePage: string | null
   const eventDate = normalizeDate(body.eventDate);
   const rawEventTime = normalizeString(body.eventTime, 20);
   const eventTime = normalizeTime(body.eventTime);
-  const idempotencyKey = normalizeIdempotencyKey(body.quoteRequestIdempotencyKey) || makeQuoteRequestIdempotencyKey();
+  const submissionId = normalizeSubmissionId(body.submission_id ?? body.submissionId ?? body.quoteRequestIdempotencyKey);
+  const formRoute = normalizeFormRoute(body.form_route ?? body.formRoute, sourcePage);
+  const sourceDerivedRoute = endpointPath.endsWith('/api/quote-request')
+    ? 'plan-my-party'
+    : normalizeFormRoute(undefined, sourcePage);
+  const attribution = sanitizeJourney(body.attribution, {
+    expectedOrigin: 'https://happyfacesla.com',
+    retentionMs: attributionRetentionMs,
+  });
   const consentAcknowledgement = body.consentAcknowledgement === true || body.consentAcknowledgement === 'true';
 
   if (!hasMeaningfulCustomerField(body, services)) {
@@ -474,6 +515,22 @@ function validatePayload(raw: Record<string, unknown>, sourcePage: string | null
   }
   if (!sourcePage) {
     return { ok: false, message: 'Source page is required.' };
+  }
+  if (!submissionId) {
+    return { ok: false, message: 'A secure submission identity is required.' };
+  }
+  if (!attribution || !attribution.submit_touch) {
+    return { ok: false, message: 'A complete attribution journey is required.' };
+  }
+  if (formRoute !== sourceDerivedRoute) {
+    return { ok: false, message: 'Form route does not match the accepted source page.' };
+  }
+  const acceptedSourcePath = comparablePath(sourcePage);
+  if (
+    comparablePath(attribution.submit_touch.landing_path) !== acceptedSourcePath
+    || comparablePath(attribution.submit_touch.source_path) !== acceptedSourcePath
+  ) {
+    return { ok: false, message: 'Submit attribution does not match the accepted form page.' };
   }
   if (!email && !phone) {
     return { ok: false, message: 'Phone or email is required.' };
@@ -513,9 +570,20 @@ function validatePayload(raw: Record<string, unknown>, sourcePage: string | null
     return { ok: false, message: 'Please confirm we may contact you about this request.' };
   }
 
-  return {
-    ok: true,
-    value: {
+  const compatibility = flattenJourney(attribution);
+  const spamReason = detectDeterministicSpam({
+    firstName,
+    lastName,
+    email,
+    specialRequests: body.specialRequests,
+  });
+  const value: SanitizedQuoteRequest = {
+      submissionId,
+      formRoute,
+      attribution,
+      payloadHash: '',
+      conversionEligible: !spamReason,
+      suppressionReason: spamReason,
       eventType,
       services,
       kidsCountBucket,
@@ -537,49 +605,78 @@ function validatePayload(raw: Record<string, unknown>, sourcePage: string | null
       specialRequests: normalizeNullableString(body.specialRequests, 1000),
       wizardVersion: normalizeString(body.wizardVersion, 80) || 'guided-wizard',
       submittedAt: normalizeNullableString(body.submittedAt, 40),
-      quoteRequestIdempotencyKey: idempotencyKey,
+      quoteRequestIdempotencyKey: submissionId,
       consentAcknowledgement: true,
       lookbookInspirations: normalizeLookbookInspirations(body.lookbook_inspirations),
       preferredContactMethod: normalizePreferredContactMethod(body.preferredContactMethod),
       customerBudgetRaw: normalizeNullableString(body.customerBudget ?? body.budget ?? body.budget_range, 80),
       sourcePage,
-      landingPage: normalizeUrlAttribution(body.landing_page),
-      sourcePath: normalizePathAttribution(body.source_path),
-      referrer: normalizeUrlAttribution(body.referrer),
-      firstLandingPage: normalizeUrlAttribution(body.first_landing_page),
-      firstSourcePath: normalizePathAttribution(body.first_source_path),
-      firstReferrer: normalizeUrlAttribution(body.first_referrer),
-      submitLandingPage: normalizeUrlAttribution(body.submit_landing_page),
-      submitSourcePath: normalizePathAttribution(body.submit_source_path),
-      submitReferrer: normalizeUrlAttribution(body.submit_referrer),
-      utmSource: normalizeAttribution(body.utm_source),
-      utmMedium: normalizeAttribution(body.utm_medium),
-      utmCampaign: normalizeAttribution(body.utm_campaign),
-      utmTerm: normalizeAttribution(body.utm_term),
-      utmContent: normalizeAttribution(body.utm_content),
-      gclid: normalizeAttribution(body.gclid),
-      gbraid: normalizeAttribution(body.gbraid),
-      wbraid: normalizeAttribution(body.wbraid),
-      fbclid: normalizeAttribution(body.fbclid),
-      msclkid: normalizeAttribution(body.msclkid),
-      firstUtmSource: normalizeAttribution(body.first_utm_source),
-      firstUtmMedium: normalizeAttribution(body.first_utm_medium),
-      firstUtmCampaign: normalizeAttribution(body.first_utm_campaign),
-      firstUtmTerm: normalizeAttribution(body.first_utm_term),
-      firstUtmContent: normalizeAttribution(body.first_utm_content),
-      firstGclid: normalizeAttribution(body.first_gclid),
-      firstGbraid: normalizeAttribution(body.first_gbraid),
-      firstWbraid: normalizeAttribution(body.first_wbraid),
-      submitUtmSource: normalizeAttribution(body.submit_utm_source),
-      submitUtmMedium: normalizeAttribution(body.submit_utm_medium),
-      submitUtmCampaign: normalizeAttribution(body.submit_utm_campaign),
-      submitUtmTerm: normalizeAttribution(body.submit_utm_term),
-      submitUtmContent: normalizeAttribution(body.submit_utm_content),
-      submitGclid: normalizeAttribution(body.submit_gclid),
-      submitGbraid: normalizeAttribution(body.submit_gbraid),
-      submitWbraid: normalizeAttribution(body.submit_wbraid),
-    },
+      landingPage: normalizePathAttribution(compatibility.landing_page),
+      sourcePath: normalizePathAttribution(compatibility.source_path),
+      referrer: normalizeUrlAttribution(compatibility.referrer),
+      firstLandingPage: normalizePathAttribution(compatibility.first_landing_page),
+      firstSourcePath: normalizePathAttribution(compatibility.first_source_path),
+      firstReferrer: normalizeUrlAttribution(compatibility.first_referrer),
+      submitLandingPage: normalizePathAttribution(compatibility.submit_landing_page),
+      submitSourcePath: normalizePathAttribution(compatibility.submit_source_path),
+      submitReferrer: normalizeUrlAttribution(compatibility.submit_referrer),
+      utmSource: normalizeAttribution(compatibility.utm_source),
+      utmMedium: normalizeAttribution(compatibility.utm_medium),
+      utmCampaign: normalizeAttribution(compatibility.utm_campaign),
+      utmTerm: normalizeAttribution(compatibility.utm_term),
+      utmContent: normalizeAttribution(compatibility.utm_content),
+      gclid: normalizeAttribution(compatibility.gclid),
+      gbraid: normalizeAttribution(compatibility.gbraid),
+      wbraid: normalizeAttribution(compatibility.wbraid),
+      fbclid: null,
+      msclkid: null,
+      firstUtmSource: normalizeAttribution(compatibility.first_utm_source),
+      firstUtmMedium: normalizeAttribution(compatibility.first_utm_medium),
+      firstUtmCampaign: normalizeAttribution(compatibility.first_utm_campaign),
+      firstUtmTerm: normalizeAttribution(compatibility.first_utm_term),
+      firstUtmContent: normalizeAttribution(compatibility.first_utm_content),
+      firstGclid: normalizeAttribution(compatibility.first_gclid),
+      firstGbraid: normalizeAttribution(compatibility.first_gbraid),
+      firstWbraid: normalizeAttribution(compatibility.first_wbraid),
+      submitUtmSource: normalizeAttribution(compatibility.submit_utm_source),
+      submitUtmMedium: normalizeAttribution(compatibility.submit_utm_medium),
+      submitUtmCampaign: normalizeAttribution(compatibility.submit_utm_campaign),
+      submitUtmTerm: normalizeAttribution(compatibility.submit_utm_term),
+      submitUtmContent: normalizeAttribution(compatibility.submit_utm_content),
+      submitGclid: normalizeAttribution(compatibility.submit_gclid),
+      submitGbraid: normalizeAttribution(compatibility.submit_gbraid),
+      submitWbraid: normalizeAttribution(compatibility.submit_wbraid),
   };
+
+  value.payloadHash = await payloadHash({
+    formRoute: value.formRoute,
+    sourcePage: value.sourcePage,
+    eventType: value.eventType,
+    services: value.services,
+    kidsCountBucket: value.kidsCountBucket,
+    kidsCountActual: value.kidsCountActual,
+    designStyle: value.designStyle,
+    selectedDurationMinutes: value.selectedDurationMinutes,
+    recommendedDurationMinutes: value.recommendedDurationMinutes,
+    branch: value.branch,
+    quoteOutcome: value.quoteOutcome,
+    eventDate: value.eventDate,
+    eventTime: value.eventTime,
+    eventCity: value.eventCity,
+    venueName: value.venueName,
+    travelMiles: value.travelMiles,
+    firstName: value.firstName,
+    lastName: value.lastName,
+    email: value.email,
+    phone: value.phone,
+    specialRequests: value.specialRequests,
+    wizardVersion: value.wizardVersion,
+    consentAcknowledgement: value.consentAcknowledgement,
+    lookbookInspirations: value.lookbookInspirations,
+    preferredContactMethod: value.preferredContactMethod,
+    customerBudgetRaw: value.customerBudgetRaw,
+  });
+  return { ok: true, value };
 }
 
 function getPersistenceDb(env: QuoteRequestEnv): D1Database | undefined {
@@ -587,8 +684,13 @@ function getPersistenceDb(env: QuoteRequestEnv): D1Database | undefined {
 }
 
 function makeLeadId(): string {
-  const random = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-  return `lead_${random.replace(/[^a-zA-Z0-9]/g, '').slice(0, 28).toLowerCase()}`;
+  return createOpaqueLeadId();
+}
+
+function attributionRetentionMs(env: QuoteRequestEnv): number | null {
+  const days = Number(env.ATTRIBUTION_RETENTION_DAYS);
+  if (!Number.isFinite(days) || days <= 0) return null;
+  return Math.min(days, 365) * 24 * 60 * 60 * 1000;
 }
 
 function getTravelBand(travelMiles: number | null): string {
@@ -642,6 +744,10 @@ function buildCanonical(body: SanitizedQuoteRequest, leadId: string, now: string
     leadId,
     createdAt: now,
     sourcePage: body.sourcePage,
+    sourceConfidence: (
+      body.attribution.latest_qualifying_touch
+      ?? body.attribution.first_touch
+    ).source_confidence,
     landingPage: body.landingPage,
     sourcePath: body.sourcePath,
     referrer: body.referrer,
@@ -717,7 +823,7 @@ function canonicalToD1Record(c: CanonicalPlanMyPartyLead, body: SanitizedQuoteRe
   return {
     lead_id: c.leadId,
     idempotency_key: body.quoteRequestIdempotencyKey,
-    source: 'plan-my-party',
+    source: body.formRoute,
     received_at: c.createdAt,
     updated_at: c.createdAt,
     event_type: c.eventType,
@@ -747,8 +853,8 @@ function canonicalToD1Record(c: CanonicalPlanMyPartyLead, body: SanitizedQuoteRe
     lookbook_inspirations_json: JSON.stringify(body.lookbookInspirations),
     wizard_version: body.wizardVersion,
     client_submitted_at: body.submittedAt,
-    delivery_status: 'persisted_internal_queue',
-    owner_notification_queued: 1,
+    delivery_status: body.conversionEligible ? 'persisted_internal_queue' : 'suppressed_at_intake',
+    owner_notification_queued: body.conversionEligible ? 1 : 0,
     owner_notification_sent: 0,
     sheet_written: 0,
     crm_posted: 0,
@@ -803,7 +909,7 @@ function canonicalToD1Record(c: CanonicalPlanMyPartyLead, body: SanitizedQuoteRe
     customer_budget_label: c.customerBudgetLabel,
     pricing_source: c.pricingSource,
     manual_review_reasons_json: JSON.stringify(c.manualReviewReasons),
-    qualified_status: c.qualifiedStatus,
+    qualified_status: body.suppressionReason?.startsWith('spam') ? 'spam' : c.qualifiedStatus,
     quote_sent_status: c.quoteSentStatus,
     booked_status: c.bookedStatus,
     booked_revenue_cents: c.bookedRevenueCents,
@@ -822,13 +928,29 @@ function canonicalToD1Record(c: CanonicalPlanMyPartyLead, body: SanitizedQuoteRe
 async function selectExistingLead(db: D1Database, idempotencyKey: string): Promise<PersistedLeadRow | null> {
   return db
     .prepare(
-      `SELECT lead_id, owner_notification_queued, owner_notification_sent, sheet_written, crm_posted
+      `SELECT lead_id, owner_notification_queued, owner_notification_sent, sheet_written, crm_posted,
+              canonical_payload_json
        FROM quote_requests
        WHERE idempotency_key = ?
        LIMIT 1`,
     )
     .bind(idempotencyKey)
     .first<PersistedLeadRow>();
+}
+
+async function selectSubmissionIdentity(
+  db: D1Database,
+  submissionId: string,
+): Promise<SubmissionIdentityRow | null> {
+  return db
+    .prepare(
+      `SELECT submission_id, lead_id, form_route, payload_hash, conversion_eligible, suppression_reason
+       FROM lead_submission_identity
+       WHERE submission_id = ?
+       LIMIT 1`,
+    )
+    .bind(submissionId)
+    .first<SubmissionIdentityRow>();
 }
 
 const QUOTE_REQUEST_INSERT_COLUMNS = [
@@ -933,40 +1055,216 @@ const QUOTE_REQUEST_INSERT_COLUMNS = [
   'canonical_payload_json',
 ] as const;
 
-async function insertLead(db: D1Database, record: Record<string, D1Value>): Promise<void> {
+function prepareLeadInsert(db: D1Database, record: Record<string, D1Value>) {
   const placeholders = QUOTE_REQUEST_INSERT_COLUMNS.map(() => '?').join(', ');
   const columns = QUOTE_REQUEST_INSERT_COLUMNS.join(', ');
-  await db
+  return db
     .prepare(`INSERT INTO quote_requests (${columns}) VALUES (${placeholders})`)
-    .bind(...QUOTE_REQUEST_INSERT_COLUMNS.map((column) => record[column] ?? null))
-    .run();
+    .bind(...QUOTE_REQUEST_INSERT_COLUMNS.map((column) => record[column] ?? null));
 }
 
-async function updateDeliveryFlags(
+function prepareSubmissionIdentityInsert(
+  db: D1Database,
+  body: SanitizedQuoteRequest,
+  leadId: string,
+  acceptedAt: string,
+) {
+  return db.prepare(
+    `INSERT INTO lead_submission_identity (
+      submission_id, lead_id, form_route, payload_hash, accepted_at_utc,
+      conversion_eligible, suppression_reason, business_duplicate_of_lead_id,
+      first_touch_json, latest_qualifying_touch_json, submit_touch_json,
+      attribution_policy_version, canonical_version
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, 'AP03A-1', 'AP02A-1')`,
+  ).bind(
+    body.submissionId,
+    leadId,
+    body.formRoute,
+    body.payloadHash,
+    acceptedAt,
+    body.conversionEligible ? 1 : 0,
+    body.suppressionReason,
+    JSON.stringify(body.attribution.first_touch),
+    body.attribution.latest_qualifying_touch
+      ? JSON.stringify(body.attribution.latest_qualifying_touch)
+      : null,
+    JSON.stringify(body.attribution.submit_touch),
+  );
+}
+
+function prepareCanonicalOutboxInsert(
+  db: D1Database,
+  body: SanitizedQuoteRequest,
+  leadId: string,
+  acceptedAt: string,
+) {
+  return db.prepare(
+    `INSERT INTO canonical_lead_outbox (
+      outbox_id, submission_id, lead_id, event_name, conversion_eligible,
+      status, suppression_reason, payload_hash, canonical_version,
+      created_at_utc, updated_at_utc
+    ) VALUES (?, ?, ?, 'genuine_form_lead', ?, ?, ?, ?, 'AP02A-1', ?, ?)`,
+  ).bind(
+    `cfo_${leadId.slice(5)}`,
+    body.submissionId,
+    leadId,
+    0,
+    body.conversionEligible ? 'shadow_pending' : 'suppressed',
+    body.conversionEligible ? 'pending_business_classification' : body.suppressionReason,
+    body.payloadHash,
+    acceptedAt,
+    acceptedAt,
+  );
+}
+
+function prepareNotificationOutboxInsert(
+  db: D1Database,
+  body: SanitizedQuoteRequest,
+  leadId: string,
+  acceptedAt: string,
+) {
+  return db.prepare(
+    `INSERT INTO lead_notification_outbox (
+      notification_id, submission_id, lead_id, destination, status,
+      attempt_count, last_attempt_at_utc, last_error_code,
+      created_at_utc, updated_at_utc
+    ) VALUES (?, ?, ?, 'owner_notification', 'pending', 0, NULL, NULL, ?, ?)`,
+  ).bind(
+    `notify_${leadId.slice(5)}`,
+    body.submissionId,
+    leadId,
+    acceptedAt,
+    acceptedAt,
+  );
+}
+
+async function insertAcceptedSubmission(
+  db: D1Database,
+  body: SanitizedQuoteRequest,
+  record: Record<string, D1Value>,
+  leadId: string,
+  acceptedAt: string,
+): Promise<void> {
+  if (!db.batch) throw new Error('D1 batch support is required for canonical lead acceptance.');
+  const statements = [
+    prepareSubmissionIdentityInsert(db, body, leadId, acceptedAt),
+    prepareLeadInsert(db, record),
+    prepareCanonicalOutboxInsert(db, body, leadId, acceptedAt),
+  ];
+  if (body.conversionEligible) {
+    statements.push(prepareNotificationOutboxInsert(db, body, leadId, acceptedAt));
+  }
+  const results = await db.batch(statements);
+  if (results.some((result) => result.success === false || Boolean(result.error))) {
+    throw new Error('Canonical lead acceptance batch failed.');
+  }
+}
+
+function prepareDeliveryFlagUpdate(
   db: D1Database,
   leadId: string,
   flags: { ownerNotificationSent: boolean; sheetWritten: boolean; crmPosted: boolean },
-): Promise<void> {
+  now: string,
+  claimToken: string,
+) {
   const deliveryStatus =
     flags.ownerNotificationSent || flags.sheetWritten || flags.crmPosted
       ? 'persisted_optional_notification_succeeded'
       : 'persisted_internal_queue';
 
-  await db
+  return db
     .prepare(
       `UPDATE quote_requests
        SET updated_at = ?, delivery_status = ?, owner_notification_sent = ?, sheet_written = ?, crm_posted = ?
-       WHERE lead_id = ?`,
+       WHERE lead_id = ?
+         AND EXISTS (
+           SELECT 1 FROM lead_notification_outbox
+           WHERE lead_id = ? AND destination = 'owner_notification'
+             AND status = 'delivering' AND claim_token = ?
+         )`,
     )
     .bind(
-      new Date().toISOString(),
+      now,
       deliveryStatus,
       flags.ownerNotificationSent ? 1 : 0,
       flags.sheetWritten ? 1 : 0,
       flags.crmPosted ? 1 : 0,
       leadId,
-    )
-    .run();
+      leadId,
+      claimToken,
+    );
+}
+
+function prepareNotificationFinalization(
+  db: D1Database,
+  leadId: string,
+  sent: boolean,
+  now: string,
+  claimToken: string,
+) {
+  return db.prepare(
+    `UPDATE lead_notification_outbox
+     SET status = ?,
+          attempt_count = attempt_count + 1,
+          claim_token = NULL,
+          lease_expires_at_utc = NULL,
+          last_attempt_at_utc = ?,
+         last_error_code = ?,
+         updated_at_utc = ?
+     WHERE lead_id = ? AND destination = 'owner_notification'
+       AND status = 'delivering' AND claim_token = ?`,
+  ).bind(
+    sent ? 'sent' : 'failed_retryable',
+    now,
+    sent ? null : 'all_configured_destinations_failed',
+    now,
+    leadId,
+    claimToken,
+  );
+}
+
+function makeNotificationClaimToken(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return `claim_${Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('')}`;
+}
+
+async function claimNotificationOutbox(db: D1Database, leadId: string): Promise<string | null> {
+  const now = new Date();
+  const nowIso = now.toISOString();
+  const leaseExpires = new Date(now.getTime() + 5 * 60 * 1000).toISOString();
+  const claimToken = makeNotificationClaimToken();
+  const result = await db.prepare(
+    `UPDATE lead_notification_outbox
+     SET status = 'delivering', claim_token = ?, lease_expires_at_utc = ?, updated_at_utc = ?
+     WHERE lead_id = ?
+       AND destination = 'owner_notification'
+       AND (
+         status IN ('pending', 'failed_retryable')
+         OR (status = 'delivering' AND lease_expires_at_utc < ?)
+       )`,
+  ).bind(claimToken, leaseExpires, nowIso, leadId, nowIso).run();
+  return (result.meta?.changes ?? 0) > 0 ? claimToken : null;
+}
+
+async function finalizeNotificationAttempt(
+  db: D1Database,
+  leadId: string,
+  flags: { ownerNotificationSent: boolean; sheetWritten: boolean; crmPosted: boolean },
+  claimToken: string,
+): Promise<void> {
+  if (!db.batch) throw new Error('D1 batch support is required for notification finalization.');
+  const now = new Date().toISOString();
+  const results = await db.batch([
+    prepareDeliveryFlagUpdate(db, leadId, flags, now, claimToken),
+    prepareNotificationFinalization(db, leadId, flags.ownerNotificationSent, now, claimToken),
+  ]);
+  if (
+    results.some((result) => result.success === false || Boolean(result.error))
+    || results.some((result) => (result.meta?.changes ?? 0) !== 1)
+  ) {
+    throw new Error('Notification finalization batch failed.');
+  }
 }
 
 async function hmacSignature(secret: string, body: string): Promise<string> {
@@ -1011,8 +1309,9 @@ async function postWebhook(url: string, secret: string, payload: Record<string, 
   const body = JSON.stringify(payload);
   const headers: Record<string, string> = {
     'content-type': 'application/json',
-    'x-lead-source': 'happyfacesla-plan-my-party',
+    'x-lead-source': `happyfacesla-${String(payload.form_route || 'canonical-lead')}`,
   };
+  if (typeof payload.lead_id === 'string') headers['x-idempotency-key'] = payload.lead_id;
   if (secret) headers['x-signature-sha256'] = await hmacSignature(secret, body);
 
   try {
@@ -1026,8 +1325,14 @@ async function postWebhook(url: string, secret: string, payload: Record<string, 
 async function runOptionalNotifications(
   env: QuoteRequestEnv,
   canonical: CanonicalPlanMyPartyLead,
-): Promise<{ ownerNotificationSent: boolean; sheetWritten: boolean; crmPosted: boolean }> {
-  const payload = buildCanonicalNotificationPayload(canonical);
+  body: SanitizedQuoteRequest,
+): Promise<{ attempted: boolean; ownerNotificationSent: boolean; sheetWritten: boolean; crmPosted: boolean }> {
+  const payload = {
+    ...buildCanonicalNotificationPayload(canonical),
+    source: body.formRoute,
+    form_route: body.formRoute,
+    submission_id: body.submissionId,
+  };
   const crmUrl = getEnvString(env.QUOTE_REQUEST_CRM_WEBHOOK_URL);
   const sheetUrl = getEnvString(env.QUOTE_REQUEST_SHEET_WEBHOOK_URL);
   const makeUrl = getEnvString(env.QUOTE_REQUEST_MAKE_WEBHOOK_URL);
@@ -1035,28 +1340,51 @@ async function runOptionalNotifications(
   const sheetSecret = getEnvString(env.QUOTE_REQUEST_SHEET_WEBHOOK_SECRET);
   const makeSecret = getEnvString(env.QUOTE_REQUEST_MAKE_SHARED_SECRET);
 
-  const crmPosted = crmUrl ? await postWebhook(crmUrl, crmSecret, payload) : false;
-  const sheetWritten = sheetUrl ? await postWebhook(sheetUrl, sheetSecret, payload) : false;
-  const makePosted = makeUrl ? await postWebhook(makeUrl, makeSecret, payload) : false;
+  let crmPosted = false;
+  let sheetWritten = false;
+  let makePosted = false;
+  if (body.formRoute === 'plan-my-party') {
+    crmPosted = crmUrl ? await postWebhook(crmUrl, crmSecret, payload) : false;
+    sheetWritten = sheetUrl ? await postWebhook(sheetUrl, sheetSecret, payload) : false;
+    makePosted = makeUrl ? await postWebhook(makeUrl, makeSecret, payload) : false;
+  } else if (crmUrl) {
+    crmPosted = await postWebhook(crmUrl, crmSecret, payload);
+  } else if (makeUrl) {
+    makePosted = await postWebhook(makeUrl, makeSecret, payload);
+  } else if (sheetUrl) {
+    sheetWritten = await postWebhook(sheetUrl, sheetSecret, payload);
+  }
 
   return {
+    attempted: Boolean(crmUrl || sheetUrl || makeUrl),
     ownerNotificationSent: crmPosted || sheetWritten || makePosted,
     sheetWritten: sheetWritten || makePosted,
     crmPosted: crmPosted || makePosted,
   };
 }
 
-function success(row: PersistedLeadRow, duplicate = false): Response {
+function success(
+  row: PersistedLeadRow,
+  identity: SubmissionIdentityRow,
+  duplicate = false,
+  created = !duplicate,
+): Response {
   return json({
     ok: true,
+    accepted: true,
     received: true,
     leadId: row.lead_id,
+    submissionId: identity.submission_id,
+    formRoute: identity.form_route,
     persisted: true,
+    created,
     ownerNotificationQueued: row.owner_notification_queued === 1,
     ownerNotificationSent: row.owner_notification_sent === 1,
     sheetWritten: row.sheet_written === 1,
     crmPosted: row.crm_posted === 1,
     duplicate,
+    conversionEligible: identity.conversion_eligible === 1,
+    suppressionReason: identity.suppression_reason || undefined,
     message: QUOTE_REQUEST_SUCCESS_MESSAGE,
   });
 }
@@ -1065,17 +1393,35 @@ async function persistQuoteRequest(
   db: D1Database,
   body: SanitizedQuoteRequest,
 ): Promise<{ response: Response; canonical: CanonicalPlanMyPartyLead | null }> {
-  let existing: PersistedLeadRow | null;
+  let existingIdentity: SubmissionIdentityRow | null;
   try {
-    existing = await selectExistingLead(db, body.quoteRequestIdempotencyKey);
+    existingIdentity = await selectSubmissionIdentity(db, body.submissionId);
   } catch {
     return { response: failure(), canonical: null };
   }
-  if (existing) return { response: success(existing, true), canonical: null };
+  if (existingIdentity) {
+    if (existingIdentity.payload_hash !== body.payloadHash) {
+      return { response: failure('Submission identity conflicts with the original accepted payload.', 409), canonical: null };
+    }
+    const existing = await selectExistingLead(db, body.quoteRequestIdempotencyKey);
+    if (!existing) return { response: failure(), canonical: null };
+    return {
+      response: success(existing, existingIdentity, true, false),
+      canonical: existingIdentity.conversion_eligible === 1 && existing.owner_notification_sent !== 1
+        ? parsePersistedCanonical(existing)
+        : null,
+    };
+  }
 
   const now = new Date().toISOString();
   const leadId = makeLeadId();
   const canonical = buildCanonical(body, leadId, now);
+  if (canonical.isInternalTest) {
+    body.conversionEligible = false;
+    body.suppressionReason = canonical.internalTestReason
+      ? `internal_test:${canonical.internalTestReason.replace(/\s+/g, '_')}`
+      : 'internal_test';
+  }
   const notificationValidation = validateLeadNotificationPayload(buildCanonicalNotificationPayload(canonical));
   if (!notificationValidation.ok) {
     console.error('BLANK_LEAD_EMAIL_BLOCKED', {
@@ -1089,13 +1435,32 @@ async function persistQuoteRequest(
     return { response: failure('Invalid lead payload.', 400), canonical: null };
   }
   const record = canonicalToD1Record(canonical, body);
+  const identity: SubmissionIdentityRow = {
+    submission_id: body.submissionId,
+    lead_id: leadId,
+    form_route: body.formRoute,
+    payload_hash: body.payloadHash,
+    conversion_eligible: body.conversionEligible ? 1 : 0,
+    suppression_reason: body.suppressionReason,
+  };
 
   try {
-    await insertLead(db, record);
+    await insertAcceptedSubmission(db, body, record, leadId, now);
   } catch {
     try {
+      const duplicateIdentity = await selectSubmissionIdentity(db, body.submissionId);
       const duplicate = await selectExistingLead(db, body.quoteRequestIdempotencyKey);
-      if (duplicate) return { response: success(duplicate, true), canonical: null };
+      if (duplicateIdentity && duplicate) {
+        if (duplicateIdentity.payload_hash !== body.payloadHash) {
+          return { response: failure('Submission identity conflicts with the original accepted payload.', 409), canonical: null };
+        }
+        return {
+          response: success(duplicate, duplicateIdentity, true, false),
+          canonical: duplicateIdentity.conversion_eligible === 1 && duplicate.owner_notification_sent !== 1
+            ? parsePersistedCanonical(duplicate)
+            : null,
+        };
+      }
     } catch {
       // Fall through to fail closed.
     }
@@ -1105,13 +1470,33 @@ async function persistQuoteRequest(
   return {
     response: success({
       lead_id: leadId,
-      owner_notification_queued: 1,
+      owner_notification_queued: body.conversionEligible ? 1 : 0,
       owner_notification_sent: 0,
       sheet_written: 0,
       crm_posted: 0,
-    }),
+    }, identity),
     canonical,
   };
+}
+
+function hasConfiguredNotificationDestination(env: QuoteRequestEnv): boolean {
+  return Boolean(
+    getEnvString(env.QUOTE_REQUEST_CRM_WEBHOOK_URL)
+    || getEnvString(env.QUOTE_REQUEST_SHEET_WEBHOOK_URL)
+    || getEnvString(env.QUOTE_REQUEST_MAKE_WEBHOOK_URL)
+  );
+}
+
+function parsePersistedCanonical(row: PersistedLeadRow): CanonicalPlanMyPartyLead | null {
+  if (!row.canonical_payload_json) return null;
+  try {
+    const parsed = JSON.parse(row.canonical_payload_json) as Partial<CanonicalPlanMyPartyLead>;
+    return parsed && parsed.leadId === row.lead_id
+      ? parsed as CanonicalPlanMyPartyLead
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function handleQuoteRequest(request: Request, env: QuoteRequestEnv): Promise<Response> {
@@ -1132,8 +1517,31 @@ export async function handleQuoteRequest(request: Request, env: QuoteRequestEnv)
     return failure('Invalid request body.', 400);
   }
 
+  if (normalizeString(raw.honeypot, 200)) {
+    return json({
+      ok: true,
+      accepted: false,
+      received: false,
+      persisted: false,
+      created: false,
+      duplicate: false,
+      conversionEligible: false,
+      suppressionReason: 'honeypot',
+      ownerNotificationQueued: false,
+      ownerNotificationSent: false,
+      sheetWritten: false,
+      crmPosted: false,
+      message: QUOTE_REQUEST_SUCCESS_MESSAGE,
+    });
+  }
+
   const sourcePage = deriveSafeSourcePage(raw, request);
-  const parsed = validatePayload(raw, sourcePage);
+  const parsed = await validatePayload(
+    raw,
+    sourcePage,
+    attributionRetentionMs(env),
+    new URL(request.url).pathname,
+  );
   if (!parsed.ok) {
     logQuoteValidationFailure(request, raw, 'invalid_payload', [parsed.message]);
     return failure(parsed.message, 400);
@@ -1152,15 +1560,25 @@ export async function handleQuoteRequest(request: Request, env: QuoteRequestEnv)
     return persistedResponse;
   }
 
-  if (!persisted.leadId || persisted.duplicate || !canonical) return persistedResponse;
-
-  const flags = await runOptionalNotifications(env, canonical);
-  if (!flags.ownerNotificationSent && !flags.sheetWritten && !flags.crmPosted) {
+  if (!persisted.leadId || !persisted.conversionEligible || !canonical) {
     return persistedResponse;
   }
 
+  if (!hasConfiguredNotificationDestination(env)) return persistedResponse;
+
+  let claimToken: string | null = null;
   try {
-    await updateDeliveryFlags(db, persisted.leadId, flags);
+    claimToken = await claimNotificationOutbox(db, persisted.leadId);
+  } catch {
+    return persistedResponse;
+  }
+  if (!claimToken) return persistedResponse;
+
+  const flags = await runOptionalNotifications(env, canonical, parsed.value);
+  if (!flags.attempted) return persistedResponse;
+
+  try {
+    await finalizeNotificationAttempt(db, persisted.leadId, flags, claimToken);
   } catch {
     return persistedResponse;
   }

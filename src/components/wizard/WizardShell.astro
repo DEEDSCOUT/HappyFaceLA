@@ -128,6 +128,18 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     CLASSIFICATION_LABELS,
     CUSTOM_PLAN_COPY,
   } from '../../lib/wizard/quote-classification.ts';
+  import {
+    buildBrowserSubmissionAttribution,
+    captureBrowserAttribution,
+  } from '../../lib/attribution/browser-attribution.ts';
+  import {
+    getOrCreateSubmissionId,
+    markSubmissionAccepted,
+    resetSubmissionState,
+    rotateAcceptedSubmissionOnEdit,
+  } from '../../lib/forms/submission-client.ts';
+  import { buildPlanMyPartyBrowserPayload } from '../../lib/forms/browser-payloads.ts';
+  import { shouldEmitTechnicalEvent } from '../../lib/forms/acceptance-contract.ts';
 
   // ── Types (inline for bundler compatibility) ──────────────────
   type EventType = 'birthday-party'|'school-event'|'corporate-family-day'|'festival-community'|'other';
@@ -207,7 +219,6 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   let recommendedDuration: Duration = null;
   let initialized = false;
   const WIZARD_PROGRESS_KEY = 'hflaWizardProgressV1';
-  const WIZARD_QUOTE_IDEMPOTENCY_KEY = 'hflaWizardQuoteRequestIdempotencyV1';
 
   // ── Display labels ────────────────────────────────────────────
   const EVENT_LABELS: Record<string, string> = {
@@ -272,27 +283,8 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   function clearWizardProgress() {
     try {
       sessionStorage.removeItem(WIZARD_PROGRESS_KEY);
-      sessionStorage.removeItem(WIZARD_QUOTE_IDEMPOTENCY_KEY);
     } catch {
       // Ignore storage access issues.
-    }
-  }
-
-  function getQuoteRequestIdempotencyKey(): string {
-    try {
-      const existing = sessionStorage.getItem(WIZARD_QUOTE_IDEMPOTENCY_KEY);
-      if (existing && /^qrq_[a-z0-9-]{16,90}$/i.test(existing)) return existing;
-      const random = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const key = `qrq_${String(random).toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 80)}`;
-      sessionStorage.setItem(WIZARD_QUOTE_IDEMPOTENCY_KEY, key);
-      return key;
-    } catch {
-      const random = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      return `qrq_${String(random).toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 80)}`;
     }
   }
 
@@ -403,9 +395,10 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       gtag?: (command: string, eventName: string, params: Record<string, unknown>) => void;
     };
     trackedWindow.dataLayer = trackedWindow.dataLayer || [];
-    trackedWindow.dataLayer.push({ event: eventName, ...params });
     if (typeof trackedWindow.gtag === 'function') {
       trackedWindow.gtag('event', eventName, params);
+    } else {
+      trackedWindow.dataLayer.push({ event: eventName, ...params });
     }
   }
 
@@ -1519,119 +1512,19 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     hide(qs('#preferredContactMethod-error'));
   });
 
-  const ATTRIBUTION_KEYS = [
-    'utm_source',
-    'utm_medium',
-    'utm_campaign',
-    'utm_term',
-    'utm_content',
-    'gclid',
-    'gbraid',
-    'wbraid',
-    'fbclid',
-    'msclkid',
-  ] as const;
-
-  function safeCurrentUrl(): string {
-    try {
-      const url = new URL(location.href);
-      url.hash = '';
-      return url.toString().slice(0, 512);
-    } catch {
-      return location.pathname || '/';
-    }
-  }
-
-  function safeDocumentReferrer(): string {
-    if (!document.referrer) return '';
-    try {
-      const url = new URL(document.referrer);
-      url.hash = '';
-      url.search = '';
-      return url.toString().slice(0, 512);
-    } catch {
-      return '';
-    }
-  }
-
-  function readStoredAttribution(): Record<string, string> {
-    try {
-      return JSON.parse(sessionStorage.getItem('hfla_attribution') || '{}') as Record<string, string>;
-    } catch {
-      return {};
-    }
-  }
-
-  function writeStoredAttribution(value: Record<string, string>) {
-    try {
-      const payload = JSON.stringify(value);
-      sessionStorage.setItem('hfla_attribution', payload);
-      localStorage.setItem('hfla_attribution', payload);
-    } catch {
-      // Ignore storage access issues.
-    }
-  }
-
-  function captureWizardAttribution(): Record<string, string> {
-    const ap = new URLSearchParams(location.search);
-    const cur = readStoredAttribution();
-    const next = { ...cur };
-    const landingPage = safeCurrentUrl();
-    const sourcePath = location.pathname || '/';
-    const referrer = safeDocumentReferrer();
-
-    if (!next.first_landing_page) next.first_landing_page = landingPage;
-    if (!next.first_source_path) next.first_source_path = sourcePath;
-    if (!next.first_referrer && referrer) next.first_referrer = referrer;
-    next.landing_page = next.first_landing_page || landingPage;
-    next.source_path = next.first_source_path || sourcePath;
-    if (referrer && !next.referrer) next.referrer = referrer;
-
-    ATTRIBUTION_KEYS.forEach((key) => {
-      const value = ap.get(key);
-      if (!value) return;
-      const firstKey = `first_${key}`;
-      if (!next[firstKey]) next[firstKey] = value;
-      next[key] = value;
+  captureBrowserAttribution();
+  const initializedQuoteForm = qs<HTMLFormElement>('#wizard-quote-form');
+  if (initializedQuoteForm) {
+    getOrCreateSubmissionId(initializedQuoteForm, 'plan-my-party');
+    initializedQuoteForm.addEventListener('input', () => {
+      rotateAcceptedSubmissionOnEdit(initializedQuoteForm, 'plan-my-party');
     });
-
-    writeStoredAttribution(next);
-    return next;
   }
-
-  function buildSubmitAttributionPayload(): Record<string, string | null> {
-    const stored = captureWizardAttribution();
-    const ap = new URLSearchParams(location.search);
-    const currentUrl = safeCurrentUrl();
-    const currentPath = location.pathname || '/';
-    const currentReferrer = safeDocumentReferrer();
-    const pick = (key: string) => ap.get(key) || stored[key] || null;
-    const out: Record<string, string | null> = {
-      source_page: currentPath,
-      landing_page: stored.first_landing_page || currentUrl,
-      source_path: stored.first_source_path || currentPath,
-      referrer: stored.first_referrer || currentReferrer || null,
-      first_landing_page: stored.first_landing_page || currentUrl,
-      first_source_path: stored.first_source_path || currentPath,
-      first_referrer: stored.first_referrer || null,
-      submit_landing_page: currentUrl,
-      submit_source_path: currentPath,
-      submit_referrer: currentReferrer || null,
-    };
-
-    ATTRIBUTION_KEYS.forEach((key) => {
-      out[key] = pick(key);
-      out[`first_${key}`] = stored[`first_${key}`] || stored[key] || null;
-      out[`submit_${key}`] = ap.get(key) || stored[key] || null;
-    });
-
-    return out;
-  }
-
-  captureWizardAttribution();
 
   qs('#wizard-quote-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const form = e.currentTarget;
+    if (!(form instanceof HTMLFormElement) || form.dataset.submissionInFlight === 'true') return;
     const { valid, errors } = validateStep(8, answers as Parameters<typeof validateStep>[1]);
     if (!valid) {
       const errEl = qs('#step8-error');
@@ -1658,49 +1551,20 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Send My Quote Request →'; }
       return;
     }
+    form.dataset.submissionInFlight = 'true';
 
     // Build payload — NO internal fields, NO Stripe credentials
     const rec = computeRecommendation(answers as Parameters<typeof computeRecommendation>[0]);
-    const payload = {
-      eventType: answers.eventType ?? '',
-      services: answers.services,
-      kidsCountBucket: answers.kidsCountBucket ?? '',
-      kidsCountActual: answers.kidsCountActual ?? null,
-      designStyle: answers.designStyle ?? '',
-      selectedDurationMinutes: answers.selectedDurationOption,
-      recommendedDurationMinutes: rec.recommendedDuration,
-      branch: rec.branch,
-      eventDate: answers.eventDate,
-      eventTime: answers.eventTime,
-      eventCity: answers.eventCity,
-      venueName: answers.venueName || null,
-      travelMiles: answers.travelMiles ?? null,
-      firstName: answers.firstName,
-      lastName: answers.lastName,
-      email: answers.email,
-      phone: answers.phone || null,
-      specialRequests: answers.specialRequests || null,
-      service: answers.lookbookService || null,
-      design_style: answers.lookbookDesignStyle || null,
-      public_look_slug: answers.publicLookSlug || null,
-      public_look_title: answers.publicLookTitle || null,
-      category: answers.lookbookCategory || null,
-      inspiration_image_id: answers.inspirationImageId || null,
-      quoteOutcome: currentClassification,
-      quoteRequestIdempotencyKey: getQuoteRequestIdempotencyKey(),
-      consentAcknowledgement: true,
-      lookbook_inspirations: answers.lookbookInspirations.map((item) => ({
-        public_look_slug: item.publicLookSlug,
-        public_look_title: item.publicTitle,
-        service: item.service,
-        design_style: item.designStyle,
-        category: item.category || null,
-      })),
-      wizardVersion: 'guided-wizard-v1',
+    const payload = buildPlanMyPartyBrowserPayload({
+      answers,
+      recommendation: rec,
+      currentClassification,
+      submissionId: getOrCreateSubmissionId(form, 'plan-my-party'),
+      sourcePage: location.pathname || '/',
       submittedAt: new Date().toISOString(),
       preferredContactMethod: selectedPreferredContactMethod,
-      ...buildSubmitAttributionPayload(),
-    };
+      submission: buildBrowserSubmissionAttribution(),
+    });
 
     try {
       const res = await fetch('/api/quote-request', {
@@ -1710,22 +1574,33 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       });
       const data = await res.json() as {
         ok: boolean;
+        accepted?: boolean;
         received?: boolean;
         persisted?: boolean;
+        created?: boolean;
+        duplicate?: boolean;
+        conversionEligible?: boolean;
+        submissionId?: string;
         leadId?: string;
         message: string;
       };
-      if (!res.ok || !data.ok || data.received !== true || data.persisted !== true) {
+      if (!res.ok || !data.ok || data.accepted !== true || data.received !== true || data.persisted !== true) {
         throw new Error(data.message ?? 'Submission failed');
       }
-      track('hfla_quote_submit', {
-        source: answers.lookbookInspirations.length ? 'party_lookbook' : 'wizard',
-        lead_id: data.leadId || undefined,
-        public_look_slug: answers.publicLookSlug || undefined,
-        inspiration_count: answers.lookbookInspirations.length || undefined,
-      });
+      if (data.submissionId) markSubmissionAccepted(form, 'plan-my-party', data.submissionId);
+      if (shouldEmitTechnicalEvent(data)) {
+        track('hfla_quote_submit', {
+          source: answers.lookbookInspirations.length ? 'party_lookbook' : 'wizard',
+          lead_id: data.leadId || undefined,
+          form_route: 'plan-my-party',
+          public_look_slug: answers.publicLookSlug || undefined,
+          inspiration_count: answers.lookbookInspirations.length || undefined,
+        });
+      }
+      form.dataset.submissionInFlight = 'false';
       showConfirmation(data.leadId);
     } catch (err) {
+      form.dataset.submissionInFlight = 'false';
       const errEl = qs('#step8-error');
       if (errEl) {
         const msg = err instanceof Error && err.message
@@ -1775,6 +1650,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
   // "Plan Another Party" resets the wizard
   qs('#btn-plan-another')?.addEventListener('click', () => {
     clearWizardProgress();
+    resetSubmissionState(qs<HTMLFormElement>('#wizard-quote-form'), 'plan-my-party');
     window.location.reload();
   });
 

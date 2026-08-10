@@ -61,6 +61,7 @@ export interface CanonicalLeadInput {
   leadId: string;
   createdAt: string;
   sourcePage: string | null;
+  sourceConfidence?: SourceConfidence;
   landingPage?: string | null;
   sourcePath?: string | null;
   referrer?: string | null;
@@ -431,7 +432,9 @@ export function buildCanonicalLead(input: CanonicalLeadInput): CanonicalPlanMyPa
   const computedEndTime = computeServiceEndTime(input.startTime, duration.durationMinutes);
   const travel = deriveTravel(input.travelMiles, input.hasExactAddress, Boolean(input.eventCity));
   const budget = parseCustomerBudget(input.customerBudgetRaw);
-  const sourceConfidence = deriveSourceConfidence(input);
+  // AP-03A supplies the confidence from exactly one selected atomic touch.
+  // The legacy derivation remains only for callers that have not migrated yet.
+  const sourceConfidence = input.sourceConfidence ?? deriveSourceConfidence(input);
   const attributionSummary = buildAttributionSummary(input, sourceConfidence);
   const internalTest = detectInternalTest(input);
 

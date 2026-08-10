@@ -42,15 +42,26 @@ export function makeOfflineOrderId(leadId: string, eventName: OfflineConversionE
 }
 
 function selectedClickId(lead: CanonicalPlanMyPartyLead): { gclid: string | null; gbraid: string | null; wbraid: string | null } {
+  // The top-level fields are a compatibility projection of exactly one selected
+  // atomic touch. Never scan submit/first touches independently: doing so can
+  // combine a stale click ID with a newer channel touch.
   if (lead.gclid) return { gclid: lead.gclid, gbraid: null, wbraid: null };
-  if (lead.submitGclid) return { gclid: lead.submitGclid, gbraid: null, wbraid: null };
-  if (lead.firstGclid) return { gclid: lead.firstGclid, gbraid: null, wbraid: null };
   if (lead.gbraid) return { gclid: null, gbraid: lead.gbraid, wbraid: null };
-  if (lead.submitGbraid) return { gclid: null, gbraid: lead.submitGbraid, wbraid: null };
-  if (lead.firstGbraid) return { gclid: null, gbraid: lead.firstGbraid, wbraid: null };
   if (lead.wbraid) return { gclid: null, gbraid: null, wbraid: lead.wbraid };
-  if (lead.submitWbraid) return { gclid: null, gbraid: null, wbraid: lead.submitWbraid };
-  if (lead.firstWbraid) return { gclid: null, gbraid: null, wbraid: lead.firstWbraid };
+  // Historical pre-AP03 rows can have only first/submit projections. Preserve
+  // them only when their recorded confidence names the same click-ID kind.
+  if (lead.sourceConfidence === 'gclid') {
+    const gclid = lead.submitGclid || lead.firstGclid || null;
+    return { gclid, gbraid: null, wbraid: null };
+  }
+  if (lead.sourceConfidence === 'gbraid') {
+    const gbraid = lead.submitGbraid || lead.firstGbraid || null;
+    return { gclid: null, gbraid, wbraid: null };
+  }
+  if (lead.sourceConfidence === 'wbraid') {
+    const wbraid = lead.submitWbraid || lead.firstWbraid || null;
+    return { gclid: null, gbraid: null, wbraid };
+  }
   return { gclid: null, gbraid: null, wbraid: null };
 }
 
