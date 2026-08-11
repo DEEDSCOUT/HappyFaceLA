@@ -31,6 +31,17 @@ class MockD1 {
       bind(...args) {
         return {
           async first() {
+            if (normalized.includes('sum(case when status =')) {
+              return {
+                pending: db.notificationOutbox.filter((row) => row.status === 'pending').length,
+                failed_retryable: db.notificationOutbox.filter((row) => row.status === 'failed_retryable').length,
+                delivering: db.notificationOutbox.filter((row) => row.status === 'delivering').length,
+                needs_review: db.notificationOutbox.filter((row) => row.status === 'needs_review').length,
+                expired_leases: 0,
+                oldest_due: null,
+              };
+            }
+            if (normalized.includes('from notification_worker_runs')) return { count: 0 };
             if (sql.includes('FROM lead_submission_identity')) {
               return db.identities.get(args[0]) ?? null;
             }
@@ -38,6 +49,20 @@ class MockD1 {
               return db.byIdempotency.get(args[0]) ?? null;
             }
             return null;
+          },
+          async all() {
+            if (normalized.includes('from lead_notification_outbox n')) {
+              const leadId = args.length === 4 ? args[2] : null;
+              const rows = db.notificationOutbox
+                .filter((row) => !leadId || row.lead_id === leadId)
+                .filter((row) => ['pending', 'failed_retryable'].includes(row.status))
+                .map((row) => ({
+                  ...row,
+                  canonical_payload_json: db.byLeadId.get(row.lead_id)?.canonical_payload_json ?? null,
+                }));
+              return { success: true, results: rows };
+            }
+            return { success: true, results: [] };
           },
           async run() {
             if (sql.trim().startsWith('INSERT INTO lead_submission_identity')) {
@@ -86,8 +111,11 @@ class MockD1 {
                 notification_id: args[0],
                 submission_id: args[1],
                 lead_id: args[2],
+                destination: args[3],
                 status: 'pending',
                 attempt_count: 0,
+                max_attempts: args[4],
+                next_attempt_at_utc: args[5],
                 claim_token: null,
                 lease_expires_at_utc: null,
                 last_attempt_at_utc: null,
@@ -108,42 +136,48 @@ class MockD1 {
             }
             if (sql.trim().startsWith('UPDATE quote_requests')) {
               const row = db.byLeadId.get(args[5]);
-              const notification = db.notificationOutbox.find((candidate) => candidate.lead_id === args[6]);
+              const notification = db.notificationOutbox.find((candidate) => candidate.notification_id === args[6]);
               if (!notification || notification.status !== 'delivering' || notification.claim_token !== args[7]) {
                 return { success: true, meta: { changes: 0 } };
               }
               if (row) {
-                row.owner_notification_sent = args[2];
-                row.sheet_written = args[3];
-                row.crm_posted = args[4];
+                if (args[2] === 1) row.owner_notification_sent = 1;
+                if (args[3] === 1) row.sheet_written = 1;
+                if (args[4] === 1) row.crm_posted = 1;
                 const summary = db.byIdempotency.get(row.idempotency_key);
                 if (summary) Object.assign(summary, {
-                  owner_notification_sent: args[2],
-                  sheet_written: args[3],
-                  crm_posted: args[4],
+                  owner_notification_sent: row.owner_notification_sent,
+                  sheet_written: row.sheet_written,
+                  crm_posted: row.crm_posted,
                 });
               }
+              return { success: true, meta: { changes: 1 } };
             }
             if (normalized.startsWith('update lead_notification_outbox') && normalized.includes("set status = 'delivering'")) {
-              const row = db.notificationOutbox.find((candidate) => candidate.lead_id === args[3]);
+              const row = db.notificationOutbox.find((candidate) => candidate.notification_id === args[4]);
               if (row && ['pending', 'failed_retryable'].includes(row.status)) {
                 row.status = 'delivering';
                 row.claim_token = args[0];
                 row.lease_expires_at_utc = args[1];
+                row.next_attempt_at_utc = null;
+                row.attempt_count += 1;
+                row.last_attempt_at_utc = args[2];
                 return { success: true, meta: { changes: 1 } };
               }
               return { success: true, meta: { changes: 0 } };
             }
             if (normalized.startsWith('update lead_notification_outbox')) {
-              const row = db.notificationOutbox.find((candidate) => candidate.lead_id === args[4]);
-              if (row && row.status === 'delivering' && row.claim_token === args[5]) {
+              const row = db.notificationOutbox.find((candidate) => candidate.notification_id === args[7]);
+              if (row && row.status === 'delivering' && row.claim_token === args[8]) {
                 row.status = args[0];
-                row.attempt_count += 1;
+                row.next_attempt_at_utc = args[1];
                 row.claim_token = null;
                 row.lease_expires_at_utc = null;
-                row.last_attempt_at_utc = args[1];
                 row.last_error_code = args[2];
+                row.dead_lettered_at_utc = args[5];
+                return { success: true, meta: { changes: 1 } };
               }
+              return { success: true, meta: { changes: 0 } };
             }
             return { success: true, meta: { changes: 1 } };
           },

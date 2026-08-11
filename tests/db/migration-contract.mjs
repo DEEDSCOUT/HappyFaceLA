@@ -18,6 +18,8 @@ assert.deepEqual(tables, [
   'canonical_lead_outbox',
   'lead_notification_outbox',
   'lead_submission_identity',
+  'notification_operator_audit',
+  'notification_worker_runs',
 ]);
 
 const submissionId = `sub_${'a'.repeat(32)}`;
@@ -39,13 +41,21 @@ db.prepare(`INSERT INTO canonical_lead_outbox (
   'pending_business_classification', ?, ?, ?)`
 ).run(submissionId, leadId, 'c'.repeat(64), '2026-08-10T18:00:00.000Z', '2026-08-10T18:00:00.000Z');
 db.prepare(`INSERT INTO lead_notification_outbox (
-  notification_id, submission_id, lead_id, created_at_utc, updated_at_utc
-) VALUES ('notify_fixture', ?, ?, ?, ?)`
-).run(submissionId, leadId, '2026-08-10T18:00:00.000Z', '2026-08-10T18:00:00.000Z');
+  notification_id, submission_id, lead_id, destination, next_attempt_at_utc,
+  created_at_utc, updated_at_utc
+) VALUES ('notify_fixture', ?, ?, 'make', ?, ?, ?)`
+).run(
+  submissionId,
+  leadId,
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+);
 const claimA = `claim_${'a'.repeat(32)}`;
 const claimB = `claim_${'b'.repeat(32)}`;
 db.prepare(`UPDATE lead_notification_outbox
-  SET status = 'delivering', claim_token = ?, lease_expires_at_utc = ?
+  SET status = 'delivering', claim_token = ?, lease_expires_at_utc = ?,
+      next_attempt_at_utc = NULL, attempt_count = attempt_count + 1
   WHERE lead_id = ?`).run(claimA, '2026-08-10T17:59:00.000Z', leadId);
 const reclaimed = db.prepare(`UPDATE lead_notification_outbox
   SET status = 'delivering', claim_token = ?, lease_expires_at_utc = ?
@@ -53,22 +63,30 @@ const reclaimed = db.prepare(`UPDATE lead_notification_outbox
 ).run(claimB, '2026-08-10T18:05:00.000Z', leadId, '2026-08-10T18:00:00.000Z');
 assert.equal(reclaimed.changes, 1);
 const staleFinalizer = db.prepare(`UPDATE lead_notification_outbox
-  SET status = 'failed_retryable', claim_token = NULL, lease_expires_at_utc = NULL
+  SET status = 'failed_retryable', next_attempt_at_utc = ?,
+      claim_token = NULL, lease_expires_at_utc = NULL
   WHERE lead_id = ? AND status = 'delivering' AND claim_token = ?`
-).run(leadId, claimA);
+).run('2026-08-10T18:02:00.000Z', leadId, claimA);
 assert.equal(staleFinalizer.changes, 0, 'expired worker cannot overwrite the new claim');
 const currentFinalizer = db.prepare(`UPDATE lead_notification_outbox
-  SET status = 'sent', attempt_count = attempt_count + 1,
+  SET status = 'sent', next_attempt_at_utc = NULL,
       claim_token = NULL, lease_expires_at_utc = NULL, last_attempt_at_utc = ?
   WHERE lead_id = ? AND status = 'delivering' AND claim_token = ?`
 ).run('2026-08-10T18:01:00.000Z', leadId, claimB);
 assert.equal(currentFinalizer.changes, 1);
 const notification = db.prepare(
-  'SELECT status, attempt_count, claim_token, lease_expires_at_utc FROM lead_notification_outbox WHERE lead_id = ?',
+  'SELECT status, attempt_count, max_attempts, claim_token, lease_expires_at_utc FROM lead_notification_outbox WHERE lead_id = ?',
 ).get(leadId);
 assert.deepEqual(
   { ...notification },
-  { status: 'sent', attempt_count: 1, claim_token: null, lease_expires_at_utc: null },
+  { status: 'sent', attempt_count: 1, max_attempts: 6, claim_token: null, lease_expires_at_utc: null },
+);
+assert.throws(
+  () => db.prepare(
+    'UPDATE lead_notification_outbox SET attempt_count = 7 WHERE lead_id = ?',
+  ).run(leadId),
+  /CHECK constraint failed/,
+  'durable attempt count cannot exceed the persisted ceiling',
 );
 
 assert.throws(() => db.prepare(`INSERT INTO lead_submission_identity (
@@ -82,9 +100,35 @@ assert.throws(() => db.prepare(`INSERT INTO lead_submission_identity (
 ), /CHECK constraint failed/);
 
 assert.throws(() => db.prepare(`INSERT INTO lead_notification_outbox (
-  notification_id, submission_id, lead_id, created_at_utc, updated_at_utc
-) VALUES ('notify_duplicate', ?, ?, ?, ?)`
-).run(submissionId, leadId, '2026-08-10T18:00:00.000Z', '2026-08-10T18:00:00.000Z'), /UNIQUE constraint failed/);
+  notification_id, submission_id, lead_id, destination, next_attempt_at_utc,
+  created_at_utc, updated_at_utc
+) VALUES ('notify_duplicate', ?, ?, 'make', ?, ?, ?)`
+).run(
+  submissionId,
+  leadId,
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+), /UNIQUE constraint failed/);
+
+db.prepare(`INSERT INTO notification_worker_runs (
+  run_id, scheduled_at_utc, started_at_utc, status, created_at_utc, updated_at_utc
+) VALUES ('nwr_fixture', ?, ?, 'running', ?, ?)`
+).run(
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+);
+db.prepare(`UPDATE notification_worker_runs
+  SET status = 'completed', completed_at_utc = ?, updated_at_utc = ?
+  WHERE run_id = 'nwr_fixture'`
+).run('2026-08-10T18:01:00.000Z', '2026-08-10T18:01:00.000Z');
+
+db.prepare(`INSERT INTO notification_operator_audit (
+  action_id, notification_id, lead_id, destination, action, reason_code, created_at_utc
+) VALUES ('action_001', 'notify_fixture', ?, 'make', 'mark_delivered', 'verified_existing', ?)`
+).run(leadId, '2026-08-10T18:02:00.000Z');
 
 assert.throws(() => db.prepare(`INSERT INTO canonical_lead_outbox (
   outbox_id, submission_id, lead_id, conversion_eligible, status,

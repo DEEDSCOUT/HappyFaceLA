@@ -30,6 +30,11 @@ class SqliteD1Statement {
     const result = this.db.prepare(this.sql).run(...this.values);
     return { success: true, meta: { changes: Number(result.changes) } };
   }
+
+  async all() {
+    const rows = this.db.prepare(this.sql).all(...this.values);
+    return { success: true, results: rows.map((row) => ({ ...row })) };
+  }
 }
 
 class SqliteD1 {
@@ -117,7 +122,16 @@ sqlite.exec('PRAGMA foreign_keys = ON;');
 sqlite.exec(productionSchema);
 sqlite.exec(proposedMigration);
 const db = new SqliteD1(sqlite);
-const env = { AVAILABILITY_D1: db };
+const notificationFetches = [];
+const originalFetch = globalThis.fetch;
+globalThis.fetch = async (url, init = {}) => {
+  notificationFetches.push({ url: String(url), init });
+  return new Response('', { status: 200 });
+};
+const env = {
+  AVAILABILITY_D1: db,
+  QUOTE_REQUEST_MAKE_WEBHOOK_URL: 'https://fixture.invalid/make',
+};
 const compatibilityEnv = {
   ...env,
   LEGACY_FORM_COMPAT_STARTED_AT_UTC: new Date(Date.now() - 60_000).toISOString(),
@@ -228,6 +242,7 @@ assert.equal(sqlite.prepare('SELECT count(*) AS count FROM quote_requests').get(
 assert.equal(sqlite.prepare('SELECT count(*) AS count FROM lead_submission_identity').get().count, 3);
 assert.equal(sqlite.prepare('SELECT count(*) AS count FROM canonical_lead_outbox').get().count, 3);
 assert.equal(sqlite.prepare('SELECT count(*) AS count FROM lead_notification_outbox').get().count, 3);
+assert.equal(notificationFetches.length, 3, 'each accepted route dispatches its one configured destination once');
 
 // Old Plan My Party tabs have a stable qrq_* key. During the explicit bounded
 // window it is deterministically mapped to one sub_* identity and remains
@@ -417,6 +432,114 @@ assert.equal(
   'rollback bridge remains outcome-suppressed while preserving browser success semantics',
 );
 
+const rollbackPayload = structuredClone(routes[2].body);
+rollbackPayload.submission_id = submissionId('e');
+rollbackPayload.email = 'rollback-live@example.invalid';
+const rollbackResponse = await handleLead({
+  request: request('/api/lead', '/contact/', rollbackPayload, '192.0.2.64'),
+  env: { ...env, FORWARD_CONTRACT_ROLLBACK_MODE: 'true' },
+});
+const rollbackBody = await rollbackResponse.json();
+assert.equal(rollbackResponse.status, 200);
+assert.equal(rollbackBody.accepted, true);
+assert.equal(rollbackBody.persisted, true);
+assert.equal(rollbackBody.created, true);
+assert.equal(rollbackBody.conversionEligible, false);
+assert.equal(rollbackBody.suppressionReason, 'forward_contract_rollback');
+assert.equal(
+  shouldEmitTechnicalEvent(rollbackBody),
+  false,
+  'actual rollback-mode response is accepted by the browser but never emits a technical conversion',
+);
+assert.equal(
+  sqlite.prepare('SELECT count(*) AS count FROM lead_notification_outbox WHERE lead_id = ?').get(rollbackBody.leadId).count,
+  1,
+  'rollback mode preserves the lead-notification path while suppressing measurement outcomes',
+);
+assert.equal(
+  sqlite.prepare('SELECT status FROM canonical_lead_outbox WHERE lead_id = ?').get(rollbackBody.leadId).status,
+  'suppressed',
+);
+const rollbackNotificationCount = notificationFetches.length;
+const rollbackRetryResponse = await handleLead({
+  request: request('/api/lead', '/contact/', rollbackPayload, '192.0.2.65'),
+  env: { ...env, FORWARD_CONTRACT_ROLLBACK_MODE: 'true' },
+});
+const rollbackRetryBody = await rollbackRetryResponse.json();
+assert.equal(rollbackRetryResponse.status, 200);
+assert.equal(rollbackRetryBody.leadId, rollbackBody.leadId);
+assert.equal(rollbackRetryBody.submissionId, rollbackBody.submissionId);
+assert.equal(rollbackRetryBody.duplicate, true);
+assert.equal(rollbackRetryBody.created, false);
+assert.equal(rollbackRetryBody.conversionEligible, false);
+assert.equal(rollbackRetryBody.suppressionReason, 'forward_contract_rollback');
+assert.equal(shouldEmitTechnicalEvent(rollbackRetryBody), false);
+assert.equal(
+  sqlite.prepare('SELECT count(*) AS count FROM quote_requests WHERE lead_id = ?').get(rollbackBody.leadId).count,
+  1,
+  'rollback-mode lost-response retry never creates a second lead',
+);
+assert.equal(
+  sqlite.prepare('SELECT count(*) AS count FROM lead_notification_outbox WHERE lead_id = ?').get(rollbackBody.leadId).count,
+  1,
+  'rollback-mode lost-response retry never creates a second notification row',
+);
+assert.equal(
+  notificationFetches.length,
+  rollbackNotificationCount,
+  'an ambiguous first dispatch remains operator-gated on rollback-mode retry',
+);
+
+// The forward-compatible rollback candidate applies the same acceptance and
+// measurement suppression contract to every approved customer form route.
+const rollbackRouteCases = [
+  {
+    fixture: routes[0],
+    id: submissionId('f'),
+    ip: '192.0.2.66',
+  },
+  {
+    fixture: routes[1],
+    id: submissionId('1'),
+    ip: '192.0.2.67',
+  },
+];
+for (const rollbackCase of rollbackRouteCases) {
+  const payload = structuredClone(rollbackCase.fixture.body);
+  payload.submission_id = rollbackCase.id;
+  if ('firstName' in payload) payload.firstName = `Rollback ${rollbackCase.fixture.route}`;
+  if ('first_name' in payload) payload.first_name = `Rollback ${rollbackCase.fixture.route}`;
+  payload.email = `rollback-${rollbackCase.fixture.route}@example.invalid`;
+  const rollbackRouteRequest = request(
+    rollbackCase.fixture.endpoint,
+    rollbackCase.fixture.sourcePage,
+    payload,
+    rollbackCase.ip,
+  );
+  const routeResponse = rollbackCase.fixture.endpoint === '/api/lead'
+    ? await handleLead({
+        request: rollbackRouteRequest,
+        env: { ...env, FORWARD_CONTRACT_ROLLBACK_MODE: 'true' },
+      })
+    : await handleQuoteRequest(
+        rollbackRouteRequest,
+        { ...env, FORWARD_CONTRACT_ROLLBACK_MODE: 'true' },
+      );
+  const routeBody = await routeResponse.json();
+  assert.equal(routeResponse.status, 200);
+  assert.equal(routeBody.accepted, true);
+  assert.equal(routeBody.persisted, true);
+  assert.equal(routeBody.created, true);
+  assert.equal(routeBody.formRoute, rollbackCase.fixture.route);
+  assert.equal(routeBody.conversionEligible, false);
+  assert.equal(routeBody.suppressionReason, 'forward_contract_rollback');
+  assert.equal(shouldEmitTechnicalEvent(routeBody), false);
+  assert.equal(
+    sqlite.prepare('SELECT status FROM canonical_lead_outbox WHERE lead_id = ?').get(routeBody.leadId).status,
+    'suppressed',
+  );
+}
+
 // Suppressed modern submissions still fit the admitted live delivery_status
 // CHECK and never receive a notification outbox row.
 const internalPayload = structuredClone(routes[0].body);
@@ -452,5 +575,6 @@ assert.equal(
   0,
 );
 
+globalThis.fetch = originalFetch;
 sqlite.close();
 console.log('PASS production schema, bounded old-client compatibility, retries, and suppression fixtures');

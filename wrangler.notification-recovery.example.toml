@@ -1,0 +1,22 @@
+name = "happyfacesla-notification-recovery"
+main = "workers/notification-recovery.ts"
+compatibility_date = "2026-08-10"
+workers_dev = false
+
+# Engineering template only. Do not deploy this file and do not substitute a
+# production database ID or secret without a separately approved runbook.
+[[d1_databases]]
+binding = "NOTIFICATION_D1"
+database_name = "REPLACE_WITH_APPROVED_DATABASE_NAME"
+database_id = "REPLACE_WITH_APPROVED_DATABASE_ID"
+
+[triggers]
+crons = ["* * * * *"]
+
+[vars]
+# Fail closed: no destination is automatically retried after an ambiguous
+# dispatch until receiver idempotency is separately proved and approved.
+NOTIFICATION_AUTO_RETRY_DESTINATIONS = ""
+
+# Secrets are intentionally absent. Future approved setup must bind webhook
+# credentials and NOTIFICATION_OPERATOR_TOKEN through Cloudflare secrets.

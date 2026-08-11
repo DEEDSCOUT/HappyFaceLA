@@ -44,9 +44,36 @@ class CanonicalMockD1 {
       bind(...args) {
         return {
           async first() {
+            if (normalized.includes('sum(case when status =')) {
+              return {
+                pending: db.notificationOutbox.filter((row) => row.status === 'pending').length,
+                failed_retryable: db.notificationOutbox.filter((row) => row.status === 'failed_retryable').length,
+                delivering: db.notificationOutbox.filter((row) => row.status === 'delivering').length,
+                needs_review: db.notificationOutbox.filter((row) => row.status === 'needs_review').length,
+                expired_leases: 0,
+                oldest_due: null,
+              };
+            }
+            if (normalized.includes('from notification_worker_runs')) return { count: 0 };
             if (sql.includes('FROM lead_submission_identity')) return db.identities.get(args[0]) ?? null;
             if (sql.includes('WHERE idempotency_key')) return db.quotesBySubmission.get(args[0]) ?? null;
             return null;
+          },
+          async all() {
+            if (normalized.includes('from lead_notification_outbox n')) {
+              const leadId = args.length === 4 ? args[2] : null;
+              return {
+                success: true,
+                results: db.notificationOutbox
+                  .filter((row) => !leadId || row.lead_id === leadId)
+                  .filter((row) => ['pending', 'failed_retryable'].includes(row.status))
+                  .map((row) => ({
+                    ...row,
+                    canonical_payload_json: db.quotesByLead.get(row.lead_id)?.canonical_payload_json ?? null,
+                  })),
+              };
+            }
+            return { success: true, results: [] };
           },
           async run() {
             if (sql.trim().startsWith('INSERT INTO lead_submission_identity')) {
@@ -92,16 +119,18 @@ class CanonicalMockD1 {
               }
               db.canonicalOutbox.push(row);
             } else if (normalized.startsWith('insert into lead_notification_outbox')) {
-              if (db.notificationOutbox.some((candidate) => candidate.lead_id === args[2])) {
+              if (db.notificationOutbox.some((candidate) => candidate.lead_id === args[2] && candidate.destination === args[3])) {
                 throw new Error('UNIQUE notification outbox');
               }
               db.notificationOutbox.push({
                 notification_id: args[0],
                 submission_id: args[1],
                 lead_id: args[2],
-                destination: 'owner_notification',
+                destination: args[3],
                 status: 'pending',
                 attempt_count: 0,
+                max_attempts: args[4],
+                next_attempt_at_utc: args[5],
                 claim_token: null,
                 lease_expires_at_utc: null,
                 last_attempt_at_utc: null,
@@ -109,40 +138,46 @@ class CanonicalMockD1 {
               });
             } else if (sql.trim().startsWith('UPDATE quote_requests')) {
               const row = db.quotesByLead.get(args[5]);
-              const notification = db.notificationOutbox.find((candidate) => candidate.lead_id === args[6]);
+              const notification = db.notificationOutbox.find((candidate) => candidate.notification_id === args[6]);
               if (!notification || notification.status !== 'delivering' || notification.claim_token !== args[7]) {
                 return { success: true, meta: { changes: 0 } };
               }
               if (row) {
-                row.owner_notification_sent = args[2];
-                row.sheet_written = args[3];
-                row.crm_posted = args[4];
+                if (args[2] === 1) row.owner_notification_sent = 1;
+                if (args[3] === 1) row.sheet_written = 1;
+                if (args[4] === 1) row.crm_posted = 1;
                 const summary = db.quotesBySubmission.get(row.idempotency_key);
                 if (summary) Object.assign(summary, {
-                  owner_notification_sent: args[2],
-                  sheet_written: args[3],
-                  crm_posted: args[4],
+                  owner_notification_sent: row.owner_notification_sent,
+                  sheet_written: row.sheet_written,
+                  crm_posted: row.crm_posted,
                 });
               }
+              return { success: true, meta: { changes: 1 } };
             } else if (normalized.startsWith('update lead_notification_outbox') && normalized.includes("set status = 'delivering'")) {
-              const row = db.notificationOutbox.find((candidate) => candidate.lead_id === args[3]);
+              const row = db.notificationOutbox.find((candidate) => candidate.notification_id === args[4]);
               if (row && ['pending', 'failed_retryable'].includes(row.status)) {
                 row.status = 'delivering';
                 row.claim_token = args[0];
                 row.lease_expires_at_utc = args[1];
+                row.next_attempt_at_utc = null;
+                row.attempt_count += 1;
+                row.last_attempt_at_utc = args[2];
                 return { success: true, meta: { changes: 1 } };
               }
               return { success: true, meta: { changes: 0 } };
             } else if (normalized.startsWith('update lead_notification_outbox')) {
-              const row = db.notificationOutbox.find((candidate) => candidate.lead_id === args[4]);
-              if (row && row.status === 'delivering' && row.claim_token === args[5]) {
+              const row = db.notificationOutbox.find((candidate) => candidate.notification_id === args[7]);
+              if (row && row.status === 'delivering' && row.claim_token === args[8]) {
                 row.status = args[0];
-                row.attempt_count += 1;
+                row.next_attempt_at_utc = args[1];
                 row.claim_token = null;
                 row.lease_expires_at_utc = null;
-                row.last_attempt_at_utc = args[1];
                 row.last_error_code = args[2];
+                row.dead_lettered_at_utc = args[5];
+                return { success: true, meta: { changes: 1 } };
               }
+              return { success: true, meta: { changes: 0 } };
             }
             return { success: true, meta: { changes: 1 } };
           },
@@ -178,14 +213,24 @@ const originalFetch = globalThis.fetch;
 let notifications = [];
 let notificationOutcomes = [];
 globalThis.fetch = async (url, init = {}) => {
+  const payload = JSON.parse(String(init.body || '{}'));
   notifications.push({
     url: String(url),
     headers: Object.fromEntries(new Headers(init.headers).entries()),
-    body: JSON.parse(String(init.body || '{}')),
+    body: payload,
   });
   const ok = notificationOutcomes.length ? notificationOutcomes.shift() : true;
   const negativeAck = ok === 'negative-ack';
-  return new Response(JSON.stringify({ ok: !negativeAck }), {
+  const destination = String(url).includes('/crm') ? 'crm' : String(url).includes('/sheet') ? 'sheet' : 'make';
+  return new Response(JSON.stringify(negativeAck
+    ? { ok: false }
+    : {
+        ok: true,
+        leadId: payload.lead_id,
+        destination,
+        persisted: true,
+        duplicate: false,
+      }), {
     status: ok === false ? 503 : 200,
     headers: { 'content-type': 'application/json' },
   });
@@ -327,8 +372,11 @@ async function callPlan(db, payload, envOverrides = {}) {
   return { response, body: await response.json() };
 }
 
-async function callLegacy(db, payload, envOverrides = {}) {
-  const response = await handleLegacyLead({ request: request('/api/lead', payload), env: env(db, envOverrides) });
+async function callLegacy(db, payload, envOverrides = {}, extraHeaders = {}) {
+  const response = await handleLegacyLead({
+    request: request('/api/lead', payload, extraHeaders),
+    env: env(db, envOverrides),
+  });
   return { response, body: await response.json() };
 }
 
@@ -394,29 +442,28 @@ assert.equal(notifications.length, 1);
 assert.equal(shouldEmitTechnicalEvent(retryAfterLostResponse.body), false);
 
 notifications = [];
-notificationOutcomes = [false, true];
+notificationOutcomes = [false];
 const retryNotificationDb = new CanonicalMockD1();
 const retryNotificationPayload = planPayload(submissionId('notification-retry'));
 const failedNotification = await callPlan(retryNotificationDb, retryNotificationPayload);
 assert.equal(failedNotification.body.accepted, true, 'lead acceptance survives optional webhook failure');
 assert.equal(failedNotification.body.ownerNotificationSent, false);
-assert.equal(retryNotificationDb.notificationOutbox[0].status, 'failed_retryable');
+assert.equal(retryNotificationDb.notificationOutbox[0].status, 'needs_review');
 assert.equal(retryNotificationDb.notificationOutbox[0].attempt_count, 1);
 const retriedNotification = await callPlan(retryNotificationDb, retryNotificationPayload);
 assert.equal(retriedNotification.body.leadId, failedNotification.body.leadId);
 assert.equal(retriedNotification.body.duplicate, true);
-assert.equal(retriedNotification.body.ownerNotificationSent, true);
+assert.equal(retriedNotification.body.ownerNotificationSent, false);
 assert.equal(retryNotificationDb.notificationOutbox.length, 1);
-assert.equal(retryNotificationDb.notificationOutbox[0].status, 'sent');
-assert.equal(retryNotificationDb.notificationOutbox[0].attempt_count, 2);
-assert.equal(notifications.length, 2);
-assert.equal(notifications[0].headers['x-idempotency-key'], notifications[1].headers['x-idempotency-key']);
+assert.equal(retryNotificationDb.notificationOutbox[0].status, 'needs_review');
+assert.equal(retryNotificationDb.notificationOutbox[0].attempt_count, 1);
+assert.equal(notifications.length, 1, 'ambiguous delivery is not blindly retried');
 assert.equal(shouldEmitTechnicalEvent(retriedNotification.body), false);
 notificationOutcomes = [];
 
 for (const route of ['packages', 'contact']) {
   notifications = [];
-  notificationOutcomes = [false, true];
+  notificationOutcomes = [false];
   const stablePayloadDb = new CanonicalMockD1();
   const id = submissionId(`${route}-stable-notification`);
   const originalPayload = legacyPayload(route, id);
@@ -429,22 +476,14 @@ for (const route of ['packages', 'contact']) {
   changedRetry.attribution.submit_touch.captured_at = '2026-08-10T18:30:00.000Z';
   const retryAttempt = await callLegacy(stablePayloadDb, changedRetry);
   assert.equal(retryAttempt.body.duplicate, true);
-  assert.equal(retryAttempt.body.ownerNotificationSent, true);
-  assert.deepEqual(
-    notifications[1].body,
-    notifications[0].body,
-    `${route} retry reuses the persisted coherent notification payload`,
-  );
-  assert.equal(
-    notifications[1].headers['x-idempotency-key'],
-    notifications[0].headers['x-idempotency-key'],
-    `${route} retry preserves downstream idempotency key`,
-  );
+  assert.equal(retryAttempt.body.ownerNotificationSent, false);
+  assert.equal(notifications.length, 1, `${route} ambiguous delivery awaits operator review`);
+  assert.equal(stablePayloadDb.notificationOutbox[0].status, 'needs_review');
 }
 notificationOutcomes = [];
 
 notifications = [];
-notificationOutcomes = ['negative-ack', true];
+notificationOutcomes = ['negative-ack'];
 const crmAckDb = new CanonicalMockD1();
 const crmAckPayload = planPayload(submissionId('crm-negative-ack'));
 const crmAckEnv = {
@@ -453,11 +492,11 @@ const crmAckEnv = {
 };
 const rejectedCrmAck = await callPlan(crmAckDb, crmAckPayload, crmAckEnv);
 assert.equal(rejectedCrmAck.body.ownerNotificationSent, false, 'CRM 2xx ok:false is not delivery success');
-assert.equal(crmAckDb.notificationOutbox[0].status, 'failed_retryable');
+assert.equal(crmAckDb.notificationOutbox[0].status, 'needs_review');
 const acceptedCrmAck = await callPlan(crmAckDb, crmAckPayload, crmAckEnv);
-assert.equal(acceptedCrmAck.body.ownerNotificationSent, true);
-assert.equal(crmAckDb.notificationOutbox[0].status, 'sent');
-assert.equal(notifications.length, 2);
+assert.equal(acceptedCrmAck.body.ownerNotificationSent, false);
+assert.equal(crmAckDb.notificationOutbox[0].status, 'needs_review');
+assert.equal(notifications.length, 1);
 notificationOutcomes = [];
 
 notifications = [];
@@ -524,6 +563,63 @@ assert.equal(authorizedInternalDb.canonicalOutbox[0].status, 'suppressed');
 assert.match(authorizedInternalDb.canonicalOutbox[0].suppression_reason, /^internal_test:/);
 assert.equal(notifications.length, 0);
 assert.equal(shouldEmitTechnicalEvent(internal.body), false);
+
+// Packages and Contact pass only the two synthetic-test fields through their
+// adapter. Suppression remains server-authorized by the token header; payload
+// fields alone can never opt a customer lead out of measurement/notification.
+for (const route of ['packages', 'contact']) {
+  notifications = [];
+  const routeInternalDb = new CanonicalMockD1();
+  const routeInternal = await callLegacy(
+    routeInternalDb,
+    legacyPayload(route, submissionId(`${route}-internal`), {
+      internal_test: true,
+      internal_test_reason: `owner_approved_${route}_fixture`,
+    }),
+    { INTERNAL_TEST_TOKEN: internalToken },
+    { 'x-hfla-internal-test-token': internalToken },
+  );
+  assert.equal(routeInternal.response.status, 200, `${route} authenticated internal test accepted`);
+  assert.equal(routeInternal.body.accepted, true, `${route} authenticated internal test persisted`);
+  assert.equal(routeInternal.body.conversionEligible, false, `${route} authenticated internal test suppressed`);
+  assert.equal(routeInternalDb.canonicalOutbox[0].status, 'suppressed');
+  assert.match(routeInternalDb.canonicalOutbox[0].suppression_reason, /^internal_test:/);
+  assert.equal(routeInternalDb.notificationOutbox.length, 0, `${route} internal test queues no notification`);
+  assert.equal(notifications.length, 0, `${route} internal test sends no notification`);
+  assert.equal(shouldEmitTechnicalEvent(routeInternal.body), false);
+  const routeInternalCanonical = JSON.parse(
+    routeInternalDb.quotesByLead.get(routeInternal.body.leadId).canonical_payload_json,
+  );
+  assert.equal(routeInternalCanonical.isInternalTest, true);
+  assert.equal(routeInternalCanonical.internalTestReason, `owner_approved_${route}_fixture`);
+
+  for (const tokenCase of ['missing', 'invalid']) {
+    notifications = [];
+    const unauthorizedDb = new CanonicalMockD1();
+    const unauthorized = await callLegacy(
+      unauthorizedDb,
+      legacyPayload(route, submissionId(`${route}-internal-${tokenCase}`), {
+        internal_test: true,
+        internal_test_reason: 'client_controlled_suppression_attempt',
+      }),
+      { INTERNAL_TEST_TOKEN: internalToken },
+      tokenCase === 'invalid'
+        ? { 'x-hfla-internal-test-token': 'invalid-owner-test-token-000000000000' }
+        : {},
+    );
+    assert.equal(unauthorized.response.status, 200, `${route} ${tokenCase} token remains a normal lead`);
+    assert.equal(unauthorized.body.conversionEligible, true, `${route} ${tokenCase} token cannot suppress conversion`);
+    assert.equal(unauthorizedDb.canonicalOutbox[0].status, 'shadow_pending');
+    assert.equal(unauthorizedDb.notificationOutbox.length, 1, `${route} ${tokenCase} token queues notification`);
+    assert.equal(notifications.length, 1, `${route} ${tokenCase} token sends notification`);
+    assert.equal(shouldEmitTechnicalEvent(unauthorized.body), true);
+    const unauthorizedCanonical = JSON.parse(
+      unauthorizedDb.quotesByLead.get(unauthorized.body.leadId).canonical_payload_json,
+    );
+    assert.equal(unauthorizedCanonical.isInternalTest, false);
+    assert.equal(unauthorizedCanonical.internalTestReason, null);
+  }
+}
 
 notifications = [];
 const spamDb = new CanonicalMockD1();

@@ -2,7 +2,6 @@ import type { D1Database, D1Value } from '../booking/availability-types.ts';
 import { calculateCapacity, resolveKidsCount } from '../booking/capacity-engine.ts';
 import { assessEligibility } from '../booking/eligibility.ts';
 import {
-  assertLeadNotificationPayloadCanSend,
   buildCanonicalLead,
   buildCanonicalNotificationPayload,
   validateLeadNotificationPayload,
@@ -24,22 +23,23 @@ import {
   type FormRoute,
   type LeadAcceptanceResponse,
 } from '../forms/acceptance-contract.ts';
+import {
+  configuredNotificationDestinations,
+  drainNotificationOutbox,
+  notificationRecoveryPolicy,
+  type NotificationDestination,
+  type NotificationRecoveryEnv,
+} from './notification-recovery.ts';
 
 export const QUOTE_REQUEST_FAILURE_MESSAGE =
   'We could not submit your request. Please call/text (310) 800-2860.';
 
 export const QUOTE_REQUEST_SUCCESS_MESSAGE = 'Your request was received.';
 
-export type QuoteRequestEnv = {
+export type QuoteRequestEnv = NotificationRecoveryEnv & {
   AVAILABILITY_D1?: D1Database;
   QUOTE_REQUESTS_D1?: D1Database;
   GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED?: string;
-  QUOTE_REQUEST_CRM_WEBHOOK_URL?: string;
-  QUOTE_REQUEST_CRM_WEBHOOK_SECRET?: string;
-  QUOTE_REQUEST_SHEET_WEBHOOK_URL?: string;
-  QUOTE_REQUEST_SHEET_WEBHOOK_SECRET?: string;
-  QUOTE_REQUEST_MAKE_WEBHOOK_URL?: string;
-  QUOTE_REQUEST_MAKE_SHARED_SECRET?: string;
   OWNER_NOTIFICATION_EMAIL?: string;
   QUOTE_REQUEST_EMAIL_PROVIDER?: string;
   QUOTE_REQUEST_EMAIL_API_KEY?: string;
@@ -47,6 +47,7 @@ export type QuoteRequestEnv = {
   LEGACY_FORM_COMPAT_STARTED_AT_UTC?: string;
   LEGACY_FORM_COMPAT_UNTIL_UTC?: string;
   INTERNAL_TEST_TOKEN?: string;
+  FORWARD_CONTRACT_ROLLBACK_MODE?: string;
 };
 
 type ValidationResult =
@@ -1057,7 +1058,11 @@ function buildCanonical(body: SanitizedQuoteRequest, leadId: string, now: string
 // Attribution (migration 0003) and canonical-completeness columns (migration 0004)
 // are APPENDED, so existing bind indices are unchanged. canonical_payload_json
 // preserves the full canonical lead so no field is ever lost.
-function canonicalToD1Record(c: CanonicalPlanMyPartyLead, body: SanitizedQuoteRequest): Record<string, D1Value> {
+function canonicalToD1Record(
+  c: CanonicalPlanMyPartyLead,
+  body: SanitizedQuoteRequest,
+  notificationQueued: boolean,
+): Record<string, D1Value> {
   return {
     lead_id: c.leadId,
     idempotency_key: body.quoteRequestIdempotencyKey,
@@ -1097,7 +1102,7 @@ function canonicalToD1Record(c: CanonicalPlanMyPartyLead, body: SanitizedQuoteRe
     // Preserve the admitted live CHECK constraint. Suppression and shadow
     // eligibility are represented in the additive identity/outbox tables.
     delivery_status: 'persisted_internal_queue',
-    owner_notification_queued: body.notificationEligible ? 1 : 0,
+    owner_notification_queued: notificationQueued ? 1 : 0,
     owner_notification_sent: 0,
     sheet_written: 0,
     crm_posted: 0,
@@ -1367,17 +1372,22 @@ function prepareNotificationOutboxInsert(
   body: SanitizedQuoteRequest,
   leadId: string,
   acceptedAt: string,
+  destination: NotificationDestination,
 ) {
   return db.prepare(
     `INSERT INTO lead_notification_outbox (
       notification_id, submission_id, lead_id, destination, status,
-      attempt_count, last_attempt_at_utc, last_error_code,
+      attempt_count, max_attempts, next_attempt_at_utc,
+      last_attempt_at_utc, last_error_code,
       created_at_utc, updated_at_utc
-    ) VALUES (?, ?, ?, 'owner_notification', 'pending', 0, NULL, NULL, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, 'pending', 0, ?, ?, NULL, NULL, ?, ?)`,
   ).bind(
-    `notify_${leadId.slice(5)}`,
+    `notify_${destination}_${leadId.slice(5)}`,
     body.submissionId,
     leadId,
+    destination,
+    notificationRecoveryPolicy.defaultMaxAttempts,
+    acceptedAt,
     acceptedAt,
     acceptedAt,
   );
@@ -1389,6 +1399,7 @@ async function insertAcceptedSubmission(
   record: Record<string, D1Value>,
   leadId: string,
   acceptedAt: string,
+  notificationDestinations: NotificationDestination[],
 ): Promise<void> {
   if (!db.batch) throw new Error('D1 batch support is required for canonical lead acceptance.');
   const statements = [
@@ -1397,7 +1408,9 @@ async function insertAcceptedSubmission(
     prepareCanonicalOutboxInsert(db, body, leadId, acceptedAt),
   ];
   if (body.notificationEligible) {
-    statements.push(prepareNotificationOutboxInsert(db, body, leadId, acceptedAt));
+    for (const destination of notificationDestinations) {
+      statements.push(prepareNotificationOutboxInsert(db, body, leadId, acceptedAt, destination));
+    }
   }
   const results = await db.batch(statements);
   if (results.some((result) => result.success === false || Boolean(result.error))) {
@@ -1405,248 +1418,14 @@ async function insertAcceptedSubmission(
   }
 }
 
-function prepareDeliveryFlagUpdate(
-  db: D1Database,
-  leadId: string,
-  flags: { ownerNotificationSent: boolean; sheetWritten: boolean; crmPosted: boolean },
-  now: string,
-  claimToken: string,
-) {
-  const deliveryStatus =
-    flags.ownerNotificationSent || flags.sheetWritten || flags.crmPosted
-      ? 'persisted_optional_notification_succeeded'
-      : 'persisted_internal_queue';
-
-  return db
-    .prepare(
-      `UPDATE quote_requests
-       SET updated_at = ?, delivery_status = ?, owner_notification_sent = ?, sheet_written = ?, crm_posted = ?
-       WHERE lead_id = ?
-         AND EXISTS (
-           SELECT 1 FROM lead_notification_outbox
-           WHERE lead_id = ? AND destination = 'owner_notification'
-             AND status = 'delivering' AND claim_token = ?
-         )`,
-    )
-    .bind(
-      now,
-      deliveryStatus,
-      flags.ownerNotificationSent ? 1 : 0,
-      flags.sheetWritten ? 1 : 0,
-      flags.crmPosted ? 1 : 0,
-      leadId,
-      leadId,
-      claimToken,
-    );
-}
-
-function prepareNotificationFinalization(
-  db: D1Database,
-  leadId: string,
-  sent: boolean,
-  now: string,
-  claimToken: string,
-) {
-  return db.prepare(
-    `UPDATE lead_notification_outbox
-     SET status = ?,
-          attempt_count = attempt_count + 1,
-          claim_token = NULL,
-          lease_expires_at_utc = NULL,
-          last_attempt_at_utc = ?,
-         last_error_code = ?,
-         updated_at_utc = ?
-     WHERE lead_id = ? AND destination = 'owner_notification'
-       AND status = 'delivering' AND claim_token = ?`,
-  ).bind(
-    sent ? 'sent' : 'failed_retryable',
-    now,
-    sent ? null : 'all_configured_destinations_failed',
-    now,
-    leadId,
-    claimToken,
-  );
-}
-
-function makeNotificationClaimToken(): string {
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  return `claim_${Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('')}`;
-}
-
-async function claimNotificationOutbox(db: D1Database, leadId: string): Promise<string | null> {
-  const now = new Date();
-  const nowIso = now.toISOString();
-  const leaseExpires = new Date(now.getTime() + 5 * 60 * 1000).toISOString();
-  const claimToken = makeNotificationClaimToken();
-  const result = await db.prepare(
-    `UPDATE lead_notification_outbox
-     SET status = 'delivering', claim_token = ?, lease_expires_at_utc = ?, updated_at_utc = ?
-     WHERE lead_id = ?
-       AND destination = 'owner_notification'
-       AND (
-         status IN ('pending', 'failed_retryable')
-         OR (status = 'delivering' AND lease_expires_at_utc < ?)
-       )`,
-  ).bind(claimToken, leaseExpires, nowIso, leadId, nowIso).run();
-  return (result.meta?.changes ?? 0) > 0 ? claimToken : null;
-}
-
-async function finalizeNotificationAttempt(
-  db: D1Database,
-  leadId: string,
-  flags: { ownerNotificationSent: boolean; sheetWritten: boolean; crmPosted: boolean },
-  claimToken: string,
-): Promise<void> {
-  if (!db.batch) throw new Error('D1 batch support is required for notification finalization.');
-  const now = new Date().toISOString();
-  const results = await db.batch([
-    prepareDeliveryFlagUpdate(db, leadId, flags, now, claimToken),
-    prepareNotificationFinalization(db, leadId, flags.ownerNotificationSent, now, claimToken),
-  ]);
-  if (
-    results.some((result) => result.success === false || Boolean(result.error))
-    || results.some((result) => (result.meta?.changes ?? 0) !== 1)
-  ) {
-    throw new Error('Notification finalization batch failed.');
-  }
-}
-
-async function hmacSignature(secret: string, body: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(body));
-  return Array.from(new Uint8Array(signature))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
-}
-
 function getEnvString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-// The Make/Gmail/Sheets payload is now built from the canonical lead via
-// buildCanonicalNotificationPayload (canonical-lead.ts), so every customer-entered
-// field and every system-recommended value is delivered, truthfully labeled.
-
-type WebhookAckMode = 'http-2xx' | 'json-ok';
-
-function validJsonWebhookAcknowledgement(body: string): boolean {
-  if (!body.trim() || body.length > 4096) return false;
-  try {
-    const parsed = JSON.parse(body) as { ok?: unknown };
-    return Boolean(parsed && typeof parsed === 'object' && parsed.ok === true);
-  } catch {
-    return false;
-  }
-}
-
-async function postWebhook(
-  url: string,
-  secret: string,
-  payload: Record<string, unknown>,
-  acknowledgement: WebhookAckMode,
-): Promise<boolean> {
-  try {
-    assertLeadNotificationPayloadCanSend(payload);
-  } catch (err) {
-    console.error('BLANK_LEAD_EMAIL_BLOCKED', {
-      timestamp: new Date().toISOString(),
-      endpoint: 'quote-request',
-      sourcePage: normalizeAttribution(payload.source_page),
-      payloadKeysPresent: Object.keys(payload).sort(),
-      missingRequiredFields: err instanceof Error
-        ? (err as Error & { missingFields?: string[] }).missingFields ?? []
-        : [],
-      validationErrorCode: 'BLANK_LEAD_EMAIL_BLOCKED',
-    });
-    return false;
-  }
-
-  const body = JSON.stringify(payload);
-  const formRoute = typeof payload.form_route === 'string' ? payload.form_route : '';
-  const headers: Record<string, string> = {
-    'content-type': 'application/json',
-    // Preserve the two admitted production header contracts. The stable
-    // lead-id header is additive and supplies downstream idempotency.
-    'x-lead-source': formRoute === 'plan-my-party'
-      ? 'happyfacesla-plan-my-party'
-      : 'happyfacesla-cloudflare-pages',
-  };
-  if (typeof payload.lead_id === 'string') headers['x-idempotency-key'] = payload.lead_id;
-  if (secret) headers['x-signature-sha256'] = await hmacSignature(secret, body);
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10_000);
-  try {
-    const response = await fetch(url, { method: 'POST', headers, body, signal: controller.signal });
-    if (!response.ok) return false;
-    if (acknowledgement === 'http-2xx') return true;
-    return validJsonWebhookAcknowledgement(await response.text());
-  } catch {
-    return false;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-async function runOptionalNotifications(
-  env: QuoteRequestEnv,
-  canonical: CanonicalPlanMyPartyLead,
-): Promise<{ attempted: boolean; ownerNotificationSent: boolean; sheetWritten: boolean; crmPosted: boolean }> {
-  const formRoute = canonical.formRoute ?? 'plan-my-party';
-  const canonicalNotification = {
-    ...buildCanonicalNotificationPayload(canonical),
-    source: formRoute,
-    form_route: formRoute,
-    submission_id: canonical.submissionId ?? null,
-  };
-  const payload = formRoute === 'plan-my-party'
-    ? canonicalNotification
-    : {
-        ...canonicalNotification,
-        // The admitted production Make blueprint maps 1.lead.*, 1.leadId,
-        // and 1.submittedAt. Keep that shape while the flat canonical fields
-        // remain available to the future AP-02 contract.
-        leadId: canonical.leadId,
-        submittedAt: canonical.createdAt,
-        lead: canonical.legacyNotificationLead ?? {},
-        legacy_lead: canonical.legacyNotificationLead ?? {},
-        canonical: canonicalNotification,
-      };
-  const crmUrl = getEnvString(env.QUOTE_REQUEST_CRM_WEBHOOK_URL);
-  const sheetUrl = getEnvString(env.QUOTE_REQUEST_SHEET_WEBHOOK_URL);
-  const makeUrl = getEnvString(env.QUOTE_REQUEST_MAKE_WEBHOOK_URL);
-  const crmSecret = getEnvString(env.QUOTE_REQUEST_CRM_WEBHOOK_SECRET);
-  const sheetSecret = getEnvString(env.QUOTE_REQUEST_SHEET_WEBHOOK_SECRET);
-  const makeSecret = getEnvString(env.QUOTE_REQUEST_MAKE_SHARED_SECRET);
-
-  let crmPosted = false;
-  let sheetWritten = false;
-  let makePosted = false;
-  if (formRoute === 'plan-my-party') {
-    crmPosted = crmUrl ? await postWebhook(crmUrl, crmSecret, payload, 'json-ok') : false;
-    sheetWritten = sheetUrl ? await postWebhook(sheetUrl, sheetSecret, payload, 'json-ok') : false;
-    makePosted = makeUrl ? await postWebhook(makeUrl, makeSecret, payload, 'http-2xx') : false;
-  } else if (crmUrl) {
-    crmPosted = await postWebhook(crmUrl, crmSecret, payload, 'json-ok');
-  } else if (makeUrl) {
-    makePosted = await postWebhook(makeUrl, makeSecret, payload, 'http-2xx');
-  } else if (sheetUrl) {
-    sheetWritten = await postWebhook(sheetUrl, sheetSecret, payload, 'json-ok');
-  }
-
-  return {
-    attempted: Boolean(crmUrl || sheetUrl || makeUrl),
-    ownerNotificationSent: crmPosted || sheetWritten || makePosted,
-    sheetWritten: sheetWritten || makePosted,
-    crmPosted: crmPosted || makePosted,
-  };
+function forwardContractRollbackMode(env: QuoteRequestEnv): boolean {
+  return ['1', 'true', 'yes', 'on'].includes(
+    getEnvString(env.FORWARD_CONTRACT_ROLLBACK_MODE).toLowerCase(),
+  );
 }
 
 function success(
@@ -1678,6 +1457,7 @@ function success(
 async function persistQuoteRequest(
   db: D1Database,
   body: SanitizedQuoteRequest,
+  env: QuoteRequestEnv,
 ): Promise<{ response: Response; canonical: CanonicalPlanMyPartyLead | null }> {
   let existingIdentity: SubmissionIdentityRow | null;
   try {
@@ -1733,6 +1513,10 @@ async function persistQuoteRequest(
       ? `internal_test:${canonical.internalTestReason.replace(/\s+/g, '_')}`
       : 'internal_test';
   }
+  if (forwardContractRollbackMode(env)) {
+    body.conversionEligible = false;
+    body.suppressionReason = 'forward_contract_rollback';
+  }
   const notificationValidation = validateLeadNotificationPayload(buildCanonicalNotificationPayload(canonical));
   if (!notificationValidation.ok) {
     console.error('BLANK_LEAD_EMAIL_BLOCKED', {
@@ -1745,7 +1529,11 @@ async function persistQuoteRequest(
     });
     return { response: failure('Invalid lead payload.', 400), canonical: null };
   }
-  const record = canonicalToD1Record(canonical, body);
+  const notificationDestinations = body.notificationEligible
+    ? configuredNotificationDestinations(env, body.formRoute)
+    : [];
+  const notificationQueued = notificationDestinations.length > 0;
+  const record = canonicalToD1Record(canonical, body, notificationQueued);
   const identity: SubmissionIdentityRow = {
     submission_id: body.submissionId,
     lead_id: leadId,
@@ -1756,7 +1544,14 @@ async function persistQuoteRequest(
   };
 
   try {
-    await insertAcceptedSubmission(db, body, record, leadId, now);
+    await insertAcceptedSubmission(
+      db,
+      body,
+      record,
+      leadId,
+      now,
+      notificationDestinations,
+    );
   } catch {
     try {
       const duplicateIdentity = await selectSubmissionIdentity(db, body.submissionId);
@@ -1781,21 +1576,13 @@ async function persistQuoteRequest(
   return {
     response: success({
       lead_id: leadId,
-      owner_notification_queued: body.notificationEligible ? 1 : 0,
+      owner_notification_queued: notificationQueued ? 1 : 0,
       owner_notification_sent: 0,
       sheet_written: 0,
       crm_posted: 0,
     }, identity),
     canonical,
   };
-}
-
-function hasConfiguredNotificationDestination(env: QuoteRequestEnv): boolean {
-  return Boolean(
-    getEnvString(env.QUOTE_REQUEST_CRM_WEBHOOK_URL)
-    || getEnvString(env.QUOTE_REQUEST_SHEET_WEBHOOK_URL)
-    || getEnvString(env.QUOTE_REQUEST_MAKE_WEBHOOK_URL)
-  );
 }
 
 function parsePersistedCanonical(row: PersistedLeadRow): CanonicalPlanMyPartyLead | null {
@@ -1865,7 +1652,7 @@ export async function handleQuoteRequest(request: Request, env: QuoteRequestEnv)
   const db = getPersistenceDb(env);
   if (!db) return failure();
 
-  const { response: persistedResponse, canonical } = await persistQuoteRequest(db, parsed.value);
+  const { response: persistedResponse } = await persistQuoteRequest(db, parsed.value, env);
   if (!persistedResponse.ok) return persistedResponse;
 
   let persisted: QuoteRequestResponse;
@@ -1875,33 +1662,29 @@ export async function handleQuoteRequest(request: Request, env: QuoteRequestEnv)
     return persistedResponse;
   }
 
-  if (!persisted.leadId || !persisted.ownerNotificationQueued || !canonical) {
+  if (!persisted.leadId || !persisted.ownerNotificationQueued) {
     return persistedResponse;
   }
 
-  if (!hasConfiguredNotificationDestination(env)) return persistedResponse;
-
-  let claimToken: string | null = null;
   try {
-    claimToken = await claimNotificationOutbox(db, persisted.leadId);
-  } catch {
-    return persistedResponse;
-  }
-  if (!claimToken) return persistedResponse;
-
-  const flags = await runOptionalNotifications(env, canonical);
-  if (!flags.attempted) return persistedResponse;
-
-  try {
-    await finalizeNotificationAttempt(db, persisted.leadId, flags, claimToken);
+    await drainNotificationOutbox(db, env, {
+      leadId: persisted.leadId,
+      limit: 3,
+    });
   } catch {
     return persistedResponse;
   }
 
-  return json({
-    ...persisted,
-    ownerNotificationSent: flags.ownerNotificationSent,
-    sheetWritten: flags.sheetWritten,
-    crmPosted: flags.crmPosted,
-  });
+  try {
+    const refreshed = await selectExistingLead(db, parsed.value.quoteRequestIdempotencyKey);
+    if (!refreshed) return persistedResponse;
+    return json({
+      ...persisted,
+      ownerNotificationSent: refreshed.owner_notification_sent === 1,
+      sheetWritten: refreshed.sheet_written === 1,
+      crmPosted: refreshed.crm_posted === 1,
+    });
+  } catch {
+    return persistedResponse;
+  }
 }

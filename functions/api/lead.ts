@@ -243,6 +243,11 @@ function adaptLegacyLead(input: LegacyLeadPayload, request: Request): Record<str
     submittedAt: stringValue(input.submitted_at, 40) || null,
     attribution: input.attribution,
     honeypot: input.honeypot,
+    // These two fields are the only synthetic-test controls admitted through
+    // this adapter. The shared handler still requires boolean true plus the
+    // matching x-hfla-internal-test-token header before it suppresses anything.
+    internal_test: input.internal_test,
+    internal_test_reason: input.internal_test_reason,
   };
 }
 

@@ -26,6 +26,7 @@ CREATE TABLE lead_submission_identity (
     CHECK (client_contract_version IN ('atomic-v1', 'legacy-bounded-v1')),
   attribution_policy_version TEXT NOT NULL DEFAULT 'AP03A-1',
   canonical_version TEXT NOT NULL DEFAULT 'AP02A-1',
+  UNIQUE (submission_id, lead_id),
   CHECK (
     (conversion_eligible = 1 AND suppression_reason IS NULL) OR
     (conversion_eligible = 0 AND suppression_reason IS NOT NULL)
@@ -50,8 +51,8 @@ CREATE TABLE canonical_lead_outbox (
   canonical_version TEXT NOT NULL DEFAULT 'AP02A-1',
   created_at_utc TEXT NOT NULL,
   updated_at_utc TEXT NOT NULL,
-  FOREIGN KEY (submission_id) REFERENCES lead_submission_identity(submission_id),
-  FOREIGN KEY (lead_id) REFERENCES lead_submission_identity(lead_id),
+  FOREIGN KEY (submission_id, lead_id)
+    REFERENCES lead_submission_identity(submission_id, lead_id),
   UNIQUE (lead_id, event_name),
   CHECK (
     (conversion_eligible = 1 AND status = 'shadow_eligible' AND suppression_reason IS NULL) OR
@@ -67,10 +68,12 @@ CREATE TABLE lead_notification_outbox (
   notification_id TEXT PRIMARY KEY,
   submission_id TEXT NOT NULL,
   lead_id TEXT NOT NULL,
-  destination TEXT NOT NULL DEFAULT 'owner_notification',
+  destination TEXT NOT NULL CHECK (destination IN ('crm', 'sheet', 'make')),
   status TEXT NOT NULL DEFAULT 'pending'
-    CHECK (status IN ('pending', 'delivering', 'sent', 'failed_retryable', 'needs_review')),
-  attempt_count INTEGER NOT NULL DEFAULT 0,
+    CHECK (status IN ('pending', 'delivering', 'sent', 'failed_retryable', 'needs_review', 'abandoned')),
+  attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
+  max_attempts INTEGER NOT NULL DEFAULT 6 CHECK (max_attempts BETWEEN 1 AND 10),
+  next_attempt_at_utc TEXT,
   claim_token TEXT CHECK (
     claim_token IS NULL OR (
       length(claim_token) = 38
@@ -81,17 +84,87 @@ CREATE TABLE lead_notification_outbox (
   lease_expires_at_utc TEXT,
   last_attempt_at_utc TEXT,
   last_error_code TEXT,
+  last_http_status INTEGER,
+  last_acknowledgement TEXT CHECK (
+    last_acknowledgement IS NULL
+    OR last_acknowledgement IN ('strict', 'legacy_http_2xx', 'legacy_json_ok', 'none')
+  ),
+  dead_lettered_at_utc TEXT,
+  operator_retry_count INTEGER NOT NULL DEFAULT 0 CHECK (operator_retry_count BETWEEN 0 AND 10),
+  last_operator_action_id TEXT,
   created_at_utc TEXT NOT NULL,
   updated_at_utc TEXT NOT NULL,
-  FOREIGN KEY (submission_id) REFERENCES lead_submission_identity(submission_id),
-  FOREIGN KEY (lead_id) REFERENCES lead_submission_identity(lead_id),
+  FOREIGN KEY (submission_id, lead_id)
+    REFERENCES lead_submission_identity(submission_id, lead_id),
   UNIQUE (lead_id, destination),
+  UNIQUE (notification_id, lead_id, destination),
+  CHECK (attempt_count <= max_attempts),
   CHECK (
     (status = 'delivering' AND claim_token IS NOT NULL AND lease_expires_at_utc IS NOT NULL)
     OR
     (status != 'delivering' AND claim_token IS NULL AND lease_expires_at_utc IS NULL)
+  ),
+  CHECK (
+    (status IN ('pending', 'failed_retryable') AND next_attempt_at_utc IS NOT NULL)
+    OR
+    (status NOT IN ('pending', 'failed_retryable') AND next_attempt_at_utc IS NULL)
+  ),
+  CHECK (
+    (status IN ('needs_review', 'abandoned') AND dead_lettered_at_utc IS NOT NULL)
+    OR
+    (status NOT IN ('needs_review', 'abandoned') AND dead_lettered_at_utc IS NULL)
   )
 );
 
 CREATE INDEX idx_lead_notification_outbox_status
-  ON lead_notification_outbox (status, created_at_utc);
+  ON lead_notification_outbox (
+    status, next_attempt_at_utc, lease_expires_at_utc, created_at_utc
+  );
+
+CREATE TABLE notification_worker_runs (
+  run_id TEXT PRIMARY KEY CHECK (
+    length(run_id) BETWEEN 8 AND 80
+    AND run_id NOT GLOB '*[^A-Za-z0-9_-]*'
+  ),
+  scheduled_at_utc TEXT NOT NULL,
+  started_at_utc TEXT NOT NULL,
+  completed_at_utc TEXT,
+  status TEXT NOT NULL CHECK (status IN ('running', 'completed', 'failed')),
+  examined_count INTEGER NOT NULL DEFAULT 0 CHECK (examined_count >= 0),
+  claimed_count INTEGER NOT NULL DEFAULT 0 CHECK (claimed_count >= 0),
+  sent_count INTEGER NOT NULL DEFAULT 0 CHECK (sent_count >= 0),
+  retry_scheduled_count INTEGER NOT NULL DEFAULT 0 CHECK (retry_scheduled_count >= 0),
+  needs_review_count INTEGER NOT NULL DEFAULT 0 CHECK (needs_review_count >= 0),
+  skipped_count INTEGER NOT NULL DEFAULT 0 CHECK (skipped_count >= 0),
+  alert_codes_json TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(alert_codes_json)),
+  last_error_code TEXT,
+  alerted_at_utc TEXT,
+  created_at_utc TEXT NOT NULL,
+  updated_at_utc TEXT NOT NULL,
+  CHECK (
+    (status = 'running' AND completed_at_utc IS NULL)
+    OR
+    (status != 'running' AND completed_at_utc IS NOT NULL)
+  )
+);
+
+CREATE INDEX idx_notification_worker_runs_status
+  ON notification_worker_runs (status, started_at_utc);
+
+CREATE TABLE notification_operator_audit (
+  action_id TEXT PRIMARY KEY CHECK (
+    length(action_id) BETWEEN 8 AND 80
+    AND action_id NOT GLOB '*[^A-Za-z0-9_-]*'
+  ),
+  notification_id TEXT NOT NULL,
+  lead_id TEXT NOT NULL,
+  destination TEXT NOT NULL CHECK (destination IN ('crm', 'sheet', 'make')),
+  action TEXT NOT NULL CHECK (action IN ('retry', 'mark_delivered', 'abandon')),
+  reason_code TEXT NOT NULL CHECK (length(reason_code) BETWEEN 1 AND 80),
+  created_at_utc TEXT NOT NULL,
+  FOREIGN KEY (notification_id, lead_id, destination)
+    REFERENCES lead_notification_outbox(notification_id, lead_id, destination)
+);
+
+CREATE INDEX idx_notification_operator_audit_lead
+  ON notification_operator_audit (lead_id, created_at_utc);

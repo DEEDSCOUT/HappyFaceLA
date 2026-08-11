@@ -14,7 +14,10 @@ upload is authorized by this document.
                                                 +-> lead_submission_identity
                                                 +-> quote_requests
                                                 +-> canonical_lead_outbox (shadow only)
-                                                +-> lead_notification_outbox
+                                                +-> lead_notification_outbox (per destination)
+                                                        |
+                                                        +-> independent recovery worker
+                                                        +-> operator review/audit
 ```
 
 The identity, canonical lead, shadow outcome, and eligible notification-outbox
@@ -42,14 +45,24 @@ first accepted lead.
   AP-02A/AP-03A.
 - Honeypot requests receive a neutral response but create no lead, notification,
   analytics-eligible response, or outbox row.
-- Owner notification is designed for at-least-once delivery from a unique durable row. A
-  five-minute lease prevents concurrent retries, failures become
-  `failed_retryable`, and a duplicate transport retry can redeliver the original
-  canonical payload. Each claim has a cryptographic fencing token, so an expired
-  worker cannot finalize over a newer worker. The stable `lead_id` is sent as the downstream
-  idempotency key. A production queue processor and alert remain separately
-  approval-gated; without them, failed rows retry only if the same customer
-  request is replayed and the design is not production-ready.
+- Owner notification uses one durable row per configured destination. A
+  five-minute lease and cryptographic fencing token prevent overlapping workers
+  from finalizing the same attempt. Fixed retry intervals are 1 minute, 5
+  minutes, 15 minutes, 1 hour, and 6 hours, with six total attempts by default
+  (one initial attempt plus five retries) and a hard ceiling of ten including
+  separately audited operator retries.
+- Automatic retry is disabled for every destination by default. A timeout,
+  connection loss, invalid acknowledgement, or expired unverified lease moves
+  directly to `needs_review`, because a receiver may have completed the side
+  effect before the response was lost. Only a destination whose persistent
+  idempotency has been separately proved and named in
+  `NOTIFICATION_AUTO_RETRY_DESTINATIONS` may use scheduled automatic retry.
+- The branch now contains an independent cron-worker candidate, durable run
+  records, stale-run and queue-age monitoring, aggregate-only alerts, and an
+  authenticated operator surface for retry, verified-delivered, and abandon
+  actions. Operator actions require an explicit downstream check, have unique
+  action IDs, and are audited. The worker, binding, schedule, secrets, receiver
+  proof, and alert route remain undeployed and separately approval-gated.
 - Packages/Contact notifications retain the admitted production Make envelope
   (`leadId`, `submittedAt`, and nested `lead.*`) alongside the new flat canonical
   fields. The sanitized compatibility projection is persisted inside the
@@ -192,8 +205,9 @@ The next packet should be limited to:
    compatibility path, with duplicate monitoring for no-ID `/api/lead` clients;
 4. code plus migration deployment with `canonical_lead_outbox` remaining an
    internal, non-uploaded shadow table;
-5. notification-outbox worker/monitor approval, retry policy, and downstream
-   `lead_id` idempotency verification;
+5. notification-worker deployment/binding approval and verified receiver
+   idempotency; until then, leave automatic retries disabled and route ambiguity
+   to operator review;
 6. privacy-approved session/persistence configuration;
 7. one separately authorized, clearly labeled synthetic form submission per
    route, suppressed from business and Ads outcomes;
