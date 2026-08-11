@@ -7,6 +7,8 @@ import { onRequest as handleLead } from '../../functions/api/lead.ts';
 import { shouldEmitTechnicalEvent } from '../../src/lib/forms/acceptance-contract.ts';
 import {
   handleQuoteRequest,
+  legacyCompatibilityPolicy,
+  legacyCompatibilityWindowIsActive,
   quoteRequestStorageKey,
 } from '../../src/lib/quote-request/delivery.ts';
 
@@ -132,10 +134,13 @@ const env = {
   AVAILABILITY_D1: db,
   QUOTE_REQUEST_MAKE_WEBHOOK_URL: 'https://fixture.invalid/make',
 };
+const legacyWindowStartMs = Date.now() - 60_000;
 const compatibilityEnv = {
   ...env,
-  LEGACY_FORM_COMPAT_STARTED_AT_UTC: new Date(Date.now() - 60_000).toISOString(),
-  LEGACY_FORM_COMPAT_UNTIL_UTC: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+  LEGACY_FORM_COMPAT_STARTED_AT_UTC: new Date(legacyWindowStartMs).toISOString(),
+  LEGACY_FORM_COMPAT_UNTIL_UTC: new Date(
+    legacyWindowStartMs + legacyCompatibilityPolicy.durationMilliseconds,
+  ).toISOString(),
 };
 
 const routes = [
@@ -240,6 +245,7 @@ for (let index = 0; index < routes.length; index += 1) {
 
 assert.equal(sqlite.prepare('SELECT count(*) AS count FROM quote_requests').get().count, 3);
 assert.equal(sqlite.prepare('SELECT count(*) AS count FROM lead_submission_identity').get().count, 3);
+assert.equal(sqlite.prepare('SELECT count(*) AS count FROM lead_privacy_state').get().count, 3);
 assert.equal(sqlite.prepare('SELECT count(*) AS count FROM canonical_lead_outbox').get().count, 3);
 assert.equal(sqlite.prepare('SELECT count(*) AS count FROM lead_notification_outbox').get().count, 3);
 assert.equal(notificationFetches.length, 3, 'each accepted route dispatches its one configured destination once');
@@ -379,7 +385,8 @@ const missingSubmissionResponse = await handleQuoteRequest(
 );
 assert.equal(missingSubmissionResponse.status, 400);
 
-// The legacy path is fail-closed without a valid, no-more-than-14-day window.
+// The legacy path is fail-closed without the owner-approved exact 72-hour,
+// end-exclusive window.
 const disabledLegacy = await handleQuoteRequest(
   request('/api/quote-request', '/plan-my-party/', oldPlanPayload, '192.0.2.62'),
   env,
@@ -395,6 +402,37 @@ const expiredLegacy = await handleQuoteRequest(
   expiredEnv,
 );
 assert.equal(expiredLegacy.status, 400);
+const exactStart = Date.parse('2026-08-20T17:00:00.000Z');
+const exactWindow = {
+  ...env,
+  LEGACY_FORM_COMPAT_STARTED_AT_UTC: new Date(exactStart).toISOString(),
+  LEGACY_FORM_COMPAT_UNTIL_UTC: new Date(
+    exactStart + legacyCompatibilityPolicy.durationMilliseconds,
+  ).toISOString(),
+};
+assert.equal(legacyCompatibilityWindowIsActive(exactWindow, exactStart), true);
+assert.equal(
+  legacyCompatibilityWindowIsActive(
+    exactWindow,
+    exactStart + legacyCompatibilityPolicy.durationMilliseconds - 1,
+  ),
+  true,
+);
+assert.equal(
+  legacyCompatibilityWindowIsActive(
+    exactWindow,
+    exactStart + legacyCompatibilityPolicy.durationMilliseconds,
+  ),
+  false,
+  'legacy compatibility hard-disables at the exact UTC end',
+);
+assert.equal(legacyCompatibilityWindowIsActive({
+  ...env,
+  LEGACY_FORM_COMPAT_STARTED_AT_UTC: new Date(exactStart).toISOString(),
+  LEGACY_FORM_COMPAT_UNTIL_UTC: new Date(
+    exactStart + legacyCompatibilityPolicy.durationMilliseconds + 1,
+  ).toISOString(),
+}, exactStart), false, 'a window even one millisecond longer fails closed');
 
 // A raw application rollback to the pre-AP02 response contract is unsafe for
 // already-open new clients: the old APIs returned only ok/leadId and therefore

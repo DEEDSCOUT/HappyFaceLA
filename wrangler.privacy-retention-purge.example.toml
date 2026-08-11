@@ -1,0 +1,23 @@
+name = "happyfacesla-privacy-retention-purge"
+main = "workers/privacy-retention-purge.ts"
+compatibility_date = "2026-08-10"
+workers_dev = false
+
+# Engineering template only. Do not deploy or substitute production values
+# without a separately approved purge-operations packet.
+[[d1_databases]]
+binding = "PRIVACY_D1"
+database_name = "REPLACE_WITH_APPROVED_DATABASE_NAME"
+database_id = "REPLACE_WITH_APPROVED_DATABASE_ID"
+
+[triggers]
+crons = ["15 9 * * *"]
+
+[vars]
+# Default is dry-run. Apply mode requires a separate approved deployment gate.
+PRIVACY_PURGE_APPLY_ENABLED = "false"
+PRIVACY_PURGE_BATCH_SIZE = "100"
+PRIVACY_PURGE_OPERATOR_ACTOR_ID = "owner_shawn"
+
+# PRIVACY_PURGE_OPERATOR_TOKEN is intentionally absent and must be configured
+# as a Worker secret only under a later production authorization.

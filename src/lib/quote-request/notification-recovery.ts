@@ -17,6 +17,7 @@ export type NotificationRecoveryEnv = {
   NOTIFICATION_AUTO_RETRY_DESTINATIONS?: string;
   NOTIFICATION_ALERT_WEBHOOK_URL?: string;
   NOTIFICATION_OPERATOR_TOKEN?: string;
+  NOTIFICATION_OPERATOR_ACTOR_ID?: string;
 };
 
 export type NotificationAttemptResult = {
@@ -49,6 +50,8 @@ export type NotificationQueueHealth = {
   oldestDueAgeSeconds: number;
   staleWorkerRuns: number;
   failedWorkerRuns: number;
+  failedWorkerRunIds: string[];
+  failedWorkerRunCutoffUtc: string;
   alertCodes: string[];
 };
 
@@ -85,6 +88,8 @@ const LEASE_MS = 5 * 60 * 1000;
 const RETRY_DELAYS_SECONDS = [60, 300, 900, 3600, 21600] as const;
 const WORKER_STALE_MS = 5 * 60 * 1000;
 const ALERT_AGE_MS = 5 * 60 * 1000;
+const ALERT_COOLDOWN_MS = 15 * 60 * 1000;
+const ALERT_RETRY_MS = 5 * 60 * 1000;
 
 function envString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
@@ -600,8 +605,17 @@ export async function notificationQueueHealth(
   ).bind(staleIso).first<{ count: number }>();
   const failed = await db.prepare(
     `SELECT COUNT(*) AS count FROM notification_worker_runs
-     WHERE status = 'failed' AND alerted_at_utc IS NULL`,
-  ).first<{ count: number }>();
+     WHERE status = 'failed' AND alerted_at_utc IS NULL AND completed_at_utc <= ?`,
+  ).bind(nowIso).first<{ count: number }>();
+  const failedRows = await db.prepare(
+    `SELECT run_id FROM notification_worker_runs
+     WHERE status = 'failed' AND alerted_at_utc IS NULL AND completed_at_utc <= ?
+     ORDER BY completed_at_utc, run_id
+     LIMIT 100`,
+  ).bind(nowIso).all<{ run_id: string }>();
+  const failedWorkerRunIds = Array.isArray(failedRows.results)
+    ? failedRows.results.map((candidate) => candidate.run_id)
+    : [];
   const oldestDue = typeof row?.oldest_due === 'string' ? Date.parse(row.oldest_due) : NaN;
   const oldestDueAgeSeconds = Number.isFinite(oldestDue) && oldestDue <= now.getTime()
     ? Math.floor((now.getTime() - oldestDue) / 1000)
@@ -615,6 +629,8 @@ export async function notificationQueueHealth(
     oldestDueAgeSeconds,
     staleWorkerRuns: Number(stale?.count ?? 0),
     failedWorkerRuns: Number(failed?.count ?? 0),
+    failedWorkerRunIds,
+    failedWorkerRunCutoffUtc: nowIso,
     alertCodes: [],
   };
   if (health.oldestDueAgeSeconds * 1000 > ALERT_AGE_MS) health.alertCodes.push('oldest_due_over_5m');
@@ -644,6 +660,8 @@ async function emitAlerts(
       expired_leases: health.expiredLeases,
       stale_worker_runs: health.staleWorkerRuns,
       failed_worker_runs: health.failedWorkerRuns,
+      failed_worker_run_ids: health.failedWorkerRunIds,
+      failed_worker_run_cutoff_utc: health.failedWorkerRunCutoffUtc,
       oldest_due_age_seconds: health.oldestDueAgeSeconds,
     },
   };
@@ -664,12 +682,119 @@ async function emitAlerts(
   }
 }
 
-async function markFailedWorkerRunsAlerted(db: D1Database, nowIso: string): Promise<void> {
+async function alertFingerprint(health: NotificationQueueHealth): Promise<string> {
+  const material = JSON.stringify({
+    alert_codes: [...health.alertCodes].sort(),
+    failed_worker_run_ids: [...health.failedWorkerRunIds].sort(),
+    pending: health.pending,
+    failed_retryable: health.failedRetryable,
+    delivering: health.delivering,
+    needs_review: health.needsReview,
+    expired_leases: health.expiredLeases,
+    stale_worker_runs: health.staleWorkerRuns,
+  });
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(material));
+  return Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+async function shouldSendAlert(
+  db: D1Database,
+  health: NotificationQueueHealth,
+  now: Date,
+): Promise<{ send: boolean; fingerprint: string }> {
+  const fingerprint = await alertFingerprint(health);
+  const state = await db.prepare(
+    `SELECT fingerprint_sha256, next_eligible_at_utc
+     FROM notification_alert_state WHERE alert_key = 'queue_health'`,
+  ).first<{ fingerprint_sha256: string; next_eligible_at_utc: string }>();
+  if (!state) return { send: true, fingerprint };
+  return {
+    send: state.fingerprint_sha256 !== fingerprint
+      || Date.parse(state.next_eligible_at_utc) <= now.getTime(),
+    fingerprint,
+  };
+}
+
+async function recordAlertAttempt(
+  db: D1Database,
+  health: NotificationQueueHealth,
+  fingerprint: string,
+  now: Date,
+  delivered: boolean,
+): Promise<void> {
+  const nowIso = now.toISOString();
+  const nextEligible = new Date(
+    now.getTime() + (delivered ? ALERT_COOLDOWN_MS : ALERT_RETRY_MS),
+  ).toISOString();
+  await db.prepare(
+    `INSERT INTO notification_alert_state (
+       alert_key, fingerprint_sha256, alert_codes_json, failed_run_ids_json,
+       failed_run_cutoff_utc, last_attempt_at_utc, last_delivered_at_utc,
+       next_eligible_at_utc, delivery_status, updated_at_utc
+     ) VALUES ('queue_health', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(alert_key) DO UPDATE SET
+       fingerprint_sha256 = excluded.fingerprint_sha256,
+       alert_codes_json = excluded.alert_codes_json,
+       failed_run_ids_json = excluded.failed_run_ids_json,
+       failed_run_cutoff_utc = excluded.failed_run_cutoff_utc,
+       last_attempt_at_utc = excluded.last_attempt_at_utc,
+       last_delivered_at_utc = excluded.last_delivered_at_utc,
+       next_eligible_at_utc = excluded.next_eligible_at_utc,
+       delivery_status = excluded.delivery_status,
+       updated_at_utc = excluded.updated_at_utc`,
+  ).bind(
+    fingerprint,
+    JSON.stringify(health.alertCodes),
+    JSON.stringify(health.failedWorkerRunIds),
+    health.failedWorkerRunCutoffUtc,
+    nowIso,
+    delivered ? nowIso : null,
+    nextEligible,
+    delivered ? 'delivered' : 'failed',
+    nowIso,
+  ).run();
+}
+
+async function markFailedWorkerRunsAlerted(
+  db: D1Database,
+  health: NotificationQueueHealth,
+  nowIso: string,
+): Promise<void> {
+  if (health.failedWorkerRunIds.length === 0) return;
+  const placeholders = health.failedWorkerRunIds.map(() => '?').join(', ');
   await db.prepare(
     `UPDATE notification_worker_runs
      SET alerted_at_utc = ?, updated_at_utc = ?
-     WHERE status = 'failed' AND alerted_at_utc IS NULL`,
-  ).bind(nowIso, nowIso).run();
+     WHERE status = 'failed' AND alerted_at_utc IS NULL
+       AND completed_at_utc <= ? AND run_id IN (${placeholders})`,
+  ).bind(
+    nowIso,
+    nowIso,
+    health.failedWorkerRunCutoffUtc,
+    ...health.failedWorkerRunIds,
+  ).run();
+}
+
+async function processHealthAlert(
+  db: D1Database,
+  env: NotificationRecoveryEnv,
+  health: NotificationQueueHealth,
+  now: Date,
+  fetchImpl: typeof fetch,
+): Promise<void> {
+  if (health.alertCodes.length === 0) {
+    await db.prepare(
+      `DELETE FROM notification_alert_state WHERE alert_key = 'queue_health'`,
+    ).run();
+    return;
+  }
+  const decision = await shouldSendAlert(db, health, now);
+  if (!decision.send) return;
+  const delivered = await emitAlerts(env, health, now, fetchImpl);
+  await recordAlertAttempt(db, health, decision.fingerprint, now, delivered);
+  if (delivered && health.failedWorkerRuns > 0) {
+    await markFailedWorkerRunsAlerted(db, health, now.toISOString());
+  }
 }
 
 export async function drainNotificationOutbox(
@@ -708,10 +833,7 @@ export async function drainNotificationOutbox(
     const health = await notificationQueueHealth(db, now);
     summary.alerts = health.alertCodes;
     if (options.runId) {
-      const delivered = await emitAlerts(env, health, now, fetchImpl);
-      if (delivered && health.failedWorkerRuns > 0) {
-        await markFailedWorkerRunsAlerted(db, now.toISOString());
-      }
+      await processHealthAlert(db, env, health, now, fetchImpl);
     }
     if (options.runId) await finishWorkerRun(db, options.runId, now.toISOString(), summary);
     return summary;
@@ -720,8 +842,7 @@ export async function drainNotificationOutbox(
       try {
         await failWorkerRun(db, options.runId, now.toISOString(), error);
         const health = await notificationQueueHealth(db, now);
-        const delivered = await emitAlerts(env, health, now, fetchImpl);
-        if (delivered) await markFailedWorkerRunsAlerted(db, now.toISOString());
+        await processHealthAlert(db, env, health, now, fetchImpl);
       } catch {
         // The durable running row becomes a stale-run alert if D1 itself is unavailable.
       }
@@ -731,7 +852,7 @@ export async function drainNotificationOutbox(
 }
 
 async function secureTokenEquals(actual: string, expected: string): Promise<boolean> {
-  if (!actual || !expected) return false;
+  if (!actual || expected.length < 32 || actual.length > 512 || expected.length > 512) return false;
   const [actualHash, expectedHash] = await Promise.all([
     crypto.subtle.digest('SHA-256', new TextEncoder().encode(actual)),
     crypto.subtle.digest('SHA-256', new TextEncoder().encode(expected)),
@@ -757,9 +878,13 @@ export async function handleNotificationOperatorRequest(
   now = new Date(),
 ): Promise<Response> {
   const expected = envString(env.NOTIFICATION_OPERATOR_TOKEN);
+  const operatorActorId = envString(env.NOTIFICATION_OPERATOR_ACTOR_ID);
   const authorization = request.headers.get('authorization') ?? '';
   const supplied = authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : '';
   if (!await secureTokenEquals(supplied, expected)) return safeJson({ ok: false, error: 'Unauthorized' }, 401);
+  if (!/^[A-Za-z0-9_-]{3,80}$/.test(operatorActorId)) {
+    return safeJson({ ok: false, error: 'Operator identity unavailable' }, 503);
+  }
 
   const url = new URL(request.url);
   if (request.method === 'GET' && url.pathname === '/operator/health') {
@@ -798,9 +923,10 @@ export async function handleNotificationOperatorRequest(
   const nowIso = now.toISOString();
   const audit = db.prepare(
     `INSERT INTO notification_operator_audit (
-       action_id, notification_id, lead_id, destination, action, reason_code, created_at_utc
+       action_id, notification_id, lead_id, destination, action, reason_code,
+       operator_actor_id, created_at_utc
      )
-     SELECT ?, notification_id, lead_id, destination, ?, ?, ?
+     SELECT ?, notification_id, lead_id, destination, ?, ?, ?, ?
      FROM lead_notification_outbox
      WHERE lead_id = ? AND destination = ? AND status = 'needs_review'
        AND (? = 0 OR attempt_count < ?)
@@ -810,6 +936,7 @@ export async function handleNotificationOperatorRequest(
     actionId,
     typedAction,
     reasonCode,
+    operatorActorId,
     nowIso,
     leadId,
     typedDestination,
@@ -905,4 +1032,8 @@ export const notificationRecoveryPolicy = Object.freeze({
   maximumMaxAttempts: MAX_MAX_ATTEMPTS,
   leaseMilliseconds: LEASE_MS,
   retryDelaysSeconds: [...RETRY_DELAYS_SECONDS],
+  workerStaleMilliseconds: WORKER_STALE_MS,
+  queueAgeAlertMilliseconds: ALERT_AGE_MS,
+  alertCooldownMilliseconds: ALERT_COOLDOWN_MS,
+  alertRetryMilliseconds: ALERT_RETRY_MS,
 });

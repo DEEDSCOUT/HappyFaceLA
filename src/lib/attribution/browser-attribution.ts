@@ -11,6 +11,9 @@ const STORAGE_KEY = `hfla_attribution_v${ATTRIBUTION_VERSION}`;
 const LEGACY_STORAGE_KEY = 'hfla_attribution';
 let memoryJourney: AttributionJourney | null = null;
 
+export const PRIVACY_ATTRIBUTION_POLICY_VERSION = 'HFLA-PRIVACY-ATTRIBUTION-V1';
+export const APPROVED_ATTRIBUTION_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+
 type BrowserAttributionConfig = {
   retentionMs?: number | null;
   transientStorageAllowed?: boolean;
@@ -26,13 +29,15 @@ declare global {
 
 function config(): Required<BrowserAttributionConfig> {
   const candidate = window.__HFLA_ATTRIBUTION_CONFIG__ || {};
+  const consentGranted = candidate.consentGranted === true;
   return {
-    retentionMs: typeof candidate.retentionMs === 'number' && candidate.retentionMs >= 0
-      ? candidate.retentionMs
-      : null,
+    // Privacy / Attribution Policy v1 fixes the durable envelope lifetime at
+    // 30 days. A runtime caller cannot silently extend it (or choose a
+    // different attribution definition) through a stale configuration value.
+    retentionMs: consentGranted ? APPROVED_ATTRIBUTION_RETENTION_MS : null,
     transientStorageAllowed: candidate.transientStorageAllowed === true,
     persistentStorageAllowed: candidate.persistentStorageAllowed === true,
-    consentGranted: candidate.consentGranted === true,
+    consentGranted,
   };
 }
 

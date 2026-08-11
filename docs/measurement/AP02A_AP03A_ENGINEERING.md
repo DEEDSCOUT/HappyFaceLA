@@ -118,24 +118,22 @@ not the attribution source of truth.
 
 ## Retention and consent gates
 
-Default browser attribution is memory-only. Session storage is disabled unless
-both `transientStorageAllowed` and `consentGranted` are explicitly configured.
-Persistent storage additionally requires `persistentStorageAllowed` and a
-positive configured retention period. Revocation removes the AP-03 session and
-local-storage records best-effort. No production TTL or consent-signal mapping
-is assumed here. Owner and privacy approval are still required for:
-
-- persistent retention duration;
-- consent-signal mapping and revocation behavior;
-- click-ID/referrer retention policy;
-- cross-channel credit policy;
-- any hashed user-provided data, Enhanced Conversions, Data Manager, or upload.
+Privacy / Attribution Policy v1 fixes the browser contract as follows: before
+the applicable consent condition, attribution is memory-only. After the
+applicable consent condition and a separately approved runtime wiring,
+coherent-envelope storage may persist for exactly 30 days. Runtime configuration
+cannot extend that ceiling. Revocation removes the AP-03 session and
+local-storage records best-effort. Operational acquisition credit uses the
+latest qualifying touch; first touch remains informational and submit touch
+remains route context. Quote/contact permission alone does not grant advertising
+consent.
 
 No production code currently supplies `__HFLA_ATTRIBUTION_CONFIG__`. Therefore
-the engineering default loses cross-page attribution after a full navigation
-and purges the legacy record. That is privacy-safe but not an approved
-production attribution policy. A production release remains blocked until the
-owner chooses the storage/consent policy and its expiry/deletion behavior.
+the engineering default remains memory-only and loses cross-page attribution
+after a full navigation. Activating the approved 30-day policy still requires a
+separate production Consent Mode/runtime implementation and approval. Data
+Manager, Enhanced Conversions, hashing, and customer-data upload remain
+unapproved.
 
 This branch also changes Packages/Contact from webhook-only delivery to durable
 D1 persistence of customer contact data and atomic attribution. No production
@@ -171,8 +169,10 @@ separately admitted execution packet.
 
 A deployment may explicitly set both `LEGACY_FORM_COMPAT_STARTED_AT_UTC` and
 `LEGACY_FORM_COMPAT_UNTIL_UTC`. The server rejects compatibility mode unless the
-complete configured window is no longer than 14 days and the current time falls
-inside it. Modern-looking but incomplete payloads never fall back to this mode.
+complete configured window is exactly 72 hours and the current time falls in
+the start-inclusive/end-exclusive window. Exact UTC timestamps must be frozen
+before deployment; there is no automatic extension. Modern-looking but
+incomplete payloads never fall back to this mode.
 
 - Old Plan My Party clients retain their stable `qrq_*` key. The server maps it
   deterministically to one `sub_*` identity, and a retry returns the same lead.
@@ -182,10 +182,12 @@ inside it. Modern-looking but incomplete payloads never fall back to this mode.
   transport retry is the same logical submission. Each accepted request gets a
   new opaque identity, remains notification-eligible, and is suppressed from the
   canonical conversion outcome as `legacy_client_compatibility`.
-- Compatibility is fail-closed outside the explicit window. Retirement requires
-  confirming that cached/open-tab traffic has fallen to zero, removing the two
-  compatibility environment values, and monitoring duplicate owner records
-  during the window.
+- Compatibility is fail-closed outside the explicit window. End it early after
+  one confirmed legacy-caused duplicate business record/notification, two
+  suspected near-match legacy duplicate pairs in a rolling 24 hours, or any
+  legacy-path notification-reliability incident. At 72 hours, remove both
+  timestamps, prove expired legacy requests fail closed, and reconcile every
+  legacy submission and duplicate without extending the window automatically.
 
 ## PR #56 disposition
 

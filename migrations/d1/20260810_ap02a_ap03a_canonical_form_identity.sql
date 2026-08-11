@@ -39,6 +39,63 @@ CREATE INDEX idx_lead_submission_identity_route_time
 CREATE INDEX idx_lead_submission_identity_business_duplicate
   ON lead_submission_identity (business_duplicate_of_lead_id);
 
+CREATE TABLE lead_privacy_state (
+  lead_id TEXT PRIMARY KEY,
+  submission_id TEXT UNIQUE,
+  source_record_kind TEXT NOT NULL CHECK (
+    source_record_kind IN ('ap02_canonical', 'historical_quote_request')
+  ),
+  data_classification TEXT NOT NULL CHECK (
+    data_classification IN (
+      'pending_business_classification',
+      'genuine_lead',
+      'spam_bot_invalid',
+      'internal_test',
+      'legacy_compatibility'
+    )
+  ),
+  accepted_at_utc TEXT NOT NULL,
+  last_meaningful_interaction_at_utc TEXT,
+  completed_event_at_utc TEXT,
+  pii_retention_anchor_at_utc TEXT,
+  pii_retention_anchor_finalized_at_utc TEXT,
+  legal_hold INTEGER NOT NULL DEFAULT 0 CHECK (legal_hold IN (0, 1)),
+  deletion_request_id TEXT,
+  deletion_requested_at_utc TEXT,
+  deletion_approved_at_utc TEXT,
+  click_ids_redacted_at_utc TEXT,
+  pii_redacted_at_utc TEXT,
+  diagnostic_data_redacted_at_utc TEXT,
+  shadow_outcome_purged_at_utc TEXT,
+  notification_audit_purged_at_utc TEXT,
+  deletion_completed_at_utc TEXT,
+  created_at_utc TEXT NOT NULL,
+  updated_at_utc TEXT NOT NULL,
+  CHECK (
+    (source_record_kind = 'ap02_canonical' AND submission_id IS NOT NULL)
+    OR (source_record_kind = 'historical_quote_request' AND submission_id IS NULL)
+  ),
+  CHECK (
+    (pii_retention_anchor_finalized_at_utc IS NULL)
+    OR (pii_retention_anchor_at_utc IS NOT NULL)
+  ),
+  CHECK (
+    (deletion_approved_at_utc IS NULL)
+    OR (deletion_requested_at_utc IS NOT NULL AND deletion_request_id IS NOT NULL)
+  ),
+  CHECK (
+    (deletion_completed_at_utc IS NULL)
+    OR (deletion_approved_at_utc IS NOT NULL AND pii_redacted_at_utc IS NOT NULL)
+  )
+);
+
+CREATE INDEX idx_lead_privacy_state_retention
+  ON lead_privacy_state (
+    data_classification, accepted_at_utc, pii_retention_anchor_at_utc
+  );
+CREATE INDEX idx_lead_privacy_state_click_ids
+  ON lead_privacy_state (click_ids_redacted_at_utc, accepted_at_utc);
+
 CREATE TABLE canonical_lead_outbox (
   outbox_id TEXT PRIMARY KEY,
   submission_id TEXT NOT NULL UNIQUE,
@@ -151,6 +208,19 @@ CREATE TABLE notification_worker_runs (
 CREATE INDEX idx_notification_worker_runs_status
   ON notification_worker_runs (status, started_at_utc);
 
+CREATE TABLE notification_alert_state (
+  alert_key TEXT PRIMARY KEY CHECK (alert_key = 'queue_health'),
+  fingerprint_sha256 TEXT NOT NULL CHECK (length(fingerprint_sha256) = 64),
+  alert_codes_json TEXT NOT NULL CHECK (json_valid(alert_codes_json)),
+  failed_run_ids_json TEXT NOT NULL CHECK (json_valid(failed_run_ids_json)),
+  failed_run_cutoff_utc TEXT NOT NULL,
+  last_attempt_at_utc TEXT NOT NULL,
+  last_delivered_at_utc TEXT,
+  next_eligible_at_utc TEXT NOT NULL,
+  delivery_status TEXT NOT NULL CHECK (delivery_status IN ('delivered', 'failed')),
+  updated_at_utc TEXT NOT NULL
+);
+
 CREATE TABLE notification_operator_audit (
   action_id TEXT PRIMARY KEY CHECK (
     length(action_id) BETWEEN 8 AND 80
@@ -161,6 +231,10 @@ CREATE TABLE notification_operator_audit (
   destination TEXT NOT NULL CHECK (destination IN ('crm', 'sheet', 'make')),
   action TEXT NOT NULL CHECK (action IN ('retry', 'mark_delivered', 'abandon')),
   reason_code TEXT NOT NULL CHECK (length(reason_code) BETWEEN 1 AND 80),
+  operator_actor_id TEXT NOT NULL CHECK (
+    length(operator_actor_id) BETWEEN 3 AND 80
+    AND operator_actor_id NOT GLOB '*[^A-Za-z0-9_-]*'
+  ),
   created_at_utc TEXT NOT NULL,
   FOREIGN KEY (notification_id, lead_id, destination)
     REFERENCES lead_notification_outbox(notification_id, lead_id, destination)
@@ -168,3 +242,31 @@ CREATE TABLE notification_operator_audit (
 
 CREATE INDEX idx_notification_operator_audit_lead
   ON notification_operator_audit (lead_id, created_at_utc);
+
+CREATE TABLE privacy_purge_runs (
+  run_id TEXT PRIMARY KEY CHECK (
+    length(run_id) BETWEEN 8 AND 80
+    AND run_id NOT GLOB '*[^A-Za-z0-9_-]*'
+  ),
+  policy_version TEXT NOT NULL CHECK (policy_version = 'HFLA-PRIVACY-ATTRIBUTION-V1'),
+  mode TEXT NOT NULL CHECK (mode IN ('dry_run', 'apply')),
+  started_at_utc TEXT NOT NULL,
+  completed_at_utc TEXT,
+  status TEXT NOT NULL CHECK (status IN ('running', 'completed', 'failed')),
+  initiated_by_actor_id TEXT NOT NULL CHECK (
+    length(initiated_by_actor_id) BETWEEN 3 AND 80
+    AND initiated_by_actor_id NOT GLOB '*[^A-Za-z0-9_-]*'
+  ),
+  cutoffs_json TEXT NOT NULL CHECK (json_valid(cutoffs_json)),
+  aggregate_counts_json TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(aggregate_counts_json)),
+  last_error_code TEXT,
+  created_at_utc TEXT NOT NULL,
+  updated_at_utc TEXT NOT NULL,
+  CHECK (
+    (status = 'running' AND completed_at_utc IS NULL)
+    OR (status != 'running' AND completed_at_utc IS NOT NULL)
+  )
+);
+
+CREATE INDEX idx_privacy_purge_runs_status
+  ON privacy_purge_runs (status, started_at_utc);

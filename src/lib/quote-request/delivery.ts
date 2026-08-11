@@ -30,6 +30,7 @@ import {
   type NotificationDestination,
   type NotificationRecoveryEnv,
 } from './notification-recovery.ts';
+import { privacyClassificationForAcceptance } from '../privacy/retention-purge.ts';
 
 export const QUOTE_REQUEST_FAILURE_MESSAGE =
   'We could not submit your request. Please call/text (310) 800-2860.';
@@ -173,7 +174,7 @@ const MODERN_CONTRACT_CONTEXT: RequestContractContext = {
   internalTestReason: null,
 };
 
-const LEGACY_COMPAT_MAX_MS = 14 * 24 * 60 * 60 * 1000;
+const LEGACY_COMPAT_WINDOW_MS = 72 * 60 * 60 * 1000;
 const LEGACY_IDEMPOTENCY_RE = /^qrq_[a-z0-9-]{8,96}$/i;
 
 const PROHIBITED_FIELDS = new Set([
@@ -524,10 +525,16 @@ export function legacyCompatibilityWindowIsActive(
   return Number.isFinite(startedAt)
     && Number.isFinite(until)
     && until > startedAt
-    && until - startedAt <= LEGACY_COMPAT_MAX_MS
+    && until - startedAt === LEGACY_COMPAT_WINDOW_MS
     && nowMs >= startedAt
-    && nowMs <= until;
+    && nowMs < until;
 }
+
+export const legacyCompatibilityPolicy = Object.freeze({
+  durationMilliseconds: LEGACY_COMPAT_WINDOW_MS,
+  durationHours: 72,
+  endExclusive: true,
+});
 
 async function secureTokenMatch(supplied: string, configured: string): Promise<boolean> {
   if (!supplied || configured.length < 32 || supplied.length > 512 || configured.length > 512) {
@@ -1367,6 +1374,29 @@ function prepareCanonicalOutboxInsert(
   );
 }
 
+function preparePrivacyStateInsert(
+  db: D1Database,
+  body: SanitizedQuoteRequest,
+  leadId: string,
+  acceptedAt: string,
+) {
+  return db.prepare(
+    `INSERT INTO lead_privacy_state (
+       lead_id, submission_id, source_record_kind, data_classification,
+       accepted_at_utc, last_meaningful_interaction_at_utc,
+       created_at_utc, updated_at_utc
+     ) VALUES (?, ?, 'ap02_canonical', ?, ?, ?, ?, ?)`,
+  ).bind(
+    leadId,
+    body.submissionId,
+    privacyClassificationForAcceptance(body),
+    acceptedAt,
+    acceptedAt,
+    acceptedAt,
+    acceptedAt,
+  );
+}
+
 function prepareNotificationOutboxInsert(
   db: D1Database,
   body: SanitizedQuoteRequest,
@@ -1405,6 +1435,7 @@ async function insertAcceptedSubmission(
   const statements = [
     prepareSubmissionIdentityInsert(db, body, leadId, acceptedAt),
     prepareLeadInsert(db, record),
+    preparePrivacyStateInsert(db, body, leadId, acceptedAt),
     prepareCanonicalOutboxInsert(db, body, leadId, acceptedAt),
   ];
   if (body.notificationEligible) {

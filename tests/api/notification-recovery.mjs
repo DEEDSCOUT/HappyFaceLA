@@ -285,7 +285,11 @@ assert.equal(ambiguousCalls, 1, 'needs-review delivery is not resent automatical
 
 // A confirmed operator inspection can authorize exactly one retry. The action
 // itself is idempotent and records a durable audit row.
-const operatorToken = 'operator-fixture-token';
+const operatorToken = 'operator-fixture-token-at-least-32-characters';
+const operatorEnv = {
+  NOTIFICATION_OPERATOR_TOKEN: operatorToken,
+  NOTIFICATION_OPERATOR_ACTOR_ID: 'owner_shawn',
+};
 const operatorRequest = new Request('https://worker.invalid/operator/recover', {
   method: 'POST',
   headers: {
@@ -305,7 +309,7 @@ const operatorReplayRequest = operatorRequest.clone();
 const operatorResponse = await handleNotificationOperatorRequest(
   operatorRequest,
   db,
-  { NOTIFICATION_OPERATOR_TOKEN: operatorToken },
+  operatorEnv,
   new Date(baseTime.getTime() + 120_000),
 );
 assert.equal(operatorResponse.status, 200);
@@ -314,10 +318,16 @@ assert.equal(
   sqlite.prepare('SELECT count(*) AS count FROM notification_operator_audit WHERE action_id = ?').get('operator_retry_001').count,
   1,
 );
+assert.equal(
+  sqlite.prepare('SELECT operator_actor_id FROM notification_operator_audit WHERE action_id = ?')
+    .get('operator_retry_001').operator_actor_id,
+  'owner_shawn',
+  'operator recovery audit uses the configured opaque owner identity',
+);
 const replayOperatorResponse = await handleNotificationOperatorRequest(
   operatorReplayRequest,
   db,
-  { NOTIFICATION_OPERATOR_TOKEN: operatorToken },
+  operatorEnv,
   new Date(baseTime.getTime() + 120_000),
 );
 assert.equal(replayOperatorResponse.status, 409);
@@ -521,7 +531,7 @@ assert.equal(
   (await handleNotificationOperatorRequest(
     markDeliveredRequest,
     db,
-    { NOTIFICATION_OPERATOR_TOKEN: operatorToken },
+    operatorEnv,
     baseTime,
   )).status,
   200,
@@ -559,7 +569,7 @@ assert.equal(
   (await handleNotificationOperatorRequest(
     abandonRequest(),
     db,
-    { NOTIFICATION_OPERATOR_TOKEN: operatorToken },
+    operatorEnv,
     baseTime,
   )).status,
   200,
@@ -571,7 +581,7 @@ assert.equal(
   (await handleNotificationOperatorRequest(
     abandonRequest(),
     db,
-    { NOTIFICATION_OPERATOR_TOKEN: operatorToken },
+    operatorEnv,
     new Date(baseTime.getTime() + 60_000),
   )).status,
   409,
@@ -603,7 +613,7 @@ const hardCeilingResponse = await handleNotificationOperatorRequest(
     }),
   }),
   db,
-  { NOTIFICATION_OPERATOR_TOKEN: operatorToken },
+  operatorEnv,
   baseTime,
 );
 assert.equal(hardCeilingResponse.status, 409);
@@ -753,6 +763,82 @@ assert.equal(
   0,
 );
 
+// Alert acknowledgement is fenced to the exact failed run IDs and cutoff
+// captured before transport. A failure created while the alert is in flight
+// remains unacknowledged for the next alert cycle.
+sqlite.prepare(`INSERT INTO notification_worker_runs (
+  run_id, scheduled_at_utc, started_at_utc, completed_at_utc, status,
+  last_error_code, created_at_utc, updated_at_utc
+) VALUES ('nwr_snapshot_old', ?, ?, ?, 'failed', 'fixture_old', ?, ?)`
+).run(...Array(5).fill('2026-08-10T20:39:00.000Z'));
+const snapshotAlertTime = new Date('2026-08-10T20:40:00.000Z');
+const snapshotAlertCalls = [];
+const snapshotSummary = await drainNotificationOutbox(
+  db,
+  { NOTIFICATION_ALERT_WEBHOOK_URL: 'https://fixture.invalid/alerts' },
+  {
+    now: snapshotAlertTime,
+    runId: 'nwr_snapshot_alert',
+    fetchImpl: async (url, init) => {
+      snapshotAlertCalls.push({ url: String(url), body: String(init.body) });
+      sqlite.prepare(`INSERT INTO notification_worker_runs (
+        run_id, scheduled_at_utc, started_at_utc, completed_at_utc, status,
+        last_error_code, created_at_utc, updated_at_utc
+      ) VALUES ('nwr_snapshot_new', ?, ?, ?, 'failed', 'fixture_new', ?, ?)`
+      ).run(...Array(5).fill(snapshotAlertTime.toISOString()));
+      return new Response(null, { status: 204 });
+    },
+  },
+);
+assert.deepEqual(snapshotSummary.alerts.includes('failed_worker_run_present'), true);
+assert.equal(snapshotAlertCalls.length, 1);
+const snapshotPayload = JSON.parse(snapshotAlertCalls[0].body);
+assert.deepEqual(snapshotPayload.counts.failed_worker_run_ids, ['nwr_snapshot_old']);
+assert.equal(
+  typeof sqlite.prepare('SELECT alerted_at_utc FROM notification_worker_runs WHERE run_id = ?')
+    .get('nwr_snapshot_old').alerted_at_utc,
+  'string',
+);
+assert.equal(
+  sqlite.prepare('SELECT alerted_at_utc FROM notification_worker_runs WHERE run_id = ?')
+    .get('nwr_snapshot_new').alerted_at_utc,
+  null,
+  'a later failure cannot be acknowledged by an older aggregate alert snapshot',
+);
+assert.deepEqual(
+  (await notificationQueueHealth(db, snapshotAlertTime)).failedWorkerRunIds,
+  ['nwr_snapshot_new'],
+);
+
+// An unchanged aggregate alert is delivered at most once per 15-minute
+// cooldown. The exact boundary is eligible again, while a changed fingerprint
+// remains immediately eligible (covered by the failed-run snapshot fixture).
+sqlite.prepare(
+  `UPDATE notification_worker_runs
+   SET alerted_at_utc = COALESCE(alerted_at_utc, ?), updated_at_utc = ?
+   WHERE status = 'failed'`,
+).run('2026-08-10T20:40:00.000Z', '2026-08-10T20:40:00.000Z');
+sqlite.prepare("DELETE FROM notification_alert_state WHERE alert_key = 'queue_health'").run();
+const cooldownAlertCalls = [];
+const cooldownFetch = async (url, init) => {
+  cooldownAlertCalls.push({ url: String(url), body: String(init.body) });
+  return new Response(null, { status: 204 });
+};
+for (const [runId, timestamp] of [
+  ['nwr_cooldown_initial', '2026-08-10T20:41:00.000Z'],
+  ['nwr_cooldown_suppressed', '2026-08-10T20:42:00.000Z'],
+  ['nwr_cooldown_boundary', '2026-08-10T20:56:00.000Z'],
+]) {
+  await drainNotificationOutbox(
+    db,
+    { NOTIFICATION_ALERT_WEBHOOK_URL: 'https://fixture.invalid/alerts' },
+    { now: new Date(timestamp), runId, fetchImpl: cooldownFetch },
+  );
+}
+assert.equal(cooldownAlertCalls.length, 2, 'same alert is suppressed until the exact cooldown boundary');
+assert.equal(notificationRecoveryPolicy.alertCooldownMilliseconds, 15 * 60 * 1000);
+assert.equal(notificationRecoveryPolicy.alertRetryMilliseconds, 5 * 60 * 1000);
+
 // A scheduled failure remains a rejected invocation after its durable failed
 // run is recorded, allowing Cron history/monitoring to observe it.
 let scheduledFailurePromise;
@@ -803,19 +889,30 @@ const wrongBindingHealth = await notificationWorker.fetch(
   new Request('https://worker.invalid/operator/health', {
     headers: { authorization: `Bearer ${operatorToken}` },
   }),
-  { QUOTE_REQUESTS_D1: db, NOTIFICATION_OPERATOR_TOKEN: operatorToken },
+  { QUOTE_REQUESTS_D1: db, ...operatorEnv },
 );
 assert.equal(wrongBindingHealth.status, 503);
 const unauthorizedHealth = await notificationWorker.fetch(
   new Request('https://worker.invalid/operator/health'),
-  { NOTIFICATION_D1: db, NOTIFICATION_OPERATOR_TOKEN: operatorToken },
+  { NOTIFICATION_D1: db, ...operatorEnv },
 );
 assert.equal(unauthorizedHealth.status, 401);
+const shortSecretHealth = await notificationWorker.fetch(
+  new Request('https://worker.invalid/operator/health', {
+    headers: { authorization: 'Bearer short-secret' },
+  }),
+  {
+    NOTIFICATION_D1: db,
+    ...operatorEnv,
+    NOTIFICATION_OPERATOR_TOKEN: 'short-secret',
+  },
+);
+assert.equal(shortSecretHealth.status, 401, 'operator bearer secret must be at least 32 characters');
 const authorizedHealth = await notificationWorker.fetch(
   new Request('https://worker.invalid/operator/health', {
     headers: { authorization: `Bearer ${operatorToken}` },
   }),
-  { NOTIFICATION_D1: db, NOTIFICATION_OPERATOR_TOKEN: operatorToken },
+  { NOTIFICATION_D1: db, ...operatorEnv },
 );
 assert.equal(authorizedHealth.status, 200);
 

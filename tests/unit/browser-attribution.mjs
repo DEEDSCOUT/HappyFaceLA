@@ -25,6 +25,7 @@ globalThis.window = {
 globalThis.document = { referrer: 'https://www.google.com/search?q=private' };
 
 const {
+  APPROVED_ATTRIBUTION_RETENTION_MS,
   captureBrowserAttribution,
   clearBrowserAttribution,
   purgeLegacyAttributionStorage,
@@ -44,8 +45,9 @@ assert.equal(localStorage.getItem('hfla_attribution_v1'), null, 'persistent stor
 clearBrowserAttribution();
 window.__HFLA_ATTRIBUTION_CONFIG__ = {
   transientStorageAllowed: true,
-  persistentStorageAllowed: false,
+  persistentStorageAllowed: true,
   consentGranted: true,
+  retentionMs: 365 * 24 * 60 * 60 * 1000,
 };
 const consentedJourney = captureBrowserAttribution(Date.parse('2026-08-10T18:01:00.000Z'));
 assert.equal(consentedJourney.first_touch.gclid, 'G-ALLOW');
@@ -53,7 +55,12 @@ const serialized = sessionStorage.getItem('hfla_attribution_v1');
 assert(serialized);
 assert.equal(serialized.includes('drop-me'), false);
 assert.equal(serialized.includes('q=private'), false);
-assert.equal(localStorage.getItem('hfla_attribution_v1'), null);
+assert(localStorage.getItem('hfla_attribution_v1'));
+assert.equal(
+  Date.parse(consentedJourney.expires_at) - Date.parse('2026-08-10T18:01:00.000Z'),
+  APPROVED_ATTRIBUTION_RETENTION_MS,
+  'runtime configuration cannot extend the approved 30-day envelope TTL',
+);
 
 window.__HFLA_ATTRIBUTION_CONFIG__ = {
   transientStorageAllowed: false,

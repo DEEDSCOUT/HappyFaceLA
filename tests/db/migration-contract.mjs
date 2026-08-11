@@ -17,9 +17,12 @@ const tables = db.prepare(
 assert.deepEqual(tables, [
   'canonical_lead_outbox',
   'lead_notification_outbox',
+  'lead_privacy_state',
   'lead_submission_identity',
+  'notification_alert_state',
   'notification_operator_audit',
   'notification_worker_runs',
+  'privacy_purge_runs',
 ]);
 
 const submissionId = `sub_${'a'.repeat(32)}`;
@@ -40,6 +43,19 @@ db.prepare(`INSERT INTO canonical_lead_outbox (
 ) VALUES ('cfo_fixture', ?, ?, 0, 'shadow_pending',
   'pending_business_classification', ?, ?, ?)`
 ).run(submissionId, leadId, 'c'.repeat(64), '2026-08-10T18:00:00.000Z', '2026-08-10T18:00:00.000Z');
+db.prepare(`INSERT INTO lead_privacy_state (
+  lead_id, submission_id, source_record_kind, data_classification,
+  accepted_at_utc, last_meaningful_interaction_at_utc,
+  created_at_utc, updated_at_utc
+) VALUES (?, ?, 'ap02_canonical', 'pending_business_classification', ?, ?, ?, ?)`
+).run(
+  leadId,
+  submissionId,
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+);
 db.prepare(`INSERT INTO lead_notification_outbox (
   notification_id, submission_id, lead_id, destination, next_attempt_at_utc,
   created_at_utc, updated_at_utc
@@ -125,10 +141,38 @@ db.prepare(`UPDATE notification_worker_runs
   WHERE run_id = 'nwr_fixture'`
 ).run('2026-08-10T18:01:00.000Z', '2026-08-10T18:01:00.000Z');
 
+db.prepare(`INSERT INTO notification_alert_state (
+  alert_key, fingerprint_sha256, alert_codes_json, failed_run_ids_json,
+  failed_run_cutoff_utc, last_attempt_at_utc, last_delivered_at_utc,
+  next_eligible_at_utc, delivery_status, updated_at_utc
+) VALUES ('queue_health', ?, '[]', '[]', ?, ?, ?, ?, 'delivered', ?)`
+).run(
+  'd'.repeat(64),
+  '2026-08-10T18:01:00.000Z',
+  '2026-08-10T18:01:00.000Z',
+  '2026-08-10T18:01:00.000Z',
+  '2026-08-10T18:16:00.000Z',
+  '2026-08-10T18:01:00.000Z',
+);
+
 db.prepare(`INSERT INTO notification_operator_audit (
-  action_id, notification_id, lead_id, destination, action, reason_code, created_at_utc
-) VALUES ('action_001', 'notify_fixture', ?, 'make', 'mark_delivered', 'verified_existing', ?)`
+  action_id, notification_id, lead_id, destination, action, reason_code,
+  operator_actor_id, created_at_utc
+) VALUES ('action_001', 'notify_fixture', ?, 'make', 'mark_delivered',
+  'verified_existing', 'owner_shawn', ?)`
 ).run(leadId, '2026-08-10T18:02:00.000Z');
+
+db.prepare(`INSERT INTO privacy_purge_runs (
+  run_id, policy_version, mode, started_at_utc, completed_at_utc, status,
+  initiated_by_actor_id, cutoffs_json, aggregate_counts_json, created_at_utc, updated_at_utc
+) VALUES ('purge_001', 'HFLA-PRIVACY-ATTRIBUTION-V1', 'dry_run', ?, ?,
+  'completed', 'owner_shawn', '{}', '{}', ?, ?)`
+).run(
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+  '2026-08-10T18:00:00.000Z',
+);
 
 assert.throws(() => db.prepare(`INSERT INTO canonical_lead_outbox (
   outbox_id, submission_id, lead_id, conversion_eligible, status,

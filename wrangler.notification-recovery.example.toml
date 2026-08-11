@@ -17,6 +17,8 @@ crons = ["* * * * *"]
 # Fail closed: no destination is automatically retried after an ambiguous
 # dispatch until receiver idempotency is separately proved and approved.
 NOTIFICATION_AUTO_RETRY_DESTINATIONS = ""
+NOTIFICATION_OPERATOR_ACTOR_ID = "owner_shawn"
 
 # Secrets are intentionally absent. Future approved setup must bind webhook
-# credentials and NOTIFICATION_OPERATOR_TOKEN through Cloudflare secrets.
+# credentials and a NOTIFICATION_OPERATOR_TOKEN of at least 32 characters
+# through Cloudflare secrets.
