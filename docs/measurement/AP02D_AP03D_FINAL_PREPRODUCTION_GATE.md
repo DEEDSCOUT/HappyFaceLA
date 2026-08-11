@@ -87,15 +87,35 @@ legacy rows.
 
 ## D/E — Fresh receiver proof and RECEIVER-01
 
-Fresh deployed receiver proof is **pending owner sign-in to Make**. Chrome
-reached Make's sign-in page and performed no authentication, scenario run, edit,
-or export. Historical June evidence is not substituted as current proof.
+A fresh deployed blueprint was exported read-only from active Make scenario
+`5090554`, `Integration Webhooks`, on 2026-08-10 at 22:42:58 PT. Its raw
+SHA-256 is
+`b1baa6a1967f47c816cadf3c28928867f5bb1202560180b33463468c8b428a68`.
+Only a sanitized structural derivative is admitted to the external evidence
+folder; connection and destination identifiers are excluded. No scenario run,
+save, customer-row view, webhook, Gmail, or Sheet action occurred.
 
-Until a fresh sanitized deployed blueprint/settings export is preserved and
-hashed, the deployed receiver's `lead_id`, header, atomic uniqueness, Gmail
-replay, Sheet uniqueness, partial-success, and strict-response behavior remain
-unproved. `RECEIVER01_DOWNSTREAM_IDEMPOTENCY_STRICT_ACK.md` supplies the exact
-remediation packet if the fresh export does not meet the required contract.
+The deployed scenario is active and uses:
+
+```text
+Custom webhook -> Router
+  -> Gmail / Send an email (unconditional)
+  -> Google Sheets / Search Rows (column B == lead_id)
+     -> Google Sheets / Add a Row (only when result length == 0)
+```
+
+It consumes canonical `lead_id` and contains zero legacy `leadId` mappings, but
+it does not consume or validate `x-idempotency-key`. `Process data in order` is
+off, incomplete-execution storage is off, commit-after-each-module is on, and
+confidential-data mode is off. The Sheet search-then-add guard is not an atomic
+claim; Gmail has no duplicate filter; the two effects have no durable
+partial-success state; and no Webhook Response module exists. Consequently the
+live receiver returns no strict post-persistence acknowledgement and cannot
+prove exactly-once external effects.
+
+Verdict: **RECEIVER-01 is required.**
+`RECEIVER01_DOWNSTREAM_IDEMPOTENCY_STRICT_ACK.md` now records the fresh current
+state and exact proposed remediation. Automatic ambiguous retry remains empty.
 
 ## F — Notification Worker production-operations packet
 
@@ -245,6 +265,26 @@ Exact future command:
 npx wrangler d1 export hfla-availability-production --remote --no-data --output=<timestamped-schema-only.sql> --config=<approved-one-purpose-config>
 ```
 
+Exact independent micro-approval still required:
+
+```text
+OWNER APPROVAL — D1-EXPORT-01 ONLY
+
+Approve one schema-only, no-customer-row export of Cloudflare D1 database
+hfla-availability-production, database ID
+3ea0bd28-abba-4630-99d1-f30ab17c0c36, during 2026-08-12 02:30–02:40 PT
+(09:30–09:40 UTC), using the one-purpose AP-02D configuration and exactly one
+hash-verified migration candidate for local comparison only.
+
+Do not apply a migration, deploy code or a Worker, restore Time Travel, export
+customer rows, submit a form, call a webhook, modify Make/Gmail/Sheets, change
+Cloudflare bindings, or change Google Ads/GA4/GTM. Stop on identity/hash/schema
+mismatch, production latency/error, or any unrelated change. Return the export
+hash, before/after local schema diff, quote_requests invariants, foreign-key and
+integrity results, and migration-ledger reconciliation. Then stop for the next
+owner gate.
+```
+
 ## J — Forward-compatible rollback
 
 The branch retains and tests `FORWARD_CONTRACT_ROLLBACK_MODE=true`. It accepts
@@ -290,9 +330,12 @@ August 11–17 and should be read August 18/19. GTV-1 remains frozen.
 
 ## O — Remaining actions before a controlled production test
 
-1. Owner signs in to Make; preserve/hash the fresh deployed blueprint/settings.
-2. Prove the receiver contract or separately approve and implement RECEIVER-01,
-   then test it without live customer traffic.
+1. Separately approve and implement RECEIVER-01 in an isolated non-production
+   receiver, then prove strict acknowledgement, atomic identity claim, and
+   effect-specific recovery using synthetic destinations only.
+2. After the isolated receiver passes, separately approve the exact live
+   receiver cutover/rollback window; do not rely on search-then-add or generic
+   `200 Accepted` for normal customer traffic.
 3. Select and configure the exact Worker operator route, Access service token,
    secrets, alert destination, and staffed-response SLA.
 4. Approve and perform the schema-only D1 export; rerun the local rehearsal
@@ -307,19 +350,20 @@ August 11–17 and should be read August 18/19. GTV-1 remains frozen.
 ## P — Next owner approval text
 
 ```text
-OWNER APPROVAL — D1-EXPORT-01 ONLY
+OWNER APPROVAL — RECEIVER-01A NON-PRODUCTION ENGINEERING ONLY
 
-Approve one schema-only, no-customer-row export of Cloudflare D1 database
-hfla-availability-production, database ID
-3ea0bd28-abba-4630-99d1-f30ab17c0c36, during 2026-08-12 02:30–02:40 PT
-(09:30–09:40 UTC), using the one-purpose AP-02D configuration and exactly one
-hash-verified migration candidate for local comparison only.
+Approve construction and deterministic testing of an isolated non-production
+Make receiver for Happy Faces LA using only synthetic destinations and synthetic
+lead IDs. Implement the strict acknowledgement, lead_id/x-idempotency-key
+equality, request-signature verification, atomic receipt key, separate Gmail and
+Sheet effect states, partial-success recovery, and last-position Webhook Response
+defined in RECEIVER-01.
 
-Do not apply a migration, deploy code or a Worker, restore Time Travel, export
-customer rows, submit a form, call a webhook, modify Make/Gmail/Sheets, change
-Cloudflare bindings, or change Google Ads/GA4/GTM. Stop on identity/hash/schema
-mismatch, production latency/error, or any unrelated change. Return the export
-hash, before/after local schema diff, quote_requests invariants, foreign-key and
-integrity results, and migration-ledger reconciliation. Then stop for the next
-owner gate.
+Do not modify or deactivate live Make scenario 5090554, production Gmail or
+Sheets, production webhook URLs/secrets, customer records, Google Ads, GA4/GTM,
+Cloudflare Production, D1 Production, PR #62 merge state, or production code.
+Do not send a real customer message or lead. Return sanitized before/after
+blueprints and hashes, strict-response fixtures, concurrent-duplicate evidence,
+partial-success evidence, rollback proof, and the exact separate approval packet
+required for a supervised live receiver cutover. Then stop.
 ```

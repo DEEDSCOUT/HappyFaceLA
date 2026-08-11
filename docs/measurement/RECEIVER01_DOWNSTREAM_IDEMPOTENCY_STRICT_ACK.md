@@ -5,35 +5,59 @@ lead change is authorized by this packet.
 
 ## Admission gate
 
-A fresh sanitized export of the **actually deployed** Make scenario is required
-before this packet can be approved. The current Chrome session reached Make's
-sign-in screen and did not authenticate automatically. Until the owner signs in
-and a fresh export is preserved and hashed, current deployed behavior is
-**unproved**.
+A fresh read-only export of the **actually deployed** active Make scenario was
+captured on 2026-08-10 at 22:42:58 PT. Scenario `5090554`, `Integration
+Webhooks`, exported raw SHA-256:
+`b1baa6a1967f47c816cadf3c28928867f5bb1202560180b33463468c8b428a68`.
+Only a sanitized structural derivative is admitted to the external evidence
+folder; connection and destination identifiers are excluded. No run, save,
+customer-row view, webhook, Gmail, or Sheet action occurred.
 
-The preserved June 10 blueprint and June 15 narrative are historical evidence,
-not current proof. They indicate a custom webhook feeding Gmail and Google
-Sheets, with a Sheet search-before-add guard, but do not prove atomic
-concurrency control, header use, duplicate Gmail suppression, a last-position
-Webhook Response, or strict acknowledgement.
+Current deployed flow:
 
-## Required current-state inspection
+```text
+Custom webhook -> Router
+  route 1 -> Gmail / Send an email
+  route 2 -> Google Sheets / Search Rows -> Google Sheets / Add a Row
+```
 
-The fresh sanitized blueprint/settings evidence must establish:
+Current deployed settings and mappings:
 
-- exact scenario ID/name and active version/time;
-- `Process data in order`, incomplete-execution, commit, confidential-data, and
-  automatic rerun settings;
-- whether the custom webhook exposes and validates `x-idempotency-key` and the
-  signed request;
-- whether canonical `lead_id` is the unique key at every branch;
-- exact Gmail and Sheet branch order and filters;
-- whether the Sheet guard is an atomic claim or only search-then-add;
-- whether Gmail is independently replayable;
-- whether a Webhook Response is the final module;
-- exact response status/body for new, duplicate, partial, and failed runs;
-- whether partial Gmail/Sheet success can be represented and resumed without
-  replaying the completed effect.
+- scenario active; instant webhook; blueprint version 1;
+- `Process data in order = false`;
+- `Store incomplete executions = false`;
+- `Commit after each module = true`;
+- `Commit trigger last = true`;
+- `Keep data confidential = false`;
+- `Enable data loss = false`;
+- Gmail route has no filter and maps canonical `lead_id` into the message;
+- Sheet Search Rows tests column B equal to `{{1.lead_id}}`;
+- Sheet Add a Row runs when search result length is zero and `lead_id` exists;
+- the blueprint contains five `lead_id` references and zero `leadId` references;
+- no `x-idempotency-key` reference or equality check exists;
+- no receipt Data Store, atomic claim, separate effect-state ledger, retry/error
+  handler, or Webhook Response module exists.
+
+The June evidence is no longer being used as a substitute. The fresh export
+proves the current receiver does **not** meet the strict acknowledgement and
+idempotency contract, so this packet is required before normal unsupervised
+production traffic can rely on automatic receiver retry.
+
+## Current-state inspection result
+
+The fresh sanitized blueprint/settings evidence establishes:
+
+- scenario ID/name/active state: proved;
+- deployed `lead_id` body mapping: proved;
+- `x-idempotency-key` consumption/equality: absent;
+- signed-request validation: absent from the blueprint;
+- Sheet uniqueness: search-then-add only, not an atomic claim;
+- Gmail duplicate guard: absent;
+- concurrency: possible because ordered processing is off;
+- strict response: absent because there is no Webhook Response module;
+- partial-success representation/recovery: absent;
+- exact new/duplicate/partial response bodies: unavailable because the
+  receiver has no branch-specific response contract.
 
 ## Required receiver contract
 
