@@ -6,9 +6,12 @@ import { spawnSync } from 'node:child_process';
 const stripeWebhookPrefix = ['wh', 'sec_'].join('');
 const stripeSecretKeyPrefixes = ['sk', 'rk'];
 const stripeModes = ['live', 'test'];
+const paymentIntentClientSecretPattern =
+  'pi_[A-Za-z0-9]{8,}_secret_[A-Za-z0-9]{16,}';
 const secretPattern =
   `(${stripeSecretKeyPrefixes.join('|')})_(${stripeModes.join('|')})_[A-Za-z0-9]{16,}` +
-  `|${stripeWebhookPrefix}[A-Za-z0-9]{16,}`;
+  `|${stripeWebhookPrefix}[A-Za-z0-9]{16,}` +
+  `|${paymentIntentClientSecretPattern}`;
 const redactionPattern = new RegExp(secretPattern, 'g');
 
 function safePath(value) {

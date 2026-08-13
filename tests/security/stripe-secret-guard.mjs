@@ -49,7 +49,20 @@ const standardLive = ['sk', 'live', 'B'.repeat(40)].join('_');
 const restrictedTest = ['rk', 'test', 'C'.repeat(40)].join('_');
 const restrictedLive = ['rk', 'live', 'D'.repeat(40)].join('_');
 const webhook = `${['wh', 'sec'].join('')}_${'E'.repeat(40)}`;
-const secrets = [standardTest, standardLive, restrictedTest, restrictedLive, webhook];
+const paymentIntentClientSecret = [
+  'pi',
+  'F'.repeat(24),
+  'secret',
+  'G'.repeat(32),
+].join('_');
+const secrets = [
+  standardTest,
+  standardLive,
+  restrictedTest,
+  restrictedLive,
+  webhook,
+  paymentIntentClientSecret,
+];
 
 try {
   {
@@ -102,13 +115,27 @@ try {
 
   {
     const root = repo();
+    const binaryClientSecret = Buffer.from(
+      `prefix\0${paymentIntentClientSecret}\0suffix`,
+      'utf8',
+    );
+    writeFileSync(join(root, 'binary-client-secret.bin'), binaryClientSecret);
+    git(root, ['add', 'binary-client-secret.bin']);
+    const result = run(root);
+    assert.notEqual(result.status, 0);
+    assert.match(result.output, /stripe-secret-index/);
+    assert.equal(result.output.includes(paymentIntentClientSecret), false);
+  }
+
+  {
+    const root = repo();
     write(root, '.gitattributes', '*.credential binary\n');
-    write(root, 'marked.credential', `${webhook}\n`);
+    write(root, 'marked.credential', `${paymentIntentClientSecret}\n`);
     git(root, ['add', '.gitattributes', 'marked.credential']);
     const result = run(root);
     assert.notEqual(result.status, 0);
     assert.match(result.output, /stripe-secret-index/);
-    assert.equal(result.output.includes(webhook), false);
+    assert.equal(result.output.includes(paymentIntentClientSecret), false);
   }
 
   {
@@ -119,6 +146,9 @@ try {
       'pk_test_publishable_example',
       ['sk', 'test', 'placeholder'].join('_'),
       `${['wh', 'sec'].join('')}_placeholder`,
+      ['pi', '123'].join('_'),
+      ['pi', 'H'.repeat(24)].join('_'),
+      ['pi', 'short', 'secret', 'tiny'].join('_'),
       '',
     ].join('\n'));
     git(root, ['add', 'safe-placeholders.txt']);
@@ -130,11 +160,11 @@ try {
     write(root, 'tracked.txt', 'clean\n');
     git(root, ['add', 'tracked.txt']);
     git(root, ['commit', '-qm', 'baseline']);
-    write(root, 'tracked.txt', `${webhook}\n`);
+    write(root, 'tracked.txt', `${paymentIntentClientSecret}\n`);
     const result = run(root);
     assert.notEqual(result.status, 0);
     assert.match(result.output, /stripe-secret-worktree/);
-    assert.equal(result.output.includes(webhook), false);
+    assert.equal(result.output.includes(paymentIntentClientSecret), false);
   }
 
   {
