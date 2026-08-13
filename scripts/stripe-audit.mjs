@@ -9,6 +9,18 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
+export function formatWebhookSecretStatus(value) {
+  if (!value) return "STRIPE_WEBHOOK_SECRET=<missing>";
+  return String(value).trim().startsWith("whsec_")
+    ? "STRIPE_WEBHOOK_SECRET=<present_whsec> ✓"
+    : "STRIPE_WEBHOOK_SECRET=<present_wrong_prefix> ⚠️";
+}
+
+if (process.argv[2] === "--format-webhook-status") {
+  console.log(formatWebhookSecretStatus(process.env.HFLA_TEST_WEBHOOK_VALUE || ""));
+  process.exit(0);
+}
+
 function loadEnvLocal() {
   const envPath = resolve(ROOT, ".env.local");
   const raw = readFileSync(envPath, "utf-8");
@@ -35,7 +47,7 @@ if (!STRIPE_SECRET_KEY) {
   process.exit(1);
 }
 
-import Stripe from "stripe";
+const { default: Stripe } = await import("stripe");
 const stripe = new Stripe(STRIPE_SECRET_KEY, {
   apiVersion: "2026-05-27.dahlia",
 });
@@ -154,17 +166,9 @@ async function main() {
   // ── 4. Webhook secret check ───────────────────────────────────────────
   console.log("─── 4. WEBHOOK SECRET ───");
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
-  if (!webhookSecret) {
-    console.log("STRIPE_WEBHOOK_SECRET=<missing>");
-  } else {
-    const lower = webhookSecret.trim();
-    if (lower.startsWith("whsec_")) {
-      console.log("STRIPE_WEBHOOK_SECRET=<present_whsec> ✓");
-    } else {
-      const prefix = lower.slice(0, 3);
-      console.log(`STRIPE_WEBHOOK_SECRET=<present_wrong_prefix (starts with "${prefix}_")> ⚠️`);
-      console.log("  → Stripe requires whsec_ prefix for constructEvent to work.");
-    }
+  console.log(formatWebhookSecretStatus(webhookSecret));
+  if (webhookSecret && !webhookSecret.trim().startsWith("whsec_")) {
+    console.log("  → Stripe requires whsec_ prefix for constructEvent to work.");
   }
   console.log("");
 
@@ -234,7 +238,7 @@ console.log(`Duplicate prices: ${depositPrices.length > 1 ? "Yes ⚠️" : "No"}
   console.log(`No live charge created: Yes`);
   console.log(`No payout triggered: Yes`);
   console.log(`No refund issued: Yes`);
-  console.log(`No secret key printed or committed: Yes`);
+  console.log(`Repository secret status: verify with node scripts/guard-stripe-secrets.mjs`);
 }
 
 main().catch((err) => {

@@ -73,6 +73,21 @@ function fail(check, detail) {
   failures.push({ check, detail });
 }
 
+// ── CHECK 0 — no tracked Stripe credential material ───────────────────────
+// Run before every other baseline check. The child guard deliberately reports
+// only fixed rule IDs and sanitized paths; it never prints matching content.
+try {
+  execFileSync(process.execPath, [join(ROOT, 'scripts', 'guard-stripe-secrets.mjs')], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    stdio: 'pipe',
+  });
+} catch (error) {
+  const stderr = typeof error?.stderr === 'string' ? error.stderr.trim() : '';
+  const stdout = typeof error?.stdout === 'string' ? error.stdout.trim() : '';
+  fail('stripe-secret-guard', stderr || stdout || 'Stripe secret guard failed closed.');
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function readIfExists(relPath) {
   const abs = join(ROOT, relPath);
