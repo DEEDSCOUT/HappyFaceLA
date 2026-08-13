@@ -25,6 +25,11 @@ pnpm-debug.log*
 .env*.txt
 .dev.vars
 
+# Stripe local credential scratch files (never source controlled)
+/.stripe.txt
+/.stripe*.txt
+/.stripe/
+
 # wrangler local state
 .wrangler/
 
