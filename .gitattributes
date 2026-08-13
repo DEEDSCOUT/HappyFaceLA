@@ -1,0 +1,3 @@
+# Never render a sensitive Stripe scratch artifact as a textual diff.
+# This does not erase historical blobs; provider-side rotation remains required.
+/.stripe.txt binary

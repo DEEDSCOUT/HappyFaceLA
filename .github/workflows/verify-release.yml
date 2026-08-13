@@ -29,6 +29,12 @@ jobs:
           node-version-file: .node-version
           cache: npm
 
+      - name: Stripe secret guard
+        run: node scripts/guard-stripe-secrets.mjs
+
+      - name: Stripe secret guard self-test
+        run: node tests/security/stripe-secret-guard.mjs
+
       - name: Install dependencies
         run: npm ci
 

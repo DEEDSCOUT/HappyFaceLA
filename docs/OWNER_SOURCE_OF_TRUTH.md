@@ -13,6 +13,22 @@ one without the other.
 
 ---
 
+## Secret boundary
+
+- Stripe secret API keys and webhook signing secrets must never be committed,
+  printed, logged, or preserved in ordinary evidence.
+- Local Stripe credential scratch files, including `/.stripe.txt`, are ignored
+  and prohibited from the tracked tree.
+- `scripts/guard-stripe-secrets.mjs` fails closed on tracked Stripe secret
+  material and reports only sanitized paths and rule identifiers.
+- The Stripe secret guard runs inside `scripts/guard-owner-baseline.mjs` and in
+  the release workflow before dependency installation.
+- Removing a file from the current tree does not erase published Git history.
+  Exposed credentials must be retired or rotated at Stripe; history rewriting
+  requires a separate destructive owner decision.
+
+---
+
 ## Release / deployment
 
 | Fact | Value |
