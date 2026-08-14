@@ -390,48 +390,26 @@ const faqs = [
     </section>
   </main>
 
-  <script is:inline>
+  <script>
+    import {
+      buildBrowserSubmissionAttribution,
+      captureBrowserAttribution,
+    } from "../lib/attribution/browser-attribution.ts";
+    import { buildPlanMyPartyBrowserPayload } from "../lib/forms/browser-payloads.ts";
+    import { shouldEmitTechnicalEvent } from "../lib/forms/acceptance-contract.ts";
+    import {
+      getOrCreateSubmissionId,
+      markSubmissionAccepted,
+      rotateAcceptedSubmissionOnEdit,
+    } from "../lib/forms/submission-client.ts";
+    import { trackProductionAnalyticsEvent } from "../lib/analytics/production-analytics.ts";
+
     (() => {
-      const ATTR_KEYS = [
-        "utm_source",
-        "utm_medium",
-        "utm_campaign",
-        "utm_term",
-        "utm_content",
-        "gclid",
-        "fbclid",
-        "msclkid"
-      ];
-
-      function trackEvent(eventName, params = {}) {
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({ event: eventName, ...params });
-        if (typeof window.gtag === "function") {
-          window.gtag("event", eventName, params);
-        }
+      function trackEvent(eventName: string, params: Record<string, unknown> = {}) {
+        trackProductionAnalyticsEvent(eventName, params);
       }
 
-      function readAttrStore() {
-        try {
-          const session = JSON.parse(sessionStorage.getItem("hfla_attribution") || "{}");
-          const local = JSON.parse(localStorage.getItem("hfla_attribution") || "{}");
-          return { ...local, ...session };
-        } catch {
-          return {};
-        }
-      }
-
-      function readAttribution() {
-        const params = new URLSearchParams(window.location.search);
-        const stored = readAttrStore();
-        const next = {};
-        ATTR_KEYS.forEach((key) => {
-          next[key] = (params.get(key) || stored[key] || "").trim();
-        });
-        return next;
-      }
-
-      function splitName(value) {
+      function splitName(value: FormDataEntryValue | null) {
         const clean = String(value || "").trim().replace(/\s+/g, " ");
         if (!clean) return { firstName: "", lastName: "" };
         const parts = clean.split(" ");
@@ -439,7 +417,7 @@ const faqs = [
         return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
       }
 
-      function bucketKids(value) {
+      function bucketKids(value: string) {
         const count = Number(value);
         if (!Number.isFinite(count)) return "not-sure";
         if (count <= 10) return "1-10";
@@ -449,47 +427,39 @@ const faqs = [
         return "40-plus";
       }
 
-      function makeIdempotencyKey() {
-        const random = typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        return `qrq_${String(random).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 80)}`;
-      }
-
-      function payloadFromForm(form) {
+      function payloadFromForm(form: HTMLFormElement) {
         const fd = new FormData(form);
         const name = splitName(fd.get("name"));
         const estimatedKids = String(fd.get("estimatedKids") || "").trim();
-        const attribution = readAttribution();
-        return {
-          eventType: "birthday-party",
-          services: ["face-painting"],
-          kidsCountBucket: bucketKids(estimatedKids),
-          kidsCountActual: estimatedKids ? Number(estimatedKids) : null,
-          designStyle: "not-sure",
-          selectedDurationMinutes: null,
-          recommendedDurationMinutes: null,
-          branch: "custom-quote",
-          eventDate: String(fd.get("eventDate") || "").trim() || null,
-          eventTime: null,
-          eventCity: String(fd.get("eventCity") || "").trim(),
-          venueName: null,
-          travelMiles: null,
-          firstName: name.firstName,
-          lastName: name.lastName,
-          email: String(fd.get("email") || "").trim(),
-          phone: String(fd.get("phone") || "").trim(),
-          specialRequests: String(fd.get("notes") || "").trim() || null,
-          quoteOutcome: "hire-face-painter-availability-request",
-          quoteRequestIdempotencyKey: makeIdempotencyKey(),
-          consentAcknowledgement: true,
-          lookbook_inspirations: [],
-          wizardVersion: "hire-face-painter-landing-v1",
+        return buildPlanMyPartyBrowserPayload({
+          answers: {
+            eventType: "birthday-party",
+            services: ["face-painting"],
+            kidsCountBucket: bucketKids(estimatedKids),
+            kidsCountActual: estimatedKids ? Number(estimatedKids) : null,
+            designStyle: "not-sure",
+            selectedDurationOption: null,
+            eventDate: String(fd.get("eventDate") || "").trim() || null,
+            eventTime: null,
+            eventCity: String(fd.get("eventCity") || "").trim(),
+            venueName: null,
+            travelMiles: null,
+            firstName: name.firstName,
+            lastName: name.lastName,
+            email: String(fd.get("email") || "").trim(),
+            phone: String(fd.get("phone") || "").trim(),
+            specialRequests: String(fd.get("notes") || "").trim() || null,
+            lookbookInspirations: [],
+          },
+          recommendation: { recommendedDuration: null, branch: "custom-quote" },
+          currentClassification: "hire-face-painter-availability-request",
+          submissionId: getOrCreateSubmissionId(form, "plan-my-party"),
+          sourcePage: window.location.pathname,
           submittedAt: new Date().toISOString(),
           preferredContactMethod: "any",
-          source_page: window.location.pathname,
-          ...attribution
-        };
+          wizardVersion: "hire-face-painter-landing-v1",
+          submission: buildBrowserSubmissionAttribution(),
+        });
       }
 
       const form = document.querySelector("[data-hire-face-painter-form]");
@@ -499,6 +469,8 @@ const faqs = [
       const success = form.querySelector("[data-hire-face-painter-success]");
       const error = form.querySelector("[data-hire-face-painter-error]");
       let started = false;
+      captureBrowserAttribution();
+      getOrCreateSubmissionId(form, "plan-my-party");
 
       const trackStart = () => {
         if (started) return;
@@ -508,11 +480,15 @@ const faqs = [
         });
       };
 
-      form.addEventListener("input", trackStart);
+      form.addEventListener("input", () => {
+        rotateAcceptedSubmissionOnEdit(form, "plan-my-party");
+        trackStart();
+      });
       form.addEventListener("focusin", trackStart);
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        if (form.dataset.submissionInFlight === "true") return;
         if (String(new FormData(form).get("honeypot") || "").trim()) return;
 
         if (!form.checkValidity()) {
@@ -524,6 +500,7 @@ const faqs = [
           submitButton.disabled = true;
           submitButton.textContent = "Sending request...";
         }
+        form.dataset.submissionInFlight = "true";
         if (success instanceof HTMLElement) success.classList.add("hidden");
         if (error instanceof HTMLElement) {
           error.classList.add("hidden");
@@ -543,10 +520,13 @@ const faqs = [
             throw new Error(result.message || "We could not submit your request. Please call or text instead.");
           }
 
-          trackEvent("hire_face_painter_form_submit", {
-            source_page: window.location.pathname,
-            lead_id: result.leadId || "",
-          });
+          markSubmissionAccepted(form, "plan-my-party", String(result.submissionId || payload.submission_id));
+          if (shouldEmitTechnicalEvent(result)) {
+            trackEvent("hire_face_painter_form_submit", {
+              source_page: window.location.pathname,
+              lead_id: result.leadId || "",
+            });
+          }
 
           form.reset();
           started = false;
@@ -559,6 +539,7 @@ const faqs = [
             error.classList.remove("hidden");
           }
         } finally {
+          form.dataset.submissionInFlight = "false";
           if (submitButton instanceof HTMLButtonElement) {
             submitButton.disabled = false;
             submitButton.textContent = "Send Availability Request";

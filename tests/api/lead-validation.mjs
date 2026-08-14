@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 
 import { onRequest as handleLead } from '../../functions/api/lead.ts';
 import { assertLeadNotificationPayloadCanSend } from '../../src/lib/quote-request/canonical-lead.ts';
@@ -17,21 +18,62 @@ class MockD1 {
   constructor() {
     this.byIdempotency = new Map();
     this.byLeadId = new Map();
+    this.identities = new Map();
+    this.canonicalOutbox = [];
+    this.notificationOutbox = [];
     this.outbox = [];
   }
 
   prepare(sql) {
     const db = this;
+    const normalized = sql.replace(/\s+/g, ' ').trim().toLowerCase();
     return {
       bind(...args) {
         return {
           async first() {
+            if (normalized.includes('sum(case when status =')) {
+              return {
+                pending: db.notificationOutbox.filter((row) => row.status === 'pending').length,
+                failed_retryable: db.notificationOutbox.filter((row) => row.status === 'failed_retryable').length,
+                delivering: db.notificationOutbox.filter((row) => row.status === 'delivering').length,
+                needs_review: db.notificationOutbox.filter((row) => row.status === 'needs_review').length,
+                expired_leases: 0,
+                oldest_due: null,
+              };
+            }
+            if (normalized.includes('from notification_worker_runs')) return { count: 0 };
+            if (sql.includes('FROM lead_submission_identity')) {
+              return db.identities.get(args[0]) ?? null;
+            }
             if (sql.includes('WHERE idempotency_key')) {
               return db.byIdempotency.get(args[0]) ?? null;
             }
             return null;
           },
+          async all() {
+            if (normalized.includes('from lead_notification_outbox n')) {
+              const leadId = args.length === 4 ? args[2] : null;
+              const rows = db.notificationOutbox
+                .filter((row) => !leadId || row.lead_id === leadId)
+                .filter((row) => ['pending', 'failed_retryable'].includes(row.status))
+                .map((row) => ({
+                  ...row,
+                  canonical_payload_json: db.byLeadId.get(row.lead_id)?.canonical_payload_json ?? null,
+                }));
+              return { success: true, results: rows };
+            }
+            return { success: true, results: [] };
+          },
           async run() {
+            if (sql.trim().startsWith('INSERT INTO lead_submission_identity')) {
+              const columns = sql
+                .slice(sql.indexOf('(') + 1, sql.indexOf(') VALUES'))
+                .split(',')
+                .map((column) => column.trim());
+              const row = Object.fromEntries(columns.map((column, index) => [column, args[index]]));
+              if (db.identities.has(row.submission_id)) throw new Error('UNIQUE submission_id');
+              db.identities.set(row.submission_id, row);
+            }
             if (sql.trim().startsWith('INSERT INTO quote_requests')) {
               const columns = sql
                 .slice(sql.indexOf('(') + 1, sql.indexOf(') VALUES'))
@@ -46,10 +88,39 @@ class MockD1 {
                 lead_id: row.lead_id,
                 owner_notification_queued: row.owner_notification_queued,
                 owner_notification_sent: row.owner_notification_sent,
-                sheet_written: row.sheet_written,
-                crm_posted: row.crm_posted,
-              });
+                 sheet_written: row.sheet_written,
+                 crm_posted: row.crm_posted,
+                 canonical_payload_json: row.canonical_payload_json,
+                 idempotency_key: row.idempotency_key,
+               });
               db.byLeadId.set(row.lead_id, row);
+            }
+            if (sql.trim().startsWith('INSERT INTO canonical_lead_outbox')) {
+              const columns = sql
+                .slice(sql.indexOf('(') + 1, sql.indexOf(') VALUES'))
+                .split(',')
+                .map((column) => column.trim());
+              const row = Object.fromEntries(columns.map((column, index) => [column, args[index]]));
+              if (db.canonicalOutbox.some((existing) => existing.lead_id === row.lead_id)) {
+                throw new Error('UNIQUE canonical lead outbox');
+              }
+              db.canonicalOutbox.push(row);
+            }
+            if (normalized.startsWith('insert into lead_notification_outbox')) {
+              db.notificationOutbox.push({
+                notification_id: args[0],
+                submission_id: args[1],
+                lead_id: args[2],
+                destination: args[3],
+                status: 'pending',
+                attempt_count: 0,
+                max_attempts: args[4],
+                next_attempt_at_utc: args[5],
+                claim_token: null,
+                lease_expires_at_utc: null,
+                last_attempt_at_utc: null,
+                last_error_code: null,
+              });
             }
             if (sql.trim().startsWith('INSERT INTO google_ads_offline_conversion_outbox')) {
               const columns = sql
@@ -65,17 +136,60 @@ class MockD1 {
             }
             if (sql.trim().startsWith('UPDATE quote_requests')) {
               const row = db.byLeadId.get(args[5]);
-              if (row) {
-                row.owner_notification_sent = args[2];
-                row.sheet_written = args[3];
-                row.crm_posted = args[4];
+              const notification = db.notificationOutbox.find((candidate) => candidate.notification_id === args[6]);
+              if (!notification || notification.status !== 'delivering' || notification.claim_token !== args[7]) {
+                return { success: true, meta: { changes: 0 } };
               }
+              if (row) {
+                if (args[2] === 1) row.owner_notification_sent = 1;
+                if (args[3] === 1) row.sheet_written = 1;
+                if (args[4] === 1) row.crm_posted = 1;
+                const summary = db.byIdempotency.get(row.idempotency_key);
+                if (summary) Object.assign(summary, {
+                  owner_notification_sent: row.owner_notification_sent,
+                  sheet_written: row.sheet_written,
+                  crm_posted: row.crm_posted,
+                });
+              }
+              return { success: true, meta: { changes: 1 } };
             }
-            return { success: true };
+            if (normalized.startsWith('update lead_notification_outbox') && normalized.includes("set status = 'delivering'")) {
+              const row = db.notificationOutbox.find((candidate) => candidate.notification_id === args[4]);
+              if (row && ['pending', 'failed_retryable'].includes(row.status)) {
+                row.status = 'delivering';
+                row.claim_token = args[0];
+                row.lease_expires_at_utc = args[1];
+                row.next_attempt_at_utc = null;
+                row.attempt_count += 1;
+                row.last_attempt_at_utc = args[2];
+                return { success: true, meta: { changes: 1 } };
+              }
+              return { success: true, meta: { changes: 0 } };
+            }
+            if (normalized.startsWith('update lead_notification_outbox')) {
+              const row = db.notificationOutbox.find((candidate) => candidate.notification_id === args[7]);
+              if (row && row.status === 'delivering' && row.claim_token === args[8]) {
+                row.status = args[0];
+                row.next_attempt_at_utc = args[1];
+                row.claim_token = null;
+                row.lease_expires_at_utc = null;
+                row.last_error_code = args[2];
+                row.dead_lettered_at_utc = args[5];
+                return { success: true, meta: { changes: 1 } };
+              }
+              return { success: true, meta: { changes: 0 } };
+            }
+            return { success: true, meta: { changes: 1 } };
           },
         };
       },
     };
+  }
+
+  async batch(statements) {
+    const results = [];
+    for (const statement of statements) results.push(await statement.run());
+    return results;
   }
 }
 
@@ -95,13 +209,14 @@ function resetFetch() {
   };
 }
 
-function jsonRequest(path, payload) {
+function jsonRequest(path, payload, extraHeaders = {}) {
   return new Request(`https://www.happyfacesla.com${path}`, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
       'user-agent': 'lead-validation-test',
       'cf-ray': 'test-ray',
+      ...extraHeaders,
     },
     body: typeof payload === 'string' ? payload : JSON.stringify(payload),
   });
@@ -115,20 +230,69 @@ function quoteEnv(db = new MockD1()) {
 }
 
 async function callQuote(payload, db = new MockD1()) {
-  const response = await handleQuoteRequest(jsonRequest('/api/quote-request', payload), quoteEnv(db));
+  const normalized = withAtomicTestContract(payload, 'plan-my-party');
+  const response = await handleQuoteRequest(jsonRequest('/api/quote-request', normalized), quoteEnv(db));
   const body = await response.json().catch(() => ({}));
   return { response, body, db };
 }
 
-async function callLead(payload) {
+async function callLead(payload, db = new MockD1()) {
+  const normalized = withAtomicTestContract({
+    consent_to_contact: true,
+    ...payload,
+  }, String(payload.source_page || '').startsWith('/packages') ? 'packages' : 'contact');
   const response = await handleLead({
-    request: jsonRequest('/api/lead', payload),
+    request: jsonRequest('/api/lead', normalized),
     env: {
+      AVAILABILITY_D1: db,
       QUOTE_REQUEST_MAKE_WEBHOOK_URL: 'https://example.test/make',
     },
   });
   const body = await response.json().catch(() => ({}));
-  return { response, body };
+  return { response, body, db };
+}
+
+function testSubmissionId(payload) {
+  const seed = String(payload.submission_id || payload.quoteRequestIdempotencyKey || JSON.stringify(payload));
+  return `sub_${createHash('sha256').update(seed).digest('hex').slice(0, 32)}`;
+}
+
+function testTouch(payload, prefix = '', fallback = '') {
+  const value = (name) => payload[`${prefix}${name}`] ?? payload[`${fallback}${name}`] ?? null;
+  return {
+    gclid: value('gclid'),
+    gbraid: value('gbraid'),
+    wbraid: value('wbraid'),
+    utm_source: value('utm_source'),
+    utm_medium: value('utm_medium'),
+    utm_campaign: value('utm_campaign'),
+    utm_term: value('utm_term'),
+    utm_content: value('utm_content'),
+    landing_path: value('landing_page') || payload.source_page || '/',
+    source_path: value('source_path') || payload.source_page || '/',
+    sanitized_referrer: value('referrer'),
+    captured_at: '2026-08-10T18:00:00.000Z',
+    source_confidence: 'direct',
+  };
+}
+
+function withAtomicTestContract(payload, route) {
+  if (payload.attribution && payload.submission_id) return payload;
+  const submitTouch = testTouch(payload, 'submit_', '');
+  submitTouch.landing_path = payload.source_page || '/';
+  submitTouch.source_path = payload.source_page || '/';
+  return {
+    ...payload,
+    submission_id: testSubmissionId(payload),
+    form_route: route,
+    attribution: {
+      version: 1,
+      first_touch: testTouch(payload, 'first_', ''),
+      latest_qualifying_touch: testTouch(payload),
+      submit_touch: submitTouch,
+      expires_at: null,
+    },
+  };
 }
 
 function firstCanonical(db) {
@@ -186,6 +350,7 @@ test('valid Plan My Party full payload accepted', async () => {
   assert.equal(body.ok, true);
   assert.equal(body.received, true);
   assert.equal(body.persisted, true);
+  assert.equal(body.conversionEligible, true);
   assert.equal(fetchCalls.length, 1);
 });
 
@@ -414,12 +579,24 @@ test('bot/honeypot payload does not send customer lead email', async () => {
 test('internal-test lead is marked and suppressed from offline outbox', async () => {
   resetFetch();
   const db = new MockD1();
-  await callQuote({
+  const internalTestToken = 'owner-authorized-test-token-000000000001';
+  const payload = withAtomicTestContract({
     ...fullPlanMyPartyPayload,
     quoteRequestIdempotencyKey: 'qrq_internaltest1234567890',
     firstName: 'HFL Tracking Test',
     specialRequests: 'INTERNAL TRACKING TEST - DO NOT QUOTE - DO NOT BOOK',
-  }, db);
+    internal_test: true,
+    internal_test_reason: 'owner_approved_fixture',
+  }, 'plan-my-party');
+  await handleQuoteRequest(
+    jsonRequest('/api/quote-request', payload, {
+      'x-hfla-internal-test-token': internalTestToken,
+    }),
+    {
+      ...quoteEnv(db),
+      INTERNAL_TEST_TOKEN: internalTestToken,
+    },
+  );
   const canonical = firstCanonical(db);
   assert.equal(canonical.isInternalTest, true);
   const result = await queueOfflineConversionOutboxEvent(
@@ -430,8 +607,21 @@ test('internal-test lead is marked and suppressed from offline outbox', async ()
     { GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true' },
   );
   assert.equal(result.queued, false);
-  assert.equal(result.reason, 'hfl tracking test');
+  assert.equal(result.reason, 'owner_approved_fixture');
   assert.equal(db.outbox.length, 0);
+});
+
+test('ordinary customer do-not-book language is not an internal test', async () => {
+  resetFetch();
+  const db = new MockD1();
+  await callQuote({
+    ...fullPlanMyPartyPayload,
+    quoteRequestIdempotencyKey: 'qrq_customerwait1234567890',
+    specialRequests: 'Please do not book anything until I approve the quote.',
+  }, db);
+  const canonical = firstCanonical(db);
+  assert.equal(canonical.isInternalTest, false);
+  assert.equal(fetchCalls.length, 1, 'ordinary customer request still notifies the owner');
 });
 
 test('duplicate lead submission is idempotent and does not insert a second lead', async () => {

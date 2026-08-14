@@ -31,28 +31,10 @@ const {
     {homepageVisualBaseline && (
       <meta name="hfla-homepage-visual-baseline" content={homepageVisualBaseline} />
     )}
-    <!-- Google Analytics 4 tracking for Happy Faces LA -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7NH6RY78TK"></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { window.dataLayer.push(arguments); }
-      gtag("js", new Date());
-      gtag("config", "G-7NH6RY78TK");
-    </script>
-    <!-- Microsoft Clarity tracking for Happy Faces LA -->
-    <script is:inline>
-      (function (c, l, a, r, i, t, y) {
-        c[a] =
-          c[a] ||
-          function () {
-            (c[a].q = c[a].q || []).push(arguments);
-          };
-        t = l.createElement(r);
-        t.async = 1;
-        t.src = "https://www.clarity.ms/tag/" + i;
-        y = l.getElementsByTagName(r)[0];
-        y.parentNode.insertBefore(t, y);
-      })(window, document, "clarity", "script", "wsw4v74jpw");
+    <!-- Production analytics is fail-closed outside the two approved production hosts. -->
+    <script>
+      import { installProductionAnalytics } from "../lib/analytics/production-analytics.ts";
+      installProductionAnalytics();
     </script>
   </head>
   <body class="bg-slate-50 text-slate-900">
@@ -63,98 +45,15 @@ const {
     <Footer />
     <MobileStickyCtas />
 
-    <script is:inline>
-      const ATTR_KEYS = [
-        "utm_source",
-        "utm_medium",
-        "utm_campaign",
-        "utm_term",
-        "utm_content",
-        "gclid",
-        "gbraid",
-        "wbraid",
-        "fbclid",
-        "msclkid"
-      ];
+    <script>
+      import { captureBrowserAttribution } from "../lib/attribution/browser-attribution.ts";
+      import { trackProductionAnalyticsEvent } from "../lib/analytics/production-analytics.ts";
 
-      function readAttrStore() {
-        try {
-          const session = JSON.parse(sessionStorage.getItem("hfla_attribution") || "{}");
-          const local = JSON.parse(localStorage.getItem("hfla_attribution") || "{}");
-          return { ...local, ...session };
-        } catch {
-          return {};
-        }
+      function trackEvent(eventName: string, params: Record<string, unknown> = {}) {
+        trackProductionAnalyticsEvent(eventName, params);
       }
 
-      function writeAttrStore(value) {
-        try {
-          const payload = JSON.stringify(value);
-          sessionStorage.setItem("hfla_attribution", payload);
-          localStorage.setItem("hfla_attribution", payload);
-        } catch {
-          // Ignore storage access issues.
-        }
-      }
-
-      function safeCurrentUrl() {
-        try {
-          const url = new URL(window.location.href);
-          url.hash = "";
-          return url.toString().slice(0, 512);
-        } catch {
-          return window.location.pathname || "/";
-        }
-      }
-
-      function safeReferrer() {
-        if (!document.referrer) return "";
-        try {
-          const url = new URL(document.referrer);
-          url.hash = "";
-          url.search = "";
-          return url.toString().slice(0, 512);
-        } catch {
-          return "";
-        }
-      }
-
-      function captureAttributionFromUrl() {
-        const url = new URL(window.location.href);
-        const current = readAttrStore();
-        const next = { ...current };
-        const landingPage = safeCurrentUrl();
-        const sourcePath = window.location.pathname || "/";
-        const referrer = safeReferrer();
-
-        if (!next.first_landing_page) next.first_landing_page = landingPage;
-        if (!next.first_source_path) next.first_source_path = sourcePath;
-        if (!next.first_referrer && referrer) next.first_referrer = referrer;
-        next.landing_page = next.first_landing_page || landingPage;
-        next.source_path = next.first_source_path || sourcePath;
-        if (referrer && !next.referrer) next.referrer = referrer;
-
-        ATTR_KEYS.forEach((key) => {
-          const value = url.searchParams.get(key);
-          if (value) {
-            const firstKey = `first_${key}`;
-            if (!next[firstKey]) next[firstKey] = value;
-            next[key] = value;
-          }
-        });
-
-        writeAttrStore(next);
-      }
-
-      function trackEvent(eventName, params = {}) {
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({ event: eventName, ...params });
-        if (typeof window.gtag === "function") {
-          window.gtag("event", eventName, params);
-        }
-      }
-
-      captureAttributionFromUrl();
+      captureBrowserAttribution();
 
       document.addEventListener("click", (event) => {
         const target = event.target;

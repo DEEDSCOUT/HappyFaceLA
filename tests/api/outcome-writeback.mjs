@@ -304,6 +304,46 @@ test('enabled writeback queues qualified and quote-sent outbox rows only when ou
   assert(!db.outbox.some((row) => row.event_name === 'booked_event'));
 });
 
+test('offline outbox uses one coherent selected touch instead of a stale first-touch click ID', async () => {
+  const db = new MockD1();
+  seedLead(db, {
+    sourceConfidence: 'gbraid',
+    gclid: null,
+    gbraid: 'GBRAID-LATEST',
+    wbraid: null,
+    firstGclid: 'GCLID-STALE-FIRST',
+    firstGbraid: null,
+    submitGclid: null,
+    submitGbraid: null,
+  });
+  const result = await runWriteback(db, baseInput({ dry_run: false }), {
+    CLOSED_LOOP_OUTCOME_WRITEBACK_ENABLED: 'true',
+    GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true',
+  });
+  assert.equal(result.ok, true);
+  assert(db.outbox.length > 0);
+  assert(db.outbox.every((row) => row.gclid === null && row.gbraid === 'GBRAID-LATEST'));
+});
+
+test('historical confidence-gated fallback preserves a pre-AP03 first-touch click ID', async () => {
+  const db = new MockD1();
+  seedLead(db, {
+    sourceConfidence: 'gclid',
+    gclid: null,
+    gbraid: null,
+    wbraid: null,
+    firstGclid: 'GCLID-HISTORICAL',
+    submitGclid: null,
+  });
+  const result = await runWriteback(db, baseInput({ dry_run: false }), {
+    CLOSED_LOOP_OUTCOME_WRITEBACK_ENABLED: 'true',
+    GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED: 'true',
+  });
+  assert.equal(result.ok, true);
+  assert(db.outbox.length > 0);
+  assert(db.outbox.every((row) => row.gclid === 'GCLID-HISTORICAL'));
+});
+
 test('booked writeback queues booked_event with value only when qualified booked and revenue present', async () => {
   const db = new MockD1();
   seedLead(db);
