@@ -39,10 +39,14 @@ type LeadPayload = {
     utm_term?: string;
     utm_content?: string;
     gclid?: string;
+    gbraid?: string;
+    wbraid?: string;
     fbclid?: string;
     msclkid?: string;
+    landing_page?: string;
     lead_source?: string;
     source_path?: string;
+    referrer?: string;
     campaign?: string;
     selected_package?: string;
     organization_venue_name?: string;
@@ -198,7 +202,86 @@ function parseWebhookResult(body: string): { ok: true } | { ok: false; reason: s
     return { ok: false, reason: "invalid ok field" };
 }
 
-function deriveLeadSource(input: Pick<LeadPayload, "lead_source" | "utm_source">): string {
+function sourcePathname(value: unknown): string {
+    const normalized = normalizeString(value);
+    if (!normalized) {
+        return "";
+    }
+    if (normalized.startsWith("/")) {
+        return normalized.split("?")[0] || "/";
+    }
+    try {
+        return new URL(normalized).pathname || "";
+    } catch {
+        return normalized;
+    }
+}
+
+function isPackagesLead(input: Pick<LeadPayload, "source_page" | "source_path">): boolean {
+    return [input.source_page, input.source_path].some((value) => sourcePathname(value) === "/packages/");
+}
+
+function hasExternalReferrer(value: unknown): boolean {
+    const referrer = normalizeString(value);
+    if (!referrer) {
+        return false;
+    }
+    try {
+        const hostname = new URL(referrer).hostname.toLowerCase().replace(/^www\./, "");
+        return hostname !== "happyfacesla.com";
+    } catch {
+        return true;
+    }
+}
+
+export function derivePackageLeadSource(
+    input: Pick<LeadPayload, "utm_source" | "gclid" | "gbraid" | "wbraid" | "msclkid" | "fbclid" | "referrer">
+): string {
+    const utmSource = normalizeString(input.utm_source).toLowerCase();
+    if (utmSource === "yelp") {
+        return "yelp";
+    }
+    if (
+        utmSource === "google" ||
+        normalizeString(input.gclid) ||
+        normalizeString(input.gbraid) ||
+        normalizeString(input.wbraid)
+    ) {
+        return "google_ads";
+    }
+    if (utmSource) {
+        return utmSource;
+    }
+    if (normalizeString(input.msclkid)) {
+        return "microsoft_ads";
+    }
+    if (normalizeString(input.fbclid)) {
+        return "facebook";
+    }
+    if (!hasExternalReferrer(input.referrer)) {
+        return "website";
+    }
+    return "unknown";
+}
+
+export function derivePackageRequestLabel(leadSource: string): string {
+    if (leadSource === "yelp") {
+        return "Yelp package availability request";
+    }
+    if (leadSource === "google_ads") {
+        return "Google Ads package availability request";
+    }
+    if (leadSource === "website") {
+        return "Website package availability request";
+    }
+    return "Package availability request";
+}
+
+function deriveLeadSource(input: LeadPayload): string {
+    if (isPackagesLead(input)) {
+        return derivePackageLeadSource(input);
+    }
+
     const explicit = normalizeString(input.lead_source);
     if (explicit) {
         return explicit;
@@ -307,6 +390,9 @@ function legacyLeadToCanonical(p: LeadPayload, leadId: string, now: string): Can
         leadId,
         createdAt: now,
         sourcePage: String(p.source_page ?? "") || null,
+        landingPage: String(p.landing_page ?? "") || null,
+        sourcePath: String(p.source_path ?? "") || null,
+        referrer: String(p.referrer ?? "") || null,
         firstName: String(p.first_name ?? ""),
         lastName: String(p.last_name ?? ""),
         email: String(p.email ?? ""),
@@ -340,6 +426,8 @@ function legacyLeadToCanonical(p: LeadPayload, leadId: string, now: string): Can
         utmTerm: String(p.utm_term ?? "") || null,
         utmContent: String(p.utm_content ?? "") || null,
         gclid: String(p.gclid ?? "") || null,
+        gbraid: String(p.gbraid ?? "") || null,
+        wbraid: String(p.wbraid ?? "") || null,
         fbclid: String(p.fbclid ?? "") || null,
         msclkid: String(p.msclkid ?? "") || null,
         consentAcknowledgement: true,
@@ -385,7 +473,9 @@ export const onRequest = async (context: any): Promise<Response> => {
         event_start_time: normalizeString(input.event_start_time),
         event_city: normalizeString(input.event_city),
         event_address_or_cross_streets_optional: normalizeString(input.event_address_or_cross_streets_optional),
-        event_type: normalizeString(input.event_type),
+        event_type: isPackagesLead(input)
+            ? derivePackageRequestLabel(derivePackageLeadSource(input))
+            : normalizeString(input.event_type),
         estimated_guest_count: normalizeString(input.estimated_guest_count),
         children_count_optional: normalizeString(input.children_count_optional),
         services_requested: normalizeStringArray(input.services_requested),
@@ -398,10 +488,14 @@ export const onRequest = async (context: any): Promise<Response> => {
         utm_term: normalizeString(input.utm_term),
         utm_content: normalizeString(input.utm_content),
         gclid: normalizeString(input.gclid),
+        gbraid: normalizeString(input.gbraid),
+        wbraid: normalizeString(input.wbraid),
         fbclid: normalizeString(input.fbclid),
         msclkid: normalizeString(input.msclkid),
+        landing_page: normalizeString(input.landing_page),
         lead_source: deriveLeadSource(input),
         source_path: deriveSourcePath(input),
+        referrer: normalizeString(input.referrer),
         campaign: normalizeString(input.campaign),
         selected_package: normalizeString(input.selected_package || input.package_interest),
         organization_venue_name: normalizeString(input.organization_venue_name),

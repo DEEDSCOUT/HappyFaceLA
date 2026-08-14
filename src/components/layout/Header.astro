@@ -6,25 +6,25 @@ import logoSrc from "../../assets/happy-faces-la-logo.png";
 ---
 
 <header class="sticky top-0 z-50 border-b border-orange-200 bg-white/95 backdrop-blur">
-  <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-2 md:py-[10px]">
+  <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-4 py-2 sm:gap-4 lg:py-[10px]">
     <a class="flex shrink-0 items-center" href="/" aria-label={business.name}>
       <Image
         src={logoSrc}
         alt={`${business.name} logo`}
-        class="h-[52px] w-auto sm:h-14 md:h-[68px]"
+        class="h-10 w-auto sm:h-14 lg:h-[68px]"
         loading="eager"
         fetchpriority="high"
       />
     </a>
 
-    <nav class="hidden items-center gap-4 md:flex">
+    <nav class="hidden items-center gap-4 lg:flex">
       {navigation.desktop.map((item) => (
         <a class="text-sm font-medium text-slate-700 hover:text-orange-600" href={item.href}>{item.label}</a>
       ))}
     </nav>
 
     <a
-      class="shrink-0 rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
+      class="min-w-0 rounded-full bg-orange-500 px-3 py-2 text-center text-xs font-semibold leading-tight text-white hover:bg-orange-600 sm:px-4 sm:text-sm"
       href={`tel:${business.phone}`}
       data-track-event="phone_click"
     >
@@ -32,9 +32,9 @@ import logoSrc from "../../assets/happy-faces-la-logo.png";
     </a>
   </div>
 
-  <nav class="mx-auto flex w-full max-w-6xl gap-3 overflow-x-auto px-4 pb-3 md:hidden">
+  <nav class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-2 px-4 pb-3 lg:hidden">
     {navigation.mobile.map((item) => (
-      <a class="whitespace-nowrap text-sm font-medium text-slate-700" href={item.href}>{item.label}</a>
+      <a class="text-center text-sm font-medium text-slate-700" href={item.href}>{item.label}</a>
     ))}
   </nav>
 </header>

@@ -9,35 +9,35 @@ const canonicalPath = "/packages/";
 
 const packageCards = [
   {
-    name: "Face Painting",
+    name: "One Party Service",
     price: "From $150",
-    throughput: "Approximately 10-15 kids/hour depending on design complexity",
-    bestFor: "Classic birthday parties, backyard parties, school booths, and private celebrations.",
-    services: ["Fast line management", "Kid-safe paints", "Simple cheek art through full-face designs"],
+    throughput: "Choose one party service for your requested duration",
+    bestFor: "Birthday parties and private events that want one focused artist activity.",
+    services: ["1 hour from $150", "90 minutes from $215", "2 hours from $275"],
   },
   {
-    name: "Balloon Twisting",
-    price: "From $150",
-    throughput: "Approximately 12-20 kids/hour depending on balloon complexity",
-    bestFor: "High-energy parties where kids want something to wear, hold, or take home.",
-    services: ["Popular animals and hats", "Fast party flow", "Great as a standalone activity"],
+    name: "Two-Service Party Mix",
+    price: "From $180",
+    throughput: "Combine two party services in one entertainment plan",
+    bestFor: "Parties that want a richer service mix without adding separate vendors.",
+    services: ["1 hour from $180", "90 minutes from $255", "2 hours from $325"],
   },
   {
-    name: "Face Painting + Balloon Twisting Combo",
-    price: "From $275",
-    throughput: "Best for birthday parties that want both activities",
-    bestFor: "Parties that need a richer entertainment block without adding separate vendors.",
-    services: ["Two activity options", "Better guest coverage", "Strong fit for mixed age groups"],
+    name: "Three-Service Party Mix",
+    price: "Custom quote only",
+    throughput: "Reviewed for timing, guest count, and artist coverage",
+    bestFor: "Events that want three coordinated services or need a more tailored setup.",
+    services: ["Service mix review", "Timing and throughput plan", "Artist availability check"],
   },
   {
-    name: "Premium Party Package",
-    price: "From $375",
-    throughput: "Best for themed parties, larger birthdays, or multiple services",
-    bestFor: "Families who want the party to feel coordinated, polished, and photo-ready.",
-    services: ["Face painting, balloons, gems, or add-ons", "Theme-aware recommendations", "Expanded artist time"],
+    name: "Face Gems Add-On",
+    price: "From $50",
+    throughput: "Add sparkle to an eligible party package",
+    bestFor: "Parties that want a quick, photo-friendly enhancement alongside a core service.",
+    services: ["Package add-on", "Fast guest flow", "Availability confirmed with your request"],
   },
   {
-    name: "Large Event / School / Corporate",
+    name: "Large Event / School / Festival / Corporate",
     price: "Custom quote",
     throughput: "Best for multi-artist, long-duration, or high-volume events",
     bestFor: "Schools, camps, corporate family days, festivals, and venues with larger guest counts.",
@@ -89,8 +89,11 @@ const packageFaqs = [
   },
 ];
 
+const packageIntro =
+  "Face painting and balloon twisting packages for Los Angeles parties and events. View starter package options, then send your event date, city, guest count, and service mix so we can confirm availability and recommend the right setup.";
+
 const transparencyCopy =
-  "Packages start at $150. Final pricing depends on your event date, city, party size, selected services, design complexity, and artist availability. Share your event details and we’ll confirm availability with the best package recommendation.";
+  "Final pricing depends on event date, city, party size, selected services, design complexity, artist availability, and travel/setup needs.";
 ---
 
 <BaseLayout
@@ -144,7 +147,7 @@ const transparencyCopy =
 
   <section class="border-b border-orange-100 bg-white">
     <div class="mx-auto grid w-full max-w-6xl gap-4 px-4 py-6 text-sm text-slate-700 md:grid-cols-3">
-      <p><strong class="text-slate-950">Starting anchors:</strong> Face painting and balloon twisting from $150.</p>
+      <p><strong class="text-slate-950">Starter packages:</strong> One service from $150; two-service party mix from $180.</p>
       <p><strong class="text-slate-950">Fast party flow:</strong> Throughput guidance helps match artist time to guest count.</p>
       <p><strong class="text-slate-950">Availability first:</strong> Date, city, and artist availability determine the best package.</p>
     </div>
@@ -152,8 +155,9 @@ const transparencyCopy =
 
   <section id="package-options" class="scroll-mt-28 mx-auto w-full max-w-6xl px-4 py-12" aria-labelledby="packages-heading">
     <div class="max-w-3xl">
-      <h2 id="packages-heading" class="text-3xl font-bold text-slate-950">Package anchors for Yelp visitors</h2>
-      <p class="mt-3 leading-relaxed text-slate-700">{transparencyCopy}</p>
+      <h2 id="packages-heading" class="text-3xl font-bold text-slate-950">Party package options</h2>
+      <p class="mt-3 leading-relaxed text-slate-700">{packageIntro}</p>
+      <p class="mt-3 text-sm leading-relaxed text-slate-600">{transparencyCopy}</p>
     </div>
 
     <div class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -224,7 +228,7 @@ const transparencyCopy =
 
     <form data-packages-form data-source-page={canonicalPath} class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <h2 class="text-2xl font-bold text-slate-950">Check Availability</h2>
-      <p class="mt-2 text-sm text-slate-600">Packages start at $150. We will match the service plan to your party size and event city.</p>
+      <p class="mt-2 text-sm text-slate-600">One service starts at $150; a two-service party mix starts at $180. We will match the service plan to your party size and event city.</p>
 
       <div class="mt-5 grid gap-4 md:grid-cols-2">
         <label class="text-sm font-medium text-slate-700">Parent/name<input required name="parent_name" autocomplete="name" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
@@ -239,8 +243,9 @@ const transparencyCopy =
           <option value="Face Painting">Face Painting</option>
           <option value="Balloon Twisting">Balloon Twisting</option>
           <option value="Face Painting + Balloon Twisting">Face Painting + Balloon Twisting</option>
-          <option value="Premium Party Package">Premium Party Package</option>
-          <option value="Large Event / School / Corporate">Large Event / School / Corporate</option>
+          <option value="Three-Service Party Mix">Three-Service Party Mix</option>
+          <option value="Face Gems Add-On">Face Gems Add-On</option>
+          <option value="Large Event / School / Festival / Corporate">Large Event / School / Festival / Corporate</option>
         </select></label>
       </div>
 
@@ -249,7 +254,7 @@ const transparencyCopy =
         <textarea name="message" rows="4" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" placeholder="Theme, venue type, age range, timing notes, or COI needs"></textarea>
       </label>
 
-      <input type="hidden" name="event_type" value="Yelp packages availability request" />
+      <input type="hidden" name="event_type" value="Package availability request" />
       <input type="hidden" name="source_page" value={canonicalPath} />
       <input type="hidden" name="utm_source" />
       <input type="hidden" name="utm_medium" />
@@ -257,10 +262,14 @@ const transparencyCopy =
       <input type="hidden" name="utm_term" />
       <input type="hidden" name="utm_content" />
       <input type="hidden" name="gclid" />
+      <input type="hidden" name="gbraid" />
+      <input type="hidden" name="wbraid" />
       <input type="hidden" name="fbclid" />
       <input type="hidden" name="msclkid" />
+      <input type="hidden" name="landing_page" />
       <input type="hidden" name="lead_source" />
       <input type="hidden" name="source_path" value={canonicalPath} />
+      <input type="hidden" name="referrer" />
       <input type="text" name="honeypot" tabindex="-1" autocomplete="off" class="hidden" />
 
       <label class="mt-4 flex items-start gap-2 text-sm text-slate-700">
@@ -311,6 +320,8 @@ const transparencyCopy =
         "utm_term",
         "utm_content",
         "gclid",
+        "gbraid",
+        "wbraid",
         "fbclid",
         "msclkid"
       ];
@@ -343,7 +354,75 @@ const transparencyCopy =
 
       function deriveLeadSource(values) {
         const utmSource = String(values.utm_source || "").trim().toLowerCase();
-        return utmSource === "yelp" ? "yelp" : "";
+        if (utmSource === "yelp") {
+          return "yelp";
+        }
+        if (
+          utmSource === "google" ||
+          String(values.gclid || "").trim() ||
+          String(values.gbraid || "").trim() ||
+          String(values.wbraid || "").trim()
+        ) {
+          return "google_ads";
+        }
+        if (utmSource) {
+          return utmSource;
+        }
+        if (String(values.msclkid || "").trim()) {
+          return "microsoft_ads";
+        }
+        if (String(values.fbclid || "").trim()) {
+          return "facebook";
+        }
+
+        const referrer = String(values.referrer || "").trim();
+        if (!referrer) {
+          return "website";
+        }
+        try {
+          const referrerHost = new URL(referrer, window.location.href).hostname.toLowerCase().replace(/^www\./, "");
+          const currentHost = window.location.hostname.toLowerCase().replace(/^www\./, "");
+          return referrerHost === currentHost ? "website" : "unknown";
+        } catch {
+          return "unknown";
+        }
+      }
+
+      function deriveRequestLabel(leadSource) {
+        if (leadSource === "yelp") {
+          return "Yelp package availability request";
+        }
+        if (leadSource === "google_ads") {
+          return "Google Ads package availability request";
+        }
+        if (leadSource === "website") {
+          return "Website package availability request";
+        }
+        return "Package availability request";
+      }
+
+      function safeCurrentUrl() {
+        try {
+          const url = new URL(window.location.href);
+          url.hash = "";
+          return url.toString().slice(0, 512);
+        } catch {
+          return window.location.pathname || "/packages/";
+        }
+      }
+
+      function safeReferrer() {
+        if (!document.referrer) {
+          return "";
+        }
+        try {
+          const url = new URL(document.referrer);
+          url.hash = "";
+          url.search = "";
+          return url.toString().slice(0, 512);
+        } catch {
+          return "";
+        }
       }
 
       function trackEvent(eventName, params = {}) {
@@ -355,7 +434,14 @@ const transparencyCopy =
       }
 
       function hydrateAttribution(form) {
-        const values = { ...readAttrStore(), ...readUrlAttribution() };
+        const stored = readAttrStore();
+        const values = {
+          ...stored,
+          ...readUrlAttribution(),
+          landing_page: String(stored.landing_page || stored.first_landing_page || safeCurrentUrl()).trim(),
+          source_path: window.location.pathname || "/packages/",
+          referrer: String(stored.referrer || stored.first_referrer || safeReferrer()).trim()
+        };
         ATTR_KEYS.forEach((key) => {
           const input = form.querySelector(`input[name="${key}"]`);
           if (!(input instanceof HTMLInputElement)) {
@@ -367,14 +453,22 @@ const transparencyCopy =
           }
         });
 
+        ["landing_page", "source_path", "referrer"].forEach((key) => {
+          const input = form.querySelector(`input[name="${key}"]`);
+          if (input instanceof HTMLInputElement) {
+            input.value = String(values[key] || "").trim();
+          }
+        });
+
+        const leadSource = deriveLeadSource(values);
         const leadSourceInput = form.querySelector('input[name="lead_source"]');
         if (leadSourceInput instanceof HTMLInputElement) {
-          leadSourceInput.value = deriveLeadSource(values);
+          leadSourceInput.value = leadSource;
         }
 
-        const sourcePathInput = form.querySelector('input[name="source_path"]');
-        if (sourcePathInput instanceof HTMLInputElement) {
-          sourcePathInput.value = window.location.pathname || "/packages/";
+        const eventTypeInput = form.querySelector('input[name="event_type"]');
+        if (eventTypeInput instanceof HTMLInputElement) {
+          eventTypeInput.value = deriveRequestLabel(leadSource);
         }
 
         try {
@@ -430,10 +524,14 @@ const transparencyCopy =
           utm_term: String(fd.get("utm_term") || "").trim(),
           utm_content: String(fd.get("utm_content") || "").trim(),
           gclid: String(fd.get("gclid") || "").trim(),
+          gbraid: String(fd.get("gbraid") || "").trim(),
+          wbraid: String(fd.get("wbraid") || "").trim(),
           fbclid: String(fd.get("fbclid") || "").trim(),
           msclkid: String(fd.get("msclkid") || "").trim(),
+          landing_page: String(fd.get("landing_page") || "").trim(),
           lead_source: String(fd.get("lead_source") || "").trim(),
           source_path: String(fd.get("source_path") || "").trim(),
+          referrer: String(fd.get("referrer") || "").trim(),
           consent_to_contact: Boolean(fd.get("consent_to_contact")),
           honeypot: String(fd.get("honeypot") || "")
         };
@@ -494,11 +592,25 @@ const transparencyCopy =
 
             trackEvent("packages_form_submit", {
               source_page: payload.source_page || window.location.pathname,
-              lead_id: result.leadId || ""
+              lead_id: result.leadId || "",
+              lead_source: payload.lead_source,
+              utm_source: payload.utm_source,
+              utm_medium: payload.utm_medium,
+              utm_campaign: payload.utm_campaign,
+              gclid_present: Boolean(payload.gclid),
+              gbraid_present: Boolean(payload.gbraid),
+              wbraid_present: Boolean(payload.wbraid)
             });
             trackEvent("generate_lead", {
               source_page: payload.source_page || window.location.pathname,
-              lead_id: result.leadId || ""
+              lead_id: result.leadId || "",
+              lead_source: payload.lead_source,
+              utm_source: payload.utm_source,
+              utm_medium: payload.utm_medium,
+              utm_campaign: payload.utm_campaign,
+              gclid_present: Boolean(payload.gclid),
+              gbraid_present: Boolean(payload.gbraid),
+              wbraid_present: Boolean(payload.wbraid)
             });
 
             form.reset();
@@ -528,20 +640,4 @@ const transparencyCopy =
     })();
   </script>
 
-  <style is:global>
-    @media (max-width: 640px) {
-      body {
-        overflow-x: hidden;
-      }
-
-      header a[href^="tel:"] {
-        display: none;
-      }
-
-      header img {
-        max-width: 150px;
-        height: auto;
-      }
-    }
-  </style>
 </BaseLayout>

@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 
-import { onRequest as handleLead } from '../../functions/api/lead.ts';
+import {
+  derivePackageLeadSource,
+  derivePackageRequestLabel,
+  onRequest as handleLead,
+} from '../../functions/api/lead.ts';
 import { assertLeadNotificationPayloadCanSend } from '../../src/lib/quote-request/canonical-lead.ts';
 import { handleQuoteRequest } from '../../src/lib/quote-request/delivery.ts';
 import {
@@ -317,6 +321,7 @@ test('valid legacy pricing partial lead accepted and delivered canonically', asy
     first_name: 'Jamie',
     phone: '424-555-0100',
     source_page: '/pricing/',
+    lead_source: '/pricing/',
     message: 'Please call me.',
   });
   assert.equal(response.status, 200);
@@ -325,8 +330,128 @@ test('valid legacy pricing partial lead accepted and delivered canonically', asy
   assert(fetchCalls[0].body.lead_id);
   assert(fetchCalls[0].body.created_at);
   assert.equal(fetchCalls[0].body.source_page, '/pricing/');
+  assert.equal(fetchCalls[0].body.lead_source, '/pricing/');
   assert.equal(fetchCalls[0].body.first_name, 'Jamie');
   assert.equal(fetchCalls[0].body.phone, '424-555-0100');
+});
+
+test('Google Ads packages lead preserves attribution and uses a source-correct label', async () => {
+  resetFetch();
+  const { response, body } = await callLead({
+    first_name: 'HFLTEST',
+    last_name: 'GoogleAdsAudit',
+    phone: '(310) 800-2860',
+    email: 'info@happyfacesla.com',
+    event_date: '2026-12-31',
+    event_start_time: '12:00',
+    event_city: 'Los Angeles',
+    event_type: 'incorrect client label',
+    estimated_guest_count: '10',
+    services_requested: ['Face Painting'],
+    consent_to_contact: true,
+    source_page: '/packages/',
+    source_path: '/packages/',
+    landing_page: 'https://happyfacesla.com/packages/?utm_source=google&utm_medium=cpc',
+    referrer: 'https://www.google.com/',
+    utm_source: 'google',
+    utm_medium: 'cpc',
+    utm_campaign: 'internal_google_ads_r3a',
+    utm_term: 'face painter',
+    utm_content: 'qa',
+    gclid: 'TEST-GCLID-123',
+    gbraid: 'TEST-GBRAID-123',
+    wbraid: 'TEST-WBRAID-123',
+    msclkid: 'TEST-MSCLKID-123',
+    fbclid: 'TEST-FBCLID-123',
+    lead_source: 'incorrect-client-source',
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(body.ok, true);
+  const delivered = fetchCalls[0].body;
+  assert.equal(delivered.event_type, 'Google Ads package availability request');
+  assert.equal(delivered.lead_source, 'google_ads');
+  assert.equal(delivered.source_page, '/packages/');
+  assert.equal(delivered.source_path, '/packages/');
+  assert.equal(delivered.landing_page, 'https://happyfacesla.com/packages/?utm_source=google&utm_medium=cpc');
+  assert.equal(delivered.referrer, 'https://www.google.com/');
+  assert.equal(delivered.utm_source, 'google');
+  assert.equal(delivered.utm_medium, 'cpc');
+  assert.equal(delivered.utm_campaign, 'internal_google_ads_r3a');
+  assert.equal(delivered.utm_term, 'face painter');
+  assert.equal(delivered.utm_content, 'qa');
+  assert.equal(delivered.gclid_present, 'yes');
+  assert.equal(delivered.gbraid_present, 'yes');
+  assert.equal(delivered.wbraid_present, 'yes');
+  assert.equal(delivered.gclid, '[present]');
+  assert.equal(delivered.gbraid, '[present]');
+  assert.equal(delivered.wbraid, '[present]');
+  assert.equal(delivered.source_confidence, 'gclid');
+  assert.equal(delivered.lead.gclid, 'TEST-GCLID-123');
+  assert.equal(delivered.lead.gbraid, 'TEST-GBRAID-123');
+  assert.equal(delivered.lead.wbraid, 'TEST-WBRAID-123');
+  assert.equal(delivered.lead.msclkid, 'TEST-MSCLKID-123');
+  assert.equal(delivered.lead.fbclid, 'TEST-FBCLID-123');
+});
+
+test('Yelp packages lead keeps the existing UTM route and source-correct label', async () => {
+  resetFetch();
+  const { response, body } = await callLead({
+    first_name: 'HFLTEST',
+    last_name: 'YelpAudit',
+    phone: '(310) 800-2860',
+    email: 'info@happyfacesla.com',
+    event_date: '2026-12-31',
+    event_start_time: '12:00',
+    event_city: 'Los Angeles',
+    event_type: 'incorrect client label',
+    estimated_guest_count: '10',
+    services_requested: ['Face Painting'],
+    consent_to_contact: true,
+    source_page: '/packages/',
+    source_path: '/packages/',
+    landing_page: 'https://happyfacesla.com/packages/?utm_source=yelp&utm_medium=cta&utm_campaign=packages_availability',
+    utm_source: 'yelp',
+    utm_medium: 'cta',
+    utm_campaign: 'packages_availability',
+    lead_source: 'incorrect-client-source',
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(body.ok, true);
+  const delivered = fetchCalls[0].body;
+  assert.equal(delivered.event_type, 'Yelp package availability request');
+  assert.equal(delivered.lead_source, 'yelp');
+  assert.equal(delivered.utm_source, 'yelp');
+  assert.equal(delivered.utm_medium, 'cta');
+  assert.equal(delivered.utm_campaign, 'packages_availability');
+  assert.equal(delivered.gclid_present, 'no');
+  assert.equal(delivered.gbraid_present, 'no');
+  assert.equal(delivered.wbraid_present, 'no');
+  assert.equal(delivered.google_click_id_present, 'no');
+});
+
+test('packages lead source follows the owner-approved deterministic precedence', () => {
+  const cases = [
+    [{ utm_source: 'yelp', gclid: 'G' }, 'yelp'],
+    [{ utm_source: 'google' }, 'google_ads'],
+    [{ gbraid: 'GB' }, 'google_ads'],
+    [{ wbraid: 'WB' }, 'google_ads'],
+    [{ utm_source: 'newsletter', msclkid: 'MS' }, 'newsletter'],
+    [{ msclkid: 'MS' }, 'microsoft_ads'],
+    [{ fbclid: 'FB' }, 'facebook'],
+    [{}, 'website'],
+    [{ referrer: 'https://happyfacesla.com/pricing/' }, 'website'],
+    [{ referrer: 'https://example.org/referral' }, 'unknown'],
+  ];
+
+  for (const [input, expected] of cases) {
+    assert.equal(derivePackageLeadSource(input), expected);
+  }
+  assert.equal(derivePackageRequestLabel('yelp'), 'Yelp package availability request');
+  assert.equal(derivePackageRequestLabel('google_ads'), 'Google Ads package availability request');
+  assert.equal(derivePackageRequestLabel('website'), 'Website package availability request');
+  assert.equal(derivePackageRequestLabel('newsletter'), 'Package availability request');
 });
 
 test('empty object rejected with 400 and no webhook', async () => {
