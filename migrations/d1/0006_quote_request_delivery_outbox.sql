@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS quote_request_delivery_outbox (
   destination TEXT NOT NULL
     CHECK (destination IN ('crm', 'sheet', 'make')),
   status TEXT NOT NULL DEFAULT 'pending'
-    CHECK (status IN ('pending', 'retry', 'delivered', 'dead_letter')),
+    CHECK (status IN ('pending', 'processing', 'retry', 'delivered', 'dead_letter')),
   attempt_count INTEGER NOT NULL DEFAULT 0
     CHECK (attempt_count >= 0),
   last_attempt_at_utc TEXT,
