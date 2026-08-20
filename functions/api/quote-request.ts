@@ -27,6 +27,7 @@ type PersistedResponse = {
   received?: boolean;
   leadId?: string;
   persisted?: boolean;
+  duplicate?: boolean;
   ownerNotificationSent?: boolean;
   sheetWritten?: boolean;
   crmPosted?: boolean;
@@ -75,7 +76,13 @@ export const onRequest = async (context: PagesFunctionContext): Promise<Response
     // destinations run concurrently. Durable D1 persistence has already succeeded,
     // so a downstream outage cannot lose the inquiry or turn the browser request into
     // a failed form submission after acceptance.
-    delivery = await deliverPersistedQuoteRequest(db, persisted.leadId, env);
+    //
+    // A browser retry with the same idempotency key is also a safe signal to retry any
+    // still-missing destination immediately. Delivered destinations remain immutable and
+    // are never sent twice by the transactional delivery layer.
+    delivery = await deliverPersistedQuoteRequest(db, persisted.leadId, env, {
+      force: persisted.duplicate === true,
+    });
   } catch (error) {
     console.error('[quote-request] transactional delivery failed after persistence', {
       leadId: persisted.leadId,
