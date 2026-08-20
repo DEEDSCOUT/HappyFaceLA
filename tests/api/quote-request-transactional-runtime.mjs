@@ -267,7 +267,7 @@ const payload = {
   email: 'runtime@example.com',
   phone: '310-555-0100',
   specialRequests: 'Transactional retry test.',
-  quoteRequestIdempotencyKey: 'qrq_runtime_retry_1234567890',
+  quoteRequestIdempotencyKey: 'qrq_runtime-retry-1234567890',
   consentAcknowledgement: true,
   lookbook_inspirations: [],
   wizardVersion: 'guided-wizard-v1',
