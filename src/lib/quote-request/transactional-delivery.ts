@@ -622,7 +622,9 @@ export async function deliverPersistedQuoteRequest(
   const initialMap = rowsByDestination(initialRows);
   const claimable = destinations.filter((destination) => {
     const row = initialMap.get(destination);
-    return options.force || !row || row.status !== 'delivered';
+    // force means retry a missing destination now, not resend a destination that has
+    // already produced a verified delivery. This keeps browser resubmissions idempotent.
+    return !row || row.status !== 'delivered';
   });
 
   const claims = await Promise.all(
