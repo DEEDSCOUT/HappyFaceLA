@@ -30,6 +30,7 @@ var EXTERNAL_ID_HEADER = 'External Lead ID';
 var OUTBOUND_MESSAGE_ID_HEADER = 'Last Outbound Message ID';
 var OUTBOUND_SENT_AT_HEADER = 'Last Outbound Sent At UTC';
 var MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
+var MAX_ID_ALLOCATION_SCAN = 1000;
 
 function doPost(e) {
   try {
@@ -117,33 +118,42 @@ function writeLeadIntake_(ss, externalLeadId, lead) {
       'Lead ID', 'Created Date', 'Lead Source', 'Client Name', 'Client Phone', 'Client Email',
       'Event City', 'Event Address', 'Event Date', 'Requested Time Frame', 'Service Requested',
       'Estimated Kids / Guests', 'Notes', 'Pipeline Status', 'Quote Sent?', 'Retainer Requested?',
-      'Retainer Paid?', 'Last Contact Date', 'Convert to Booking?', 'Lead Intent / Acquisition Type',
+      'Retainer Paid?', 'Convert to Booking?', 'Lead Intent / Acquisition Type',
       'Platform Status', EXTERNAL_ID_HEADER
     ]);
 
     var existing = findByExternalId_(sheet, headers, externalLeadId);
+    var targetRow = existing ? existing.row : Math.max(sheet.getLastRow() + 1, 2);
     if (existing) {
       var existingInternalId = clean_(sheet.getRange(existing.row, headers['Lead ID']).getDisplayValue(), 120);
-      if (!/^LEAD-REAL-\d{8}-\d{3,}$/.test(existingInternalId)) {
-        throw new Error('existing_row_has_invalid_internal_id');
+      if (/^LEAD-REAL-\d{8}-\d{3,}$/.test(existingInternalId)) {
+        return verifiedAck_(externalLeadId, existingInternalId, existing.row, true);
       }
-      return verifiedAck_(externalLeadId, existingInternalId, existing.row, true);
+      // An exact external-ID match with a blank Lead ID is a recoverable interrupted write.
+      // A nonblank invalid Lead ID is never overwritten because internal IDs are immutable.
+      if (existingInternalId) throw new Error('existing_row_has_invalid_internal_id');
+    } else {
+      // Write the immutable external dedupe key first. If a later Sheets write fails,
+      // the retry can recover this same row instead of appending a second partial row.
+      sheet.getRange(targetRow, headers[EXTERNAL_ID_HEADER]).setValue(externalLeadId);
+      SpreadsheetApp.flush();
+      var anchoredExternalId = clean_(sheet.getRange(targetRow, headers[EXTERNAL_ID_HEADER]).getDisplayValue(), 120);
+      if (anchoredExternalId !== externalLeadId) throw new Error('external_id_anchor_failed');
     }
 
     var createdAt = parseDate_(lead.created_at) || new Date();
-    var internalLeadId = allocateInternalLeadId_(ss, createdAt);
-    var newRow = Math.max(sheet.getLastRow() + 1, 2);
+    var allocation = allocateInternalLeadId_(ss, createdAt);
 
     var values = {};
     values['Created Date'] = createdAt;
-    values['Lead Source'] = 'Website';
+    values['Lead Source'] = deriveLeadSource_(lead);
     values['Client Name'] = [clean_(lead.first_name, 80), clean_(lead.last_name, 80)].filter(Boolean).join(' ');
     values['Client Phone'] = clean_(lead.phone, 80);
     values['Client Email'] = clean_(lead.email, 254);
     values['Event City'] = clean_(lead.event_city, 120);
     values['Event Address'] = clean_(lead.event_venue_or_address, 240);
     values['Event Date'] = clean_(lead.event_date, 40);
-    values['Requested Time Frame'] = clean_(lead.preferred_start_time, 80);
+    values['Requested Time Frame'] = buildRequestedTimeFrame_(lead);
     values['Service Requested'] = Array.isArray(lead.services_requested)
       ? lead.services_requested.map(function (item) { return clean_(item, 80); }).filter(Boolean).join(' + ')
       : '';
@@ -153,30 +163,43 @@ function writeLeadIntake_(ss, externalLeadId, lead) {
     values['Quote Sent?'] = 'No';
     values['Retainer Requested?'] = 'No';
     values['Retainer Paid?'] = 'No';
-    values['Last Contact Date'] = createdAt;
     values['Convert to Booking?'] = 'No';
     values['Lead Intent / Acquisition Type'] = 'Website Lead';
-    values['Platform Status'] = 'Website lead received and CRM verified';
-    values[EXTERNAL_ID_HEADER] = externalLeadId;
+    values['Platform Status'] = 'Website lead received / CRM intake pending verification';
 
-    writeNamedValues_(sheet, newRow, headers, values);
+    // Do not write Last Contact Date here. Receiving a website inquiry is not customer
+    // outreach. That field is updated only by verified outbound-message writeback.
+    writeNamedValues_(sheet, targetRow, headers, values);
+    sheet.getRange(targetRow, headers[EXTERNAL_ID_HEADER]).setValue(externalLeadId);
     SpreadsheetApp.flush();
 
     // Lead ID is written last and exactly once, after all business cells and the external
     // dedupe key are in place. This preserves the Booking Control Center immutable-ID rule.
-    sheet.getRange(newRow, headers['Lead ID']).setValue(internalLeadId);
-    SpreadsheetApp.flush();
+    var currentInternalId = clean_(sheet.getRange(targetRow, headers['Lead ID']).getDisplayValue(), 120);
+    if (currentInternalId && currentInternalId !== allocation.internalLeadId) {
+      throw new Error('lead_id_changed_during_recovery');
+    }
+    if (!currentInternalId) {
+      sheet.getRange(targetRow, headers['Lead ID']).setValue(allocation.internalLeadId);
+      SpreadsheetApp.flush();
+    }
 
-    var storedInternalId = clean_(sheet.getRange(newRow, headers['Lead ID']).getDisplayValue(), 120);
-    var storedExternalId = clean_(sheet.getRange(newRow, headers[EXTERNAL_ID_HEADER]).getDisplayValue(), 120);
-    if (storedInternalId !== internalLeadId || storedExternalId !== externalLeadId) {
+    var storedInternalId = clean_(sheet.getRange(targetRow, headers['Lead ID']).getDisplayValue(), 120);
+    var storedExternalId = clean_(sheet.getRange(targetRow, headers[EXTERNAL_ID_HEADER]).getDisplayValue(), 120);
+    if (storedInternalId !== allocation.internalLeadId || storedExternalId !== externalLeadId) {
       throw new Error('read_after_write_verification_failed');
     }
     if (!/^LEAD-REAL-\d{8}-\d{3,}$/.test(storedInternalId)) {
       throw new Error('invalid_allocated_internal_id');
     }
 
-    return verifiedAck_(externalLeadId, storedInternalId, newRow, false);
+    // Advance the literal Next Sequence cell only after the row is proven durable. If the
+    // advance itself fails, the next request safely skips the now-used candidate via B8.
+    advanceInternalLeadSequence_(ss, allocation);
+    sheet.getRange(targetRow, headers['Platform Status']).setValue('Website lead received and CRM verified');
+    SpreadsheetApp.flush();
+
+    return verifiedAck_(externalLeadId, storedInternalId, targetRow, Boolean(existing));
   } finally {
     lock.releaseLock();
   }
@@ -235,13 +258,49 @@ function writeOutreachResult_(ss, externalLeadId, outreach) {
 
 function allocateInternalLeadId_(ss, createdAt) {
   var control = requireSheet_(ss, ID_CONTROL_SHEET);
-  control.getRange('B6').setValue(createdAt);
+  var sequenceCell = control.getRange('B5');
+  var sequence = Number(clean_(sequenceCell.getDisplayValue(), 40));
+  if (!Number.isInteger(sequence) || sequence < 1) throw new Error('id_allocator_next_sequence_invalid');
+
+  var timeZone = typeof ss.getSpreadsheetTimeZone === 'function'
+    ? clean_(ss.getSpreadsheetTimeZone(), 80) || 'America/Los_Angeles'
+    : 'America/Los_Angeles';
+  var createdDate = Utilities.formatDate(createdAt, timeZone, 'yyyy-MM-dd');
+  control.getRange('B6').setValue(createdDate);
   SpreadsheetApp.flush();
-  var candidate = clean_(control.getRange('B7').getDisplayValue(), 120);
-  var available = clean_(control.getRange('B8').getDisplayValue(), 40).toUpperCase();
-  if (!/^LEAD-REAL-\d{8}-\d{3,}$/.test(candidate)) throw new Error('id_allocator_returned_invalid_candidate');
-  if (available !== 'YES') throw new Error('id_allocator_candidate_not_available');
-  return candidate;
+
+  for (var attempt = 0; attempt < MAX_ID_ALLOCATION_SCAN; attempt += 1) {
+    var candidate = clean_(control.getRange('B7').getDisplayValue(), 120);
+    var available = clean_(control.getRange('B8').getDisplayValue(), 40).toUpperCase();
+    if (!/^LEAD-REAL-\d{8}-\d{3,}$/.test(candidate)) {
+      throw new Error('id_allocator_returned_invalid_candidate');
+    }
+    if (available === 'YES') {
+      return { internalLeadId: candidate, sequence: sequence };
+    }
+    if (available !== 'NO') throw new Error('id_allocator_availability_invalid');
+
+    sequence += 1;
+    sequenceCell.setValue(sequence);
+    SpreadsheetApp.flush();
+  }
+  throw new Error('id_allocator_scan_exhausted');
+}
+
+function advanceInternalLeadSequence_(ss, allocation) {
+  var control = requireSheet_(ss, ID_CONTROL_SHEET);
+  var sequenceCell = control.getRange('B5');
+  var current = Number(clean_(sequenceCell.getDisplayValue(), 40));
+  if (!Number.isInteger(current) || current < allocation.sequence) {
+    throw new Error('id_allocator_sequence_regressed');
+  }
+  var next = Math.max(current, allocation.sequence + 1);
+  sequenceCell.setValue(next);
+  SpreadsheetApp.flush();
+  var stored = Number(clean_(sequenceCell.getDisplayValue(), 40));
+  if (!Number.isInteger(stored) || stored < allocation.sequence + 1) {
+    throw new Error('id_allocator_sequence_advance_failed');
+  }
 }
 
 function findByExternalId_(sheet, headers, externalLeadId) {
@@ -274,6 +333,36 @@ function writeNamedValues_(sheet, row, headers, values) {
     if (!headers[header]) throw new Error('target_header_missing_' + header.replace(/\s+/g, '_'));
     sheet.getRange(row, headers[header]).setValue(values[header]);
   });
+}
+
+function deriveLeadSource_(lead) {
+  var sourcePage = clean_(lead.source_page, 240).toLowerCase();
+  var sourceConfidence = clean_(lead.source_confidence, 40).toLowerCase();
+  var gclidPresent = clean_(lead.gclid_present, 20).toLowerCase() === 'yes';
+  var paidGoogle = gclidPresent || ['gclid', 'gbraid', 'wbraid', 'utm_paid'].indexOf(sourceConfidence) >= 0;
+  var source = sourcePage.indexOf('/plan-my-party') >= 0 ? 'Website / Plan My Party' : 'Website';
+  return paidGoogle ? source + ' / Google Ads' : source;
+}
+
+function buildRequestedTimeFrame_(lead) {
+  var start = formatClockTime_(lead.preferred_start_time);
+  var end = formatClockTime_(lead.estimated_service_end_time);
+  if (start && end) return start + ' to ' + end;
+  return start || end || '';
+}
+
+function formatClockTime_(value) {
+  var raw = clean_(value, 20);
+  var match = raw.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return raw;
+  var hour = Number(match[1]);
+  var minute = Number(match[2]);
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59) {
+    return raw;
+  }
+  var suffix = hour >= 12 ? 'PM' : 'AM';
+  var displayHour = hour % 12 || 12;
+  return displayHour + ':' + String(minute).padStart(2, '0') + ' ' + suffix;
 }
 
 function buildLeadNotes_(lead) {
