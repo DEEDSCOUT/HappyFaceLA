@@ -32,6 +32,7 @@ pnpm-debug.log*
 
 # wrangler local state
 .wrangler/
+/output/playwright/
 
 # macOS-specific files
 .DS_Store

@@ -19,6 +19,12 @@ import { checkoutCanProceed, paymentAllowedWithHold } from '../../src/lib/bookin
 import { createSlotHold, HOLD_TTL_SECONDS, releaseHeldSlot } from '../../src/lib/booking/slot-holds.ts';
 import { buildSlotAuditEvent, writeSlotAuditEvent } from '../../src/lib/booking/slot-audit.ts';
 
+// Preserve the production customer Checkout contract while the isolated
+// artist-payout client adopts the SDK's current API version. stripe-node types
+// expose only the bundled latest literal, so the older runtime pin is explicit.
+export const CUSTOMER_CHECKOUT_STRIPE_API_VERSION =
+  '2026-05-27.dahlia' as Stripe.LatestApiVersion;
+
 interface KVNamespace {
   get(key: string): Promise<string | null>;
   put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
@@ -190,7 +196,9 @@ export const onRequestPost = async (
     return json({ ok: false, error: 'Booking storage could not be prepared' }, 503);
   }
 
-  const stripe = new Stripe(stripeKey, { apiVersion: '2026-05-27.dahlia' });
+  const stripe = new Stripe(stripeKey, {
+    apiVersion: CUSTOMER_CHECKOUT_STRIPE_API_VERSION,
+  });
   let session: Stripe.Checkout.Session;
   try {
     session = await stripe.checkout.sessions.create({

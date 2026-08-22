@@ -8,10 +8,19 @@ import {
 } from '../../src/lib/booking/availability-validation.ts';
 import { onRequest as adminSlotsRequest } from '../../functions/api/admin/slots.ts';
 import { onRequestPost as eligibilityRequest } from '../../functions/api/booking-eligibility.ts';
-import { onRequestPost as checkoutRequest } from '../../functions/api/create-checkout-session.ts';
+import {
+  CUSTOMER_CHECKOUT_STRIPE_API_VERSION,
+  onRequestPost as checkoutRequest,
+} from '../../functions/api/create-checkout-session.ts';
 
 async function main() {
 const now = new Date('2026-06-09T20:00:00.000Z');
+
+assert.equal(
+  CUSTOMER_CHECKOUT_STRIPE_API_VERSION,
+  '2026-05-27.dahlia',
+  'customer Checkout preserves the production API-version pin',
+);
 
 function slotRow(overrides = {}) {
   return {

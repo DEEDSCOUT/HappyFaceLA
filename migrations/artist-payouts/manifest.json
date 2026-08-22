@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "sequences": {
+    "sandbox": [
+      "sandbox/0000_environment_identity.sql",
+      "0001_artist_payout_system.sql"
+    ],
+    "live": [
+      "live/0000_environment_identity.sql",
+      "0001_artist_payout_system.sql"
+    ]
+  },
+  "files": [
+    {
+      "path": "sandbox/0000_environment_identity.sql",
+      "bytes": 1179,
+      "sha256": "5402c85ae57680000927a1c511569d9237a47bec24ab44c512d5c535a48ed122"
+    },
+    {
+      "path": "live/0000_environment_identity.sql",
+      "bytes": 1209,
+      "sha256": "635f4d7720bd6256bec5791d3ff239ef9a1a0ff425fb9f8b8a1d9b8210810fc0"
+    },
+    {
+      "path": "0001_artist_payout_system.sql",
+      "bytes": 36201,
+      "sha256": "d2c84f418ba5307cda221140c1acff29423ec22126675d37828655da4cdcb49c"
+    }
+  ]
+}
