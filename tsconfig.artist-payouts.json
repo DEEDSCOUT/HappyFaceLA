@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "checkJs": false,
+    "noEmit": true
+  },
+  "include": [
+    ".astro/types.d.ts",
+    "src/lib/artist-payouts/**/*.ts",
+    "src/lib/stripe-api-version.ts",
+    "src/lib/booking/availability-types.ts",
+    "functions/api/internal/artist-payouts/**/*.ts",
+    "functions/api/stripe/connect-*.ts",
+    "functions/artist/payout-onboarding/**/*.ts",
+    "functions/internal/artist-payouts.ts",
+    "functions/api/create-checkout-session.ts"
+  ],
+  "exclude": ["dist", "node_modules", ".wrangler"]
+}

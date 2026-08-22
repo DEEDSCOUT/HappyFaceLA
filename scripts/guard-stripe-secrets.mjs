@@ -2,6 +2,8 @@
 // @ts-check
 
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const stripeWebhookPrefix = ['wh', 'sec_'].join('');
 const stripeSecretKeyPrefixes = ['sk', 'rk'];
@@ -55,6 +57,23 @@ if (root.status !== 0 || !root.stdout.trim()) {
   } else {
     for (const path of parseNullDelimited(tracked.stdout)) {
       if (path === '.stripe.txt') fail('tracked-stripe-scratch-file', path);
+    }
+  }
+
+  const untracked = git(['ls-files', '--others', '--exclude-standard', '-z']);
+  if (untracked.status !== 0) {
+    fail('git-untracked-read-failed');
+  } else {
+    for (const path of parseNullDelimited(untracked.stdout)) {
+      if (path === '.stripe.txt') fail('untracked-stripe-scratch-file', path);
+      try {
+        const value = readFileSync(join(gitRoot, path));
+        if (new RegExp(secretPattern).test(value.toString('utf8'))) {
+          fail('stripe-secret-untracked', path);
+        }
+      } catch {
+        fail('untracked-file-scan-failed', path);
+      }
     }
   }
 

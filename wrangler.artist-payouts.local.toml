@@ -1,0 +1,10 @@
+# LOCAL MIGRATION/TEST CONFIG ONLY. This deliberately fake database ID cannot
+# address a remote D1 database. Production/Preview bindings require a separate
+# owner-approved Cloudflare configuration change.
+name = "happyfacesla-artist-payouts-local"
+compatibility_date = "2024-09-23"
+
+[[d1_databases]]
+binding = "PAYOUTS_D1"
+database_name = "hfla-payouts-sandbox-local"
+database_id = "00000000-0000-0000-0000-000000000000"

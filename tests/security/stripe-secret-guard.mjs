@@ -92,6 +92,23 @@ try {
     assert.match(result.output, /tracked-stripe-scratch-file/);
   }
 
+  {
+    const root = repo();
+    write(root, 'untracked-secret.txt', `${standardTest}\n`);
+    const result = run(root);
+    assert.notEqual(result.status, 0);
+    assert.match(result.output, /stripe-secret-untracked/);
+    assert.equal(result.output.includes(standardTest), false);
+  }
+
+  {
+    const root = repo();
+    write(root, '.stripe.txt', 'clean\n');
+    const result = run(root);
+    assert.notEqual(result.status, 0);
+    assert.match(result.output, /untracked-stripe-scratch-file/);
+  }
+
   for (const [index, secret] of secrets.entries()) {
     const root = repo();
     write(root, `fixture-${index}.txt`, `credential=${secret}\n`);
