@@ -8,8 +8,9 @@ import { handleQuoteRequest, type QuoteRequestEnv } from '../../src/lib/quote-re
 type PagesFunctionContext = {
   request: Request;
   env: QuoteRequestEnv;
+  waitUntil?: (promise: Promise<unknown>) => void;
 };
 
-export const onRequest = async ({ request, env }: PagesFunctionContext): Promise<Response> => {
-  return handleQuoteRequest(request, env);
+export const onRequest = async ({ request, env, waitUntil }: PagesFunctionContext): Promise<Response> => {
+  return handleQuoteRequest(request, env, waitUntil ? { waitUntil } : undefined);
 };

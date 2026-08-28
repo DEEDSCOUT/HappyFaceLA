@@ -5,8 +5,10 @@ import {
   validateLeadNotificationPayload,
   type CanonicalPlanMyPartyLead,
 } from '../../src/lib/quote-request/canonical-lead.ts';
+import { captureAttributionBestEffort } from '../../src/lib/outcome-measurement/attribution-store.ts';
+import type { OutcomeMeasurementEnv } from '../../src/lib/outcome-measurement/contracts.ts';
 
-type Env = {
+type Env = OutcomeMeasurementEnv & {
     OWNER_NOTIFICATION_EMAIL?: string;
     CRM_WEBHOOK_URL?: string;
     CRM_WEBHOOK_SECRET?: string;
@@ -32,6 +34,7 @@ type LeadPayload = {
     services_requested?: string[];
     budget_range?: string;
     message?: string;
+    landing_page?: string;
     source_page?: string;
     utm_source?: string;
     utm_medium?: string;
@@ -39,6 +42,8 @@ type LeadPayload = {
     utm_term?: string;
     utm_content?: string;
     gclid?: string;
+    gbraid?: string;
+    wbraid?: string;
     fbclid?: string;
     msclkid?: string;
     lead_source?: string;
@@ -70,6 +75,10 @@ function json(data: unknown, status = 200): Response {
 
 function normalizeString(input: unknown): string {
     return String(input ?? "").trim();
+}
+
+function preserveSubmittedClickId(input: unknown): string {
+    return typeof input === "string" ? input : "";
 }
 
 const NON_CUSTOMER_VALUES = new Set([
@@ -347,7 +356,11 @@ function legacyLeadToCanonical(p: LeadPayload, leadId: string, now: string): Can
 }
 
 export const onRequest = async (context: any): Promise<Response> => {
-    const { request, env } = context as { request: Request; env: Env };
+    const { request, env } = context as {
+        request: Request;
+        env: Env;
+        waitUntil?: (promise: Promise<unknown>) => void;
+    };
 
     if (request.method !== "POST") {
         return json({ ok: false, error: "Method not allowed" }, 405);
@@ -375,6 +388,10 @@ export const onRequest = async (context: any): Promise<Response> => {
         return json({ ok: true, leadId: crypto.randomUUID() });
     }
 
+    const submittedLandingPage = normalizeString(input.landing_page);
+    const submittedGbraid = preserveSubmittedClickId(input.gbraid);
+    const submittedWbraid = preserveSubmittedClickId(input.wbraid);
+
     const normalized: LeadPayload = {
         ...input,
         first_name: normalizeString(input.first_name),
@@ -391,13 +408,16 @@ export const onRequest = async (context: any): Promise<Response> => {
         services_requested: normalizeStringArray(input.services_requested),
         budget_range: normalizeString(input.budget_range),
         message: normalizeString(input.message),
+        landing_page: undefined,
         source_page: deriveSafeSourcePage(input, request),
         utm_source: normalizeString(input.utm_source),
         utm_medium: normalizeString(input.utm_medium),
         utm_campaign: normalizeString(input.utm_campaign),
         utm_term: normalizeString(input.utm_term),
         utm_content: normalizeString(input.utm_content),
-        gclid: normalizeString(input.gclid),
+        gclid: preserveSubmittedClickId(input.gclid),
+        gbraid: undefined,
+        wbraid: undefined,
         fbclid: normalizeString(input.fbclid),
         msclkid: normalizeString(input.msclkid),
         lead_source: deriveLeadSource(input),
@@ -526,7 +546,7 @@ export const onRequest = async (context: any): Promise<Response> => {
 
         const webhookBody = await webhookResponse.text();
         console.log("[lead] webhook response status:", webhookResponse.status);
-        console.log("[lead] webhook response body prefix:", webhookBody.slice(0, 200));
+        console.log("[lead] webhook response received:", { hasBody: webhookBody.length > 0 });
 
         if (!webhookResponse.ok) {
             console.error("[lead] webhook returned non-2xx:", webhookResponse.status);
@@ -539,6 +559,27 @@ export const onRequest = async (context: any): Promise<Response> => {
                 console.error("[lead] webhook response rejected:", webhookResult.reason);
                 return json({ ok: false, error: "Lead capture backend returned an invalid response" }, 502);
             }
+        }
+
+        const measurementCapture = captureAttributionBestEffort(env, {
+            source_system: "HFLA_WEB_LEAD",
+            source_lead_id: leadId,
+            submitted_at: submittedAt,
+            landing_page: submittedLandingPage || null,
+            source_page: normalized.source_page || null,
+            gclid: normalized.gclid || null,
+            gbraid: submittedGbraid || null,
+            wbraid: submittedWbraid || null,
+            utm_source: normalized.utm_source || null,
+            utm_medium: normalized.utm_medium || null,
+            utm_campaign: normalized.utm_campaign || null,
+            utm_term: normalized.utm_term || null,
+            utm_content: normalized.utm_content || null,
+        });
+        if (typeof context.waitUntil === "function") {
+            context.waitUntil(measurementCapture);
+        } else {
+            await measurementCapture;
         }
 
         return json({ ok: true, leadId });

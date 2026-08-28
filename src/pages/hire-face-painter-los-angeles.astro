@@ -399,9 +399,12 @@ const faqs = [
         "utm_term",
         "utm_content",
         "gclid",
+        "gbraid",
+        "wbraid",
         "fbclid",
         "msclkid"
       ];
+      const GOOGLE_CLICK_KEYS = new Set(["gclid", "gbraid", "wbraid"]);
 
       function trackEvent(eventName, params = {}) {
         window.dataLayer = window.dataLayer || [];
@@ -426,7 +429,8 @@ const faqs = [
         const stored = readAttrStore();
         const next = {};
         ATTR_KEYS.forEach((key) => {
-          next[key] = (params.get(key) || stored[key] || "").trim();
+          const value = String(params.get(key) || stored[key] || "");
+          next[key] = GOOGLE_CLICK_KEYS.has(key) ? value : value.trim();
         });
         return next;
       }
@@ -487,6 +491,7 @@ const faqs = [
           wizardVersion: "hire-face-painter-landing-v1",
           submittedAt: new Date().toISOString(),
           preferredContactMethod: "any",
+          landing_page: window.location.pathname,
           source_page: window.location.pathname,
           ...attribution
         };

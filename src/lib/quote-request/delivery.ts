@@ -9,13 +9,15 @@ import {
   type CanonicalPlanMyPartyLead,
   type PreferredContactMethod,
 } from './canonical-lead.ts';
+import { captureAttributionBestEffort } from '../outcome-measurement/attribution-store.ts';
+import type { OutcomeMeasurementEnv } from '../outcome-measurement/contracts.ts';
 
 export const QUOTE_REQUEST_FAILURE_MESSAGE =
   'We could not submit your request. Please call/text (310) 800-2860.';
 
 export const QUOTE_REQUEST_SUCCESS_MESSAGE = 'Your request was received.';
 
-export type QuoteRequestEnv = {
+export type QuoteRequestEnv = OutcomeMeasurementEnv & {
   AVAILABILITY_D1?: D1Database;
   QUOTE_REQUESTS_D1?: D1Database;
   GOOGLE_ADS_OFFLINE_OUTBOX_ENABLED?: string;
@@ -28,6 +30,10 @@ export type QuoteRequestEnv = {
   OWNER_NOTIFICATION_EMAIL?: string;
   QUOTE_REQUEST_EMAIL_PROVIDER?: string;
   QUOTE_REQUEST_EMAIL_API_KEY?: string;
+};
+
+export type QuoteRequestExecutionContext = {
+  waitUntil: (promise: Promise<unknown>) => void;
 };
 
 type ValidationResult =
@@ -1114,7 +1120,38 @@ async function persistQuoteRequest(
   };
 }
 
-export async function handleQuoteRequest(request: Request, env: QuoteRequestEnv): Promise<Response> {
+function quoteMeasurementAttribution(canonical: CanonicalPlanMyPartyLead) {
+  const hasSubmitSnapshot = [
+    canonical.submitLandingPage,
+    canonical.submitSourcePath,
+    canonical.submitUtmSource,
+    canonical.submitUtmMedium,
+    canonical.submitUtmCampaign,
+    canonical.submitUtmTerm,
+    canonical.submitUtmContent,
+    canonical.submitGclid,
+    canonical.submitGbraid,
+    canonical.submitWbraid,
+  ].some((value) => value !== null);
+
+  return {
+    landing_page: hasSubmitSnapshot ? canonical.submitLandingPage : canonical.landingPage,
+    gclid: hasSubmitSnapshot ? canonical.submitGclid : canonical.gclid,
+    gbraid: hasSubmitSnapshot ? canonical.submitGbraid : canonical.gbraid,
+    wbraid: hasSubmitSnapshot ? canonical.submitWbraid : canonical.wbraid,
+    utm_source: hasSubmitSnapshot ? canonical.submitUtmSource : canonical.utmSource,
+    utm_medium: hasSubmitSnapshot ? canonical.submitUtmMedium : canonical.utmMedium,
+    utm_campaign: hasSubmitSnapshot ? canonical.submitUtmCampaign : canonical.utmCampaign,
+    utm_term: hasSubmitSnapshot ? canonical.submitUtmTerm : canonical.utmTerm,
+    utm_content: hasSubmitSnapshot ? canonical.submitUtmContent : canonical.utmContent,
+  };
+}
+
+export async function handleQuoteRequest(
+  request: Request,
+  env: QuoteRequestEnv,
+  execution?: QuoteRequestExecutionContext,
+): Promise<Response> {
   if (request.method !== 'POST') {
     return failure('Method not allowed.', 405);
   }
@@ -1153,6 +1190,28 @@ export async function handleQuoteRequest(request: Request, env: QuoteRequestEnv)
   }
 
   if (!persisted.leadId || persisted.duplicate || !canonical) return persistedResponse;
+
+  const attribution = quoteMeasurementAttribution(canonical);
+  const measurementCapture = captureAttributionBestEffort(env, {
+    source_system: 'HFLA_PLAN_MY_PARTY',
+    source_lead_id: canonical.leadId,
+    submitted_at: canonical.createdAt,
+    landing_page: attribution.landing_page,
+    source_page: canonical.sourcePage,
+    gclid: attribution.gclid,
+    gbraid: attribution.gbraid,
+    wbraid: attribution.wbraid,
+    utm_source: attribution.utm_source,
+    utm_medium: attribution.utm_medium,
+    utm_campaign: attribution.utm_campaign,
+    utm_term: attribution.utm_term,
+    utm_content: attribution.utm_content,
+  });
+  if (execution) {
+    execution.waitUntil(measurementCapture);
+  } else {
+    await measurementCapture;
+  }
 
   const flags = await runOptionalNotifications(env, canonical);
   if (!flags.ownerNotificationSent && !flags.sheetWritten && !flags.crmPosted) {

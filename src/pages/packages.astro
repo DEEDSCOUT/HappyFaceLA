@@ -250,6 +250,7 @@ const transparencyCopy =
       </label>
 
       <input type="hidden" name="event_type" value="Yelp packages availability request" />
+      <input type="hidden" name="landing_page" value={canonicalPath} />
       <input type="hidden" name="source_page" value={canonicalPath} />
       <input type="hidden" name="utm_source" />
       <input type="hidden" name="utm_medium" />
@@ -257,6 +258,8 @@ const transparencyCopy =
       <input type="hidden" name="utm_term" />
       <input type="hidden" name="utm_content" />
       <input type="hidden" name="gclid" />
+      <input type="hidden" name="gbraid" />
+      <input type="hidden" name="wbraid" />
       <input type="hidden" name="fbclid" />
       <input type="hidden" name="msclkid" />
       <input type="hidden" name="lead_source" />
@@ -311,9 +314,17 @@ const transparencyCopy =
         "utm_term",
         "utm_content",
         "gclid",
+        "gbraid",
+        "wbraid",
         "fbclid",
         "msclkid"
       ];
+      const GOOGLE_CLICK_KEYS = new Set(["gclid", "gbraid", "wbraid"]);
+
+      function attributionValue(key, value) {
+        const text = String(value || "");
+        return GOOGLE_CLICK_KEYS.has(key) ? text : text.trim();
+      }
 
       function readAttrStore() {
         try {
@@ -330,7 +341,7 @@ const transparencyCopy =
         try {
           const params = new URLSearchParams(window.location.search);
           ATTR_KEYS.forEach((key) => {
-            const value = (params.get(key) || "").trim();
+            const value = attributionValue(key, params.get(key));
             if (value) {
               out[key] = value;
             }
@@ -361,7 +372,7 @@ const transparencyCopy =
           if (!(input instanceof HTMLInputElement)) {
             return;
           }
-          const next = String(values[key] || "").trim();
+          const next = attributionValue(key, values[key]);
           if (next) {
             input.value = next;
           }
@@ -423,13 +434,16 @@ const transparencyCopy =
           services_requested: selectedService ? [selectedService] : [],
           budget_range: "",
           message,
+          landing_page: String(fd.get("landing_page") || "").trim(),
           source_page: String(fd.get("source_page") || "").trim(),
           utm_source: String(fd.get("utm_source") || "").trim(),
           utm_medium: String(fd.get("utm_medium") || "").trim(),
           utm_campaign: String(fd.get("utm_campaign") || "").trim(),
           utm_term: String(fd.get("utm_term") || "").trim(),
           utm_content: String(fd.get("utm_content") || "").trim(),
-          gclid: String(fd.get("gclid") || "").trim(),
+          gclid: String(fd.get("gclid") || ""),
+          gbraid: String(fd.get("gbraid") || ""),
+          wbraid: String(fd.get("wbraid") || ""),
           fbclid: String(fd.get("fbclid") || "").trim(),
           msclkid: String(fd.get("msclkid") || "").trim(),
           lead_source: String(fd.get("lead_source") || "").trim(),
@@ -478,6 +492,10 @@ const transparencyCopy =
           }
 
           hydrateAttribution(form);
+          const landingInput = form.querySelector('input[name="landing_page"]');
+          if (landingInput instanceof HTMLInputElement) {
+            landingInput.value = window.location.pathname;
+          }
           const payload = getPayload(form);
 
           try {
@@ -507,6 +525,10 @@ const transparencyCopy =
             const sourceInput = form.querySelector('input[name="source_page"]');
             if (sourceInput instanceof HTMLInputElement) {
               sourceInput.value = window.location.pathname;
+            }
+            const landingAfterReset = form.querySelector('input[name="landing_page"]');
+            if (landingAfterReset instanceof HTMLInputElement) {
+              landingAfterReset.value = window.location.pathname;
             }
 
             if (successNode instanceof HTMLElement) {

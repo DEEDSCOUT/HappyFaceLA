@@ -1,0 +1,9 @@
+# Local-only Slice 1 D1 fixture. This file does not provision or bind a remote database.
+name = "hfla-outcome-measurement-slice1-local"
+compatibility_date = "2026-08-28"
+
+[[d1_databases]]
+binding = "OUTCOME_MEASUREMENT_D1"
+database_name = "hfla-outcome-measurement-slice1-local"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations/d1"
