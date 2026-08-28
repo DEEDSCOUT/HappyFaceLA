@@ -405,6 +405,8 @@ const faqs = [
         "msclkid"
       ];
       const GOOGLE_CLICK_KEYS = new Set(["gclid", "gbraid", "wbraid"]);
+      const GOOGLE_CLICK_KEY_LIST = ["gclid", "gbraid", "wbraid"];
+      const GOOGLE_CLICK_TOUCH_STORAGE_KEY = "hfla_google_click_touch_v1";
 
       function trackEvent(eventName, params = {}) {
         window.dataLayer = window.dataLayer || [];
@@ -424,13 +426,74 @@ const faqs = [
         }
       }
 
+      function validGoogleClickTouch(value) {
+        if (!value || typeof value !== "object") return null;
+        const touch = { gclid: null, gbraid: null, wbraid: null };
+        let present = false;
+        GOOGLE_CLICK_KEY_LIST.forEach((key) => {
+          const item = value[key];
+          if (typeof item === "string" && item !== "") {
+            touch[key] = item;
+            present = true;
+          }
+        });
+        return present ? touch : null;
+      }
+
+      function readGoogleClickTouchState() {
+        for (const storage of [sessionStorage, localStorage]) {
+          try {
+            const value = JSON.parse(storage.getItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY) || "null");
+            if (value?.version !== "GOOGLE_CLICK_TOUCH_V1") continue;
+            const first = validGoogleClickTouch(value.first);
+            const latest = validGoogleClickTouch(value.latest);
+            if (first && latest) return { version: "GOOGLE_CLICK_TOUCH_V1", first, latest };
+          } catch {
+            /* noop */
+          }
+        }
+        return { version: "GOOGLE_CLICK_TOUCH_V1", first: null, latest: null };
+      }
+
+      function selectedGoogleClickTouch() {
+        const params = new URLSearchParams(window.location.search);
+        const touch = { gclid: null, gbraid: null, wbraid: null };
+        let present = false;
+        GOOGLE_CLICK_KEY_LIST.forEach((key) => {
+          const value = params.get(key);
+          if (value !== null && value !== "") {
+            touch[key] = value;
+            present = true;
+          }
+        });
+        if (!present) return readGoogleClickTouchState().latest;
+        const state = readGoogleClickTouchState();
+        const next = {
+          version: "GOOGLE_CLICK_TOUCH_V1",
+          first: state.first || touch,
+          latest: touch
+        };
+        try {
+          const payload = JSON.stringify(next);
+          sessionStorage.setItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY, payload);
+          localStorage.setItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY, payload);
+        } catch {
+          /* noop */
+        }
+        return touch;
+      }
+
       function readAttribution() {
         const params = new URLSearchParams(window.location.search);
         const stored = readAttrStore();
         const next = {};
         ATTR_KEYS.forEach((key) => {
-          const value = String(params.get(key) || stored[key] || "");
-          next[key] = GOOGLE_CLICK_KEYS.has(key) ? value : value.trim();
+          if (GOOGLE_CLICK_KEYS.has(key)) return;
+          next[key] = String(params.get(key) || stored[key] || "").trim();
+        });
+        const googleTouch = selectedGoogleClickTouch();
+        GOOGLE_CLICK_KEY_LIST.forEach((key) => {
+          next[key] = googleTouch?.[key] || "";
         });
         return next;
       }

@@ -19,6 +19,11 @@ const EMAIL_LIKE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 const PHONE_LIKE = /(?:\+?\d[\s().-]*){10,}/;
 const CONTROL_CHARACTER = /[\u0000-\u001f\u007f]/;
 const CLICK_ID_WHITESPACE = /\s/;
+const MALFORMED_PERCENT_ESCAPE = /%(?![0-9a-f]{2})/i;
+const APPROVED_ATTRIBUTION_ORIGINS = new Set([
+  'https://happyfacesla.com',
+  'https://www.happyfacesla.com',
+]);
 
 export class AttributionValidationError extends Error {
   constructor() {
@@ -38,6 +43,41 @@ function invalid(): never {
   throw new AttributionValidationError();
 }
 
+export function assertValidUnicode(value: string): void {
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code >= 0xd800 && code <= 0xdbff) {
+      const next = value.charCodeAt(index + 1);
+      if (!(next >= 0xdc00 && next <= 0xdfff)) invalid();
+      index += 1;
+    } else if (code >= 0xdc00 && code <= 0xdfff) {
+      invalid();
+    }
+  }
+}
+
+function safetyDecodeLayers(value: string): string[] {
+  assertValidUnicode(value);
+  const layers = [value];
+  let current = value;
+  for (let pass = 0; pass < 2 && current.includes('%'); pass += 1) {
+    if (MALFORMED_PERCENT_ESCAPE.test(current)) invalid();
+    let decoded: string;
+    try {
+      decoded = decodeURIComponent(current);
+    } catch {
+      invalid();
+    }
+    assertValidUnicode(decoded);
+    layers.push(decoded);
+    if (decoded === current) break;
+    current = decoded;
+  }
+  // More encoding layers are not part of the admitted transport contract.
+  if (current.includes('%')) invalid();
+  return layers;
+}
+
 function canonicalIso(value: unknown): string {
   if (typeof value !== 'string' || !value) invalid();
   const parsed = new Date(value);
@@ -48,6 +88,7 @@ function canonicalIso(value: unknown): string {
 function optionalClickId(value: unknown): string | null {
   if (value === null || value === undefined || value === '') return null;
   if (typeof value !== 'string') invalid();
+  assertValidUnicode(value);
   if (value.length > CLICK_ID_MAX_LENGTH || CLICK_ID_WHITESPACE.test(value) || CONTROL_CHARACTER.test(value)) {
     invalid();
   }
@@ -58,6 +99,10 @@ function containsLikelyPii(value: string): boolean {
   return EMAIL_LIKE.test(value) || PHONE_LIKE.test(value);
 }
 
+function containsLikelyPiiAtAnyEncodingLayer(value: string): boolean {
+  return safetyDecodeLayers(value).some(containsLikelyPii);
+}
+
 function optionalMarketingField(value: unknown): string | null {
   if (value === null || value === undefined) return null;
   if (typeof value !== 'string') invalid();
@@ -66,7 +111,7 @@ function optionalMarketingField(value: unknown): string | null {
   if (
     normalized.length > MARKETING_FIELD_MAX_LENGTH
     || CONTROL_CHARACTER.test(normalized)
-    || containsLikelyPii(normalized)
+    || containsLikelyPiiAtAnyEncodingLayer(normalized)
   ) {
     invalid();
   }
@@ -78,21 +123,17 @@ export function attributionPathOnly(value: unknown): string | null {
   if (typeof value !== 'string') invalid();
   const raw = value.trim();
   if (!raw) return null;
+  assertValidUnicode(raw);
 
   try {
     const parsed = new URL(raw, 'https://www.happyfacesla.com');
+    if (!APPROVED_ATTRIBUTION_ORIGINS.has(parsed.origin)) invalid();
     const path = parsed.pathname || '/';
-    let decodedPath = path;
-    try {
-      decodedPath = decodeURIComponent(path);
-    } catch {
-      invalid();
-    }
+    const decodedLayers = safetyDecodeLayers(path);
     if (
       path.length > PATH_MAX_LENGTH
       || CONTROL_CHARACTER.test(path)
-      || containsLikelyPii(path)
-      || containsLikelyPii(decodedPath)
+      || decodedLayers.some((layer) => containsLikelyPii(layer) || layer.includes('?') || layer.includes('#'))
     ) invalid();
     return path;
   } catch {
@@ -128,14 +169,21 @@ type CanonicalJson = null | boolean | number | string | CanonicalJson[] | { [key
 // keys plus ECMAScript JSON string serialization is therefore byte-equivalent to
 // RFC 8785 for every value admitted by this contract.
 export function canonicalizeJson(value: CanonicalJson): string {
-  if (value === null || typeof value === 'boolean' || typeof value === 'string') return JSON.stringify(value);
+  if (value === null || typeof value === 'boolean') return JSON.stringify(value);
+  if (typeof value === 'string') {
+    assertValidUnicode(value);
+    return JSON.stringify(value);
+  }
   if (typeof value === 'number') {
     if (!Number.isFinite(value)) invalid();
     return JSON.stringify(value);
   }
   if (Array.isArray(value)) return `[${value.map(canonicalizeJson).join(',')}]`;
   const keys = Object.keys(value).sort();
-  return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalizeJson(value[key])}`).join(',')}}`;
+  return `{${keys.map((key) => {
+    assertValidUnicode(key);
+    return `${JSON.stringify(key)}:${canonicalizeJson(value[key])}`;
+  }).join(',')}}`;
 }
 
 export async function sha256Hex(value: string): Promise<string> {

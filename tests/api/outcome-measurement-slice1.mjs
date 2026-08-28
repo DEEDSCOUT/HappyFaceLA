@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+import { pathToFileURL } from 'node:url';
 
 import { onRequest as handleLead } from '../../functions/api/lead.ts';
+import { onRequest as handleQuotePagesFunction } from '../../functions/api/quote-request.ts';
 import {
   AttributionIdentityConflictError,
   buildLeadAttributionRecord,
@@ -15,12 +19,17 @@ import {
   persistLeadAttributionRecord,
 } from '../../src/lib/outcome-measurement/attribution-store.ts';
 import { ATTRIBUTION_CAPTURE_VERSION } from '../../src/lib/outcome-measurement/contracts.ts';
-import { handleQuoteRequest } from '../../src/lib/quote-request/delivery.ts';
+import {
+  buildQuoteAttributionCaptureInput,
+  handleQuoteRequest,
+} from '../../src/lib/quote-request/delivery.ts';
+import { scanOutcomeMeasurementSecurity } from '../../scripts/scan-outcome-measurement-slice1-security.mjs';
 import { verifyOutcomeMeasurementCoverage } from '../../scripts/verify-outcome-measurement-coverage.mjs';
 
 const tests = [];
 const originalFetch = globalThis.fetch;
 const originalWarn = console.warn;
+const originalError = console.error;
 let requestCounter = 0;
 let fetchCalls = [];
 
@@ -39,7 +48,7 @@ function installSuccessfulFetch() {
   };
 }
 
-function jsonRequest(path, payload) {
+function jsonRequest(path, payload, additionalHeaders = {}) {
   requestCounter += 1;
   return new Request(`https://www.happyfacesla.com${path}`, {
     method: 'POST',
@@ -48,6 +57,7 @@ function jsonRequest(path, payload) {
       'cf-connecting-ip': `192.0.2.${requestCounter}`,
       'cf-ray': `slice1-${requestCounter}`,
       'user-agent': 'outcome-measurement-slice1-test',
+      ...additionalHeaders,
     },
     body: JSON.stringify(payload),
   });
@@ -238,15 +248,18 @@ async function callQuote(payload, coreDb, measurementEnv = {}, execution) {
 
 test('capture version and feature flag are fail-closed by default', () => {
   assert.equal(ATTRIBUTION_CAPTURE_VERSION, 'ATTRIBUTION_CAPTURE_V1');
-  assert.equal(isOutcomeMeasurementCaptureEnabled({}), false);
-  assert.equal(isOutcomeMeasurementCaptureEnabled({ OUTCOME_MEASUREMENT_CAPTURE_ENABLED: 'false' }), false);
+  for (const value of [undefined, '', 'false', '1', 'TRUE', 'arbitrary']) {
+    assert.equal(isOutcomeMeasurementCaptureEnabled({
+      OUTCOME_MEASUREMENT_CAPTURE_ENABLED: value,
+    }), false);
+  }
   assert.equal(isOutcomeMeasurementCaptureEnabled({ OUTCOME_MEASUREMENT_CAPTURE_ENABLED: 'true' }), true);
 });
 
 for (const [field, value] of [
-  ['gclid', 'TEST-GCLID-AaZz09_-'],
-  ['gbraid', 'TEST-GBRAID-AaZz09_-'],
-  ['wbraid', 'TEST-WBRAID-AaZz09_-'],
+  ['gclid', 'TEST-GCLID-AaZz09_-%2B~.:'],
+  ['gbraid', 'TEST-GBRAID-AaZz09_-%2B~.:'],
+  ['wbraid', 'TEST-WBRAID-AaZz09_-%2B~.:'],
 ]) {
   test(`${field.toUpperCase()} is preserved exactly and case-sensitively`, async () => {
     const record = await buildLeadAttributionRecord(attributionInput({
@@ -259,6 +272,22 @@ for (const [field, value] of [
     assert.equal(record.capture_state, 'CAPTURED');
   });
 }
+
+test('click identifiers with surrounding whitespace are rejected rather than mutated', async () => {
+  const db = new AttributionMockD1();
+  const warnings = [];
+  const whitespaceId = ` ${'TEST-GCLID-WHITESPACE'} `;
+  console.warn = (...args) => warnings.push(args);
+  const result = await captureAttributionBestEffort({
+    OUTCOME_MEASUREMENT_CAPTURE_ENABLED: 'true',
+    OUTCOME_MEASUREMENT_D1: db,
+  }, attributionInput({ gclid: whitespaceId }));
+  console.warn = originalWarn;
+  assert.equal(result.status, 'FAILED');
+  assert.equal(result.code, 'INVALID_ATTRIBUTION');
+  assert.equal(db.rows.size, 0);
+  assert(!JSON.stringify(warnings).includes('TEST-GCLID-WHITESPACE'));
+});
 
 test('no click identifier is admitted', async () => {
   const record = await buildLeadAttributionRecord(attributionInput({ gclid: null }));
@@ -298,6 +327,31 @@ test('canonical digest is stable across input field order', async () => {
   assert.equal(canonicalizeJson({ z: 'last', a: 'first' }), canonicalizeJson({ a: 'first', z: 'last' }));
 });
 
+test('RFC 8785 input validation accepts valid Unicode and rejects unpaired surrogates', async () => {
+  const validA = canonicalizeJson({ value: 'valid-\u{1F642}' });
+  const validB = canonicalizeJson({ value: 'valid-\u{1F642}' });
+  assert.equal(validA, validB);
+  for (const invalidUnicode of ['\uD800', '\uDC00', `prefix-\uD800-suffix`]) {
+    assert.throws(() => canonicalizeJson({ value: invalidUnicode }), /invalid/i);
+    await assert.rejects(() => buildLeadAttributionRecord(attributionInput({
+      utm_campaign: invalidUnicode,
+    })), /invalid/i);
+  }
+
+  const db = new AttributionMockD1();
+  const warnings = [];
+  const invalidClickUnicode = '\uD800';
+  console.warn = (...args) => warnings.push(args);
+  const result = await captureAttributionBestEffort({
+    OUTCOME_MEASUREMENT_CAPTURE_ENABLED: 'true',
+    OUTCOME_MEASUREMENT_D1: db,
+  }, attributionInput({ gclid: invalidClickUnicode }));
+  console.warn = originalWarn;
+  assert.equal(result.status, 'FAILED');
+  assert.equal(result.code, 'INVALID_ATTRIBUTION');
+  assert.equal(db.rows.size, 0);
+});
+
 test('meaningful field and click-ID case changes alter the canonical digest', async () => {
   const baseline = await buildLeadAttributionRecord(attributionInput());
   const changedCampaign = await buildLeadAttributionRecord(attributionInput({ utm_campaign: 'slice1_test_b' }));
@@ -321,10 +375,45 @@ test('UTM length and safety rules reject oversized, control, and contact-like va
   }
 });
 
-test('encoded contact data is rejected from path fields', async () => {
-  await assert.rejects(() => buildLeadAttributionRecord(attributionInput({
-    landing_page: 'https://www.happyfacesla.com/customer%40example.test/',
-  })), /invalid/i);
+test('raw, encoded, and double-encoded PII-like attribution is rejected', async () => {
+  const invalidInputs = [
+    { utm_campaign: 'customer@example.test' },
+    { utm_campaign: 'customer%40example.test' },
+    { utm_campaign: 'customer%2540example.test' },
+    { utm_campaign: '3105550100' },
+    { utm_campaign: '310%252D555%252D0100' },
+    { landing_page: 'https://www.happyfacesla.com/customer%40example.test/' },
+    { landing_page: 'https://www.happyfacesla.com/customer%2540example.test/' },
+    { landing_page: 'https://www.happyfacesla.com/310%252D555%252D0100/' },
+    { landing_page: 'https://www.happyfacesla.com/pricing/%3Femail%3Dcustomer%40example.test' },
+    { source_page: '/pricing/%253Fphone%253D3105550100' },
+    { source_page: '/pricing/%ZZ' },
+    { source_page: '/pricing/%2525ZZ' },
+  ];
+  for (const override of invalidInputs) {
+    await assert.rejects(() => buildLeadAttributionRecord(attributionInput(override)), /invalid/i);
+  }
+});
+
+test('privacy-invalid measurement is discarded without losing the customer lead', async () => {
+  installSuccessfulFetch();
+  const measurementDb = new AttributionMockD1();
+  const warnings = [];
+  console.warn = (...args) => warnings.push(args);
+  const { response, body } = await callLead(legacyLeadPayload({
+    source_page: '/pricing/customer%2540example.test/',
+    gclid: 'TEST-GCLID-PRIVACY-FAIL',
+  }), {
+    OUTCOME_MEASUREMENT_CAPTURE_ENABLED: 'true',
+    OUTCOME_MEASUREMENT_D1: measurementDb,
+  });
+  console.warn = originalWarn;
+  assert.equal(response.status, 200);
+  assert.equal(body.ok, true);
+  assert.equal(fetchCalls.length, 1);
+  assert.equal(measurementDb.rows.size, 0);
+  assert(!JSON.stringify(warnings).includes('customer%2540example.test'));
+  assert(!JSON.stringify(warnings).includes('TEST-GCLID-PRIVACY-FAIL'));
 });
 
 test('canonical attribution contains no customer-PII fields', async () => {
@@ -358,6 +447,42 @@ test('diagnostics never expose raw click IDs or source lead IDs', async () => {
   assert(!rendered.includes(sourceLeadId));
   assert(rendered.includes('WBRAID'));
   console.warn = originalWarn;
+});
+
+test('rejected source pages and validation errors never disclose click identifiers', async () => {
+  const logEntries = [];
+  console.warn = (...args) => logEntries.push(args);
+  console.error = (...args) => logEntries.push(args);
+  const sentinels = [
+    'TEST-GCLID-LOG-SENTINEL',
+    'TEST-GBRAID-LOG-SENTINEL',
+    'TEST-WBRAID-LOG-SENTINEL',
+  ];
+  const sourcePage = `/pricing/?gclid=${sentinels[0]}&gbraid=${sentinels[1]}&wbraid=${sentinels[2]}`;
+
+  const leadResponse = await handleLead({
+    request: jsonRequest('/api/lead', legacyLeadPayload({ email: '', phone: '', source_page: sourcePage }), {
+      'user-agent': sentinels[0],
+      'cf-ray': sentinels[1],
+    }),
+    env: {},
+  });
+  const quoteResponse = await handleQuoteRequest(jsonRequest('/api/quote-request', planMyPartyPayload({
+    email: '',
+    phone: '',
+    source_page: sourcePage,
+  }), { 'x-request-id': sentinels[2] }), { AVAILABILITY_D1: new QuoteCoreMockD1() });
+  const responseText = `${await leadResponse.text()}${await quoteResponse.text()}`;
+  const renderedLogs = JSON.stringify(logEntries);
+  console.warn = originalWarn;
+  console.error = originalError;
+
+  assert.equal(leadResponse.status, 400);
+  assert.equal(quoteResponse.status, 400);
+  for (const sentinel of sentinels) {
+    assert(!renderedLogs.includes(sentinel));
+    assert(!responseText.includes(sentinel));
+  }
 });
 
 test('feature flag OFF performs no sidecar write and existing lead delivery succeeds', async () => {
@@ -474,6 +599,34 @@ test('production waitUntil keeps a hanging sidecar off the generic lead response
   assert.equal(deferred.length, 1);
 });
 
+test('generic lead handler invokes Cloudflare waitUntil with its context receiver', async () => {
+  installSuccessfulFetch();
+  const deferred = [];
+  const hangingDb = {
+    prepare() {
+      return { bind: () => ({ first: () => new Promise(() => {}), run: () => new Promise(() => {}) }) };
+    },
+  };
+  const context = {
+    request: jsonRequest('/api/lead', legacyLeadPayload({ gclid: 'TEST-GCLID-BOUND-CONTEXT' })),
+    env: {
+      QUOTE_REQUEST_MAKE_WEBHOOK_URL: 'https://example.test/make',
+      OUTCOME_MEASUREMENT_CAPTURE_ENABLED: 'true',
+      OUTCOME_MEASUREMENT_D1: hangingDb,
+    },
+    waitUntil(promise) {
+      if (this !== context) throw new TypeError('Illegal invocation');
+      deferred.push(promise);
+    },
+  };
+  const response = await handleLead(context);
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.ok, true);
+  assert.equal(fetchCalls.length, 1);
+  assert.equal(deferred.length, 1);
+});
+
 test('measurement identity conflict does not lose the customer lead', async () => {
   installSuccessfulFetch();
   const measurementDb = new AttributionMockD1({ alwaysConflict: true });
@@ -523,6 +676,65 @@ test('Plan My Party delivery remains durable and uses the dedicated sidecar bind
   assert.equal(row.source_lead_id, body.leadId);
   assert.equal(row.gclid, 'TEST-GCLID-PLAN');
   assert.equal(row.landing_page, '/plan-my-party/');
+});
+
+test('Plan My Party preserves every click-ID domain as an opaque value', async () => {
+  for (const [field, value] of [
+    ['gclid', 'TEST-GCLID-PLAN-Aa_%2B~.:'],
+    ['gbraid', 'TEST-GBRAID-PLAN-Aa_%2B~.:'],
+    ['wbraid', 'TEST-WBRAID-PLAN-Aa_%2B~.:'],
+  ]) {
+    installSuccessfulFetch();
+    const coreDb = new QuoteCoreMockD1();
+    const measurementDb = new AttributionMockD1();
+    const identifiers = {
+      gclid: null,
+      gbraid: null,
+      wbraid: null,
+      submit_gclid: null,
+      submit_gbraid: null,
+      submit_wbraid: null,
+      [field]: value,
+      [`submit_${field}`]: value,
+    };
+    const { response } = await callQuote(planMyPartyPayload(identifiers), coreDb, {
+      OUTCOME_MEASUREMENT_CAPTURE_ENABLED: 'true',
+      OUTCOME_MEASUREMENT_D1: measurementDb,
+    });
+    assert.equal(response.status, 200);
+    assert.equal(Array.from(measurementDb.rows.values())[0][field], value);
+  }
+});
+
+test('the sidecar mapper selects one complete attribution touch without field mixing', () => {
+  const mapped = buildQuoteAttributionCaptureInput({
+    leadId: 'lead_atomic_touch_test',
+    createdAt: '2026-08-28T18:00:00.000Z',
+    sourcePage: '/plan-my-party/',
+    landingPage: '/first/',
+    sourcePath: '/first/',
+    utmSource: null,
+    utmMedium: null,
+    utmCampaign: null,
+    utmTerm: null,
+    utmContent: null,
+    gclid: null,
+    gbraid: 'TEST-GBRAID-FIRST-ONLY',
+    wbraid: null,
+    submitLandingPage: '/plan-my-party/',
+    submitSourcePath: '/plan-my-party/',
+    submitUtmSource: 'google',
+    submitUtmMedium: 'cpc',
+    submitUtmCampaign: null,
+    submitUtmTerm: null,
+    submitUtmContent: null,
+    submitGclid: 'TEST-GCLID-SUBMIT-ONLY',
+    submitGbraid: null,
+    submitWbraid: null,
+  });
+  assert.equal(mapped.gclid, 'TEST-GCLID-SUBMIT-ONLY');
+  assert.equal(mapped.gbraid, null);
+  assert.equal(mapped.wbraid, null);
 });
 
 test('Plan My Party uses one coherent submit-touch attribution snapshot', async () => {
@@ -586,9 +798,66 @@ test('production waitUntil keeps a hanging sidecar off the Plan My Party respons
   assert.equal(deferred.length, 1);
 });
 
-test('coverage verifier passes every approved production lead route', () => {
-  const result = verifyOutcomeMeasurementCoverage();
+test('Cloudflare Pages wrapper preserves the waitUntil receiver for every sidecar outcome', async () => {
+  const scenarios = [
+    { name: 'feature-off', enabled: undefined, db: new AttributionMockD1(), payload: {} },
+    { name: 'capture-success', enabled: 'true', db: new AttributionMockD1(), payload: {} },
+    { name: 'storage-unavailable', enabled: 'true', db: undefined, payload: {} },
+    { name: 'identity-conflict', enabled: 'true', db: new AttributionMockD1({ alwaysConflict: true }), payload: {} },
+    {
+      name: 'quarantine',
+      enabled: 'true',
+      db: new AttributionMockD1(),
+      payload: {
+        gclid: null,
+        submit_gclid: null,
+        submit_gbraid: 'TEST-GBRAID-WRAPPER-Q',
+        submit_wbraid: 'TEST-WBRAID-WRAPPER-Q',
+      },
+    },
+    {
+      name: 'hanging',
+      enabled: 'true',
+      db: {
+        prepare() {
+          return { bind: () => ({ first: () => new Promise(() => {}), run: () => new Promise(() => {}) }) };
+        },
+      },
+      payload: {},
+    },
+  ];
+
+  for (const scenario of scenarios) {
+    installSuccessfulFetch();
+    const coreDb = new QuoteCoreMockD1();
+    const deferred = [];
+    const context = {
+      request: jsonRequest('/api/quote-request', planMyPartyPayload(scenario.payload)),
+      env: {
+        AVAILABILITY_D1: coreDb,
+        QUOTE_REQUEST_MAKE_WEBHOOK_URL: 'https://example.test/make',
+        OUTCOME_MEASUREMENT_CAPTURE_ENABLED: scenario.enabled,
+        OUTCOME_MEASUREMENT_D1: scenario.db,
+      },
+      waitUntil(promise) {
+        if (this !== context) throw new TypeError('Illegal invocation');
+        deferred.push(promise);
+      },
+    };
+    const response = await handleQuotePagesFunction(context);
+    const body = await response.json();
+    assert.equal(response.status, 200, scenario.name);
+    assert.equal(body.ok, true, scenario.name);
+    assert.equal(coreDb.byLeadId.size, 1, scenario.name);
+    assert.equal(fetchCalls.length, 1, scenario.name);
+    assert.equal(deferred.length, scenario.enabled === 'true' ? 1 : 0, scenario.name);
+  }
+});
+
+test('coverage verifier passes every approved production lead route end to end', async () => {
+  const result = await verifyOutcomeMeasurementCoverage();
   assert.equal(result.ok, true, JSON.stringify(result));
+  assert(!JSON.stringify(result).includes('TEST-COVERAGE-'));
   assert.equal(result.routes.length, 4);
   for (const row of result.routes) {
     assert.equal(row.supports_gclid, true);
@@ -601,20 +870,90 @@ test('coverage verifier passes every approved production lead route', () => {
   }
 });
 
-test('coverage verifier fails when a supported braid is dropped', () => {
-  const file = 'src/pages/packages.astro';
-  const original = readFileSync(resolve(file), 'utf8');
-  const dropped = original.replace('<input type="hidden" name="gbraid" />', '');
-  const result = verifyOutcomeMeasurementCoverage({ sourceOverrides: { [file]: dropped } });
-  assert.equal(result.ok, false);
-  const row = result.routes.find((item) => item.route === '/packages/');
-  assert(row.problems.includes('gbraid_not_preserved'));
+test('coverage verifier rejects deliberate browser loss on every route and click-ID domain', async () => {
+  const routeMutations = [
+    {
+      route: 'QuoteForm production callers',
+      file: 'src/components/conversion/QuoteForm.astro',
+      marker: 'const GOOGLE_CLICK_KEY_LIST = ["gclid", "gbraid", "wbraid"]',
+    },
+    {
+      route: '/packages/',
+      file: 'src/pages/packages.astro',
+      marker: 'const GOOGLE_CLICK_KEY_LIST = ["gclid", "gbraid", "wbraid"]',
+    },
+    {
+      route: '/hire-face-painter-los-angeles/',
+      file: 'src/pages/hire-face-painter-los-angeles.astro',
+      marker: 'const GOOGLE_CLICK_KEY_LIST = ["gclid", "gbraid", "wbraid"]',
+    },
+    {
+      route: '/plan-my-party/',
+      file: 'src/components/wizard/WizardShell.astro',
+      marker: "const GOOGLE_CLICK_KEYS = ['gclid', 'gbraid', 'wbraid'] as const",
+    },
+  ];
+  for (const mutation of routeMutations) {
+    for (const field of ['gclid', 'gbraid', 'wbraid']) {
+      const original = readFileSync(resolve(mutation.file), 'utf8');
+      const dropped = original.replace(mutation.marker, mutation.marker.replace(`'${field}'`, "'dropped'").replace(`"${field}"`, '"dropped"'));
+      assert.notEqual(dropped, original);
+      const result = await verifyOutcomeMeasurementCoverage({
+        sourceOverrides: { [mutation.file]: dropped },
+      });
+      assert.equal(result.ok, false, `${mutation.route}:${field}`);
+      const row = result.routes.find((item) => item.route === mutation.route);
+      assert(row.problems.includes(`${field}_not_preserved_end_to_end`), `${mutation.route}:${field}`);
+    }
+  }
+});
+
+test('coverage verifier rejects server and storage mapper field loss', async () => {
+  const leadFile = 'functions/api/lead.ts';
+  const leadSource = readFileSync(resolve(leadFile), 'utf8');
+  const droppedLeadBraid = leadSource.replace(
+    'gbraid: submittedGbraid || null',
+    'gbraid: null',
+  );
+  assert.notEqual(droppedLeadBraid, leadSource);
+  const leadResult = await verifyOutcomeMeasurementCoverage({
+    sourceOverrides: { [leadFile]: droppedLeadBraid },
+  });
+  assert.equal(leadResult.ok, false);
+  assert(leadResult.routes
+    .filter((row) => row.source_system === 'HFLA_WEB_LEAD')
+    .every((row) => row.problems.includes('gbraid_not_preserved_end_to_end')));
+
+  const quoteFile = 'src/lib/quote-request/delivery.ts';
+  const quoteSource = readFileSync(resolve(quoteFile), 'utf8');
+  const droppedQuoteBraid = quoteSource.replace(
+    'gbraid: hasSubmitSnapshot ? canonical.submitGbraid : canonical.gbraid',
+    'gbraid: null',
+  );
+  assert.notEqual(droppedQuoteBraid, quoteSource);
+  const quoteResult = await verifyOutcomeMeasurementCoverage({
+    sourceOverrides: { [quoteFile]: droppedQuoteBraid },
+  });
+  assert.equal(quoteResult.ok, false);
+  assert(quoteResult.routes
+    .filter((row) => row.source_system === 'HFLA_PLAN_MY_PARTY')
+    .every((row) => row.problems.includes('gbraid_not_preserved_end_to_end')));
+
+  const storageFile = 'src/lib/outcome-measurement/attribution-store.ts';
+  const storageSource = readFileSync(resolve(storageFile), 'utf8');
+  const droppedStorageBraid = storageSource.replace('record.gbraid,', 'null,');
+  assert.notEqual(droppedStorageBraid, storageSource);
+  const storageResult = await verifyOutcomeMeasurementCoverage({
+    sourceOverrides: { [storageFile]: droppedStorageBraid },
+  });
+  assert.equal(storageResult.ok, false);
+  assert(storageResult.routes.every((row) => row.problems.includes('gbraid_not_preserved_end_to_end')));
 });
 
 test('local D1-compatible migration applies cleanly with exact isolated schema', () => {
   const db = new DatabaseSync(':memory:');
   db.exec('CREATE TABLE existing_application_table (id TEXT PRIMARY KEY); INSERT INTO existing_application_table VALUES (\'preserved\');');
-  const migration = readFileSync(resolve('migrations/d1/0006_outcome_measurement_sidecar.sql'), 'utf8');
+  const migration = readFileSync(resolve('migrations/outcome-measurement-slice1/0001_outcome_measurement_sidecar.sql'), 'utf8');
   db.exec(migration);
 
   const columns = db.prepare('PRAGMA table_info(lead_attribution_v1)').all().map((row) => row.name);
@@ -631,9 +970,21 @@ test('local D1-compatible migration applies cleanly with exact isolated schema',
   db.close();
 });
 
+test('local Wrangler migration source admits only the isolated Slice 1 migration', () => {
+  const directory = resolve('migrations/outcome-measurement-slice1');
+  assert.deepEqual(readdirSync(directory).sort(), ['0001_outcome_measurement_sidecar.sql']);
+  const isolated = readFileSync(resolve(directory, '0001_outcome_measurement_sidecar.sql'));
+  const authoritative = readFileSync(resolve('migrations/d1/0006_outcome_measurement_sidecar.sql'));
+  assert.deepEqual(isolated, authoritative);
+  const config = readFileSync(resolve('wrangler.outcome-measurement.local.toml'), 'utf8');
+  assert(config.includes('migrations_dir = "migrations/outcome-measurement-slice1"'));
+  assert(!config.includes('migrations_dir = "migrations/d1"'));
+  assert(!readdirSync(directory).some((name) => name.startsWith('0005')));
+});
+
 test('local migration enforces atomic insert, audit, immutability, and rollback', async () => {
   const db = new DatabaseSync(':memory:');
-  db.exec(readFileSync(resolve('migrations/d1/0006_outcome_measurement_sidecar.sql'), 'utf8'));
+  db.exec(readFileSync(resolve('migrations/outcome-measurement-slice1/0001_outcome_measurement_sidecar.sql'), 'utf8'));
   const record = await buildLeadAttributionRecord(attributionInput(), '2026-08-28T17:16:00.000Z');
   const insert = db.prepare(`INSERT INTO lead_attribution_v1 (
     source_system, source_lead_id, submitted_at, landing_page, source_page,
@@ -666,7 +1017,7 @@ test('local migration enforces atomic insert, audit, immutability, and rollback'
   assert.throws(() => insert.run(...invalidTimestampValues), /constraint/i);
 
   const rollbackDb = new DatabaseSync(':memory:');
-  rollbackDb.exec(readFileSync(resolve('migrations/d1/0006_outcome_measurement_sidecar.sql'), 'utf8'));
+  rollbackDb.exec(readFileSync(resolve('migrations/outcome-measurement-slice1/0001_outcome_measurement_sidecar.sql'), 'utf8'));
   const rollbackInsert = rollbackDb.prepare(insert.sourceSQL ?? `INSERT INTO lead_attribution_v1 (
     source_system, source_lead_id, submitted_at, landing_page, source_page,
     gclid, gbraid, wbraid, utm_source, utm_medium, utm_campaign, utm_term, utm_content,
@@ -690,11 +1041,63 @@ test('local migration enforces atomic insert, audit, immutability, and rollback'
   rollbackDb.close();
 });
 
+test('security scanner executes against itself and fails on an injected secret', () => {
+  const clean = scanOutcomeMeasurementSecurity();
+  assert.equal(clean.ok, true, JSON.stringify(clean));
+  assert.equal(clean.self_scanned, true);
+  assert.match(clean.scanner_sha256, /^[0-9a-f]{64}$/);
+  assert.match(clean.scan_input_sha256, /^[0-9a-f]{64}$/);
+
+  const syntheticSecret = ['sk', 'live', 'ABCDEFGHIJKLMN'].join('_');
+  const injected = scanOutcomeMeasurementSecurity({
+    additionalSources: { 'synthetic-injected-secret.fixture': `const token = '${syntheticSecret}';` },
+  });
+  assert.equal(injected.ok, false);
+  assert(injected.findings.some((finding) => finding.rule === 'stripe_live_secret'));
+  assert(!JSON.stringify(injected).includes(syntheticSecret));
+});
+
+test('network evidence guard loads and blocks an external probe before network', () => {
+  const temporary = mkdtempSync(join(tmpdir(), 'hfla-slice1-network-'));
+  try {
+    const log = resolve(temporary, 'guard.jsonl');
+    const guardUrl = pathToFileURL(resolve('scripts/outcome-measurement-network-guard.mjs')).href;
+    const result = spawnSync(process.execPath, ['tests/security/outcome-measurement-network-guard.mjs'], {
+      cwd: resolve('.'),
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --import=${guardUrl}`.trim(),
+        OUTCOME_MEASUREMENT_NETWORK_GUARD_LOG: log,
+      },
+    });
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+    const entries = readFileSync(log, 'utf8').trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    assert(entries.some((entry) => entry.type === 'loaded'));
+    assert(entries.some((entry) => entry.type === 'blocked' && entry.surface === 'fetch'));
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('evidence generator binds executed exact-head results and has no declared zero-network PASS', () => {
+  const source = readFileSync(resolve('scripts/generate-outcome-measurement-slice1-evidence.mjs'), 'utf8');
+  assert(source.includes('command_sha256'));
+  assert(source.includes('result_sha256'));
+  assert(source.includes('network_guard_loaded'));
+  assert(source.includes('instrumented_external_attempts'));
+  assert(!source.includes('network_runtime_calls: 0'));
+  assert(!source.includes('uninstrumented_zero_network_claim: true'));
+  assert(!/local_d1:\s*'PASS'/.test(source));
+  assert(!/release_build:\s*'PASS'/.test(source));
+});
+
 test('Slice 1 source has no BCC, Google Ads, or RECEIVER-01B dependency', () => {
   const files = [
     'src/lib/outcome-measurement/contracts.ts',
     'src/lib/outcome-measurement/attribution-store.ts',
     'migrations/d1/0006_outcome_measurement_sidecar.sql',
+    'migrations/outcome-measurement-slice1/0001_outcome_measurement_sidecar.sql',
   ];
   const source = files.map((file) => readFileSync(resolve(file), 'utf8')).join('\n').toLowerCase();
   for (const forbidden of ['receiver-01b', '5917277', '5917444', 'booking control center', 'google ads api']) {
@@ -711,4 +1114,5 @@ try {
 } finally {
   globalThis.fetch = originalFetch;
   console.warn = originalWarn;
+  console.error = originalError;
 }

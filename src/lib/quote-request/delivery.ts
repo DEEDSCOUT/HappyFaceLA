@@ -9,8 +9,14 @@ import {
   type CanonicalPlanMyPartyLead,
   type PreferredContactMethod,
 } from './canonical-lead.ts';
-import { captureAttributionBestEffort } from '../outcome-measurement/attribution-store.ts';
-import type { OutcomeMeasurementEnv } from '../outcome-measurement/contracts.ts';
+import {
+  captureAttributionBestEffort,
+  isOutcomeMeasurementCaptureEnabled,
+} from '../outcome-measurement/attribution-store.ts';
+import type {
+  AttributionCaptureInput,
+  OutcomeMeasurementEnv,
+} from '../outcome-measurement/contracts.ts';
 
 export const QUOTE_REQUEST_FAILURE_MESSAGE =
   'We could not submit your request. Please call/text (310) 800-2860.';
@@ -368,6 +374,11 @@ function normalizeAttribution(value: unknown): string | null {
   return normalizeNullableString(value, 512);
 }
 
+function preserveOpaqueClickIdentifier(value: unknown): string | null {
+  if (value === null || value === undefined || value === '') return null;
+  return typeof value === 'string' ? value : null;
+}
+
 function normalizeUrlAttribution(value: unknown): string | null {
   const raw = normalizeAttribution(value);
   if (!raw) return null;
@@ -432,11 +443,11 @@ function logQuoteValidationFailure(
     timestamp: new Date().toISOString(),
     endpoint: 'quote-request',
     method: request.method,
-    sourcePage: raw ? normalizeAttribution(raw.sourcePage ?? raw.source_page) : null,
+    sourcePagePresent: Boolean(raw && (raw.sourcePage ?? raw.source_page)),
     payloadKeysPresent: safePayloadKeys(raw),
     missingRequiredFields: missingFields,
-    userAgent: request.headers.get('user-agent') || null,
-    requestId: request.headers.get('cf-ray') || request.headers.get('x-request-id') || null,
+    userAgentPresent: Boolean(request.headers.get('user-agent')),
+    requestIdPresent: Boolean(request.headers.get('cf-ray') || request.headers.get('x-request-id')),
     validationErrorCode: code,
   });
 }
@@ -563,9 +574,9 @@ function validatePayload(raw: Record<string, unknown>, sourcePage: string | null
       utmCampaign: normalizeAttribution(body.utm_campaign),
       utmTerm: normalizeAttribution(body.utm_term),
       utmContent: normalizeAttribution(body.utm_content),
-      gclid: normalizeAttribution(body.gclid),
-      gbraid: normalizeAttribution(body.gbraid),
-      wbraid: normalizeAttribution(body.wbraid),
+      gclid: preserveOpaqueClickIdentifier(body.gclid),
+      gbraid: preserveOpaqueClickIdentifier(body.gbraid),
+      wbraid: preserveOpaqueClickIdentifier(body.wbraid),
       fbclid: normalizeAttribution(body.fbclid),
       msclkid: normalizeAttribution(body.msclkid),
       firstUtmSource: normalizeAttribution(body.first_utm_source),
@@ -573,17 +584,17 @@ function validatePayload(raw: Record<string, unknown>, sourcePage: string | null
       firstUtmCampaign: normalizeAttribution(body.first_utm_campaign),
       firstUtmTerm: normalizeAttribution(body.first_utm_term),
       firstUtmContent: normalizeAttribution(body.first_utm_content),
-      firstGclid: normalizeAttribution(body.first_gclid),
-      firstGbraid: normalizeAttribution(body.first_gbraid),
-      firstWbraid: normalizeAttribution(body.first_wbraid),
+      firstGclid: preserveOpaqueClickIdentifier(body.first_gclid),
+      firstGbraid: preserveOpaqueClickIdentifier(body.first_gbraid),
+      firstWbraid: preserveOpaqueClickIdentifier(body.first_wbraid),
       submitUtmSource: normalizeAttribution(body.submit_utm_source),
       submitUtmMedium: normalizeAttribution(body.submit_utm_medium),
       submitUtmCampaign: normalizeAttribution(body.submit_utm_campaign),
       submitUtmTerm: normalizeAttribution(body.submit_utm_term),
       submitUtmContent: normalizeAttribution(body.submit_utm_content),
-      submitGclid: normalizeAttribution(body.submit_gclid),
-      submitGbraid: normalizeAttribution(body.submit_gbraid),
-      submitWbraid: normalizeAttribution(body.submit_wbraid),
+      submitGclid: preserveOpaqueClickIdentifier(body.submit_gclid),
+      submitGbraid: preserveOpaqueClickIdentifier(body.submit_gbraid),
+      submitWbraid: preserveOpaqueClickIdentifier(body.submit_wbraid),
     },
   };
 }
@@ -1004,7 +1015,7 @@ async function postWebhook(url: string, secret: string, payload: Record<string, 
     console.error('BLANK_LEAD_EMAIL_BLOCKED', {
       timestamp: new Date().toISOString(),
       endpoint: 'quote-request',
-      sourcePage: normalizeAttribution(payload.source_page),
+      sourcePagePresent: Boolean(payload.source_page),
       payloadKeysPresent: Object.keys(payload).sort(),
       missingRequiredFields: err instanceof Error
         ? (err as Error & { missingFields?: string[] }).missingFields ?? []
@@ -1087,7 +1098,7 @@ async function persistQuoteRequest(
     console.error('BLANK_LEAD_EMAIL_BLOCKED', {
       timestamp: new Date().toISOString(),
       endpoint: 'quote-request',
-      sourcePage: canonical.sourcePage,
+      sourcePagePresent: Boolean(canonical.sourcePage),
       payloadKeysPresent: Object.keys(buildCanonicalNotificationPayload(canonical)).sort(),
       missingRequiredFields: notificationValidation.missingFields,
       validationErrorCode: notificationValidation.code,
@@ -1120,7 +1131,9 @@ async function persistQuoteRequest(
   };
 }
 
-function quoteMeasurementAttribution(canonical: CanonicalPlanMyPartyLead) {
+export function buildQuoteAttributionCaptureInput(
+  canonical: CanonicalPlanMyPartyLead,
+): AttributionCaptureInput {
   const hasSubmitSnapshot = [
     canonical.submitLandingPage,
     canonical.submitSourcePath,
@@ -1134,7 +1147,7 @@ function quoteMeasurementAttribution(canonical: CanonicalPlanMyPartyLead) {
     canonical.submitWbraid,
   ].some((value) => value !== null);
 
-  return {
+  const attribution = {
     landing_page: hasSubmitSnapshot ? canonical.submitLandingPage : canonical.landingPage,
     gclid: hasSubmitSnapshot ? canonical.submitGclid : canonical.gclid,
     gbraid: hasSubmitSnapshot ? canonical.submitGbraid : canonical.gbraid,
@@ -1144,6 +1157,13 @@ function quoteMeasurementAttribution(canonical: CanonicalPlanMyPartyLead) {
     utm_campaign: hasSubmitSnapshot ? canonical.submitUtmCampaign : canonical.utmCampaign,
     utm_term: hasSubmitSnapshot ? canonical.submitUtmTerm : canonical.utmTerm,
     utm_content: hasSubmitSnapshot ? canonical.submitUtmContent : canonical.utmContent,
+  };
+  return {
+    source_system: 'HFLA_PLAN_MY_PARTY',
+    source_lead_id: canonical.leadId,
+    submitted_at: canonical.createdAt,
+    source_page: canonical.sourcePage,
+    ...attribution,
   };
 }
 
@@ -1191,26 +1211,16 @@ export async function handleQuoteRequest(
 
   if (!persisted.leadId || persisted.duplicate || !canonical) return persistedResponse;
 
-  const attribution = quoteMeasurementAttribution(canonical);
-  const measurementCapture = captureAttributionBestEffort(env, {
-    source_system: 'HFLA_PLAN_MY_PARTY',
-    source_lead_id: canonical.leadId,
-    submitted_at: canonical.createdAt,
-    landing_page: attribution.landing_page,
-    source_page: canonical.sourcePage,
-    gclid: attribution.gclid,
-    gbraid: attribution.gbraid,
-    wbraid: attribution.wbraid,
-    utm_source: attribution.utm_source,
-    utm_medium: attribution.utm_medium,
-    utm_campaign: attribution.utm_campaign,
-    utm_term: attribution.utm_term,
-    utm_content: attribution.utm_content,
-  });
-  if (execution) {
-    execution.waitUntil(measurementCapture);
-  } else {
-    await measurementCapture;
+  if (isOutcomeMeasurementCaptureEnabled(env)) {
+    const measurementCapture = captureAttributionBestEffort(
+      env,
+      buildQuoteAttributionCaptureInput(canonical),
+    );
+    if (execution) {
+      execution.waitUntil(measurementCapture);
+    } else {
+      await measurementCapture;
+    }
   }
 
   const flags = await runOptionalNotifications(env, canonical);

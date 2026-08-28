@@ -76,6 +76,8 @@ const {
         "fbclid",
         "msclkid"
       ];
+      const GOOGLE_CLICK_KEYS = ["gclid", "gbraid", "wbraid"];
+      const GOOGLE_CLICK_TOUCH_STORAGE_KEY = "hfla_google_click_touch_v1";
 
       function readAttrStore() {
         try {
@@ -92,6 +94,58 @@ const {
           const payload = JSON.stringify(value);
           sessionStorage.setItem("hfla_attribution", payload);
           localStorage.setItem("hfla_attribution", payload);
+        } catch {
+          // Ignore storage access issues.
+        }
+      }
+
+      function validGoogleClickTouch(value) {
+        if (!value || typeof value !== "object") return null;
+        const touch = { gclid: null, gbraid: null, wbraid: null };
+        let present = false;
+        GOOGLE_CLICK_KEYS.forEach((key) => {
+          const item = value[key];
+          if (typeof item === "string" && item !== "") {
+            touch[key] = item;
+            present = true;
+          }
+        });
+        return present ? touch : null;
+      }
+
+      function googleClickTouchFromUrl(url) {
+        const touch = { gclid: null, gbraid: null, wbraid: null };
+        let present = false;
+        GOOGLE_CLICK_KEYS.forEach((key) => {
+          const value = url.searchParams.get(key);
+          if (value !== null && value !== "") {
+            touch[key] = value;
+            present = true;
+          }
+        });
+        return present ? touch : null;
+      }
+
+      function readGoogleClickTouchState() {
+        for (const storage of [sessionStorage, localStorage]) {
+          try {
+            const value = JSON.parse(storage.getItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY) || "null");
+            if (value?.version !== "GOOGLE_CLICK_TOUCH_V1") continue;
+            const first = validGoogleClickTouch(value.first);
+            const latest = validGoogleClickTouch(value.latest);
+            if (first && latest) return { version: "GOOGLE_CLICK_TOUCH_V1", first, latest };
+          } catch {
+            // Ignore unavailable or malformed browser storage.
+          }
+        }
+        return { version: "GOOGLE_CLICK_TOUCH_V1", first: null, latest: null };
+      }
+
+      function writeGoogleClickTouchState(value) {
+        try {
+          const payload = JSON.stringify(value);
+          sessionStorage.setItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY, payload);
+          localStorage.setItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY, payload);
         } catch {
           // Ignore storage access issues.
         }
@@ -126,6 +180,15 @@ const {
         const landingPage = safeCurrentUrl();
         const sourcePath = window.location.pathname || "/";
         const referrer = safeReferrer();
+        const priorGoogleTouches = readGoogleClickTouchState();
+        const currentGoogleTouch = googleClickTouchFromUrl(url);
+        const googleTouches = currentGoogleTouch
+          ? {
+              version: "GOOGLE_CLICK_TOUCH_V1",
+              first: priorGoogleTouches.first || currentGoogleTouch,
+              latest: currentGoogleTouch
+            }
+          : priorGoogleTouches;
 
         if (!next.first_landing_page) next.first_landing_page = landingPage;
         if (!next.first_source_path) next.first_source_path = sourcePath;
@@ -135,6 +198,7 @@ const {
         if (referrer && !next.referrer) next.referrer = referrer;
 
         ATTR_KEYS.forEach((key) => {
+          if (GOOGLE_CLICK_KEYS.includes(key)) return;
           const value = url.searchParams.get(key);
           if (value) {
             const firstKey = `first_${key}`;
@@ -143,6 +207,14 @@ const {
           }
         });
 
+        GOOGLE_CLICK_KEYS.forEach((key) => {
+          delete next[key];
+          delete next[`first_${key}`];
+          if (googleTouches.latest?.[key]) next[key] = googleTouches.latest[key];
+          if (googleTouches.first?.[key]) next[`first_${key}`] = googleTouches.first[key];
+        });
+
+        if (currentGoogleTouch) writeGoogleClickTouchState(googleTouches);
         writeAttrStore(next);
       }
 

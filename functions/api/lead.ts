@@ -5,8 +5,14 @@ import {
   validateLeadNotificationPayload,
   type CanonicalPlanMyPartyLead,
 } from '../../src/lib/quote-request/canonical-lead.ts';
-import { captureAttributionBestEffort } from '../../src/lib/outcome-measurement/attribution-store.ts';
-import type { OutcomeMeasurementEnv } from '../../src/lib/outcome-measurement/contracts.ts';
+import {
+    captureAttributionBestEffort,
+    isOutcomeMeasurementCaptureEnabled,
+} from '../../src/lib/outcome-measurement/attribution-store.ts';
+import type {
+    AttributionCaptureInput,
+    OutcomeMeasurementEnv,
+} from '../../src/lib/outcome-measurement/contracts.ts';
 
 type Env = OutcomeMeasurementEnv & {
     OWNER_NOTIFICATION_EMAIL?: string;
@@ -79,6 +85,37 @@ function normalizeString(input: unknown): string {
 
 function preserveSubmittedClickId(input: unknown): string {
     return typeof input === "string" ? input : "";
+}
+
+export function buildLeadAttributionCaptureInput(input: {
+    sourceLeadId: string;
+    submittedAt: string;
+    landingPage: string | null;
+    sourcePage: string | null;
+    gclid: string | null;
+    gbraid: string | null;
+    wbraid: string | null;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    utmTerm: string | null;
+    utmContent: string | null;
+}): AttributionCaptureInput {
+    return {
+        source_system: "HFLA_WEB_LEAD",
+        source_lead_id: input.sourceLeadId,
+        submitted_at: input.submittedAt,
+        landing_page: input.landingPage,
+        source_page: input.sourcePage,
+        gclid: input.gclid,
+        gbraid: input.gbraid,
+        wbraid: input.wbraid,
+        utm_source: input.utmSource,
+        utm_medium: input.utmMedium,
+        utm_campaign: input.utmCampaign,
+        utm_term: input.utmTerm,
+        utm_content: input.utmContent,
+    };
 }
 
 const NON_CUSTOMER_VALUES = new Set([
@@ -170,11 +207,11 @@ function logLeadValidationFailure(
         timestamp: new Date().toISOString(),
         endpoint: "lead",
         method: request.method,
-        sourcePage: input ? normalizeString(input.source_page) || normalizeString(input.source_path) || null : null,
+        sourcePagePresent: Boolean(input && (input.source_page || input.source_path)),
         payloadKeysPresent: payloadKeys(input),
         missingRequiredFields: missingFields,
-        userAgent: request.headers.get("user-agent") || null,
-        requestId: request.headers.get("cf-ray") || request.headers.get("x-request-id") || null,
+        userAgentPresent: Boolean(request.headers.get("user-agent")),
+        requestIdPresent: Boolean(request.headers.get("cf-ray") || request.headers.get("x-request-id")),
         validationErrorCode: code
     });
 }
@@ -468,7 +505,7 @@ export const onRequest = async (context: any): Promise<Response> => {
         console.error("BLANK_LEAD_EMAIL_BLOCKED", {
             timestamp: new Date().toISOString(),
             endpoint: "lead",
-            sourcePage: normalized.source_page || null,
+            sourcePagePresent: Boolean(normalized.source_page),
             payloadKeysPresent: Object.keys(notificationPayload).sort(),
             missingRequiredFields: notificationValidation.missingFields,
             validationErrorCode: notificationValidation.code,
@@ -517,7 +554,7 @@ export const onRequest = async (context: any): Promise<Response> => {
                 console.error("BLANK_LEAD_EMAIL_BLOCKED", {
                     timestamp: new Date().toISOString(),
                     endpoint: "lead",
-                    sourcePage: normalized.source_page || null,
+                    sourcePagePresent: Boolean(normalized.source_page),
                     payloadKeysPresent: Object.keys(notificationPayload).sort(),
                     missingRequiredFields: err instanceof Error
                         ? (err as Error & { missingFields?: string[] }).missingFields ?? []
@@ -561,25 +598,26 @@ export const onRequest = async (context: any): Promise<Response> => {
             }
         }
 
-        const measurementCapture = captureAttributionBestEffort(env, {
-            source_system: "HFLA_WEB_LEAD",
-            source_lead_id: leadId,
-            submitted_at: submittedAt,
-            landing_page: submittedLandingPage || null,
-            source_page: normalized.source_page || null,
-            gclid: normalized.gclid || null,
-            gbraid: submittedGbraid || null,
-            wbraid: submittedWbraid || null,
-            utm_source: normalized.utm_source || null,
-            utm_medium: normalized.utm_medium || null,
-            utm_campaign: normalized.utm_campaign || null,
-            utm_term: normalized.utm_term || null,
-            utm_content: normalized.utm_content || null,
-        });
-        if (typeof context.waitUntil === "function") {
-            context.waitUntil(measurementCapture);
-        } else {
-            await measurementCapture;
+        if (isOutcomeMeasurementCaptureEnabled(env)) {
+            const measurementCapture = captureAttributionBestEffort(env, buildLeadAttributionCaptureInput({
+                sourceLeadId: leadId,
+                submittedAt,
+                landingPage: submittedLandingPage || null,
+                sourcePage: normalized.source_page || null,
+                gclid: normalized.gclid || null,
+                gbraid: submittedGbraid || null,
+                wbraid: submittedWbraid || null,
+                utmSource: normalized.utm_source || null,
+                utmMedium: normalized.utm_medium || null,
+                utmCampaign: normalized.utm_campaign || null,
+                utmTerm: normalized.utm_term || null,
+                utmContent: normalized.utm_content || null,
+            }));
+            if (typeof context.waitUntil === "function") {
+                context.waitUntil(measurementCapture);
+            } else {
+                await measurementCapture;
+            }
         }
 
         return json({ ok: true, leadId });

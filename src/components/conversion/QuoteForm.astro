@@ -186,6 +186,8 @@ const hiddenLeadSource = leadSource || currentPath;
       "msclkid"
     ];
     const GOOGLE_CLICK_KEYS = new Set(["gclid", "gbraid", "wbraid"]);
+    const GOOGLE_CLICK_KEY_LIST = ["gclid", "gbraid", "wbraid"];
+    const GOOGLE_CLICK_TOUCH_STORAGE_KEY = "hfla_google_click_touch_v1";
 
     function attributionValue(key, value) {
       const text = String(value || "");
@@ -202,11 +204,74 @@ const hiddenLeadSource = leadSource || currentPath;
       }
     }
 
+    function validGoogleClickTouch(value) {
+      if (!value || typeof value !== "object") return null;
+      const touch = { gclid: null, gbraid: null, wbraid: null };
+      let present = false;
+      GOOGLE_CLICK_KEY_LIST.forEach((key) => {
+        const item = value[key];
+        if (typeof item === "string" && item !== "") {
+          touch[key] = item;
+          present = true;
+        }
+      });
+      return present ? touch : null;
+    }
+
+    function readGoogleClickTouchState() {
+      for (const storage of [sessionStorage, localStorage]) {
+        try {
+          const value = JSON.parse(storage.getItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY) || "null");
+          if (value?.version !== "GOOGLE_CLICK_TOUCH_V1") continue;
+          const first = validGoogleClickTouch(value.first);
+          const latest = validGoogleClickTouch(value.latest);
+          if (first && latest) return { version: "GOOGLE_CLICK_TOUCH_V1", first, latest };
+        } catch {
+          /* noop */
+        }
+      }
+      return { version: "GOOGLE_CLICK_TOUCH_V1", first: null, latest: null };
+    }
+
+    function currentGoogleClickTouch() {
+      const params = new URLSearchParams(window.location.search);
+      const touch = { gclid: null, gbraid: null, wbraid: null };
+      let present = false;
+      GOOGLE_CLICK_KEY_LIST.forEach((key) => {
+        const value = params.get(key);
+        if (value !== null && value !== "") {
+          touch[key] = value;
+          present = true;
+        }
+      });
+      return present ? touch : null;
+    }
+
+    function selectedGoogleClickTouch() {
+      const state = readGoogleClickTouchState();
+      const current = currentGoogleClickTouch();
+      if (!current) return state.latest;
+      const next = {
+        version: "GOOGLE_CLICK_TOUCH_V1",
+        first: state.first || current,
+        latest: current
+      };
+      try {
+        const payload = JSON.stringify(next);
+        sessionStorage.setItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY, payload);
+        localStorage.setItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY, payload);
+      } catch {
+        /* noop */
+      }
+      return current;
+    }
+
     function readUrlAttribution() {
       const out = {};
       try {
         const params = new URLSearchParams(window.location.search);
         ATTR_KEYS.forEach((key) => {
+          if (GOOGLE_CLICK_KEYS.has(key)) return;
           const value = attributionValue(key, params.get(key));
           if (value) {
             out[key] = value;
@@ -281,16 +346,20 @@ const hiddenLeadSource = leadSource || currentPath;
       // Merge stored attribution with the current URL; the current landing URL
       // wins so first-touch ad params populate even before BaseLayout writes storage.
       const values = { ...readAttrStore(), ...readUrlAttribution() };
+      const googleTouch = selectedGoogleClickTouch();
+      GOOGLE_CLICK_KEY_LIST.forEach((key) => {
+        delete values[key];
+        if (googleTouch?.[key]) values[key] = googleTouch[key];
+      });
       ATTR_KEYS.forEach((key) => {
         const input = form.querySelector(`input[name="${key}"]`);
         if (!(input instanceof HTMLInputElement)) {
           return;
         }
-        const next = attributionValue(key, values[key]);
-        // Only write non-empty values so blank/stale storage never clobbers a live URL value.
-        if (next) {
-          input.value = next;
-        }
+        const next = GOOGLE_CLICK_KEYS.has(key)
+          ? googleTouch?.[key] || ""
+          : attributionValue(key, values[key]);
+        input.value = next;
       });
       // Persist the merged (current-touch) attribution so later pages keep these values.
       try {
