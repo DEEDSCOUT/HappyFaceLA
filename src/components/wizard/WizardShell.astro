@@ -128,6 +128,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     CLASSIFICATION_LABELS,
     CUSTOM_PLAN_COPY,
   } from '../../lib/wizard/quote-classification.ts';
+  import { submitOutcomeMeasurementBrowserRoute } from '../../lib/outcome-measurement/browser-route.ts';
 
   // ── Types (inline for bundler compatibility) ──────────────────
   type EventType = 'birthday-party'|'school-event'|'corporate-family-day'|'festival-community'|'other';
@@ -1531,6 +1532,14 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     'fbclid',
     'msclkid',
   ] as const;
+  const GOOGLE_CLICK_KEYS = ['gclid', 'gbraid', 'wbraid'] as const;
+  const GOOGLE_CLICK_TOUCH_STORAGE_KEY = 'hfla_google_click_touch_v1';
+  type GoogleClickTouch = Record<(typeof GOOGLE_CLICK_KEYS)[number], string | null>;
+  type GoogleClickTouchState = {
+    version: 'GOOGLE_CLICK_TOUCH_V1';
+    first: GoogleClickTouch | null;
+    latest: GoogleClickTouch | null;
+  };
 
   function safeCurrentUrl(): string {
     try {
@@ -1572,6 +1581,59 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     }
   }
 
+  function validGoogleClickTouch(value: unknown): GoogleClickTouch | null {
+    if (!value || typeof value !== 'object') return null;
+    const source = value as Record<string, unknown>;
+    const touch: GoogleClickTouch = { gclid: null, gbraid: null, wbraid: null };
+    let present = false;
+    GOOGLE_CLICK_KEYS.forEach((key) => {
+      const item = source[key];
+      if (typeof item === 'string' && item !== '') {
+        touch[key] = item;
+        present = true;
+      }
+    });
+    return present ? touch : null;
+  }
+
+  function readGoogleClickTouchState(): GoogleClickTouchState {
+    for (const storage of [sessionStorage, localStorage]) {
+      try {
+        const value = JSON.parse(storage.getItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY) || 'null') as Record<string, unknown> | null;
+        if (value?.version !== 'GOOGLE_CLICK_TOUCH_V1') continue;
+        const first = validGoogleClickTouch(value.first);
+        const latest = validGoogleClickTouch(value.latest);
+        if (first && latest) return { version: 'GOOGLE_CLICK_TOUCH_V1', first, latest };
+      } catch {
+        // Ignore unavailable or malformed browser storage.
+      }
+    }
+    return { version: 'GOOGLE_CLICK_TOUCH_V1', first: null, latest: null };
+  }
+
+  function writeGoogleClickTouchState(value: GoogleClickTouchState) {
+    try {
+      const payload = JSON.stringify(value);
+      sessionStorage.setItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY, payload);
+      localStorage.setItem(GOOGLE_CLICK_TOUCH_STORAGE_KEY, payload);
+    } catch {
+      // Ignore storage access issues.
+    }
+  }
+
+  function googleClickTouchFromParams(params: URLSearchParams): GoogleClickTouch | null {
+    const touch: GoogleClickTouch = { gclid: null, gbraid: null, wbraid: null };
+    let present = false;
+    GOOGLE_CLICK_KEYS.forEach((key) => {
+      const value = params.get(key);
+      if (value !== null && value !== '') {
+        touch[key] = value;
+        present = true;
+      }
+    });
+    return present ? touch : null;
+  }
+
   function captureWizardAttribution(): Record<string, string> {
     const ap = new URLSearchParams(location.search);
     const cur = readStoredAttribution();
@@ -1579,6 +1641,15 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     const landingPage = safeCurrentUrl();
     const sourcePath = location.pathname || '/';
     const referrer = safeDocumentReferrer();
+    const priorGoogleTouches = readGoogleClickTouchState();
+    const currentGoogleTouch = googleClickTouchFromParams(ap);
+    const googleTouches: GoogleClickTouchState = currentGoogleTouch
+      ? {
+          version: 'GOOGLE_CLICK_TOUCH_V1',
+          first: priorGoogleTouches.first || currentGoogleTouch,
+          latest: currentGoogleTouch,
+        }
+      : priorGoogleTouches;
 
     if (!next.first_landing_page) next.first_landing_page = landingPage;
     if (!next.first_source_path) next.first_source_path = sourcePath;
@@ -1588,6 +1659,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     if (referrer && !next.referrer) next.referrer = referrer;
 
     ATTRIBUTION_KEYS.forEach((key) => {
+      if (GOOGLE_CLICK_KEYS.includes(key as (typeof GOOGLE_CLICK_KEYS)[number])) return;
       const value = ap.get(key);
       if (!value) return;
       const firstKey = `first_${key}`;
@@ -1595,6 +1667,14 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       next[key] = value;
     });
 
+    GOOGLE_CLICK_KEYS.forEach((key) => {
+      delete next[key];
+      delete next[`first_${key}`];
+      if (googleTouches.latest?.[key]) next[key] = googleTouches.latest[key];
+      if (googleTouches.first?.[key]) next[`first_${key}`] = googleTouches.first[key];
+    });
+
+    if (currentGoogleTouch) writeGoogleClickTouchState(googleTouches);
     writeStoredAttribution(next);
     return next;
   }
@@ -1606,6 +1686,8 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     const currentPath = location.pathname || '/';
     const currentReferrer = safeDocumentReferrer();
     const pick = (key: string) => ap.get(key) || stored[key] || null;
+    const googleTouches = readGoogleClickTouchState();
+    const selectedGoogleTouch = googleTouches.latest;
     const out: Record<string, string | null> = {
       source_page: currentPath,
       landing_page: stored.first_landing_page || currentUrl,
@@ -1620,9 +1702,15 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     };
 
     ATTRIBUTION_KEYS.forEach((key) => {
+      if (GOOGLE_CLICK_KEYS.includes(key as (typeof GOOGLE_CLICK_KEYS)[number])) return;
       out[key] = pick(key);
       out[`first_${key}`] = stored[`first_${key}`] || stored[key] || null;
       out[`submit_${key}`] = ap.get(key) || stored[key] || null;
+    });
+    GOOGLE_CLICK_KEYS.forEach((key) => {
+      out[key] = selectedGoogleTouch?.[key] || null;
+      out[`first_${key}`] = googleTouches.first?.[key] || null;
+      out[`submit_${key}`] = selectedGoogleTouch?.[key] || null;
     });
 
     return out;
@@ -1661,6 +1749,8 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
 
     // Build payload — NO internal fields, NO Stripe credentials
     const rec = computeRecommendation(answers as Parameters<typeof computeRecommendation>[0]);
+    const attributionPayload = buildSubmitAttributionPayload();
+    const googleTouchState = readGoogleClickTouchState();
     const payload = {
       eventType: answers.eventType ?? '',
       services: answers.services,
@@ -1699,14 +1789,15 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       wizardVersion: 'guided-wizard-v1',
       submittedAt: new Date().toISOString(),
       preferredContactMethod: selectedPreferredContactMethod,
-      ...buildSubmitAttributionPayload(),
+      ...attributionPayload,
     };
 
     try {
-      const res = await fetch('/api/quote-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+      const { response: res } = await submitOutcomeMeasurementBrowserRoute({
+        routeId: 'PLAN_MY_PARTY',
+        basePayload: payload,
+        selectedGoogleTouch: googleTouchState.latest,
+        firstGoogleTouch: googleTouchState.first,
       });
       const data = await res.json() as {
         ok: boolean;

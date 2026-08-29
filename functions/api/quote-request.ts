@@ -8,8 +8,18 @@ import { handleQuoteRequest, type QuoteRequestEnv } from '../../src/lib/quote-re
 type PagesFunctionContext = {
   request: Request;
   env: QuoteRequestEnv;
+  waitUntil?: (promise: Promise<unknown>) => void;
 };
 
-export const onRequest = async ({ request, env }: PagesFunctionContext): Promise<Response> => {
-  return handleQuoteRequest(request, env);
+export const onRequest = async (context: PagesFunctionContext): Promise<Response> => {
+  const execution = typeof context.waitUntil === 'function'
+    ? {
+        // Cloudflare's waitUntil is receiver-bound. Keep the provider context as
+        // the call receiver instead of passing a detached method reference.
+        waitUntil(promise: Promise<unknown>) {
+          context.waitUntil!(promise);
+        },
+      }
+    : undefined;
+  return handleQuoteRequest(context.request, context.env, execution);
 };

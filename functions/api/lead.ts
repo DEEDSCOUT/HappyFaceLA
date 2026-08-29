@@ -5,8 +5,16 @@ import {
   validateLeadNotificationPayload,
   type CanonicalPlanMyPartyLead,
 } from '../../src/lib/quote-request/canonical-lead.ts';
+import {
+    captureAttributionBestEffort,
+    isOutcomeMeasurementCaptureEnabled,
+} from '../../src/lib/outcome-measurement/attribution-store.ts';
+import type {
+    AttributionCaptureInput,
+    OutcomeMeasurementEnv,
+} from '../../src/lib/outcome-measurement/contracts.ts';
 
-type Env = {
+type Env = OutcomeMeasurementEnv & {
     OWNER_NOTIFICATION_EMAIL?: string;
     CRM_WEBHOOK_URL?: string;
     CRM_WEBHOOK_SECRET?: string;
@@ -32,6 +40,7 @@ type LeadPayload = {
     services_requested?: string[];
     budget_range?: string;
     message?: string;
+    landing_page?: string;
     source_page?: string;
     utm_source?: string;
     utm_medium?: string;
@@ -39,6 +48,8 @@ type LeadPayload = {
     utm_term?: string;
     utm_content?: string;
     gclid?: string;
+    gbraid?: string;
+    wbraid?: string;
     fbclid?: string;
     msclkid?: string;
     lead_source?: string;
@@ -70,6 +81,76 @@ function json(data: unknown, status = 200): Response {
 
 function normalizeString(input: unknown): string {
     return String(input ?? "").trim();
+}
+
+function preserveSubmittedClickId(input: unknown): string {
+    return typeof input === "string" ? input : "";
+}
+
+export type ParsedLeadAttributionRequest = {
+    landingPage: string | null;
+    sourcePage: string | null;
+    gclid: string | null;
+    gbraid: string | null;
+    wbraid: string | null;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    utmTerm: string | null;
+    utmContent: string | null;
+};
+
+export function createLeadAttributionRequestParser(
+    mutate?: (parsed: ParsedLeadAttributionRequest) => ParsedLeadAttributionRequest,
+) {
+    return function parseLeadAttributionRequest(input: Record<string, unknown>, request: Request): ParsedLeadAttributionRequest {
+        const parsed: ParsedLeadAttributionRequest = {
+            landingPage: normalizeString(input.landing_page) || null,
+            sourcePage: deriveSafeSourcePage(input as LeadPayload, request) || null,
+            gclid: preserveSubmittedClickId(input.gclid) || null,
+            gbraid: preserveSubmittedClickId(input.gbraid) || null,
+            wbraid: preserveSubmittedClickId(input.wbraid) || null,
+            utmSource: normalizeString(input.utm_source) || null,
+            utmMedium: normalizeString(input.utm_medium) || null,
+            utmCampaign: normalizeString(input.utm_campaign) || null,
+            utmTerm: normalizeString(input.utm_term) || null,
+            utmContent: normalizeString(input.utm_content) || null,
+        };
+        return mutate ? mutate(parsed) : parsed;
+    };
+}
+
+export const parseLeadAttributionRequest = createLeadAttributionRequestParser();
+
+export function buildLeadAttributionCaptureInput(input: {
+    sourceLeadId: string;
+    submittedAt: string;
+    landingPage: string | null;
+    sourcePage: string | null;
+    gclid: string | null;
+    gbraid: string | null;
+    wbraid: string | null;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    utmTerm: string | null;
+    utmContent: string | null;
+}): AttributionCaptureInput {
+    return {
+        source_system: "HFLA_WEB_LEAD",
+        source_lead_id: input.sourceLeadId,
+        submitted_at: input.submittedAt,
+        landing_page: input.landingPage,
+        source_page: input.sourcePage,
+        gclid: input.gclid,
+        gbraid: input.gbraid,
+        wbraid: input.wbraid,
+        utm_source: input.utmSource,
+        utm_medium: input.utmMedium,
+        utm_campaign: input.utmCampaign,
+        utm_term: input.utmTerm,
+        utm_content: input.utmContent,
+    };
 }
 
 const NON_CUSTOMER_VALUES = new Set([
@@ -161,11 +242,11 @@ function logLeadValidationFailure(
         timestamp: new Date().toISOString(),
         endpoint: "lead",
         method: request.method,
-        sourcePage: input ? normalizeString(input.source_page) || normalizeString(input.source_path) || null : null,
+        sourcePagePresent: Boolean(input && (input.source_page || input.source_path)),
         payloadKeysPresent: payloadKeys(input),
         missingRequiredFields: missingFields,
-        userAgent: request.headers.get("user-agent") || null,
-        requestId: request.headers.get("cf-ray") || request.headers.get("x-request-id") || null,
+        userAgentPresent: Boolean(request.headers.get("user-agent")),
+        requestIdPresent: Boolean(request.headers.get("cf-ray") || request.headers.get("x-request-id")),
         validationErrorCode: code
     });
 }
@@ -347,7 +428,11 @@ function legacyLeadToCanonical(p: LeadPayload, leadId: string, now: string): Can
 }
 
 export const onRequest = async (context: any): Promise<Response> => {
-    const { request, env } = context as { request: Request; env: Env };
+    const { request, env } = context as {
+        request: Request;
+        env: Env;
+        waitUntil?: (promise: Promise<unknown>) => void;
+    };
 
     if (request.method !== "POST") {
         return json({ ok: false, error: "Method not allowed" }, 405);
@@ -375,6 +460,8 @@ export const onRequest = async (context: any): Promise<Response> => {
         return json({ ok: true, leadId: crypto.randomUUID() });
     }
 
+    const parsedAttribution = parseLeadAttributionRequest(input, request);
+
     const normalized: LeadPayload = {
         ...input,
         first_name: normalizeString(input.first_name),
@@ -391,13 +478,16 @@ export const onRequest = async (context: any): Promise<Response> => {
         services_requested: normalizeStringArray(input.services_requested),
         budget_range: normalizeString(input.budget_range),
         message: normalizeString(input.message),
-        source_page: deriveSafeSourcePage(input, request),
-        utm_source: normalizeString(input.utm_source),
-        utm_medium: normalizeString(input.utm_medium),
-        utm_campaign: normalizeString(input.utm_campaign),
-        utm_term: normalizeString(input.utm_term),
-        utm_content: normalizeString(input.utm_content),
-        gclid: normalizeString(input.gclid),
+        landing_page: undefined,
+        source_page: parsedAttribution.sourcePage || undefined,
+        utm_source: parsedAttribution.utmSource || undefined,
+        utm_medium: parsedAttribution.utmMedium || undefined,
+        utm_campaign: parsedAttribution.utmCampaign || undefined,
+        utm_term: parsedAttribution.utmTerm || undefined,
+        utm_content: parsedAttribution.utmContent || undefined,
+        gclid: parsedAttribution.gclid || undefined,
+        gbraid: undefined,
+        wbraid: undefined,
         fbclid: normalizeString(input.fbclid),
         msclkid: normalizeString(input.msclkid),
         lead_source: deriveLeadSource(input),
@@ -448,7 +538,7 @@ export const onRequest = async (context: any): Promise<Response> => {
         console.error("BLANK_LEAD_EMAIL_BLOCKED", {
             timestamp: new Date().toISOString(),
             endpoint: "lead",
-            sourcePage: normalized.source_page || null,
+            sourcePagePresent: Boolean(normalized.source_page),
             payloadKeysPresent: Object.keys(notificationPayload).sort(),
             missingRequiredFields: notificationValidation.missingFields,
             validationErrorCode: notificationValidation.code,
@@ -497,7 +587,7 @@ export const onRequest = async (context: any): Promise<Response> => {
                 console.error("BLANK_LEAD_EMAIL_BLOCKED", {
                     timestamp: new Date().toISOString(),
                     endpoint: "lead",
-                    sourcePage: normalized.source_page || null,
+                    sourcePagePresent: Boolean(normalized.source_page),
                     payloadKeysPresent: Object.keys(notificationPayload).sort(),
                     missingRequiredFields: err instanceof Error
                         ? (err as Error & { missingFields?: string[] }).missingFields ?? []
@@ -526,7 +616,7 @@ export const onRequest = async (context: any): Promise<Response> => {
 
         const webhookBody = await webhookResponse.text();
         console.log("[lead] webhook response status:", webhookResponse.status);
-        console.log("[lead] webhook response body prefix:", webhookBody.slice(0, 200));
+        console.log("[lead] webhook response received:", { hasBody: webhookBody.length > 0 });
 
         if (!webhookResponse.ok) {
             console.error("[lead] webhook returned non-2xx:", webhookResponse.status);
@@ -538,6 +628,28 @@ export const onRequest = async (context: any): Promise<Response> => {
             if (!webhookResult.ok) {
                 console.error("[lead] webhook response rejected:", webhookResult.reason);
                 return json({ ok: false, error: "Lead capture backend returned an invalid response" }, 502);
+            }
+        }
+
+        if (isOutcomeMeasurementCaptureEnabled(env)) {
+            const measurementCapture = captureAttributionBestEffort(env, buildLeadAttributionCaptureInput({
+                sourceLeadId: leadId,
+                submittedAt,
+                landingPage: parsedAttribution.landingPage,
+                sourcePage: parsedAttribution.sourcePage,
+                gclid: parsedAttribution.gclid,
+                gbraid: parsedAttribution.gbraid,
+                wbraid: parsedAttribution.wbraid,
+                utmSource: parsedAttribution.utmSource,
+                utmMedium: parsedAttribution.utmMedium,
+                utmCampaign: parsedAttribution.utmCampaign,
+                utmTerm: parsedAttribution.utmTerm,
+                utmContent: parsedAttribution.utmContent,
+            }));
+            if (typeof context.waitUntil === "function") {
+                context.waitUntil(measurementCapture);
+            } else {
+                await measurementCapture;
             }
         }
 
