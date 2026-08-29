@@ -390,8 +390,13 @@ const faqs = [
     </section>
   </main>
 
-  <script is:inline>
+  <script>
+    import { submitOutcomeMeasurementBrowserRoute } from "../lib/outcome-measurement/browser-route.ts";
+
     (() => {
+      type GoogleClickKey = "gclid" | "gbraid" | "wbraid";
+      type GoogleClickTouch = Record<GoogleClickKey, string | null>;
+
       const ATTR_KEYS = [
         "utm_source",
         "utm_medium",
@@ -405,10 +410,10 @@ const faqs = [
         "msclkid"
       ];
       const GOOGLE_CLICK_KEYS = new Set(["gclid", "gbraid", "wbraid"]);
-      const GOOGLE_CLICK_KEY_LIST = ["gclid", "gbraid", "wbraid"];
+      const GOOGLE_CLICK_KEY_LIST: GoogleClickKey[] = ["gclid", "gbraid", "wbraid"];
       const GOOGLE_CLICK_TOUCH_STORAGE_KEY = "hfla_google_click_touch_v1";
 
-      function trackEvent(eventName, params = {}) {
+      function trackEvent(eventName: string, params: Record<string, unknown> = {}) {
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({ event: eventName, ...params });
         if (typeof window.gtag === "function") {
@@ -416,22 +421,23 @@ const faqs = [
         }
       }
 
-      function readAttrStore() {
+      function readAttrStore(): Record<string, unknown> {
         try {
           const session = JSON.parse(sessionStorage.getItem("hfla_attribution") || "{}");
           const local = JSON.parse(localStorage.getItem("hfla_attribution") || "{}");
-          return { ...local, ...session };
+          return { ...local, ...session } as Record<string, unknown>;
         } catch {
           return {};
         }
       }
 
-      function validGoogleClickTouch(value) {
+      function validGoogleClickTouch(value: unknown): GoogleClickTouch | null {
         if (!value || typeof value !== "object") return null;
-        const touch = { gclid: null, gbraid: null, wbraid: null };
+        const record = value as Record<string, unknown>;
+        const touch: GoogleClickTouch = { gclid: null, gbraid: null, wbraid: null };
         let present = false;
         GOOGLE_CLICK_KEY_LIST.forEach((key) => {
-          const item = value[key];
+          const item = record[key];
           if (typeof item === "string" && item !== "") {
             touch[key] = item;
             present = true;
@@ -457,7 +463,7 @@ const faqs = [
 
       function selectedGoogleClickTouch() {
         const params = new URLSearchParams(window.location.search);
-        const touch = { gclid: null, gbraid: null, wbraid: null };
+        const touch: GoogleClickTouch = { gclid: null, gbraid: null, wbraid: null };
         let present = false;
         GOOGLE_CLICK_KEY_LIST.forEach((key) => {
           const value = params.get(key);
@@ -483,10 +489,10 @@ const faqs = [
         return touch;
       }
 
-      function readAttribution() {
+      function readAttribution(): Record<string, string> {
         const params = new URLSearchParams(window.location.search);
         const stored = readAttrStore();
-        const next = {};
+        const next: Record<string, string> = {};
         ATTR_KEYS.forEach((key) => {
           if (GOOGLE_CLICK_KEYS.has(key)) return;
           next[key] = String(params.get(key) || stored[key] || "").trim();
@@ -498,7 +504,7 @@ const faqs = [
         return next;
       }
 
-      function splitName(value) {
+      function splitName(value: unknown) {
         const clean = String(value || "").trim().replace(/\s+/g, " ");
         if (!clean) return { firstName: "", lastName: "" };
         const parts = clean.split(" ");
@@ -506,7 +512,7 @@ const faqs = [
         return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
       }
 
-      function bucketKids(value) {
+      function bucketKids(value: unknown) {
         const count = Number(value);
         if (!Number.isFinite(count)) return "not-sure";
         if (count <= 10) return "1-10";
@@ -523,7 +529,7 @@ const faqs = [
         return `qrq_${String(random).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 80)}`;
       }
 
-      function payloadFromForm(form) {
+      function payloadFromForm(form: HTMLFormElement) {
         const fd = new FormData(form);
         const name = splitName(fd.get("name"));
         const estimatedKids = String(fd.get("estimatedKids") || "").trim();
@@ -599,12 +605,15 @@ const faqs = [
         }
 
         const payload = payloadFromForm(form);
+        const googleTouchState = readGoogleClickTouchState();
+        const googleTouch = selectedGoogleClickTouch();
 
         try {
-          const response = await fetch("/api/quote-request", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(payload),
+          const { response } = await submitOutcomeMeasurementBrowserRoute({
+            routeId: "HIRE_FACE_PAINTER",
+            basePayload: payload,
+            selectedGoogleTouch: googleTouch,
+            firstGoogleTouch: googleTouchState.first,
           });
           const result = await response.json().catch(() => ({ ok: false }));
           if (!response.ok || !result.ok || result.received !== true || result.persisted !== true) {

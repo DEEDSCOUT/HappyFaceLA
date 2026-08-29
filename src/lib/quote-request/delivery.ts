@@ -379,6 +379,65 @@ function preserveOpaqueClickIdentifier(value: unknown): string | null {
   return typeof value === 'string' ? value : null;
 }
 
+export type ParsedQuoteAttributionRequest = Pick<SanitizedQuoteRequest,
+  | 'landingPage' | 'sourcePath' | 'referrer'
+  | 'firstLandingPage' | 'firstSourcePath' | 'firstReferrer'
+  | 'submitLandingPage' | 'submitSourcePath' | 'submitReferrer'
+  | 'utmSource' | 'utmMedium' | 'utmCampaign' | 'utmTerm' | 'utmContent'
+  | 'gclid' | 'gbraid' | 'wbraid' | 'fbclid' | 'msclkid'
+  | 'firstUtmSource' | 'firstUtmMedium' | 'firstUtmCampaign' | 'firstUtmTerm' | 'firstUtmContent'
+  | 'firstGclid' | 'firstGbraid' | 'firstWbraid'
+  | 'submitUtmSource' | 'submitUtmMedium' | 'submitUtmCampaign' | 'submitUtmTerm' | 'submitUtmContent'
+  | 'submitGclid' | 'submitGbraid' | 'submitWbraid'
+>;
+
+export function createQuoteAttributionRequestParser(
+  mutate?: (parsed: ParsedQuoteAttributionRequest) => ParsedQuoteAttributionRequest,
+) {
+  return function parseQuoteAttributionRequest(body: Record<string, unknown>): ParsedQuoteAttributionRequest {
+    const parsed: ParsedQuoteAttributionRequest = {
+      landingPage: normalizeUrlAttribution(body.landing_page),
+      sourcePath: normalizePathAttribution(body.source_path),
+      referrer: normalizeUrlAttribution(body.referrer),
+      firstLandingPage: normalizeUrlAttribution(body.first_landing_page),
+      firstSourcePath: normalizePathAttribution(body.first_source_path),
+      firstReferrer: normalizeUrlAttribution(body.first_referrer),
+      submitLandingPage: normalizeUrlAttribution(body.submit_landing_page),
+      submitSourcePath: normalizePathAttribution(body.submit_source_path),
+      submitReferrer: normalizeUrlAttribution(body.submit_referrer),
+      utmSource: normalizeAttribution(body.utm_source),
+      utmMedium: normalizeAttribution(body.utm_medium),
+      utmCampaign: normalizeAttribution(body.utm_campaign),
+      utmTerm: normalizeAttribution(body.utm_term),
+      utmContent: normalizeAttribution(body.utm_content),
+      gclid: preserveOpaqueClickIdentifier(body.gclid),
+      gbraid: preserveOpaqueClickIdentifier(body.gbraid),
+      wbraid: preserveOpaqueClickIdentifier(body.wbraid),
+      fbclid: normalizeAttribution(body.fbclid),
+      msclkid: normalizeAttribution(body.msclkid),
+      firstUtmSource: normalizeAttribution(body.first_utm_source),
+      firstUtmMedium: normalizeAttribution(body.first_utm_medium),
+      firstUtmCampaign: normalizeAttribution(body.first_utm_campaign),
+      firstUtmTerm: normalizeAttribution(body.first_utm_term),
+      firstUtmContent: normalizeAttribution(body.first_utm_content),
+      firstGclid: preserveOpaqueClickIdentifier(body.first_gclid),
+      firstGbraid: preserveOpaqueClickIdentifier(body.first_gbraid),
+      firstWbraid: preserveOpaqueClickIdentifier(body.first_wbraid),
+      submitUtmSource: normalizeAttribution(body.submit_utm_source),
+      submitUtmMedium: normalizeAttribution(body.submit_utm_medium),
+      submitUtmCampaign: normalizeAttribution(body.submit_utm_campaign),
+      submitUtmTerm: normalizeAttribution(body.submit_utm_term),
+      submitUtmContent: normalizeAttribution(body.submit_utm_content),
+      submitGclid: preserveOpaqueClickIdentifier(body.submit_gclid),
+      submitGbraid: preserveOpaqueClickIdentifier(body.submit_gbraid),
+      submitWbraid: preserveOpaqueClickIdentifier(body.submit_wbraid),
+    };
+    return mutate ? mutate(parsed) : parsed;
+  };
+}
+
+export const parseQuoteAttributionRequest = createQuoteAttributionRequestParser();
+
 function normalizeUrlAttribution(value: unknown): string | null {
   const raw = normalizeAttribution(value);
   if (!raw) return null;
@@ -560,41 +619,7 @@ function validatePayload(raw: Record<string, unknown>, sourcePage: string | null
       preferredContactMethod: normalizePreferredContactMethod(body.preferredContactMethod),
       customerBudgetRaw: normalizeNullableString(body.customerBudget ?? body.budget ?? body.budget_range, 80),
       sourcePage,
-      landingPage: normalizeUrlAttribution(body.landing_page),
-      sourcePath: normalizePathAttribution(body.source_path),
-      referrer: normalizeUrlAttribution(body.referrer),
-      firstLandingPage: normalizeUrlAttribution(body.first_landing_page),
-      firstSourcePath: normalizePathAttribution(body.first_source_path),
-      firstReferrer: normalizeUrlAttribution(body.first_referrer),
-      submitLandingPage: normalizeUrlAttribution(body.submit_landing_page),
-      submitSourcePath: normalizePathAttribution(body.submit_source_path),
-      submitReferrer: normalizeUrlAttribution(body.submit_referrer),
-      utmSource: normalizeAttribution(body.utm_source),
-      utmMedium: normalizeAttribution(body.utm_medium),
-      utmCampaign: normalizeAttribution(body.utm_campaign),
-      utmTerm: normalizeAttribution(body.utm_term),
-      utmContent: normalizeAttribution(body.utm_content),
-      gclid: preserveOpaqueClickIdentifier(body.gclid),
-      gbraid: preserveOpaqueClickIdentifier(body.gbraid),
-      wbraid: preserveOpaqueClickIdentifier(body.wbraid),
-      fbclid: normalizeAttribution(body.fbclid),
-      msclkid: normalizeAttribution(body.msclkid),
-      firstUtmSource: normalizeAttribution(body.first_utm_source),
-      firstUtmMedium: normalizeAttribution(body.first_utm_medium),
-      firstUtmCampaign: normalizeAttribution(body.first_utm_campaign),
-      firstUtmTerm: normalizeAttribution(body.first_utm_term),
-      firstUtmContent: normalizeAttribution(body.first_utm_content),
-      firstGclid: preserveOpaqueClickIdentifier(body.first_gclid),
-      firstGbraid: preserveOpaqueClickIdentifier(body.first_gbraid),
-      firstWbraid: preserveOpaqueClickIdentifier(body.first_wbraid),
-      submitUtmSource: normalizeAttribution(body.submit_utm_source),
-      submitUtmMedium: normalizeAttribution(body.submit_utm_medium),
-      submitUtmCampaign: normalizeAttribution(body.submit_utm_campaign),
-      submitUtmTerm: normalizeAttribution(body.submit_utm_term),
-      submitUtmContent: normalizeAttribution(body.submit_utm_content),
-      submitGclid: preserveOpaqueClickIdentifier(body.submit_gclid),
-      submitGbraid: preserveOpaqueClickIdentifier(body.submit_gbraid),
-      submitWbraid: preserveOpaqueClickIdentifier(body.submit_wbraid),
+      ...parseQuoteAttributionRequest(body),
     },
   };
 }

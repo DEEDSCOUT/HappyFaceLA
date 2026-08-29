@@ -305,8 +305,13 @@ const transparencyCopy =
     <FAQAccordion items={packageFaqs} />
   </section>
 
-  <script is:inline>
+  <script>
+    import { submitOutcomeMeasurementBrowserRoute } from "../lib/outcome-measurement/browser-route.ts";
+
     (() => {
+      type GoogleClickKey = "gclid" | "gbraid" | "wbraid";
+      type GoogleClickTouch = Record<GoogleClickKey, string | null>;
+
       const ATTR_KEYS = [
         "utm_source",
         "utm_medium",
@@ -320,30 +325,31 @@ const transparencyCopy =
         "msclkid"
       ];
       const GOOGLE_CLICK_KEYS = new Set(["gclid", "gbraid", "wbraid"]);
-      const GOOGLE_CLICK_KEY_LIST = ["gclid", "gbraid", "wbraid"];
+      const GOOGLE_CLICK_KEY_LIST: GoogleClickKey[] = ["gclid", "gbraid", "wbraid"];
       const GOOGLE_CLICK_TOUCH_STORAGE_KEY = "hfla_google_click_touch_v1";
 
-      function attributionValue(key, value) {
+      function attributionValue(key: string, value: unknown): string {
         const text = String(value || "");
         return GOOGLE_CLICK_KEYS.has(key) ? text : text.trim();
       }
 
-      function readAttrStore() {
+      function readAttrStore(): Record<string, unknown> {
         try {
           const session = JSON.parse(sessionStorage.getItem("hfla_attribution") || "{}");
           const local = JSON.parse(localStorage.getItem("hfla_attribution") || "{}");
-          return { ...local, ...session };
+          return { ...local, ...session } as Record<string, unknown>;
         } catch {
           return {};
         }
       }
 
-      function validGoogleClickTouch(value) {
+      function validGoogleClickTouch(value: unknown): GoogleClickTouch | null {
         if (!value || typeof value !== "object") return null;
-        const touch = { gclid: null, gbraid: null, wbraid: null };
+        const record = value as Record<string, unknown>;
+        const touch: GoogleClickTouch = { gclid: null, gbraid: null, wbraid: null };
         let present = false;
         GOOGLE_CLICK_KEY_LIST.forEach((key) => {
-          const item = value[key];
+          const item = record[key];
           if (typeof item === "string" && item !== "") {
             touch[key] = item;
             present = true;
@@ -369,7 +375,7 @@ const transparencyCopy =
 
       function currentGoogleClickTouch() {
         const params = new URLSearchParams(window.location.search);
-        const touch = { gclid: null, gbraid: null, wbraid: null };
+        const touch: GoogleClickTouch = { gclid: null, gbraid: null, wbraid: null };
         let present = false;
         GOOGLE_CLICK_KEY_LIST.forEach((key) => {
           const value = params.get(key);
@@ -400,8 +406,8 @@ const transparencyCopy =
         return current;
       }
 
-      function readUrlAttribution() {
-        const out = {};
+      function readUrlAttribution(): Record<string, string> {
+        const out: Record<string, string> = {};
         try {
           const params = new URLSearchParams(window.location.search);
           ATTR_KEYS.forEach((key) => {
@@ -417,12 +423,12 @@ const transparencyCopy =
         return out;
       }
 
-      function deriveLeadSource(values) {
+      function deriveLeadSource(values: Record<string, unknown>) {
         const utmSource = String(values.utm_source || "").trim().toLowerCase();
         return utmSource === "yelp" ? "yelp" : "";
       }
 
-      function trackEvent(eventName, params = {}) {
+      function trackEvent(eventName: string, params: Record<string, unknown> = {}) {
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({ event: eventName, ...params });
         if (typeof window.gtag === "function") {
@@ -430,7 +436,7 @@ const transparencyCopy =
         }
       }
 
-      function hydrateAttribution(form) {
+      function hydrateAttribution(form: HTMLFormElement): GoogleClickTouch | null {
         const values = { ...readAttrStore(), ...readUrlAttribution() };
         const googleTouch = selectedGoogleClickTouch();
         GOOGLE_CLICK_KEY_LIST.forEach((key) => {
@@ -443,7 +449,7 @@ const transparencyCopy =
             return;
           }
           const next = GOOGLE_CLICK_KEYS.has(key)
-            ? googleTouch?.[key] || ""
+            ? googleTouch?.[key as GoogleClickKey] || ""
             : attributionValue(key, values[key]);
           input.value = next;
         });
@@ -465,9 +471,10 @@ const transparencyCopy =
         } catch {
           /* noop */
         }
+        return googleTouch;
       }
 
-      function splitName(parentName) {
+      function splitName(parentName: string) {
         const parts = parentName.trim().split(/\s+/).filter(Boolean);
         if (!parts.length) {
           return { first_name: "", last_name: "" };
@@ -478,7 +485,7 @@ const transparencyCopy =
         return { first_name: parts.slice(0, -1).join(" "), last_name: parts.slice(-1).join("") };
       }
 
-      function getPayload(form) {
+      function getPayload(form: HTMLFormElement) {
         const fd = new FormData(form);
         const parentName = String(fd.get("parent_name") || "").trim();
         const names = splitName(parentName);
@@ -561,7 +568,7 @@ const transparencyCopy =
             errorNode.textContent = "";
           }
 
-          hydrateAttribution(form);
+          const googleTouch = hydrateAttribution(form);
           const landingInput = form.querySelector('input[name="landing_page"]');
           if (landingInput instanceof HTMLInputElement) {
             landingInput.value = window.location.pathname;
@@ -569,10 +576,10 @@ const transparencyCopy =
           const payload = getPayload(form);
 
           try {
-            const response = await fetch("/api/lead", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(payload)
+            const { response, payload: submittedPayload } = await submitOutcomeMeasurementBrowserRoute({
+              routeId: "PACKAGES",
+              basePayload: payload,
+              selectedGoogleTouch: googleTouch,
             });
             const result = await response.json().catch(() => ({ ok: false }));
             if (!response.ok || !result.ok) {
@@ -581,11 +588,11 @@ const transparencyCopy =
             }
 
             trackEvent("packages_form_submit", {
-              source_page: payload.source_page || window.location.pathname,
+              source_page: submittedPayload.source_page || window.location.pathname,
               lead_id: result.leadId || ""
             });
             trackEvent("generate_lead", {
-              source_page: payload.source_page || window.location.pathname,
+              source_page: submittedPayload.source_page || window.location.pathname,
               lead_id: result.leadId || ""
             });
 

@@ -171,8 +171,13 @@ const hiddenLeadSource = leadSource || currentPath;
   <p data-form-error class="mt-3 hidden text-sm font-medium text-rose-700"></p>
 </form>
 
-<script is:inline>
+<script>
+  import { submitOutcomeMeasurementBrowserRoute } from "../../lib/outcome-measurement/browser-route.ts";
+
   (() => {
+    type GoogleClickKey = "gclid" | "gbraid" | "wbraid";
+    type GoogleClickTouch = Record<GoogleClickKey, string | null>;
+
     const ATTR_KEYS = [
       "utm_source",
       "utm_medium",
@@ -186,30 +191,31 @@ const hiddenLeadSource = leadSource || currentPath;
       "msclkid"
     ];
     const GOOGLE_CLICK_KEYS = new Set(["gclid", "gbraid", "wbraid"]);
-    const GOOGLE_CLICK_KEY_LIST = ["gclid", "gbraid", "wbraid"];
+    const GOOGLE_CLICK_KEY_LIST: GoogleClickKey[] = ["gclid", "gbraid", "wbraid"];
     const GOOGLE_CLICK_TOUCH_STORAGE_KEY = "hfla_google_click_touch_v1";
 
-    function attributionValue(key, value) {
+    function attributionValue(key: string, value: unknown): string {
       const text = String(value || "");
       return GOOGLE_CLICK_KEYS.has(key) ? text : text.trim();
     }
 
-    function readAttrStore() {
+    function readAttrStore(): Record<string, unknown> {
       try {
         const session = JSON.parse(sessionStorage.getItem("hfla_attribution") || "{}");
         const local = JSON.parse(localStorage.getItem("hfla_attribution") || "{}");
-        return { ...local, ...session };
+        return { ...local, ...session } as Record<string, unknown>;
       } catch {
         return {};
       }
     }
 
-    function validGoogleClickTouch(value) {
+    function validGoogleClickTouch(value: unknown): GoogleClickTouch | null {
       if (!value || typeof value !== "object") return null;
-      const touch = { gclid: null, gbraid: null, wbraid: null };
+      const record = value as Record<string, unknown>;
+      const touch: GoogleClickTouch = { gclid: null, gbraid: null, wbraid: null };
       let present = false;
       GOOGLE_CLICK_KEY_LIST.forEach((key) => {
-        const item = value[key];
+        const item = record[key];
         if (typeof item === "string" && item !== "") {
           touch[key] = item;
           present = true;
@@ -235,7 +241,7 @@ const hiddenLeadSource = leadSource || currentPath;
 
     function currentGoogleClickTouch() {
       const params = new URLSearchParams(window.location.search);
-      const touch = { gclid: null, gbraid: null, wbraid: null };
+      const touch: GoogleClickTouch = { gclid: null, gbraid: null, wbraid: null };
       let present = false;
       GOOGLE_CLICK_KEY_LIST.forEach((key) => {
         const value = params.get(key);
@@ -266,8 +272,8 @@ const hiddenLeadSource = leadSource || currentPath;
       return current;
     }
 
-    function readUrlAttribution() {
-      const out = {};
+    function readUrlAttribution(): Record<string, string> {
+      const out: Record<string, string> = {};
       try {
         const params = new URLSearchParams(window.location.search);
         ATTR_KEYS.forEach((key) => {
@@ -283,7 +289,7 @@ const hiddenLeadSource = leadSource || currentPath;
       return out;
     }
 
-    function trackEvent(eventName, params = {}) {
+    function trackEvent(eventName: string, params: Record<string, unknown> = {}) {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ event: eventName, ...params });
       if (typeof window.gtag === "function") {
@@ -291,9 +297,9 @@ const hiddenLeadSource = leadSource || currentPath;
       }
     }
 
-    function getPayload(form) {
+    function getPayload(form: HTMLFormElement): Record<string, unknown> {
       const fd = new FormData(form);
-      const payload = {
+      const payload: Record<string, unknown> = {
         first_name: String(fd.get("first_name") || "").trim(),
         last_name: String(fd.get("last_name") || "").trim(),
         phone: String(fd.get("phone") || "").trim(),
@@ -324,7 +330,7 @@ const hiddenLeadSource = leadSource || currentPath;
         honeypot: String(fd.get("honeypot") || "")
       };
 
-      const addIfPresent = (name, value = fd.get(name)) => {
+      const addIfPresent = (name: string, value: FormDataEntryValue | null = fd.get(name)) => {
         if (form.querySelector(`[name="${name}"]`)) {
           payload[name] = String(value || "").trim();
         }
@@ -342,7 +348,7 @@ const hiddenLeadSource = leadSource || currentPath;
       return payload;
     }
 
-    function hydrateAttribution(form) {
+    function hydrateAttribution(form: HTMLFormElement): GoogleClickTouch | null {
       // Merge stored attribution with the current URL; the current landing URL
       // wins so first-touch ad params populate even before BaseLayout writes storage.
       const values = { ...readAttrStore(), ...readUrlAttribution() };
@@ -357,7 +363,7 @@ const hiddenLeadSource = leadSource || currentPath;
           return;
         }
         const next = GOOGLE_CLICK_KEYS.has(key)
-          ? googleTouch?.[key] || ""
+          ? googleTouch?.[key as GoogleClickKey] || ""
           : attributionValue(key, values[key]);
         input.value = next;
       });
@@ -369,19 +375,20 @@ const hiddenLeadSource = leadSource || currentPath;
       } catch {
         // fail silently; the form must still submit visible fields
       }
+      return googleTouch;
     }
 
     /**
      * Prefill service checkboxes (and a helpful message) from a `?service=` URL param.
      * Accepted values: face-painting, soccer-fan-paint-bar, balloon-twisting, glitter-tattoos, face-gems, party-package
      */
-    function prefillFromQuery(form) {
+    function prefillFromQuery(form: HTMLFormElement) {
       try {
         const params = new URLSearchParams(window.location.search);
         const requested = (params.get("service") || "").trim().toLowerCase();
         if (!requested) return;
 
-        const map = {
+        const map: Record<string, string[]> = {
           "face-painting": ["Face Painting"],
           "soccer-fan-paint-bar": ["Soccer Fan Paint Bar"],
           "balloon-twisting": ["Balloon Twisting"],
@@ -411,7 +418,7 @@ const hiddenLeadSource = leadSource || currentPath;
       }
     }
 
-    function syncSelectedPackage(form) {
+    function syncSelectedPackage(form: HTMLFormElement) {
       const packageSelect = form.querySelector('select[name="package_interest"]');
       const selectedPackageInput = form.querySelector('input[name="selected_package"]');
       if (!(selectedPackageInput instanceof HTMLInputElement)) {
@@ -481,7 +488,7 @@ const hiddenLeadSource = leadSource || currentPath;
 
         // Refresh attribution at submit time so hidden fields reflect the current
         // URL/storage regardless of initial page-load script order.
-        hydrateAttribution(form);
+        const googleTouch = hydrateAttribution(form);
         const landingInput = form.querySelector('input[name="landing_page"]');
         if (landingInput instanceof HTMLInputElement) {
           landingInput.value = window.location.pathname;
@@ -489,10 +496,10 @@ const hiddenLeadSource = leadSource || currentPath;
         const payload = getPayload(form);
 
         try {
-          const response = await fetch("/api/lead", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(payload)
+          const { response, payload: submittedPayload } = await submitOutcomeMeasurementBrowserRoute({
+            routeId: "QUOTE_FORM",
+            basePayload: payload,
+            selectedGoogleTouch: googleTouch,
           });
 
           const result = await response.json().catch(() => ({ ok: false }));
@@ -501,9 +508,9 @@ const hiddenLeadSource = leadSource || currentPath;
             throw new Error(`We could not submit your request.${details}`.trim());
           }
 
-          trackEvent("quote_form_submit", { source_page: payload.source_page || window.location.pathname });
+          trackEvent("quote_form_submit", { source_page: submittedPayload.source_page || window.location.pathname });
           trackEvent("generate_lead", {
-            source_page: payload.source_page || window.location.pathname,
+            source_page: submittedPayload.source_page || window.location.pathname,
             lead_id: result.leadId || ""
           });
 

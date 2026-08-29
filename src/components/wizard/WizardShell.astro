@@ -128,6 +128,7 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
     CLASSIFICATION_LABELS,
     CUSTOM_PLAN_COPY,
   } from '../../lib/wizard/quote-classification.ts';
+  import { submitOutcomeMeasurementBrowserRoute } from '../../lib/outcome-measurement/browser-route.ts';
 
   // ── Types (inline for bundler compatibility) ──────────────────
   type EventType = 'birthday-party'|'school-event'|'corporate-family-day'|'festival-community'|'other';
@@ -1748,6 +1749,8 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
 
     // Build payload — NO internal fields, NO Stripe credentials
     const rec = computeRecommendation(answers as Parameters<typeof computeRecommendation>[0]);
+    const attributionPayload = buildSubmitAttributionPayload();
+    const googleTouchState = readGoogleClickTouchState();
     const payload = {
       eventType: answers.eventType ?? '',
       services: answers.services,
@@ -1786,14 +1789,15 @@ const lookbookInspirationCatalog = lookbookItems.map((item) => ({
       wizardVersion: 'guided-wizard-v1',
       submittedAt: new Date().toISOString(),
       preferredContactMethod: selectedPreferredContactMethod,
-      ...buildSubmitAttributionPayload(),
+      ...attributionPayload,
     };
 
     try {
-      const res = await fetch('/api/quote-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+      const { response: res } = await submitOutcomeMeasurementBrowserRoute({
+        routeId: 'PLAN_MY_PARTY',
+        basePayload: payload,
+        selectedGoogleTouch: googleTouchState.latest,
+        firstGoogleTouch: googleTouchState.first,
       });
       const data = await res.json() as {
         ok: boolean;

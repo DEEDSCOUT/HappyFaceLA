@@ -1,126 +1,110 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { readFileSync, readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 
-import { buildLeadAttributionCaptureInput } from '../functions/api/lead.ts';
 import {
+  buildLeadAttributionCaptureInput,
+  createLeadAttributionRequestParser,
+} from '../functions/api/lead.ts';
+import {
+  LEAD_ATTRIBUTION_STORAGE_COLUMNS,
   buildLeadAttributionRecord,
   persistLeadAttributionRecord,
 } from '../src/lib/outcome-measurement/attribution-store.ts';
-import { buildQuoteAttributionCaptureInput } from '../src/lib/quote-request/delivery.ts';
+import {
+  OUTCOME_MEASUREMENT_BROWSER_ROUTES,
+  createOutcomeMeasurementBrowserSubmitter,
+} from '../src/lib/outcome-measurement/browser-route.ts';
+import {
+  buildQuoteAttributionCaptureInput,
+  createQuoteAttributionRequestParser,
+} from '../src/lib/quote-request/delivery.ts';
 
-const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CLICK_FIELDS = ['gclid', 'gbraid', 'wbraid'];
 const TRACE_VALUES = {
-  gclid: 'TEST-COVERAGE-G',
-  gbraid: 'TEST-COVERAGE-B',
-  wbraid: 'TEST-COVERAGE-W',
+  gclid: 'TEST-GCLID-SENTINEL-A',
+  gbraid: 'TEST-GBRAID-SENTINEL-B',
+  wbraid: 'TEST-WBRAID-SENTINEL-C',
 };
-
-const ROUTES = [
+const FIRST_TOUCH_VALUES = {
+  gclid: 'TEST-GCLID-FIRST-TOUCH-X',
+  gbraid: 'TEST-GBRAID-FIRST-TOUCH-Y',
+  wbraid: 'TEST-WBRAID-FIRST-TOUCH-Z',
+};
+const IDENTIFIER_CASES = [
+  { name: 'gclid', identifiers: { gclid: TRACE_VALUES.gclid, gbraid: null, wbraid: null } },
+  { name: 'gbraid', identifiers: { gclid: null, gbraid: TRACE_VALUES.gbraid, wbraid: null } },
+  { name: 'wbraid', identifiers: { gclid: null, gbraid: null, wbraid: TRACE_VALUES.wbraid } },
   {
-    route: 'QuoteForm production callers',
-    source_system: 'HFLA_WEB_LEAD',
-    file: 'src/components/conversion/QuoteForm.astro',
-    endpoint: '/api/lead',
-    common: [
-      'fetch("/api/lead"',
-      'const GOOGLE_CLICK_KEY_LIST = ["gclid", "gbraid", "wbraid"]',
-      'selectedGoogleClickTouch()',
-      'landing_page: String(fd.get("landing_page")',
-    ],
-    fields: Object.fromEntries(CLICK_FIELDS.map((field) => [field, [
-      `name="${field}"`,
-      `${field}: String(fd.get("${field}") || "")`,
-      `"${field}"`,
-    ]])),
-  },
-  {
-    route: '/packages/',
-    source_system: 'HFLA_WEB_LEAD',
-    file: 'src/pages/packages.astro',
-    endpoint: '/api/lead',
-    common: [
-      'fetch("/api/lead"',
-      'const GOOGLE_CLICK_KEY_LIST = ["gclid", "gbraid", "wbraid"]',
-      'selectedGoogleClickTouch()',
-      'landing_page: String(fd.get("landing_page")',
-    ],
-    fields: Object.fromEntries(CLICK_FIELDS.map((field) => [field, [
-      `name="${field}"`,
-      `${field}: String(fd.get("${field}") || "")`,
-      `"${field}"`,
-    ]])),
-  },
-  {
-    route: '/hire-face-painter-los-angeles/',
-    source_system: 'HFLA_PLAN_MY_PARTY',
-    file: 'src/pages/hire-face-painter-los-angeles.astro',
-    endpoint: '/api/quote-request',
-    common: [
-      'fetch("/api/quote-request"',
-      'const GOOGLE_CLICK_KEY_LIST = ["gclid", "gbraid", "wbraid"]',
-      'selectedGoogleClickTouch()',
-      '...attribution',
-      'submittedAt: new Date().toISOString()',
-    ],
-    fields: Object.fromEntries(CLICK_FIELDS.map((field) => [field, [
-      `"${field}"`,
-      `next[key] = googleTouch?.[key] || ""`,
-    ]])),
-  },
-  {
-    route: '/plan-my-party/',
-    source_system: 'HFLA_PLAN_MY_PARTY',
-    file: 'src/components/wizard/WizardShell.astro',
-    endpoint: '/api/quote-request',
-    common: [
-      "fetch('/api/quote-request'",
-      "const GOOGLE_CLICK_KEYS = ['gclid', 'gbraid', 'wbraid'] as const",
-      'googleClickTouchFromParams(ap)',
-      'out[`submit_${key}`] = selectedGoogleTouch?.[key] || null',
-      'submittedAt: new Date().toISOString()',
-    ],
-    fields: Object.fromEntries(CLICK_FIELDS.map((field) => [field, [`'${field}'`]])),
+    name: 'gclid_gbraid_same_touch',
+    identifiers: { gclid: TRACE_VALUES.gclid, gbraid: TRACE_VALUES.gbraid, wbraid: null },
   },
 ];
+const REPOSITORY_ROOT = resolve(import.meta.dirname, '..');
 
-function source(root, path, overrides) {
-  return overrides[path] ?? readFileSync(resolve(root, path), 'utf8');
+function filesRecursively(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = resolve(directory, entry.name);
+    return entry.isDirectory() ? filesRecursively(path) : [path];
+  });
 }
 
-function includesEvery(value, fragments) {
-  return fragments.every((fragment) => value.includes(fragment));
-}
-
-function normalized(value) {
-  return value.replace(/\s+/g, ' ');
-}
-
-function serverMappingProof(endpoint, field, leadServer, quoteServer) {
-  if (endpoint === '/api/lead') {
-    const sourceText = normalized(leadServer);
-    const callExpression = field === 'gclid'
-      ? 'gclid: normalized.gclid || null'
-      : `${field}: submitted${field[0].toUpperCase()}${field.slice(1)} || null`;
-    return sourceText.includes(`${field}: input.${field}`) && sourceText.includes(callExpression);
+function discoverActiveBrowserRoutes() {
+  const routeIds = [];
+  const problems = [];
+  const astroFiles = filesRecursively(resolve(REPOSITORY_ROOT, 'src'))
+    .filter((path) => path.endsWith('.astro'));
+  for (const path of astroFiles) {
+    const astro = readFileSync(path, 'utf8');
+    for (const match of astro.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)) {
+      const sourceFile = ts.createSourceFile(path, match[1], ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
+      function visit(node) {
+        if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+          if (node.expression.text === 'fetch') {
+            const target = node.arguments[0];
+            if (target && ts.isStringLiteralLike(target) && ['/api/lead', '/api/quote-request'].includes(target.text)) {
+              problems.push('direct_lead_api_fetch_bypasses_shared_submitter');
+            }
+          }
+          if (node.expression.text === 'submitOutcomeMeasurementBrowserRoute') {
+            const options = node.arguments[0];
+            if (!options || !ts.isObjectLiteralExpression(options)) {
+              problems.push('browser_route_submitter_options_not_static');
+            } else {
+              const routeProperty = options.properties.find((property) => (
+                ts.isPropertyAssignment(property)
+                && ((ts.isIdentifier(property.name) && property.name.text === 'routeId')
+                  || (ts.isStringLiteralLike(property.name) && property.name.text === 'routeId'))
+              ));
+              if (!routeProperty || !ts.isPropertyAssignment(routeProperty)
+                || !ts.isStringLiteralLike(routeProperty.initializer)) {
+                problems.push('browser_route_id_not_literal');
+              } else {
+                routeIds.push(routeProperty.initializer.text);
+              }
+            }
+          }
+        }
+        ts.forEachChild(node, visit);
+      }
+      visit(sourceFile);
+    }
   }
-  return normalized(quoteServer).includes(
-    `${field}: hasSubmitSnapshot ? canonical.submit${field[0].toUpperCase()}${field.slice(1)} : canonical.${field}`,
-  );
-}
-
-function storageSourceProof(field, storageSource) {
-  const sourceText = normalized(storageSource);
-  return sourceText.includes('gclid, gbraid, wbraid')
-    && sourceText.includes(`record.${field}`);
+  const expected = OUTCOME_MEASUREMENT_BROWSER_ROUTES.map((route) => route.id).sort();
+  const observed = [...routeIds].sort();
+  if (JSON.stringify(expected) !== JSON.stringify(observed)) {
+    problems.push('active_browser_route_registration_mismatch');
+  }
+  return { routeIds: observed, problems: [...new Set(problems)].sort() };
 }
 
 class TraceD1 {
-  constructor() {
+  constructor(mutateStorageValues) {
     this.row = null;
+    this.mutateStorageValues = mutateStorageValues;
   }
 
   prepare(sql) {
@@ -134,11 +118,14 @@ class TraceD1 {
               : null;
           },
           async run() {
+            const storedValues = db.mutateStorageValues
+              ? db.mutateStorageValues([...values], [...LEAD_ATTRIBUTION_STORAGE_COLUMNS])
+              : values;
             const columns = sql
               .slice(sql.indexOf('(') + 1, sql.indexOf(') VALUES'))
               .split(',')
               .map((column) => column.trim());
-            db.row = Object.fromEntries(columns.map((column, index) => [column, values[index]]));
+            db.row = Object.fromEntries(columns.map((column, index) => [column, storedValues[index]]));
             return { success: true, meta: { changes: 1 } };
           },
         };
@@ -147,119 +134,208 @@ class TraceD1 {
   }
 }
 
-async function executedTraceProof() {
-  const leadInput = buildLeadAttributionCaptureInput({
-    sourceLeadId: 'lead_coverage_trace',
-    submittedAt: '2026-08-28T18:00:00.000Z',
-    landingPage: '/coverage/',
-    sourcePage: '/coverage/',
-    ...TRACE_VALUES,
-    utmSource: 'google',
-    utmMedium: 'cpc',
-    utmCampaign: 'coverage',
-    utmTerm: null,
-    utmContent: null,
-  });
-  const quoteInput = buildQuoteAttributionCaptureInput({
-    leadId: 'lead_quote_coverage_trace',
-    createdAt: '2026-08-28T18:00:00.000Z',
-    sourcePage: '/plan-my-party/',
-    landingPage: '/first/',
-    sourcePath: '/first/',
-    utmSource: null,
-    utmMedium: null,
-    utmCampaign: null,
-    utmTerm: null,
-    utmContent: null,
-    gclid: null,
-    gbraid: null,
-    wbraid: null,
-    submitLandingPage: '/plan-my-party/',
-    submitSourcePath: '/plan-my-party/',
-    submitUtmSource: 'google',
-    submitUtmMedium: 'cpc',
-    submitUtmCampaign: 'coverage',
-    submitUtmTerm: null,
-    submitUtmContent: null,
-    submitGclid: TRACE_VALUES.gclid,
-    submitGbraid: TRACE_VALUES.gbraid,
-    submitWbraid: TRACE_VALUES.wbraid,
-  });
-  const record = await buildLeadAttributionRecord(leadInput, '2026-08-28T18:00:01.000Z');
-  const db = new TraceD1();
-  await persistLeadAttributionRecord(db, record);
-
-  return Object.fromEntries(CLICK_FIELDS.map((field) => [field,
-    leadInput[field] === TRACE_VALUES[field]
-      && quoteInput[field] === TRACE_VALUES[field]
-      && record[field] === TRACE_VALUES[field]
-      && db.row?.[field] === TRACE_VALUES[field],
-  ]));
+function basePayload(route) {
+  if (route.endpoint === '/api/lead') {
+    return {
+      landing_page: '/coverage/',
+      source_page: '/coverage/',
+      utm_source: 'google',
+      utm_medium: 'cpc',
+      utm_campaign: 'coverage',
+    };
+  }
+  return {
+    source_page: '/plan-my-party/',
+    landing_page: '/first/',
+    source_path: '/first/',
+    submit_landing_page: '/plan-my-party/',
+    submit_source_path: '/plan-my-party/',
+    submit_utm_source: 'google',
+    submit_utm_medium: 'cpc',
+    submit_utm_campaign: 'coverage',
+  };
 }
 
-export async function verifyOutcomeMeasurementCoverage({ root = REPOSITORY_ROOT, sourceOverrides = {} } = {}) {
-  const leadServer = source(root, 'functions/api/lead.ts', sourceOverrides);
-  const quoteServer = source(root, 'src/lib/quote-request/delivery.ts', sourceOverrides);
-  const storageSource = source(root, 'src/lib/outcome-measurement/attribution-store.ts', sourceOverrides);
-  const contract = source(root, 'src/lib/outcome-measurement/contracts.ts', sourceOverrides);
-  const runtimeTrace = await executedTraceProof();
+function exactIdentifiers(value, expected) {
+  return CLICK_FIELDS.every((field) => (value?.[field] ?? null) === expected[field]);
+}
 
-  const rows = ROUTES.map((definition) => {
-    const browserSource = source(root, definition.file, sourceOverrides);
-    const commonBrowserProof = includesEvery(browserSource, definition.common);
-    const fieldProof = Object.fromEntries(CLICK_FIELDS.map((field) => [field,
-      commonBrowserProof
-        && includesEvery(browserSource, definition.fields[field])
-        && serverMappingProof(definition.endpoint, field, leadServer, quoteServer)
-        && storageSourceProof(field, storageSource)
-        && runtimeTrace[field] === true,
+async function executeRouteDataFlow(route, identifierCase, mutations) {
+  const submitBrowserRoute = createOutcomeMeasurementBrowserSubmitter({
+    mutatePayload: mutations.browserPayload,
+    mutateSerializedBody: mutations.serializedBody,
+  });
+  let requestPayload = null;
+  const fetchImpl = async (_url, init = {}) => {
+    requestPayload = JSON.parse(String(init.body ?? '{}'));
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  };
+  const selectedTouch = { ...identifierCase.identifiers };
+  const firstTouch = { ...FIRST_TOUCH_VALUES };
+  await submitBrowserRoute({
+    routeId: route.id,
+    basePayload: basePayload(route),
+    selectedGoogleTouch: selectedTouch,
+    firstGoogleTouch: firstTouch,
+    fetchImpl,
+  });
+  if (!requestPayload) throw new Error('Browser request payload was not executed');
+
+  const sourceLeadId = `lead_coverage_${route.id.toLowerCase()}_${identifierCase.name}`;
+  const submittedAt = '2026-08-28T18:00:00.000Z';
+  let parsedIdentifiers;
+  let captureInput;
+  if (route.endpoint === '/api/lead') {
+    const parseLead = createLeadAttributionRequestParser(mutations.leadParser);
+    const parsed = parseLead(requestPayload, new Request('https://www.happyfacesla.com/api/lead'));
+    parsedIdentifiers = parsed;
+    captureInput = buildLeadAttributionCaptureInput({
+      sourceLeadId,
+      submittedAt,
+      ...parsed,
+    });
+  } else {
+    const parseQuote = createQuoteAttributionRequestParser(mutations.quoteParser);
+    const parsed = parseQuote(requestPayload);
+    parsedIdentifiers = {
+      gclid: parsed.submitGclid,
+      gbraid: parsed.submitGbraid,
+      wbraid: parsed.submitWbraid,
+    };
+    captureInput = buildQuoteAttributionCaptureInput({
+      leadId: sourceLeadId,
+      createdAt: submittedAt,
+      sourcePage: '/plan-my-party/',
+      ...parsed,
+    });
+  }
+
+  const record = await buildLeadAttributionRecord(captureInput, '2026-08-28T18:00:01.000Z');
+  const db = new TraceD1(mutations.storageValues);
+  await persistLeadAttributionRecord(db, record);
+  const expected = identifierCase.identifiers;
+  const browserIdentifiers = {
+    gclid: requestPayload.gclid ?? null,
+    gbraid: requestPayload.gbraid ?? null,
+    wbraid: requestPayload.wbraid ?? null,
+  };
+  const stageValues = [browserIdentifiers, parsedIdentifiers, captureInput, record, db.row];
+  const fieldPass = Object.fromEntries(CLICK_FIELDS.map((field) => [
+    field,
+    stageValues.every((stage) => (stage?.[field] ?? null) === expected[field]),
+  ]));
+  const quoteSubmitExact = route.endpoint === '/api/lead' || CLICK_FIELDS.every((field) => (
+    (requestPayload[`submit_${field}`] ?? null) === expected[field]
+  ));
+  const atomicTouch = exactIdentifiers(browserIdentifiers, expected)
+    && exactIdentifiers(captureInput, expected)
+    && quoteSubmitExact;
+
+  return {
+    fieldPass,
+    sourceLeadId: db.row?.source_lead_id === sourceLeadId,
+    submittedAt: db.row?.submitted_at === submittedAt,
+    atomicTouch,
+  };
+}
+
+export function outcomeMeasurementCoverageMutationCases() {
+  return [
+    {
+      name: 'browser_serialization_gbraid_drop',
+      mutations: { browserPayload: (payload) => ({ ...payload, gbraid: null, submit_gbraid: null }) },
+    },
+    {
+      name: 'browser_late_overwrite_gbraid_drop',
+      mutations: {
+        serializedBody: (body) => JSON.stringify({ ...JSON.parse(body), gbraid: null, submit_gbraid: null }),
+      },
+    },
+    {
+      name: 'lead_parser_gbraid_drop',
+      mutations: { leadParser: (parsed) => ({ ...parsed, gbraid: null }) },
+    },
+    {
+      name: 'quote_parser_gbraid_drop',
+      mutations: {
+        quoteParser: (parsed) => ({ ...parsed, gbraid: null, submitGbraid: null }),
+      },
+    },
+    {
+      name: 'storage_mapper_gbraid_drop',
+      mutations: {
+        storageValues(values, columns) {
+          values[columns.indexOf('gbraid')] = null;
+          return values;
+        },
+      },
+    },
+    {
+      name: 'browser_wbraid_drop',
+      mutations: { browserPayload: (payload) => ({ ...payload, wbraid: null, submit_wbraid: null }) },
+    },
+    {
+      name: 'browser_gclid_drop',
+      mutations: { browserPayload: (payload) => ({ ...payload, gclid: null, submit_gclid: null }) },
+    },
+    {
+      name: 'mixed_touch_assembly',
+      mutations: {
+        browserPayload(payload, context) {
+          return {
+            ...payload,
+            gclid: context.selectedGoogleTouch?.gclid ?? null,
+            gbraid: context.firstGoogleTouch?.gbraid ?? null,
+            submit_gclid: context.selectedGoogleTouch?.gclid ?? null,
+            submit_gbraid: context.firstGoogleTouch?.gbraid ?? null,
+          };
+        },
+      },
+    },
+  ];
+}
+
+export async function verifyOutcomeMeasurementCoverage({ mutations = {} } = {}) {
+  const activeRoutes = discoverActiveBrowserRoutes();
+  const rows = [];
+  for (const route of OUTCOME_MEASUREMENT_BROWSER_ROUTES) {
+    const results = [];
+    for (const identifierCase of IDENTIFIER_CASES) {
+      results.push(await executeRouteDataFlow(route, identifierCase, mutations));
+    }
+    const fieldPass = Object.fromEntries(CLICK_FIELDS.map((field) => [
+      field,
+      results.every((result) => result.fieldPass[field]),
     ]));
-    const supportsSourceLeadId = definition.endpoint === '/api/lead'
-      ? normalized(leadServer).includes('source_lead_id: input.sourceLeadId')
-      : normalized(quoteServer).includes('source_lead_id: canonical.leadId');
-    const supportsSubmittedAt = definition.endpoint === '/api/lead'
-      ? normalized(leadServer).includes('submitted_at: input.submittedAt')
-      : normalized(quoteServer).includes('submitted_at: canonical.createdAt');
-    const supportsLandingPage = commonBrowserProof
-      && (definition.endpoint === '/api/lead'
-        ? normalized(leadServer).includes('landing_page: input.landingPage')
-        : normalized(quoteServer).includes('landing_page: hasSubmitSnapshot'));
-    const captureVersion = contract.includes("ATTRIBUTION_CAPTURE_VERSION = 'ATTRIBUTION_CAPTURE_V1'")
-      ? 'ATTRIBUTION_CAPTURE_V1'
-      : null;
-
+    const sourceLeadId = results.every((result) => result.sourceLeadId);
+    const submittedAt = results.every((result) => result.submittedAt);
+    const atomicTouch = results.every((result) => result.atomicTouch);
     const problems = [];
     for (const field of CLICK_FIELDS) {
-      if (!fieldProof[field]) problems.push(`${field}_not_preserved_end_to_end`);
+      if (!fieldPass[field]) problems.push(`${field}_not_preserved_end_to_end`);
     }
-    if (!supportsSourceLeadId) problems.push('source_lead_id_not_server_bound');
-    if (!supportsSubmittedAt) problems.push('submitted_at_not_server_bound');
-    if (!supportsLandingPage) problems.push('landing_page_not_preserved');
-    if (!captureVersion) problems.push('capture_version_missing');
-
-    return {
-      route: definition.route,
-      source_system: definition.source_system,
-      supports_gclid: fieldProof.gclid,
-      supports_gbraid: fieldProof.gbraid,
-      supports_wbraid: fieldProof.wbraid,
-      supports_source_lead_id: supportsSourceLeadId,
-      supports_submitted_at: supportsSubmittedAt,
-      supports_landing_page: supportsLandingPage,
-      capture_version: captureVersion,
-      proof_layers: {
-        browser_payload: commonBrowserProof,
-        server_mapper_executed: CLICK_FIELDS.every((field) => runtimeTrace[field] === true),
-        canonical_record_executed: CLICK_FIELDS.every((field) => runtimeTrace[field] === true),
-        storage_mapper_executed: CLICK_FIELDS.every((field) => runtimeTrace[field] === true),
-      },
+    if (!sourceLeadId) problems.push('source_lead_id_not_preserved');
+    if (!submittedAt) problems.push('submitted_at_not_preserved');
+    if (!atomicTouch) problems.push('atomic_touch_not_preserved');
+    problems.push(...activeRoutes.problems);
+    rows.push({
+      route: route.route,
+      gclid_end_to_end: fieldPass.gclid ? 'PASS' : 'FAIL',
+      gbraid_end_to_end: fieldPass.gbraid ? 'PASS' : 'FAIL',
+      wbraid_end_to_end: fieldPass.wbraid ? 'PASS' : 'FAIL',
+      source_lead_id: sourceLeadId ? 'PASS' : 'FAIL',
+      submitted_at: submittedAt ? 'PASS' : 'FAIL',
+      atomic_touch: atomicTouch ? 'PASS' : 'FAIL',
       problems,
-    };
-  });
+    });
+  }
 
   return {
     ok: rows.every((row) => row.problems.length === 0),
-    verifier: 'OUTCOME_MEASUREMENT_COVERAGE_V2_EXECUTED',
+    verifier: 'OUTCOME_MEASUREMENT_COVERAGE_V3_EXECUTABLE_DATA_FLOW',
     routes: rows,
   };
 }

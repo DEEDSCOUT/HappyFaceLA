@@ -87,6 +87,41 @@ function preserveSubmittedClickId(input: unknown): string {
     return typeof input === "string" ? input : "";
 }
 
+export type ParsedLeadAttributionRequest = {
+    landingPage: string | null;
+    sourcePage: string | null;
+    gclid: string | null;
+    gbraid: string | null;
+    wbraid: string | null;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    utmTerm: string | null;
+    utmContent: string | null;
+};
+
+export function createLeadAttributionRequestParser(
+    mutate?: (parsed: ParsedLeadAttributionRequest) => ParsedLeadAttributionRequest,
+) {
+    return function parseLeadAttributionRequest(input: Record<string, unknown>, request: Request): ParsedLeadAttributionRequest {
+        const parsed: ParsedLeadAttributionRequest = {
+            landingPage: normalizeString(input.landing_page) || null,
+            sourcePage: deriveSafeSourcePage(input as LeadPayload, request) || null,
+            gclid: preserveSubmittedClickId(input.gclid) || null,
+            gbraid: preserveSubmittedClickId(input.gbraid) || null,
+            wbraid: preserveSubmittedClickId(input.wbraid) || null,
+            utmSource: normalizeString(input.utm_source) || null,
+            utmMedium: normalizeString(input.utm_medium) || null,
+            utmCampaign: normalizeString(input.utm_campaign) || null,
+            utmTerm: normalizeString(input.utm_term) || null,
+            utmContent: normalizeString(input.utm_content) || null,
+        };
+        return mutate ? mutate(parsed) : parsed;
+    };
+}
+
+export const parseLeadAttributionRequest = createLeadAttributionRequestParser();
+
 export function buildLeadAttributionCaptureInput(input: {
     sourceLeadId: string;
     submittedAt: string;
@@ -425,9 +460,7 @@ export const onRequest = async (context: any): Promise<Response> => {
         return json({ ok: true, leadId: crypto.randomUUID() });
     }
 
-    const submittedLandingPage = normalizeString(input.landing_page);
-    const submittedGbraid = preserveSubmittedClickId(input.gbraid);
-    const submittedWbraid = preserveSubmittedClickId(input.wbraid);
+    const parsedAttribution = parseLeadAttributionRequest(input, request);
 
     const normalized: LeadPayload = {
         ...input,
@@ -446,13 +479,13 @@ export const onRequest = async (context: any): Promise<Response> => {
         budget_range: normalizeString(input.budget_range),
         message: normalizeString(input.message),
         landing_page: undefined,
-        source_page: deriveSafeSourcePage(input, request),
-        utm_source: normalizeString(input.utm_source),
-        utm_medium: normalizeString(input.utm_medium),
-        utm_campaign: normalizeString(input.utm_campaign),
-        utm_term: normalizeString(input.utm_term),
-        utm_content: normalizeString(input.utm_content),
-        gclid: preserveSubmittedClickId(input.gclid),
+        source_page: parsedAttribution.sourcePage || undefined,
+        utm_source: parsedAttribution.utmSource || undefined,
+        utm_medium: parsedAttribution.utmMedium || undefined,
+        utm_campaign: parsedAttribution.utmCampaign || undefined,
+        utm_term: parsedAttribution.utmTerm || undefined,
+        utm_content: parsedAttribution.utmContent || undefined,
+        gclid: parsedAttribution.gclid || undefined,
         gbraid: undefined,
         wbraid: undefined,
         fbclid: normalizeString(input.fbclid),
@@ -602,16 +635,16 @@ export const onRequest = async (context: any): Promise<Response> => {
             const measurementCapture = captureAttributionBestEffort(env, buildLeadAttributionCaptureInput({
                 sourceLeadId: leadId,
                 submittedAt,
-                landingPage: submittedLandingPage || null,
-                sourcePage: normalized.source_page || null,
-                gclid: normalized.gclid || null,
-                gbraid: submittedGbraid || null,
-                wbraid: submittedWbraid || null,
-                utmSource: normalized.utm_source || null,
-                utmMedium: normalized.utm_medium || null,
-                utmCampaign: normalized.utm_campaign || null,
-                utmTerm: normalized.utm_term || null,
-                utmContent: normalized.utm_content || null,
+                landingPage: parsedAttribution.landingPage,
+                sourcePage: parsedAttribution.sourcePage,
+                gclid: parsedAttribution.gclid,
+                gbraid: parsedAttribution.gbraid,
+                wbraid: parsedAttribution.wbraid,
+                utmSource: parsedAttribution.utmSource,
+                utmMedium: parsedAttribution.utmMedium,
+                utmCampaign: parsedAttribution.utmCampaign,
+                utmTerm: parsedAttribution.utmTerm,
+                utmContent: parsedAttribution.utmContent,
             }));
             if (typeof context.waitUntil === "function") {
                 context.waitUntil(measurementCapture);

@@ -233,6 +233,35 @@ type StoredAttributionIdentity = {
   capture_state: 'CAPTURED' | 'QUARANTINED';
 };
 
+export const LEAD_ATTRIBUTION_STORAGE_COLUMNS = [
+  'source_system', 'source_lead_id', 'submitted_at', 'landing_page', 'source_page',
+  'gclid', 'gbraid', 'wbraid',
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+  'capture_version', 'created_at', 'record_sha256', 'capture_state',
+] as const;
+
+export function mapLeadAttributionRecordToStorageValues(record: LeadAttributionRecord) {
+  return [
+    record.source_system,
+    record.source_lead_id,
+    record.submitted_at,
+    record.landing_page,
+    record.source_page,
+    record.gclid,
+    record.gbraid,
+    record.wbraid,
+    record.utm_source,
+    record.utm_medium,
+    record.utm_campaign,
+    record.utm_term,
+    record.utm_content,
+    record.capture_version,
+    record.created_at,
+    record.record_sha256,
+    record.capture_state,
+  ];
+}
+
 async function selectStoredIdentity(
   db: OutcomeMeasurementD1Database,
   sourceSystem: string,
@@ -271,25 +300,7 @@ export async function persistLeadAttributionRecord(
           capture_version, created_at, record_sha256, capture_state
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .bind(
-        record.source_system,
-        record.source_lead_id,
-        record.submitted_at,
-        record.landing_page,
-        record.source_page,
-        record.gclid,
-        record.gbraid,
-        record.wbraid,
-        record.utm_source,
-        record.utm_medium,
-        record.utm_campaign,
-        record.utm_term,
-        record.utm_content,
-        record.capture_version,
-        record.created_at,
-        record.record_sha256,
-        record.capture_state,
-      )
+      .bind(...mapLeadAttributionRecordToStorageValues(record))
       .run();
     if (result.success === false) throw new Error('D1 insert failed');
   } catch (error) {

@@ -14,7 +14,7 @@ import { relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = resolve(import.meta.dirname, '..');
-const EXPECTED_PARENT = '6db3f70e7623235e543b9bd20229e1e7103d1e2f';
+const EXPECTED_PARENT = '4f7ec65c554fe5520e19af9c5b5b46d2721b5729';
 const DEFAULT_OUTPUT = '.agent/outcome-measurement-slice1/remediation-frozen';
 const NETWORK_GUARD = resolve(ROOT, 'scripts/outcome-measurement-network-guard.mjs');
 const NPM_CLI = process.env.npm_execpath
@@ -182,7 +182,26 @@ const testSuites = Array.from(testRun.stdout.matchAll(/^(\d+) (.+?) tests passed
   .map((match) => ({ name: match[2], passed: Number(match[1]), failed: 0 }));
 if (testSuites.length !== 3) throw new Error('Expected three deterministic test-suite totals');
 const testPassNames = Array.from(testRun.stdout.matchAll(/^PASS (.+)$/gm)).map((match) => match[1]);
-bindResult(testRun, { suites: testSuites, pass_names_sha256: sha256(canonicalJson(testPassNames)) });
+const requiredExecutedControls = {
+  executable_route_coverage: 'coverage verifier passes every approved production lead route end to end',
+  bounded_mutation_rejection: 'executable coverage verifier rejects every bounded production-stage mutation',
+  d1_prepare_failure: 'present measurement binding prepare failure does not lose the customer lead',
+  d1_bind_failure: 'present measurement binding bind failure does not lose the customer lead',
+  d1_async_run_rejection: 'present measurement binding asynchronous run rejection does not lose the customer lead',
+  quote_d1_async_run_rejection: 'Plan My Party wrapper delivers after a present sidecar binding rejects its write',
+};
+const executedControls = Object.fromEntries(Object.entries(requiredExecutedControls).map(([key, name]) => [
+  key,
+  testPassNames.includes(name) ? 'PASS' : 'FAIL',
+]));
+if (Object.values(executedControls).some((status) => status !== 'PASS')) {
+  throw new Error('Required executable coverage or D1 failure control did not run');
+}
+bindResult(testRun, {
+  suites: testSuites,
+  pass_names_sha256: sha256(canonicalJson(testPassNames)),
+  executed_controls: executedControls,
+});
 
 const coverageRun = run('capture-coverage-verifier', process.execPath, [
   'scripts/verify-outcome-measurement-coverage.mjs',
@@ -220,6 +239,7 @@ const typeCheck = run('targeted-typescript-check', process.execPath, [
   'functions/api/quote-request.ts',
   'src/lib/outcome-measurement/contracts.ts',
   'src/lib/outcome-measurement/attribution-store.ts',
+  'src/lib/outcome-measurement/browser-route.ts',
   'src/lib/quote-request/delivery.ts',
 ]);
 const typeDiagnosticsEmpty = !(typeCheck.stdout + typeCheck.stderr).trim();
@@ -342,6 +362,7 @@ const testResults = {
   targeted_typescript_check: derivedExecutionStatus('targeted-typescript-check'),
   release_build: derivedExecutionStatus('release-build'),
   post_build_qa: derivedExecutionStatus('post-build-qa'),
+  executed_controls: executedControls,
   instrumented_external_attempts: instrumentedExternalAttempts,
   network_claim_scope: executionEvidence.network_control.claim_scope,
 };
